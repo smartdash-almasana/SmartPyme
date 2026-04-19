@@ -16,6 +16,20 @@ def get_builtin_skills() -> list[SkillSpec]:
             "echoed_message": {"type": "string"},
         },
     }
+    wrap_echo_input_schema = {
+        "type": "object",
+        "required": ["echoed_message"],
+        "properties": {
+            "echoed_message": {"type": "string"},
+        },
+    }
+    wrap_echo_output_schema = {
+        "type": "object",
+        "required": ["final_message"],
+        "properties": {
+            "final_message": {"type": "string"},
+        },
+    }
 
     return [
         SkillSpec(
@@ -28,5 +42,16 @@ def get_builtin_skills() -> list[SkillSpec]:
             executor_ref="builtin.echo",
             accuracy_score=1.0,
             enabled=True,
-        )
+        ),
+        SkillSpec(
+            skill_id="wrap_echo_skill",
+            name="Wrap eco minimo",
+            version="1.0.0",
+            input_schema=wrap_echo_input_schema,
+            output_schema=wrap_echo_output_schema,
+            validator_ref=None,
+            executor_ref="builtin.wrap_echo",
+            accuracy_score=1.0,
+            enabled=True,
+        ),
     ]
