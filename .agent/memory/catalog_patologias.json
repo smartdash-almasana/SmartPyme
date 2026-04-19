@@ -1,0 +1,12 @@
+{
+  "patologias": [
+    {
+      "code": "IVA_DESGLOSE_ERROR",
+      "description": "El desglose de tributos de IVA difiere de la expectativa oficial o impositiva, generando riesgo."
+    },
+    {
+      "code": "FORMATO_CSV_CAOTICO_AR",
+      "description": "El formato del CSV proveniente de Argentina presenta inconsistencias columnares o delimitadores mezclados."
+    }
+  ]
+}
