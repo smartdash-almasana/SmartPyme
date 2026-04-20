@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Any
 
 FieldValue = str | int | float | bool | None
 
@@ -22,3 +23,28 @@ class DifferenceRecord:
     value_b: FieldValue
     difference_type: str
     blocking: bool
+
+
+@dataclass(frozen=True)
+class ReconciledMatch:
+    key: str
+    record_a: dict[str, Any]
+    record_b: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class QuantifiedDiscrepancy:
+    key: str
+    field_name: str
+    value_a: Any
+    value_b: Any
+    delta: float | None
+    detail: str
+
+
+@dataclass(frozen=True)
+class ReconciliationResult:
+    matches: list[ReconciledMatch]
+    mismatches: list[QuantifiedDiscrepancy]
+    missing_in_a: list[dict[str, Any]]
+    missing_in_b: list[dict[str, Any]]
