@@ -1,7 +1,8 @@
 from app.core.clarification.models import ClarificationRecord, ClarificationRequest
 from app.core.clarification.persistence import (
+    has_blocking_pending_clarifications,
     list_pending_clarifications,
-    resolve_clarification,
+    resolve_clarification as resolve_clarification_in_storage,
     save_clarification,
 )
 
@@ -49,8 +50,20 @@ def create_clarification(
 
 
 def get_pending_clarifications() -> list[ClarificationRecord]:
+    return list_pending()
+
+
+def list_pending() -> list[ClarificationRecord]:
     return list_pending_clarifications()
 
 
 def resolve_existing_clarification(clarification_id: str, resolution: str) -> bool:
     return resolve_clarification(clarification_id, resolution)
+
+
+def resolve_clarification(clarification_id: str, resolution: str) -> bool:
+    return resolve_clarification_in_storage(clarification_id, resolution)
+
+
+def has_blocking_pending() -> bool:
+    return has_blocking_pending_clarifications()

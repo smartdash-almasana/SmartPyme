@@ -114,3 +114,18 @@ def resolve_clarification(clarification_id: str, resolution: str) -> bool:
             (resolution, clarification_id),
         )
         return cursor.rowcount > 0
+
+
+def has_blocking_pending_clarifications() -> bool:
+    init_clarifications_db()
+    with _get_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT COUNT(1)
+            FROM clarifications
+            WHERE status = 'pending' AND blocking = 1
+            """
+        ).fetchone()
+
+    pending_count = int(row[0]) if row is not None else 0
+    return pending_count > 0
