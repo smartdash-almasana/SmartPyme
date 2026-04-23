@@ -1,0 +1,16 @@
+{
+  "name": "smartpyme-factory",
+  "version": "0.1.0",
+  "description": "Plugin local para operar el flujo SmartPyme Factory con hallazgos y puente MCP local.",
+  "skills": "./skills/",
+  "mcp": "./.mcp.json",
+  "interface": {
+    "displayName": "SmartPyme Factory",
+    "shortDescription": "Audit/validate hallazgos and gate execution in SmartPyme",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ]
+  }
+}

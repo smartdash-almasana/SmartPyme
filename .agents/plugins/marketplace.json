@@ -1,0 +1,20 @@
+{
+  "name": "smartpyme-local",
+  "interface": {
+    "displayName": "SmartPyme Local Plugins"
+  },
+  "plugins": [
+    {
+      "name": "smartpyme-factory",
+      "source": {
+        "source": "local",
+        "path": "./plugins/smartpyme-factory"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    }
+  ]
+}
