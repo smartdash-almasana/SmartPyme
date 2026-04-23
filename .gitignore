@@ -6,3 +6,4 @@ factory/state/
 __pycache__/
 *.pyc
 .agents/**/.mcp.json
+.agents/**/.mcp.json
