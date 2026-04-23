@@ -10,6 +10,7 @@ from app.core.clarification.persistence import init_clarifications_db
 from app.core.clarification.service import (
     create_clarification,
     get_pending_clarifications,
+    has_blocking_pending,
     resolve_existing_clarification,
 )
 
@@ -111,3 +112,22 @@ def test_persistence_initializes_cleanly():
     pending = get_pending_clarifications()
 
     assert pending == []
+
+
+def test_fail_closed_cycle_blocks_and_unblocks_after_resolution():
+    assert has_blocking_pending() is False
+
+    create_clarification(
+        clarification_id="c-006",
+        entity_type="cliente",
+        value_a="20-11111111-1",
+        value_b="20-11111111-2",
+        reason="CUIT con ambiguedad",
+        blocking=True,
+    )
+
+    assert has_blocking_pending() is True
+
+    resolved = resolve_existing_clarification("c-006", "Confirmar value_a")
+    assert resolved is True
+    assert has_blocking_pending() is False
