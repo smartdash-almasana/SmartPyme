@@ -1,0 +1,249 @@
+**topología rectora de factoría**.
+Sin eso, la excavación no tiene borde y la cantera arrastra ruido. Lo correcto ahora es fijar un **continente estable** que preserve lo aprendido con **clarification** y ordene todo lo que siga.   
+
+## Topología rectora de factoría
+
+### 1. Territorios fijos
+
+#### A. Destino: kernel SmartPyme
+
+Es el mapa estable de lo que queremos construir.
+Se organiza por capas del core ya definidas en SmartCounter/SmartPyme:
+
+* ingestion
+* normalization
+* entities
+* clarification
+* reconciliation
+* validation
+* hallazgos
+* communication
+* actions
+* orchestration
+* utils
+
+Esto ya está alineado con el pipeline central: ingesta ? normalización ? entity resolution ? clarification ? orquestación ? comparación/reconciliation ? hallazgos ? comunicación ? acción.   
+
+#### B. Origen: canteras
+
+Cada repo externo es una cantera.
+Una cantera **no define arquitectura**: solo provee slices posibles.
+
+#### C. Factoría
+
+Es el espacio intermedio que:
+
+* excava
+* clasifica
+* deduplica
+* consolida
+* ensambla
+
+---
+
+### 2. Regla fundamental
+
+**La unidad de avance no es el repo.**
+**La unidad de avance es la capa destino.**
+
+O sea:
+
+1. se elige una capa del kernel,
+2. se recorren todas las canteras buscando solo slices para esa capa,
+3. se consolidan duplicados,
+4. se define tanda de ensamblaje,
+5. se integra al kernel,
+6. recién ahí se pasa a la siguiente capa.
+
+---
+
+### 3. Secuencia oficial de trabajo
+
+#### Fase 0. Catálogo maestro de destino
+
+Para cada capa del kernel debe existir una ficha mínima:
+
+* propósito
+* archivos destino
+* contrato de entrada
+* contrato de salida
+* dependencias permitidas
+* dependencias prohibidas
+* criterio de done
+
+#### Fase 1. Catálogo maestro de canteras
+
+Para cada repo:
+
+* nombre
+* dominio funcional
+* valor esperado
+* ruido esperado
+* capas que probablemente puede alimentar
+* prioridad de excavación
+
+#### Fase 2. Excavación dirigida
+
+Se excava por capa objetivo, no libremente.
+
+Ejemplo:
+
+* objetivo actual: `reconciliation/service.py`
+* Gemini busca solo slices de conciliación, diferencias, parseo estructurado, contratos de deuda, cálculo determinístico
+* todo lo demás se descarta o se manda a otra familia
+
+#### Fase 3. Clasificación
+
+Cada slice queda marcado como:
+
+* core reutilizable directo
+* adaptable
+* contexto dependiente
+* descartable
+
+Y además con:
+
+* familia destino
+* dependencias
+* riesgos
+* prioridad
+
+#### Fase 4. Consolidación
+
+Con los hallazgos `done`:
+
+* deduplicación conceptual
+* agrupación por slice único
+* detección de solapamientos
+* detección de dependencias ocultas
+* armado de tandas
+
+El inventario de 44 `done` ya mostró que la factoría estaba inflada y que en realidad había unas pocas piezas únicas, con gran concentración en clarification y reconciliation. 
+
+#### Fase 5. Ensamblaje
+
+Orden obligatorio:
+
+1. contratos y modelos
+2. servicio core de la capa
+3. persistencia mínima
+4. orquestación/bloqueos
+5. adapters
+6. tests
+
+#### Fase 6. Cierre
+
+Cuando una capa se cierra:
+
+* se actualiza el catálogo maestro
+* se registran slices usados
+* se archivan los hallazgos absorbidos
+* se habilita la próxima capa
+
+---
+
+### 4. Estado real al día de hoy
+
+#### Clarification
+
+Debe considerarse **capa ya explorada y parcialmente consolidada**.
+
+Lo que dejó clarification como aprendizaje estructural:
+
+* hay alta redundancia en hallazgos,
+* hay slices repetidos que deben consolidarse y no reexcavarse una y otra vez,
+* clarification alimenta directamente la política fail-closed,
+* clarification no es solo UX de preguntas: también emite señal de incertidumbre, bloqueo y resolución humana persistida.   
+
+Entonces, desde hoy:
+
+**clarification pasa de “territorio en exploración” a “territorio base ya delimitado”.**
+
+No se vuelve a abrir salvo para:
+
+* ajuste puntual,
+* integración con orquestación,
+* persistencia definitiva,
+* tests de contrato.
+
+---
+
+### 5. Topología concreta de kernel
+
+## Núcleo 1 — Base estructural
+
+* `clarification/models.py`
+* `reconciliation/models.py`
+* luego modelos de validation / findings si hiciera falta
+
+## Núcleo 2 — Servicios core
+
+* `clarification/service.py`  ? ya delimitado por lo hecho
+* `reconciliation/service.py` ? próxima gran cantera
+* luego `validation/service.py`
+* luego `hallazgos/service.py`
+
+## Núcleo 3 — Gobierno del sistema
+
+* `orchestration/pipeline.py`
+* `orchestration/state_machine.py`
+
+## Núcleo 4 — Persistencia mínima
+
+* `clarification/persistence.py`
+* luego stores mínimos de findings / decisions / jobs
+
+## Núcleo 5 — Adaptadores
+
+* entrada: excel/pdf/email/whatsapp
+* salida: message adapters / signals / canales
+
+## Núcleo 6 — Tests de contrato
+
+* tests por capa
+* tests de integración mínima entre capas
+
+---
+
+### 6. Próxima secuencia recomendada
+
+Con clarification ya bastante trabajado, el orden sano ahora es:
+
+1. **reconciliation**
+2. **validation**
+3. **hallazgos**
+4. **orchestration**
+5. **persistencia transversal**
+6. **adapters de entrada/salida**
+
+Motivo:
+
+* reconciliation es donde aparece valor económico directo,
+* validation evita basura y contradicción,
+* hallazgos convierte diferencia en salida de negocio,
+* orchestration se apoya mejor cuando esas piezas ya existen.
+
+Eso además respeta el principio ya establecido: no comparar entidades no validadas, no generar hallazgos sin trazabilidad, no avanzar con incertidumbre activa. 
+
+---
+
+### 7. Protocolo rector breve
+
+A partir de ahora, la factoría queda gobernada por estas leyes:
+
+1. **Toda excavación debe declarar capa destino antes de abrir cantera.**
+2. **Todo hallazgo debe mapear a un archivo destino concreto del kernel.**
+3. **No se acepta hallazgo “interesante” si no tiene lugar topológico claro.**
+4. **Una capa no se reabre mientras no se cierre la tanda de ensamblaje vigente.**
+5. **Los done se consolidan por slice único, no por cantidad de archivos.**
+6. **Clarification queda como primera capa delimitada y base del patrón fail-closed.**
+7. **La próxima exploración prioritaria es reconciliation.**
+
+## Síntesis
+
+Lo que faltaba era esto: **pasar de excavación oportunista a topología de destino**.
+Desde hoy el continente queda así:
+
+**kernel por capas fijas ? canteras como proveedoras ? factoría como consolidación ? ensamblaje por tandas**.
+
+Y el punto de partida ya no es abstracto: **clarification queda tomado como primer territorio delimitado**; la próxima cantera debe investigarse para **reconciliation**.
