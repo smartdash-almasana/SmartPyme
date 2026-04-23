@@ -1,1 +1,1 @@
-# Init factory module
+# SmartPyme Factory Package

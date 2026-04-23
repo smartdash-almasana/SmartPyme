@@ -1,0 +1,144 @@
+{
+  "version": "2026-04-20",
+  "core_layers": {
+    "ingestion": {
+      "purpose": "Ingreso de datos al kernel desde fuentes normalizadas.",
+      "target_files": [
+        "app/core/ingestion/models.py",
+        "app/core/ingestion/service.py",
+        "tests/core/test_ingestion_service.py"
+      ]
+    },
+    "normalization": {
+      "purpose": "Normalizacion deterministica de entidades y campos.",
+      "target_files": [
+        "app/core/normalization/models.py",
+        "app/core/normalization/service.py",
+        "tests/core/test_normalization_service.py"
+      ]
+    },
+    "entities": {
+      "purpose": "Resolucion y comparacion de entidades canonicas.",
+      "target_files": [
+        "app/core/entities/models.py",
+        "app/core/entities/service.py",
+        "tests/core/test_entities_service.py"
+      ]
+    },
+    "clarification": {
+      "purpose": "Gestion fail-closed de incertidumbres con humano en loop.",
+      "target_files": [
+        "app/core/clarification/models.py",
+        "app/core/clarification/service.py",
+        "app/core/clarification/persistence.py",
+        "tests/core/test_clarification_service.py"
+      ]
+    },
+    "reconciliation": {
+      "purpose": "Conciliacion deterministica con diferencias cuantificadas.",
+      "target_files": [
+        "app/core/reconciliation/models.py",
+        "app/core/reconciliation/service.py",
+        "tests/core/test_reconciliation_service.py"
+      ]
+    },
+    "validation": {
+      "purpose": "Validacion de contratos y reglas de consistencia.",
+      "target_files": [
+        "app/core/validation/models.py",
+        "app/core/validation/service.py",
+        "tests/core/test_validation_service.py"
+      ]
+    },
+    "hallazgos": {
+      "purpose": "Estructuracion de findings tecnicos y de negocio.",
+      "target_files": [
+        "app/core/hallazgos/models.py",
+        "app/core/hallazgos/service.py",
+        "tests/core/test_hallazgos_service.py"
+      ]
+    },
+    "communication": {
+      "purpose": "Salida estructurada de mensajes y canales de comunicacion.",
+      "target_files": [
+        "app/core/communication/models.py",
+        "app/core/communication/service.py",
+        "tests/core/test_communication_service.py"
+      ]
+    },
+    "actions": {
+      "purpose": "Planificacion y ejecucion de acciones de negocio.",
+      "target_files": [
+        "app/core/actions/models.py",
+        "app/core/actions/service.py",
+        "tests/core/test_actions_service.py"
+      ]
+    },
+    "orchestration": {
+      "purpose": "Orquestacion del pipeline y estados de ejecucion.",
+      "target_files": [
+        "app/core/orchestrator/models.py",
+        "app/core/orchestrator/service.py",
+        "app/core/orchestrator/pipeline.py",
+        "tests/core/test_orchestrator.py"
+      ]
+    },
+    "utils": {
+      "purpose": "Utilidades transversales puras y deterministicas.",
+      "target_files": [
+        "app/core/utils/models.py",
+        "app/core/utils/service.py",
+        "tests/core/test_utils_service.py"
+      ]
+    }
+  },
+  "official_assembly_order": [
+    "clarification",
+    "reconciliation",
+    "validation",
+    "hallazgos",
+    "orchestration",
+    "communication",
+    "actions"
+  ],
+  "excavation_sequence": [
+    "reconciliation",
+    "validation",
+    "hallazgos",
+    "orchestration"
+  ],
+  "canteras": [
+    {
+      "name": "smartcounter",
+      "path_prefix": "E:/BuenosPasos/smartcounter",
+      "priority": 1,
+      "possible_layers": [
+        "clarification",
+        "reconciliation",
+        "validation",
+        "orchestration"
+      ]
+    },
+    {
+      "name": "smartexcel-poc",
+      "path_prefix": "E:/BuenosPasos/smartexcel/poc-agente-pyme",
+      "priority": 2,
+      "possible_layers": [
+        "reconciliation",
+        "validation",
+        "hallazgos"
+      ]
+    },
+    {
+      "name": "smartseller-v2",
+      "path_prefix": "E:/BuenosPasos/smartseller-v2",
+      "priority": 3,
+      "possible_layers": [
+        "clarification",
+        "reconciliation",
+        "validation",
+        "hallazgos"
+      ]
+    }
+  ]
+}
