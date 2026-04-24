@@ -1,13 +1,15 @@
-from typing import Any
+from typing import Any, Optional
 from app.core.orchestrator.models import OrchestrationResult
 from app.core.reconciliation.service import reconcile_records
 from app.core.hallazgos.service import HallazgoEngine
+from app.core.repositories.hallazgo_repository import HallazgoRepository, MemoryHallazgoRepository
 
 class Orchestrator:
-    """Orquestador central del flujo de SmartPyme."""
+    """Orquestador central del flujo de SmartPyme con persistencia integrada."""
 
-    def __init__(self):
+    def __init__(self, repository: Optional[HallazgoRepository] = None):
         self.hallazgo_engine = HallazgoEngine()
+        self.repository = repository or MemoryHallazgoRepository()
 
     def run_reconciliation_flow(
         self, 
@@ -25,6 +27,11 @@ class Orchestrator:
             # 2. Generación de Hallazgos
             hallazgos = self.hallazgo_engine.transform(reconciliation_result)
             steps.append("hallazgos_generation")
+            
+            # 3. Persistencia Automática
+            for hallazgo in hallazgos:
+                self.repository.save(hallazgo)
+            steps.append("hallazgos_persistence")
             
             return OrchestrationResult(
                 success=True,

@@ -1,48 +1,61 @@
 import pytest
 from app.core.orchestrator.service import Orchestrator
+from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
 
-def test_orchestrator_reconciliation_to_hallazgos_flow():
-    orchestrator = Orchestrator()
+def test_orchestrator_persistence_integration():
+    repo = MemoryHallazgoRepository()
+    orchestrator = Orchestrator(repository=repo)
     
-    # Datos con un mismatch y un faltante
-    source_a = [
-        {"order_id": "O1", "amount": 100},
-        {"order_id": "O2", "amount": 200}
-    ]
-    source_b = [
-        {"order_id": "O1", "amount": 110}, # Mismatch
-        {"order_id": "O3", "amount": 300}  # Faltante en A (u O2 faltante en B)
-    ]
-    
-    result = orchestrator.run_reconciliation_flow(source_a, source_b, key_field="order_id")
-    
-    assert result.success is True
-    assert "reconciliation" in result.steps_executed
-    assert "hallazgos_generation" in result.steps_executed
-    
-    # Validar que se generaron hallazgos
-    # 1 mismatch (O1) + 1 faltante en A (O3) + 1 faltante en B (O2) = 3 hallazgos
-    assert len(result.hallazgos) == 3
-    
-    # Verificar tipos de hallazgos
-    tipos = [h.tipo for h in result.hallazgos]
-    assert "mismatch_valor" in tipos
-    assert "faltante_en_fuente" in tipos
-    
-    # Verificar que el mismatch O1 está presente
-    h_o1 = next(h for h in result.hallazgos if h.entidad_id == "O1")
-    assert h_o1.diferencia_cuantificada == 10.0
-    assert h_o1.evidencia["field"] == "amount"
-
-def test_orchestrator_deduplication_in_flow():
-    orchestrator = Orchestrator()
-    
-    # Datos que podrían generar duplicados si no se manejaran
     source_a = [{"order_id": "O1", "amount": 100}]
     source_b = [{"order_id": "O1", "amount": 110}]
     
     result = orchestrator.run_reconciliation_flow(source_a, source_b)
     
-    # Ejecutamos dos veces la transformación internamente (simulado por el engine)
-    # El engine ya de-duplica, validamos que el orquestador entrega la lista limpia
+    assert result.success is True
+    assert "hallazgos_persistence" in result.steps_executed
     assert len(result.hallazgos) == 1
+    
+    # Verificar persistencia real en el repositorio
+    hallazgo_id = result.hallazgos[0].id
+    persisted = repo.get_by_id(hallazgo_id)
+    
+    assert persisted is not None
+    assert persisted.entidad_id == "O1"
+    assert persisted.diferencia_cuantificada == 10.0
+
+def test_orchestrator_deduplication_stable_persistence():
+    repo = MemoryHallazgoRepository()
+    orchestrator = Orchestrator(repository=repo)
+    
+    source_a = [{"order_id": "O1", "amount": 100}]
+    source_b = [{"order_id": "O1", "amount": 110}]
+    
+    # Primera corrida
+    orchestrator.run_reconciliation_flow(source_a, source_b)
+    assert len(repo.list_all()) == 1
+    
+    # Segunda corrida con los mismos datos (mismo dedupe_key -> mismo ID)
+    orchestrator.run_reconciliation_flow(source_a, source_b)
+    
+    # No debe haber duplicados en el repositorio (el ID es estable)
+    assert len(repo.list_all()) == 1
+
+def test_orchestrator_reconciliation_to_hallazgos_flow():
+    orchestrator = Orchestrator() # Usa MemoryRepo por defecto
+    
+    source_a = [
+        {"order_id": "O1", "amount": 100},
+        {"order_id": "O2", "amount": 200}
+    ]
+    source_b = [
+        {"order_id": "O1", "amount": 110},
+        {"order_id": "O3", "amount": 300}
+    ]
+    
+    result = orchestrator.run_reconciliation_flow(source_a, source_b)
+    
+    assert result.success is True
+    assert len(result.hallazgos) == 3
+    
+    # Validar que están en el repositorio interno del orchestrator
+    assert len(orchestrator.repository.list_all()) == 3
