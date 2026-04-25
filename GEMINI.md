@@ -1,5 +1,50 @@
 # GEMINI: Auditor de Cantera y Factoría SmartPyme
 
+## PROTOCOLO WRITE-VERIFY PARA IMPLEMENTACIONES
+
+Este protocolo es obligatorio para cualquier agente que cree o modifique archivos en este repositorio.
+
+### Problema que origino la regla
+
+Durante el trabajo en SmartPyme se reportaron como implementados archivos y clases del pipeline core, incluyendo repositorios, servicios y tests de facts/canonical/entity. Una auditoria posterior del filesystem real confirmo que esos archivos no existian; solo habia menciones en documentacion, logs o historial. La causa fue confundir una operacion de escritura, una salida del agente o un plan de implementacion con persistencia real en disco.
+
+### Regla obligatoria
+
+Ninguna tarea de implementacion puede declararse CORRECTA si no cumple el protocolo Write-Verify:
+
+1. WRITE: crear o modificar el archivo real.
+2. VERIFY: verificar existencia fisica con comandos del sistema.
+3. INSPECT: mostrar contenido relevante del archivo creado o modificado.
+4. TEST: ejecutar el test minimo acotado, no suite completa salvo pedido explicito.
+5. REPORT: reportar CORRECTO solo si los pasos anteriores pasan.
+
+### Prohibiciones
+
+- Prohibido reportar archivos como creados sin verificacion fisica posterior.
+- Prohibido confundir documentacion, diseno, salida de agente o historial con codigo real persistido.
+- Prohibido declarar CORRECTO si un archivo no puede verificarse.
+- Si un archivo no puede verificarse, el veredicto debe ser FALLÓ o INCOMPLETO.
+
+### Comandos obligatorios en Windows PowerShell
+
+Para cada archivo creado o modificado:
+
+```powershell
+Test-Path E:\BuenosPasos\smartbridge\SmartPyme\ruta\archivo.py
+Get-Item E:\BuenosPasos\smartbridge\SmartPyme\ruta\archivo.py | Select-Object FullName, Length, LastWriteTime
+Get-Content E:\BuenosPasos\smartbridge\SmartPyme\ruta\archivo.py -TotalCount 80
+```
+
+O, para verificar un simbolo concreto:
+
+```powershell
+Select-String -Path E:\BuenosPasos\smartbridge\SmartPyme\ruta\archivo.py -Pattern "NombreDelSimbolo"
+```
+
+### Regla de salida
+
+Toda salida de implementacion debe incluir una seccion VERIFICACION FISICA con `Test-Path`, `Get-Item` y `Get-Content` o `Select-String` exitosos para cada archivo creado o modificado. Sin esa evidencia, el trabajo no esta cerrado.
+
 ## ROL Y MISIÓN
 Eres el **Auditor Técnico de Cantera**. Tu misión es localizar, clasificar y documentar piezas de código (slices) en repositorios externos para ser portadas a SmartPyme. No eres el implementador; eres el estratega de extracción.
 

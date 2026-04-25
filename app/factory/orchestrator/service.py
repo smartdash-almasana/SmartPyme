@@ -5,6 +5,7 @@ from app.factory.orchestrator.models import (
     STATE_RUNNING,
     Job,
 )
+from app.factory.orchestrator.persistence import save_job
 from app.factory.orchestrator.transitions import ensure_transition_allowed
 from app.factory.skills.registry import SkillRegistry
 from app.factory.skills.runner import run_skill
@@ -25,6 +26,7 @@ def _block_job(job: Job, reason: str, error_code: str) -> Job:
     job.output = None
     job.blocking_reason = reason
     job.error_code = error_code
+    save_job(job) # Persist final blocked state
     return job
 
 
@@ -33,9 +35,12 @@ def orchestrate_job(job: Job, registry: SkillRegistry | None = None) -> Job:
         raise OrchestrationStateError(
             f"Solo se puede orquestar desde CREATED. Estado actual: {job.current_state}"
         )
-
+    
+    # It is assumed the caller has already saved the initial CREATED state.
+    # Persist the transition to RUNNING.
     _transition(job, STATE_RUNNING)
     job.status = "running"
+    save_job(job)
 
     if not job.skill_id:
         return _block_job(
@@ -51,6 +56,7 @@ def orchestrate_job(job: Job, registry: SkillRegistry | None = None) -> Job:
         job.output = result["output"]
         job.blocking_reason = None
         job.error_code = None
+        save_job(job) # Persist final completed state
         return job
 
     error_code = result.get("error_code") or "SKILL_EXECUTION_ERROR"

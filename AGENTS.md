@@ -1,3 +1,19 @@
+<!--
+PROTOCOLO OBLIGATORIO PARA AGENTES QUE MODIFICAN ARCHIVOS
+
+Todo agente que cree o modifique archivos en SmartPyme debe cumplir el protocolo Write-Verify antes de reportar una tarea como CORRECTA.
+
+Referencia canonica:
+- GEMINI.md, seccion "PROTOCOLO WRITE-VERIFY PARA IMPLEMENTACIONES"
+- .gemini/skills/write_verify_protocol.md
+
+Regla corta:
+- escribir archivo real;
+- verificar con Test-Path y Get-Item;
+- inspeccionar con Get-Content o Select-String;
+- ejecutar test minimo acotado si aplica;
+- si no hay verificacion fisica, el veredicto debe ser FALLÓ o INCOMPLETO, nunca CORRECTO.
+-->
 <!DOCTYPE html>
 <html lang="es">
 

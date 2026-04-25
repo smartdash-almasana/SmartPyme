@@ -11,8 +11,8 @@ Registrar fuentes que no deben gobernar arquitectura activa de SmartPyme, con mo
 | Duplicados del SMARTCOUNTER MASTER BLUEPRINT v2 | deprecable | archivar o despriorizar | `docs/ARQUITECTURA_NORMALIZADA.md` + Blueprint controlado | Evitar versiones paralelas de arquitectura base. |
 | Duplicados del SMARTCOUNTER CONSISTENCY & VALIDATION FRAMEWORK | deprecable | archivar o despriorizar | `docs/ARQUITECTURA_NORMALIZADA.md` + Framework controlado | Evitar reglas contradictorias de validación/bloqueo. |
 | Duplicados del Documento Base del Sistema Operativo | deprecable | archivar o despriorizar | `docs/ARQUITECTURA_NORMALIZADA.md` | Consolidación en constitución documental única. |
-| `docs/smarttimes_full_architecture.md` | auxiliar_degradada | despriorizar como referencia histórica | `docs/ARQUITECTURA_NORMALIZADA.md` | Contiene menciones no canónicas (ej. n8n) y naming mixto. |
-| `docs/80.000pdf.md` | auxiliar_degradada | despriorizar y no usar como contrato arquitectónico | `docs/ARQUITECTURA_NORMALIZADA.md` | Documento de propuesta general no alineado al core canónico actual. |
+| `docs/archive/smarttimes_full_architecture.md` | auxiliar_degradada | archivado como referencia histórica | `docs/SMARTPYME_OS_ACTUAL.md` | Contiene menciones no canónicas (ej. n8n) y naming mixto. |
+| `docs/archive/80.000pdf.md` | auxiliar_degradada | archivado y no usar como contrato arquitectónico | `docs/SMARTPYME_OS_ACTUAL.md` | Documento de propuesta general no alineado al core canónico actual. |
 | `docs/topologia.txt` | auxiliar_degradada | conservar como contexto histórico, no como norma | `docs/FUENTES_Y_JERARQUIA.md` | Texto base útil pero no contractual ni estable. |
 | `prompt_engine.html` | no_encontrado | registrar y bloquear uso como fuente primaria | `docs/FUENTES_Y_JERARQUIA.md` | Fuente auxiliar solicitada pero no trazable en repo. |
 | `premium_pitch_deck` | no_encontrado | registrar y bloquear uso como fuente primaria | Onboarding comercial oficial | Material comercial no debe gobernar pipeline técnico. |

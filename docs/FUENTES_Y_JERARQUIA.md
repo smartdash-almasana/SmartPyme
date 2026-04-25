@@ -22,8 +22,8 @@ Definir una jerarquía única de fuentes para eliminar ambigüedad de naming, fl
 6. `factory/continuous_factory.py`
 
 ### Nivel C — Referencia auxiliar (no canónica)
-1. `docs/smarttimes_full_architecture.md`
-2. `docs/80.000pdf.md`
+1. `docs/archive/smarttimes_full_architecture.md`
+2. `docs/archive/80.000pdf.md`
 3. `docs/topologia.txt`
 4. `prompt_engine.html` (no encontrado)
 5. `premium_pitch_deck` (no encontrado)
