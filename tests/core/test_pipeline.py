@@ -11,25 +11,37 @@ from app.repositories.entity_repository import EntityRepository
 
 
 def _db_path(name: str) -> Path:
-    base = Path(__file__).resolve().parents[1] / "fixtures" / f"tmp_orchestrator_{name}"
+    base = Path(__file__).resolve().parents[1] / "fixtures" / f"tmp_pipeline_{name}"
     base.mkdir(parents=True, exist_ok=True)
     return base / f"{name}-{uuid.uuid4().hex[:8]}.db"
 
 
-def test_pipeline_process_text():
+def test_pipeline_process_texts_generates_findings():
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
     entity_repo = EntityRepository(_db_path("entities"))
 
-    orchestrator = Pipeline(
+    pipeline = Pipeline(
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
     )
 
-    text = "Factura 20-12345678-3 emitida el 15/04/2026 por $1500.25."
-    result = orchestrator.process_text(evidence_id="ev-1", text=text, job_id="job-1")
+    text_a = "Factura 20-12345678-3 emitida el 15/04/2026 por $1500.25."
+    text_b = "Factura 20-12345678-3 emitida el 15/04/2026 por $1800.00."
 
-    assert result["fact_extraction"]["facts_count"] == 3
-    assert result["canonicalization"]["canonical_rows_count"] == 3
-    assert result["entity_resolution"]["entities_count"] == 3
+    from app.contracts.entity_contract import Entity
+    entity_a = Entity(entity_id="cuit-a", entity_type="cuit", attributes={"value": "20-12345678-3", "price": 1500.25}, validation_status="validated")
+    entity_b = Entity(entity_id="cuit-b", entity_type="cuit", attributes={"value": "20-12345678-3", "price": 1800.00}, validation_status="validated")
+    entity_repo.save(entity_a)
+    entity_repo.save(entity_b)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=text_a, evidence_id_b="ev-b", text_b=text_b, job_id="job-1"
+    )
+
+    assert len(result["comparison"]) == 1
+    assert len(result["findings"]) == 1
+    finding = result["findings"][0]
+    assert finding.severity == "ALTO"
+    assert finding.difference == 299.75

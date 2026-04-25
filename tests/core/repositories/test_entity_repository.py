@@ -68,3 +68,20 @@ def test_entity_repository_save_batch():
     ])
     assert repo.find_by_attribute("person", "name", "Person 1") is not None
     assert repo.find_by_attribute("company", "name", "Company 1") is not None
+
+def test_entity_repository_list_entities():
+    repo = EntityRepository(_db_path())
+    repo.save_batch([
+        _entity("entity-1", entity_type="person"),
+        _entity("entity-2", entity_type="company"),
+        _entity("entity-3", entity_type="person"),
+    ])
+
+    all_entities = repo.list_entities()
+    assert len(all_entities) == 3
+
+    person_entities = repo.list_entities(entity_type="person")
+    assert len(person_entities) == 2
+
+    company_entities = repo.list_entities(entity_type="company")
+    assert len(company_entities) == 1

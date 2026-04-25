@@ -46,13 +46,25 @@ class EntityResolutionService:
                 # This is a very basic form of entity resolution.
                 updated_attributes = existing_entity.attributes.copy()
                 updated_attributes.update(attributes)
-                
+
+                # Preserve "validated" status — a human decision must not be degraded.
+                preserved_status = (
+                    existing_entity.validation_status
+                    if existing_entity.validation_status == "validated"
+                    else "pending_validation"
+                )
+
+                # Deduplicate linked canonical rows.
+                existing_rows = list(existing_entity.linked_canonical_rows)
+                if row.canonical_row_id not in existing_rows:
+                    existing_rows.append(row.canonical_row_id)
+
                 updated_entity = Entity(
                     entity_id=existing_entity.entity_id,
                     entity_type=existing_entity.entity_type,
                     attributes=updated_attributes,
-                    linked_canonical_rows=existing_entity.linked_canonical_rows + [row.canonical_row_id],
-                    validation_status='pending_validation'
+                    linked_canonical_rows=existing_rows,
+                    validation_status=preserved_status,
                 )
                 entities.append(updated_entity)
             else:

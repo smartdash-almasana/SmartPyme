@@ -121,6 +121,23 @@ class EntityRepository:
 
         return _row_to_entity(row) if row else None
 
+    def list_entities(self, entity_type: str | None = None) -> list[Entity]:
+        query = """
+            SELECT
+                entity_id,
+                entity_type,
+                attributes_json,
+                linked_canonical_rows_json,
+                validation_status,
+                errors_json
+            FROM entities
+            WHERE (? IS NULL OR entity_type = ?)
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+        return [_row_to_entity(row) for row in rows]
+
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path)
 

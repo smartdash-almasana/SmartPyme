@@ -67,3 +67,38 @@ def test_resolve_entities_merges_with_existing_entity():
     assert entity is not None
     # The entity id should be the same as the first one
     assert len(entity.linked_canonical_rows) == 2
+
+
+def test_resolve_entities_preserves_validated_status():
+    """Una entidad con validation_status='validated' no debe ser degradada a pending_validation."""
+    from app.contracts.entity_contract import Entity
+
+    repo = EntityRepository(_db_path())
+    service = EntityResolutionService(repo)
+
+    # Pre-cargar entidad ya validada por un humano.
+    validated_entity = Entity(
+        entity_id="ent-validated-1",
+        entity_type="person",
+        attributes={"value": "Alice", "score": 99},
+        linked_canonical_rows=["row-0"],
+        validation_status="validated",
+    )
+    repo.save(validated_entity)
+
+    # Resolver una nueva canonical row que matchea la misma entidad.
+    result = service.resolve_entities([
+        _canonical_row("row-1", entity_type="person", value="Alice")
+    ], job_id="job-preserve")
+
+    assert result["status"] == "RESOLVED"
+    assert result["entities_count"] == 1
+
+    entity = repo.find_by_attribute("person", "value", "Alice")
+    assert entity is not None
+    # El status validado debe conservarse.
+    assert entity.validation_status == "validated"
+    # El nuevo canonical_row_id debe estar vinculado.
+    assert "row-1" in entity.linked_canonical_rows
+    # El canonical_row_id original no debe perderse.
+    assert "row-0" in entity.linked_canonical_rows
