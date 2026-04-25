@@ -110,3 +110,34 @@ def test_pipeline_returns_empty_findings_when_no_differences():
 
     assert result.findings == []
     assert result.counts.findings == 0
+
+
+def test_pipeline_persists_findings_when_finding_repo_configured():
+    from app.repositories.finding_repository import FindingRepository
+
+    fact_repo = FactRepository(_db_path("facts"))
+    canonical_repo = CanonicalRepository(_db_path("canonical"))
+    entity_repo = EntityRepository(_db_path("entities"))
+    finding_repo = FindingRepository(_db_path("findings"))
+
+    pipeline = Pipeline(
+        fact_repo=fact_repo,
+        canonical_repo=canonical_repo,
+        entity_repo=entity_repo,
+        finding_repo=finding_repo,
+    )
+    _seed_validated_entities(entity_repo)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=TEXT_A,
+        evidence_id_b="ev-b", text_b=TEXT_B,
+        job_id="job-persist",
+    )
+
+    assert len(result.findings) == 1
+
+    persisted = finding_repo.list_findings()
+    assert len(persisted) == 1
+    assert persisted[0].finding_id == result.findings[0].finding_id
+    assert persisted[0].severity == result.findings[0].severity
+    assert persisted[0].difference == result.findings[0].difference

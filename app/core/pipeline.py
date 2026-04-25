@@ -10,6 +10,11 @@ from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
 from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
 
+# Optional — only imported when type-checking to avoid hard dependency at runtime.
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.repositories.finding_repository import FindingRepository
+
 
 class Pipeline:
     def __init__(
@@ -17,6 +22,7 @@ class Pipeline:
         fact_repo: FactRepository,
         canonical_repo: CanonicalRepository,
         entity_repo: EntityRepository,
+        finding_repo: "FindingRepository | None" = None,
     ) -> None:
         self.fact_extraction_service = FactExtractionService(fact_repo)
         self.canonicalization_service = CanonicalizationService(canonical_repo)
@@ -26,6 +32,7 @@ class Pipeline:
         self.fact_repo = fact_repo
         self.canonical_repo = canonical_repo
         self.entity_repo = entity_repo
+        self.finding_repo = finding_repo
 
     def _process_one_text(
         self,
@@ -71,6 +78,9 @@ class Pipeline:
 
         comparison_results = self.comparison_service.compare_entities(validated_entities)
         findings = self.findings_service.generate_findings(comparison_results)
+
+        if self.finding_repo is not None and findings:
+            self.finding_repo.save_batch(findings)
 
         counts = PipelineCounts(
             facts=len(facts),
