@@ -226,3 +226,87 @@ def test_execute_guard_fires_before_adapter_call():
         service.execute(_proposal(status="proposed"))
 
     assert called == [], "Adapter must not be called for non-approved proposals"
+
+
+# ── execution_repository integration ─────────────────────────────────────────
+
+import uuid
+from pathlib import Path as _Path
+from app.repositories.action_execution_repository import ActionExecutionRepository
+
+
+def _repo_path() -> _Path:
+    base = _Path(__file__).resolve().parents[1] / "fixtures" / "tmp_exec_service_repo"
+    base.mkdir(parents=True, exist_ok=True)
+    return base / f"exec-{uuid.uuid4().hex[:8]}.db"
+
+
+def test_execute_with_adapter_and_repo_persists_executed_result():
+    repo = ActionExecutionRepository(_repo_path())
+    service = ActionExecutionService(
+        adapter=_MockAdapter(status="executed"),
+        execution_repository=repo,
+    )
+    service.execute(_proposal(action_id="act-persist"))
+
+    results = repo.list_results(action_id="act-persist")
+    assert len(results) == 1
+    assert results[0].status == "executed"
+    assert results[0].adapter_id == "mock"
+
+
+def test_execute_with_adapter_blocked_persists_result_before_raising():
+    repo = ActionExecutionRepository(_repo_path())
+    service = ActionExecutionService(
+        adapter=_MockAdapter(status="blocked", message="Bloqueado."),
+        execution_repository=repo,
+    )
+    with pytest.raises(AdapterExecutionError):
+        service.execute(_proposal(action_id="act-blocked"))
+
+    results = repo.list_results(action_id="act-blocked")
+    assert len(results) == 1
+    assert results[0].status == "blocked"
+
+
+def test_execute_with_adapter_failed_persists_result_before_raising():
+    repo = ActionExecutionRepository(_repo_path())
+    service = ActionExecutionService(
+        adapter=_MockAdapter(status="failed", message="Error interno."),
+        execution_repository=repo,
+    )
+    with pytest.raises(AdapterExecutionError):
+        service.execute(_proposal(action_id="act-failed"))
+
+    results = repo.list_results(action_id="act-failed")
+    assert len(results) == 1
+    assert results[0].status == "failed"
+
+
+def test_execute_guard_fires_before_repo_save():
+    """NotApprovedError must be raised before any persistence occurs."""
+    repo = ActionExecutionRepository(_repo_path())
+    service = ActionExecutionService(
+        adapter=_MockAdapter(status="executed"),
+        execution_repository=repo,
+    )
+    with pytest.raises(NotApprovedError):
+        service.execute(_proposal(status="proposed"))
+
+    assert repo.list_results() == []
+
+
+def test_execute_without_adapter_does_not_persist():
+    """No adapter → no persistence, even if repo is configured."""
+    repo = ActionExecutionRepository(_repo_path())
+    service = ActionExecutionService(execution_repository=repo)
+    service.execute(_proposal(action_id="act-no-adapter"))
+
+    assert repo.list_results() == []
+
+
+def test_execute_with_adapter_no_repo_still_works():
+    """Adapter without repo: existing behaviour unchanged."""
+    service = ActionExecutionService(adapter=_MockAdapter(status="executed"))
+    executed = service.execute(_proposal(status="approved"))
+    assert executed.status == "executed"
