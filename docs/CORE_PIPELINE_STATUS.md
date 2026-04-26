@@ -1,72 +1,57 @@
 # Core Pipeline Status
 
 ## 1. Resumen Ejecutivo
-Este documento certifica el estado del pipeline de procesamiento de datos de SmartPyme después del commit `79e94e4`. El pipeline ahora define una frontera clara entre la decisión y la ejecución a través del `ExecutionAdapter`. SmartPyme sigue decidiendo qué hacer, pero delega la ejecución a un adaptador externo, que reporta el resultado. Esto formaliza la separación de responsabilidades y prepara la integración con ejecutores externos como Hermes, sin ceder el control del flujo principal.
+Este documento certifica el estado del pipeline de procesamiento de datos de SmartPyme. La última actualización integra la persistencia de los resultados de ejecución de acciones. Cada intento de ejecución a través de un `ExecutionAdapter` es ahora registrado por un `ActionExecutionRepository`, garantizando una trazabilidad completa de los resultados, incluyendo éxitos, fallos y bloqueos. SmartPyme no solo decide y delega, sino que ahora también audita el resultado de cada acción delegada.
 
 ## 2. Estado Validado del Pipeline
-El `ActionExecutionService` ahora actúa como un puente hacia un `ExecutionAdapter` opcional.
-`... → execution guard → EXECUTION ADAPTER BOUNDARY → PipelineResult`
+El `ActionExecutionService` ahora persiste el resultado de cada ejecución delegada.
+`... → adapter.execute() → PERSIST ExecutionAdapterResult → ...`
 
 **Estado:** `ESTABLE`
-**Última Validación:** 81 tests pasados / 0 fallidos.
+**Última Validación:** 89 tests pasados / 0 fallidos.
 
 ## 3. Tabla de Componentes Existentes
 | Componente                          | Ruta                                                 | Rol en el Pipeline                                     |
 | ----------------------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
 | `...`                               | `...`                                                | `...`                                                  |
-| `ActionExecutionService`            | `app/services/action_execution_service.py`           | **Guard y Puente:** Valida y delega la ejecución al adapter. |
+| `ActionExecutionService`            | `app/services/action_execution_service.py`           | Valida, delega y **persiste el resultado** de la ejecución. |
+| `ActionExecutionRepository`         | `app/repositories/action_execution_repository.py`    | Almacena cada `ExecutionAdapterResult`.                |
 | `ExecutionAdapterContract`          | `app/contracts/execution_adapter_contract.py`        | Define la interfaz para los adaptadores de ejecución.    |
 
-## 4. Frontera de Ejecución: SmartPyme ↔ Adaptador (Hermes)
-Se establece una frontera formal para la ejecución de acciones, desacoplando la lógica de negocio del mundo exterior.
+## 4. Frontera de Ejecución y Trazabilidad
+La persistencia del resultado de la ejecución refuerza la frontera y añade una capa de auditoría.
 
-- **SmartPyme sigue decidiendo:** El core de SmartPyme es responsable de generar, proponer y aprobar acciones. Mantiene la autoridad sobre *qué* se debe hacer y *cuándo*.
-- **El Adaptador ejecuta y reporta:** El `ExecutionAdapter` recibe una acción aprobada y es responsable únicamente de ejecutarla y reportar el resultado (`executed`, `failed`, `blocked`). No tiene lógica de negocio ni poder de decisión sobre el flujo.
-- **Hermes como Adaptador:** Hermes puede ser un `ExecutionAdapter` futuro. En ese rol, recibiría órdenes de SmartPyme, las ejecutaría en su propio entorno (MCP) y devolvería un `ExecutionAdapterResult`. Hermes no gobierna el core de SmartPyme; es un ejecutor especializado.
+- **SmartPyme decide, el Adaptador ejecuta, el Repositorio audita:** El `ActionExecutionService` orquesta este flujo. Primero aplica el `approved-only guard`. Si pasa, invoca al `ExecutionAdapter`. Inmediatamente después, sin importar el resultado, persiste el `ExecutionAdapterResult` completo en el `ActionExecutionRepository`.
+- **Trazabilidad Total:** Cada intento de ejecución, ya sea `executed`, `failed` o `blocked`, queda registrado. Esto es fundamental para la depuración y para entender por qué una acción no se completó como se esperaba.
+- **Separación de Flujos:** Si la validación inicial (`approved-only guard`) falla, no se invoca ni al adaptador ni al repositorio. El error se maneja internamente como una violación de protocolo.
 
-### Contrato `ExecutionAdapter`
-```python
-class ExecutionAdapter(Protocol):
-    def execute(self, action: ActionProposal) -> ExecutionAdapterResult:
-        ...
-```
-
-### Contrato `ExecutionAdapterResult`
-```python
-@dataclass
-class ExecutionAdapterResult:
-    status: str  # "executed", "failed", "blocked_by_user"
-    message: str
-    original_action: ActionProposal
-```
-
-## 5. Tests que Validan la Frontera
-- Si se provee un `ExecutionAdapter`, `ActionExecutionService` lo invoca.
-- El estado final de la acción (`executed`) depende del `status` en el `ExecutionAdapterResult`.
-- Si el adapter devuelve `failed` o `blocked`, la acción NO se marca como `executed` en SmartPyme.
-- Si no se provee un adapter, el servicio mantiene su comportamiento interno (marcar como `executed` sin hacer nada más).
+## 5. Tests que Validan la Persistencia
+- Si se provee un `ActionExecutionRepository`, el método `save` es invocado con el `ExecutionAdapterResult` exacto que retornó el adaptador.
+- Esto se prueba para todos los posibles resultados del adaptador: `executed`, `failed` y `blocked`.
+- Si no se provee un repositorio, el servicio no falla y continúa su flujo normal.
+- Si el `approved-only guard` rechaza la acción, el repositorio `save` **no** es invocado.
 
 ## 6. Reglas de Negocio Preservadas
-- **Separación de Responsabilidades:** El core decide, el adaptador ejecuta. Esta es la nueva regla fundamental que gobierna la interacción con sistemas externos.
-- **Guardián de Aprobación:** Se mantiene. El `ActionExecutionService` sigue validando que la acción esté `approved` antes de pasarla a cualquier adaptador.
+- **Auditoría Obligatoria:** Si hay un `ExecutionAdapter`, el resultado de su ejecución *debe* ser persistido si hay un `ActionExecutionRepository` disponible. No hay ejecución sin trazabilidad.
+- **Separación de Responsabilidades:** Se mantiene. El core decide, el adaptador ejecuta, el repositorio registra.
+- **Guardián de Aprobación:** Se mantiene.
 
 ## 7. Qué NO Está Implementado
-La ejecución real sigue siendo una simulación a nivel de contrato.
-- **`HermesExecutionAdapter`:** No existe una implementación real de un adaptador que se comunique con Hermes.
-- **Llamadas HTTP Reales:** Ningún adaptador realiza llamadas de red.
-- **Infraestructura MCP:** No hay un `Multi-Cloud Piper` (MCP) real para que Hermes opere.
-- **Conectores Externos:** Sigue sin haber conectores que traduzcan acciones a llamadas de API específicas.
+La capa de ejecución sigue siendo una simulación, aunque ahora con auditoría.
+- **`HermesExecutionAdapter` Real:** Sin cambios. No hay implementación real.
+- **Llamadas HTTP Reales / MCP:** Sin cambios. No hay conectividad externa.
+- **Conectores Externos:** Sin cambios.
 
 ## 8. Riesgos Técnicos Actuales
-1.  **Contrato del Adaptador:** La robustez del contrato entre SmartPyme y los adaptadores es crítica. Cambios en este contrato podrían romper integraciones.
-2.  **Seguridad de Conectores:** Sin cambios. Sigue siendo el principal riesgo futuro.
-3.  **Idempotencia:** Sin cambios.
+1.  **Consistencia de la Base de Datos:** A medida que se añaden más repositorios, garantizar la consistencia transaccional entre ellos (si fuera necesario) será un desafío.
+2.  **Contrato del Adaptador:** Sin cambios.
+3.  **Seguridad de Conectores:** Sin cambios.
 
 ## 9. Próximo Paso Recomendado
-**Implementar un `MockHermesExecutionAdapter` y un test de integración.**
-1.  Crear una clase `MockHermesExecutionAdapter` que implemente el protocolo `ExecutionAdapter`.
-2.  En su método `execute`, simular una llamada a Hermes devolviendo un `ExecutionAdapterResult` exitoso.
-3.  Crear un test de integración que inyecte este mock en el `ActionExecutionService` y verifique que la acción se marca como `executed` solo cuando el mock devuelve `status="executed"`.
+**Implementar un `DatabaseActionExecutionRepository` real y un test de integración.**
+1.  Crear una clase que herede de `ActionExecutionRepository` y que use una base de datos (in-memory como SQLite para los tests) para implementar el método `save`.
+2.  Actualizar el test de integración del `ActionExecutionService` para inyectar este repositorio real.
+3.  Verificar que después de la ejecución, se puede consultar el repositorio y encontrar un registro que coincida exactamente con el `ExecutionAdapterResult` que se devolvió.
 
 ## 10. Criterio para no Romper este Contrato
 (Sin cambios)
