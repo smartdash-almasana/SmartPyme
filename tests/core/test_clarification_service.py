@@ -1,105 +1,112 @@
 import sys
+import uuid
 from pathlib import Path
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.core.clarification.service import (
-    create_clarification,
-    has_blocking_pending,
-    list_pending,
-    resolve_clarification,
-)
+from app.repositories.clarification_repository import ClarificationRepository
+from app.services.clarification_service import ClarificationService
 
 
-@pytest.fixture(autouse=True)
-def isolated_clarifications_db(tmp_path, monkeypatch):
-    db_path = tmp_path / "clarifications.db"
-    monkeypatch.setenv("SMARTPYME_CLARIFICATIONS_DB", str(db_path))
-    yield
+def _db_path() -> Path:
+    base = Path(__file__).resolve().parents[1] / "fixtures" / "tmp_clarification_service"
+    base.mkdir(parents=True, exist_ok=True)
+    return base / f"clarifications-{uuid.uuid4().hex[:8]}.db"
 
 
-def test_create_clarification_creates_record_correctly():
-    created = create_clarification(
-        clarification_id="clar-001",
-        entity_type="cliente",
-        value_a="20-12345678-9",
-        value_b="20123456789",
-        reason="Formato de CUIT inconsistente",
-        blocking=True,
+def _make_service() -> ClarificationService:
+    return ClarificationService(ClarificationRepository(_db_path()))
+
+
+def test_create_blocking_clarification_returns_clarification():
+    service = _make_service()
+    c = service.create_blocking_clarification(
+        question="¿El monto es correcto?",
+        reason="Diferencia detectada",
+        job_id="job-1",
     )
 
-    assert created.clarification_id == "clar-001"
-    assert created.status == "pending"
-    assert created.blocking is True
-    assert created.resolution is None
+    assert c.clarification_id.startswith("clarif_")
+    assert c.question == "¿El monto es correcto?"
+    assert c.reason == "Diferencia detectada"
+    assert c.job_id == "job-1"
+    assert c.status == "pending"
+    assert c.blocking is True
+    assert c.answer is None
 
 
-def test_list_pending_returns_only_unresolved_records():
-    create_clarification(
-        clarification_id="clar-002",
-        entity_type="proveedor",
-        value_a="ACME SA",
-        value_b="ACME S.A.",
-        reason="Nombre potencialmente duplicado",
-        blocking=False,
-    )
-    create_clarification(
-        clarification_id="clar-003",
-        entity_type="producto",
-        value_a="SKU-100",
-        value_b="SKU100",
-        reason="Codificacion con separador ambiguo",
-        blocking=True,
-    )
-    resolve_clarification("clar-003", "Usar SKU-100 como canonico")
-
-    pending = list_pending()
-
-    assert len(pending) == 1
-    assert pending[0].clarification_id == "clar-002"
-
-
-def test_resolve_clarification_changes_status_correctly():
-    create_clarification(
-        clarification_id="clar-004",
-        entity_type="cuenta",
-        value_a="CTA-1",
-        value_b="CTA-01",
-        reason="Cuenta duplicada",
-        blocking=False,
+def test_create_blocking_clarification_persists():
+    service = _make_service()
+    service.create_blocking_clarification(
+        question="¿El CUIT es válido?",
+        reason="No encontrado en padrón",
+        job_id="job-2",
     )
 
-    resolved = resolve_clarification("clar-004", "Conservar CTA-01")
-    pending = list_pending()
-
-    assert resolved is True
-    assert pending == []
+    assert service.has_pending_blockers(job_id="job-2") is True
 
 
-def test_has_blocking_pending_returns_true_when_unresolved_blocking_exists():
-    create_clarification(
-        clarification_id="clar-005",
-        entity_type="cliente",
-        value_a="A",
-        value_b="B",
-        reason="Se requiere decision humana",
-        blocking=True,
+def test_create_blocking_clarification_id_is_deterministic():
+    repo = ClarificationRepository(_db_path())
+    service = ClarificationService(repo)
+
+    c1 = service.create_blocking_clarification(
+        question="¿Mismo monto?", reason="Diferencia", job_id="job-x"
+    )
+    c2 = service.create_blocking_clarification(
+        question="¿Mismo monto?", reason="Diferencia", job_id="job-x"
     )
 
-    assert has_blocking_pending() is True
+    assert c1.clarification_id == c2.clarification_id
+    # Idempotent save — still only one pending.
+    assert len(service.repository.list_pending()) == 1
 
 
-def test_has_blocking_pending_returns_false_when_all_blocking_are_resolved():
-    create_clarification(
-        clarification_id="clar-006",
-        entity_type="cliente",
-        value_a="X",
-        value_b="Y",
-        reason="Decision pendiente",
-        blocking=True,
+def test_answer_clarification_removes_from_pending():
+    service = _make_service()
+    c = service.create_blocking_clarification(
+        question="¿Confirmar diferencia?",
+        reason="Monto distinto",
+        job_id="job-3",
     )
-    resolve_clarification("clar-006", "Resolver con X")
 
-    assert has_blocking_pending() is False
+    assert service.has_pending_blockers(job_id="job-3") is True
+
+    service.answer_clarification(c.clarification_id, answer="Confirmado.")
+
+    assert service.has_pending_blockers(job_id="job-3") is False
+
+
+def test_has_pending_blockers_false_when_no_clarifications():
+    service = _make_service()
+    assert service.has_pending_blockers() is False
+    assert service.has_pending_blockers(job_id="job-none") is False
+
+
+def test_has_pending_blockers_scoped_by_job_id():
+    service = _make_service()
+    service.create_blocking_clarification(
+        question="¿Monto A?", reason="Diferencia A", job_id="job-a"
+    )
+    service.create_blocking_clarification(
+        question="¿Monto B?", reason="Diferencia B", job_id="job-b"
+    )
+
+    assert service.has_pending_blockers(job_id="job-a") is True
+    assert service.has_pending_blockers(job_id="job-b") is True
+    assert service.has_pending_blockers(job_id="job-c") is False
+
+
+def test_create_blocking_clarification_preserves_traceable_origin():
+    service = _make_service()
+    origin = {"finding_id": "f-99", "metric": "amount"}
+    c = service.create_blocking_clarification(
+        question="¿Diferencia esperada?",
+        reason="Monto fuera de rango",
+        job_id="job-trace",
+        traceable_origin=origin,
+    )
+
+    assert c.traceable_origin == origin
+    pending = service.repository.list_pending(job_id="job-trace")
+    assert pending[0].traceable_origin == origin
