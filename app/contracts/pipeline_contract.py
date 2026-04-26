@@ -24,7 +24,7 @@ class PipelineCounts:
 
 @dataclass(frozen=True, slots=True)
 class PipelineResult:
-    status: str                          # "OK" | "ERROR"
+    status: str                          # "OK" | "ERROR" | "BLOCKED"
     job_id: str | None
     plan_id: str | None
     facts: list[Any]
@@ -35,3 +35,4 @@ class PipelineResult:
     messages: list[Any]
     counts: PipelineCounts
     errors: list[str] = field(default_factory=list)
+    blocking_reason: str | None = None   # set when status == "BLOCKED"

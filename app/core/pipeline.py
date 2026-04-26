@@ -15,6 +15,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.repositories.finding_repository import FindingRepository
     from app.services.finding_communication_service import FindingCommunicationService
+    from app.services.clarification_service import ClarificationService
+
+_BLOCKED_COUNTS = PipelineCounts(
+    facts=0, canonical=0, entities=0, validated_entities=0,
+    comparison=0, findings=0, messages=0,
+)
 
 
 class Pipeline:
@@ -25,6 +31,7 @@ class Pipeline:
         entity_repo: EntityRepository,
         finding_repo: "FindingRepository | None" = None,
         communication_service: "FindingCommunicationService | None" = None,
+        clarification_service: "ClarificationService | None" = None,
     ) -> None:
         self.fact_extraction_service = FactExtractionService(fact_repo)
         self.canonicalization_service = CanonicalizationService(canonical_repo)
@@ -36,6 +43,7 @@ class Pipeline:
         self.entity_repo = entity_repo
         self.finding_repo = finding_repo
         self.communication_service = communication_service
+        self.clarification_service = clarification_service
 
     def _process_one_text(
         self,
@@ -64,6 +72,30 @@ class Pipeline:
         plan_id: str | None = None,
     ) -> PipelineResult:
         errors: list[str] = []
+
+        # --- Clarification gate: block if there are pending blockers for this job ---
+        if (
+            self.clarification_service is not None
+            and self.clarification_service.has_pending_blockers(job_id=job_id)
+        ):
+            blocking_reason = (
+                f"Pipeline bloqueado: hay clarificaciones pendientes para job_id={job_id!r}. "
+                "Responder las clarificaciones antes de continuar."
+            )
+            return PipelineResult(
+                status="BLOCKED",
+                job_id=job_id,
+                plan_id=plan_id,
+                facts=[],
+                canonical=[],
+                entities=[],
+                comparison=[],
+                findings=[],
+                messages=[],
+                counts=_BLOCKED_COUNTS,
+                errors=[blocking_reason],
+                blocking_reason=blocking_reason,
+            )
 
         self._process_one_text(evidence_id_a, text_a, job_id, plan_id)
         self._process_one_text(evidence_id_b, text_b, job_id, plan_id)
@@ -113,4 +145,5 @@ class Pipeline:
             messages=messages,
             counts=counts,
             errors=errors,
+            blocking_reason=None,
         )

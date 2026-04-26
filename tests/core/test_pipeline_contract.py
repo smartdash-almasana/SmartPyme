@@ -89,6 +89,7 @@ def test_pipeline_result_has_required_fields():
     assert isinstance(result.messages, list)
     assert isinstance(result.errors, list)
     assert isinstance(result.counts, PipelineCounts)
+    assert result.blocking_reason is None  # no blockers configured
 
 
 def test_pipeline_result_counts_are_consistent():
@@ -155,3 +156,46 @@ def test_pipeline_result_messages_empty_without_communication_service():
     # No communication_service configured → messages must be empty.
     assert result.messages == []
     assert result.counts.messages == 0
+
+
+def test_pipeline_result_blocked_contract():
+    """BLOCKED result must have empty lists, zero counts, and a blocking_reason."""
+    from app.repositories.clarification_repository import ClarificationRepository
+    from app.services.clarification_service import ClarificationService
+
+    fact_repo = FactRepository(_db_path("facts"))
+    canonical_repo = CanonicalRepository(_db_path("canonical"))
+    entity_repo = EntityRepository(_db_path("entities"))
+    clarif_repo = ClarificationRepository(_db_path("clarif"))
+    clarif_service = ClarificationService(clarif_repo)
+
+    clarif_service.create_blocking_clarification(
+        question="¿Confirmar entidad?",
+        reason="Entidad no validada",
+        job_id="job-blocked-contract",
+    )
+
+    pipeline = Pipeline(
+        fact_repo=fact_repo,
+        canonical_repo=canonical_repo,
+        entity_repo=entity_repo,
+        clarification_service=clarif_service,
+    )
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-1", text_a="Texto A.",
+        evidence_id_b="ev-2", text_b="Texto B.",
+        job_id="job-blocked-contract",
+    )
+
+    assert isinstance(result, PipelineResult)
+    assert result.status == "BLOCKED"
+    assert result.blocking_reason is not None
+    assert isinstance(result.blocking_reason, str)
+    assert result.comparison == []
+    assert result.findings == []
+    assert result.messages == []
+    assert result.counts.comparison == 0
+    assert result.counts.findings == 0
+    assert result.counts.messages == 0
+    assert len(result.errors) >= 1

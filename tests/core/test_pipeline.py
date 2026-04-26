@@ -188,3 +188,80 @@ def test_pipeline_messages_empty_without_communication_service():
 
     assert result.messages == []
     assert result.counts.messages == 0
+
+
+def test_pipeline_blocked_when_clarification_pending():
+    from app.repositories.clarification_repository import ClarificationRepository
+    from app.services.clarification_service import ClarificationService
+
+    fact_repo = FactRepository(_db_path("facts"))
+    canonical_repo = CanonicalRepository(_db_path("canonical"))
+    entity_repo = EntityRepository(_db_path("entities"))
+    clarif_repo = ClarificationRepository(_db_path("clarif"))
+    clarif_service = ClarificationService(clarif_repo)
+
+    # Create a blocking clarification for this job before running the pipeline.
+    clarif_service.create_blocking_clarification(
+        question="¿El monto es correcto?",
+        reason="Diferencia detectada",
+        job_id="job-blocked",
+    )
+
+    pipeline = Pipeline(
+        fact_repo=fact_repo,
+        canonical_repo=canonical_repo,
+        entity_repo=entity_repo,
+        clarification_service=clarif_service,
+    )
+    _seed_validated_entities(entity_repo)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=TEXT_A,
+        evidence_id_b="ev-b", text_b=TEXT_B,
+        job_id="job-blocked",
+    )
+
+    assert result.status == "BLOCKED"
+    assert result.blocking_reason is not None
+    assert "job-blocked" in result.blocking_reason
+    assert result.comparison == []
+    assert result.findings == []
+    assert result.messages == []
+    assert len(result.errors) == 1
+
+
+def test_pipeline_not_blocked_when_clarification_answered():
+    from app.repositories.clarification_repository import ClarificationRepository
+    from app.services.clarification_service import ClarificationService
+
+    fact_repo = FactRepository(_db_path("facts"))
+    canonical_repo = CanonicalRepository(_db_path("canonical"))
+    entity_repo = EntityRepository(_db_path("entities"))
+    clarif_repo = ClarificationRepository(_db_path("clarif"))
+    clarif_service = ClarificationService(clarif_repo)
+
+    # Create and immediately answer the clarification.
+    c = clarif_service.create_blocking_clarification(
+        question="¿El monto es correcto?",
+        reason="Diferencia detectada",
+        job_id="job-answered",
+    )
+    clarif_service.answer_clarification(c.clarification_id, answer="Sí, confirmado.")
+
+    pipeline = Pipeline(
+        fact_repo=fact_repo,
+        canonical_repo=canonical_repo,
+        entity_repo=entity_repo,
+        clarification_service=clarif_service,
+    )
+    _seed_validated_entities(entity_repo)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=TEXT_A,
+        evidence_id_b="ev-b", text_b=TEXT_B,
+        job_id="job-answered",
+    )
+
+    assert result.status == "OK"
+    assert result.blocking_reason is None
+    assert len(result.findings) == 1
