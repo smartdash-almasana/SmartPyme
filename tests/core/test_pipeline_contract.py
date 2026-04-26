@@ -86,6 +86,7 @@ def test_pipeline_result_has_required_fields():
     assert isinstance(result.entities, list)
     assert isinstance(result.comparison, list)
     assert isinstance(result.findings, list)
+    assert isinstance(result.messages, list)
     assert isinstance(result.errors, list)
     assert isinstance(result.counts, PipelineCounts)
 
@@ -115,6 +116,7 @@ def test_pipeline_result_counts_are_consistent():
     assert result.counts.entities == len(result.entities)
     assert result.counts.comparison == len(result.comparison)
     assert result.counts.findings == len(result.findings)
+    assert result.counts.messages == len(result.messages)
     assert result.counts.validated_entities <= result.counts.entities
 
 
@@ -129,3 +131,27 @@ def test_pipeline_result_status_ok_when_no_errors():
 
     assert result.status == "OK"
     assert result.errors == []
+
+
+def test_pipeline_result_messages_empty_without_communication_service():
+    pipeline, entity_repo = _make_pipeline()
+    entity_repo.save(Entity(
+        entity_id="e1", entity_type="cuit",
+        attributes={"value": "20-44444444-4", "price": 100.0},
+        validation_status="validated",
+    ))
+    entity_repo.save(Entity(
+        entity_id="e2", entity_type="cuit",
+        attributes={"value": "20-44444444-4", "price": 200.0},
+        validation_status="validated",
+    ))
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-1", text_a="Factura 20-44444444-4 emitida el 01/01/2026 por $100.00.",
+        evidence_id_b="ev-2", text_b="Factura 20-44444444-4 emitida el 01/01/2026 por $200.00.",
+        job_id="job-no-comm",
+    )
+
+    # No communication_service configured → messages must be empty.
+    assert result.messages == []
+    assert result.counts.messages == 0

@@ -10,10 +10,11 @@ from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
 from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
 
-# Optional — only imported when type-checking to avoid hard dependency at runtime.
+# Optional deps — imported only when type-checking to avoid hard runtime dependency.
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.repositories.finding_repository import FindingRepository
+    from app.services.finding_communication_service import FindingCommunicationService
 
 
 class Pipeline:
@@ -23,6 +24,7 @@ class Pipeline:
         canonical_repo: CanonicalRepository,
         entity_repo: EntityRepository,
         finding_repo: "FindingRepository | None" = None,
+        communication_service: "FindingCommunicationService | None" = None,
     ) -> None:
         self.fact_extraction_service = FactExtractionService(fact_repo)
         self.canonicalization_service = CanonicalizationService(canonical_repo)
@@ -33,6 +35,7 @@ class Pipeline:
         self.canonical_repo = canonical_repo
         self.entity_repo = entity_repo
         self.finding_repo = finding_repo
+        self.communication_service = communication_service
 
     def _process_one_text(
         self,
@@ -82,6 +85,12 @@ class Pipeline:
         if self.finding_repo is not None and findings:
             self.finding_repo.save_batch(findings)
 
+        messages = (
+            self.communication_service.build_messages(findings)
+            if self.communication_service is not None
+            else []
+        )
+
         counts = PipelineCounts(
             facts=len(facts),
             canonical=len(canonical),
@@ -89,6 +98,7 @@ class Pipeline:
             validated_entities=len(validated_entities),
             comparison=len(comparison_results),
             findings=len(findings),
+            messages=len(messages),
         )
 
         return PipelineResult(
@@ -100,6 +110,7 @@ class Pipeline:
             entities=entities,
             comparison=comparison_results,
             findings=findings,
+            messages=messages,
             counts=counts,
             errors=errors,
         )

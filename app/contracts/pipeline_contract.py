@@ -19,6 +19,7 @@ class PipelineCounts:
     validated_entities: int
     comparison: int
     findings: int
+    messages: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,5 +32,6 @@ class PipelineResult:
     entities: list[Any]
     comparison: list[Any]
     findings: list[Any]
+    messages: list[Any]
     counts: PipelineCounts
     errors: list[str] = field(default_factory=list)
