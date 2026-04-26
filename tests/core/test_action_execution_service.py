@@ -136,3 +136,93 @@ def test_full_lifecycle_propose_reject_cannot_execute():
 
     with pytest.raises(NotApprovedError):
         execution_service.execute(rejected)
+
+
+# ── adapter integration ───────────────────────────────────────────────────────
+
+from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+from app.services.action_execution_service import AdapterExecutionError
+from typing import Any as _Any
+
+
+class _MockAdapter(ExecutionAdapter):
+    def __init__(self, status: str = "executed", message: str = "OK") -> None:
+        self._status = status
+        self._message = message
+
+    @property
+    def adapter_id(self) -> str:
+        return "mock"
+
+    def execute(self, proposal: _Any) -> ExecutionAdapterResult:
+        return ExecutionAdapterResult(
+            adapter_id=self.adapter_id,
+            action_id=proposal.action_id,
+            status=self._status,
+            message=self._message,
+        )
+
+
+def test_execute_with_adapter_executed_returns_executed_proposal():
+    service = ActionExecutionService(adapter=_MockAdapter(status="executed"))
+    executed = service.execute(_proposal(status="approved"))
+    assert executed.status == "executed"
+
+
+def test_execute_with_adapter_blocked_raises_adapter_execution_error():
+    service = ActionExecutionService(adapter=_MockAdapter(status="blocked", message="Bloqueado."))
+    with pytest.raises(AdapterExecutionError, match="blocked"):
+        service.execute(_proposal(status="approved"))
+
+
+def test_execute_with_adapter_failed_raises_adapter_execution_error():
+    service = ActionExecutionService(adapter=_MockAdapter(status="failed", message="Error."))
+    with pytest.raises(AdapterExecutionError, match="failed"):
+        service.execute(_proposal(status="approved"))
+
+
+def test_execute_with_adapter_error_contains_adapter_id():
+    service = ActionExecutionService(adapter=_MockAdapter(status="blocked"))
+    with pytest.raises(AdapterExecutionError, match="mock"):
+        service.execute(_proposal(status="approved"))
+
+
+def test_execute_with_adapter_blocked_does_not_mutate_original():
+    service = ActionExecutionService(adapter=_MockAdapter(status="blocked"))
+    original = _proposal(status="approved")
+    try:
+        service.execute(original)
+    except AdapterExecutionError:
+        pass
+    assert original.status == "approved"
+
+
+def test_execute_without_adapter_still_works():
+    service = ActionExecutionService()  # no adapter
+    executed = service.execute(_proposal(status="approved"))
+    assert executed.status == "executed"
+
+
+def test_execute_guard_fires_before_adapter_call():
+    """NotApprovedError must be raised before the adapter is even called."""
+    called = []
+
+    class _TrackingAdapter(ExecutionAdapter):
+        @property
+        def adapter_id(self) -> str:
+            return "tracking"
+
+        def execute(self, proposal: _Any) -> ExecutionAdapterResult:
+            called.append(True)
+            return ExecutionAdapterResult(
+                adapter_id=self.adapter_id,
+                action_id=proposal.action_id,
+                status="executed",
+                message="OK",
+            )
+
+    service = ActionExecutionService(adapter=_TrackingAdapter())
+    with pytest.raises(NotApprovedError):
+        service.execute(_proposal(status="proposed"))
+
+    assert called == [], "Adapter must not be called for non-approved proposals"
