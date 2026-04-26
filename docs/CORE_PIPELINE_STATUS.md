@@ -1,14 +1,14 @@
 # Core Pipeline Status
 
 ## 1. Resumen Ejecutivo
-Este documento certifica el estado del pipeline de procesamiento de datos de SmartPyme después del commit `4111a24`. El pipeline es funcional, estable y determinístico desde la ingesta de `facts` hasta la generación de `findings`. El contrato de salida `PipelineResult` está consolidado y es la única fuente de verdad sobre el resultado de un ciclo de procesamiento.
+Este documento certifica el estado del pipeline de procesamiento de datos de SmartPyme después del commit `7b4753e`. El pipeline es funcional, estable y determinístico desde la ingesta de `facts` hasta la generación de mensajes legibles por humanos (`messages`). El contrato de salida `PipelineResult` está consolidado y es la única fuente de verdad sobre el resultado de un ciclo de procesamiento.
 
 ## 2. Estado Validado del Pipeline
-El pipeline sigue un flujo lineal y secuencial, donde cada etapa depende de la anterior. El estado actual, validado por tests unitarios y de integración, es:
-`facts → canonical → entity → comparison → findings → PipelineResult`
+El pipeline sigue un flujo lineal y secuencial. La nueva capa de comunicación genera mensajes a partir de los hallazgos, preparando el sistema para la interacción humana.
+`facts → canonical → entity → comparison → hallazgos → persistencia → mensajes → PipelineResult`
 
 **Estado:** `ESTABLE`
-**Última Validación:** 34 tests pasados / 0 fallidos.
+**Última Validación:** 42 tests pasados / 0 fallidos.
 
 ## 3. Tabla de Componentes Existentes
 | Componente                          | Ruta                                                 | Rol en el Pipeline                                     |
@@ -22,12 +22,15 @@ El pipeline sigue un flujo lineal y secuencial, donde cada etapa depende de la a
 | `EntityResolutionService`           | `app/services/entity_resolution_service.py`          | Resuelve y enriquece `canonical` para crear `entities`. |
 | `ComparisonService`                 | `app/services/comparison_service.py`                 | Compara `entities` contra fuentes de verdad.           |
 | `FindingsService`                   | `app/services/findings_service.py`                   | Genera `findings` (hallazgos) a partir de `comparison`. |
+| `FindingCommunicationService`       | `app/services/finding_communication_service.py`      | Convierte `findings` en `messages` legibles.           |
 | `PipelineContract`                  | `app/contracts/pipeline_contract.py`                 | Define los contratos de datos del pipeline.            |
+| `CommunicationContract`             | `app/contracts/communication_contract.py`            | Define la estructura de `FindingMessage`.              |
 | `Pipeline`                          | `app/core/pipeline.py`                               | Orquesta el flujo completo del pipeline.               |
 
-## 4. Contrato `PipelineResult`
-El pipeline garantiza la entrega de un único objeto `PipelineResult` al finalizar su ejecución.
+## 4. Contratos de Salida
+El pipeline ahora produce dos contratos principales: `PipelineResult` para el estado general y `FindingMessage` para la comunicación.
 
+### Contrato `PipelineResult`
 ```python
 @dataclass
 class PipelineCounts:
@@ -37,6 +40,7 @@ class PipelineCounts:
     validated_entities: int
     comparison: int
     findings: int
+    messages: int
 
 @dataclass
 class PipelineResult:
@@ -48,45 +52,55 @@ class PipelineResult:
     entities: list
     comparison: list
     findings: list
+    messages: list  # This is the PipelineResult.messages field
     counts: PipelineCounts
     errors: list
 ```
 
+### Contrato `FindingMessage`
+Representa un hallazgo traducido a un formato notificable.
+```python
+@dataclass
+class FindingMessage:
+    channel: str  # ej: "internal", "whatsapp"
+    recipient: str
+    title: str
+    body: str
+    finding_id: str
+    metadata: dict
+```
+
 ## 5. Tests que Validan Cada Capa
-La estabilidad del pipeline se asegura con tests específicos para cada componente clave, garantizando que los contratos entre capas se respeten. Los tests relevantes se encuentran en los módulos de test correspondientes a cada servicio y repositorio.
+La capa de comunicación es validada por tests que aseguran:
+- La correcta instanciación del `FindingCommunicationService`.
+- La generación de `messages` si y solo si hay `findings` y un servicio de comunicación configurado.
+- El contenido y formato de los mensajes se alinea con el `FindingMessage` contract.
 
 ## 6. Reglas de Negocio Preservadas
-El pipeline actual respeta las siguientes reglas de negocio no negociables:
-- **No IA en el core:** El flujo es 100% determinístico.
-- **No inferencia:** Datos faltantes no se inventan. El sistema es "fail-closed".
-- **Entidades validadas son inmutables:** No se degradan a `pending_validation`.
-- **Hallazgos cuantificados:** Todo hallazgo incluye `entidad`, `diferencia cuantificada` y `comparación explícita`.
-- **Sin diferencias, no hay hallazgos:** El pipeline devuelve `findings=[]` si no se detectan anomalías.
-- **Preservación de decisiones humanas:** Las validaciones manuales previas se respetan en ciclos futuros.
+Todas las reglas anteriores se mantienen. Se añade una nueva:
+- **Mensajes desde Hallazgos:** Los `messages` solo se generan a partir de `findings` validados. Si no hay `findings`, `messages` será una lista vacía.
 
 ## 7. Qué NO Está Implementado
-La funcionalidad actual se limita estrictamente al pipeline de datos. Los siguientes componentes son futuros y NO forman parte del core actual:
-- Communication Layer (ej. notificaciones)
+La capa de comunicación es interna. **No se envían notificaciones reales.**
+- **Canales de Salida:** No hay integración real con WhatsApp, Telegram, UI, etc. El canal es `internal`.
 - Action Engine (ej. correcciones automáticas)
 - UI (Interfaz de Usuario)
 - Integración de Hermes en el flujo core
 - Runtime de Terraform/GCP
-- Persistencia de hallazgos en un repositorio dedicado
 - Multitenancy
 - Permisos y Roles
-- Salida por WhatsApp/Telegram
 - "Clarification loop" productivo
 
 ## 8. Riesgos Técnicos Actuales
-1.  **Escalabilidad de Repositorios en Memoria:** Los repositorios actuales son in-memory, lo que limita el volumen de datos procesables.
-2.  **Ausencia de Persistencia de Hallazgos:** Los `findings` se generan pero no se almacenan para análisis histórico.
-3.  **Single-Tenant:** La arquitectura actual no soporta separación de datos por cliente.
+1.  **Escalabilidad de Repositorios en Memoria:** Sin cambios. Sigue siendo un riesgo para grandes volúmenes de datos.
+2.  **Gestión de Canales:** La lógica de enrutamiento de mensajes a diferentes canales (cuando existan) es un placeholder.
+3.  **Single-Tenant:** Sin cambios.
 
 ## 9. Próximo Paso Recomendado
-**Implementar la capa de persistencia para los `PipelineResult` y sus `findings`** en una base de datos. Esto desacoplará la generación de hallazgos de su consumo y permitirá el análisis histórico.
+**Conectar el `FindingCommunicationService` a un broker de mensajería (como RabbitMQ o Kafka) o a una API de notificaciones.** Esto permitirá que los mensajes generados se envíen realmente a través de canales externos y habilitará la capa de UI/notificación.
 
 ## 10. Criterio para no Romper este Contrato
 Cualquier cambio futuro en el pipeline debe:
-1.  **Ser compatible con el contrato `PipelineResult`:** No se deben eliminar campos. Se pueden añadir nuevos campos si es necesario, pero manteniendo la retrocompatibilidad.
-2.  **Añadir tests de integración:** Cualquier nueva funcionalidad debe tener tests que validen su comportamiento dentro del pipeline completo.
-3.  **Respetar las reglas de negocio:** No se debe introducir lógica no determinística ni violar los principios de "fail-closed" y cuantificación de hallazgos.
+1.  **Ser compatible con `PipelineResult` y `FindingMessage`:** Mantener retrocompatibilidad.
+2.  **Añadir tests de integración:** Validar el flujo de `findings` a `messages` y su correcto formato.
+3.  **Respetar las reglas de negocio:** No generar mensajes sin un hallazgo cuantificado.
