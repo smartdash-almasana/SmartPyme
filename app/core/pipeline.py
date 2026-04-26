@@ -16,10 +16,11 @@ if TYPE_CHECKING:
     from app.repositories.finding_repository import FindingRepository
     from app.services.finding_communication_service import FindingCommunicationService
     from app.services.clarification_service import ClarificationService
+    from app.services.action_proposal_service import ActionProposalService
 
 _BLOCKED_COUNTS = PipelineCounts(
     facts=0, canonical=0, entities=0, validated_entities=0,
-    comparison=0, findings=0, messages=0,
+    comparison=0, findings=0, messages=0, action_proposals=0,
 )
 
 
@@ -32,6 +33,7 @@ class Pipeline:
         finding_repo: "FindingRepository | None" = None,
         communication_service: "FindingCommunicationService | None" = None,
         clarification_service: "ClarificationService | None" = None,
+        action_proposal_service: "ActionProposalService | None" = None,
     ) -> None:
         self.fact_extraction_service = FactExtractionService(fact_repo)
         self.canonicalization_service = CanonicalizationService(canonical_repo)
@@ -44,6 +46,7 @@ class Pipeline:
         self.finding_repo = finding_repo
         self.communication_service = communication_service
         self.clarification_service = clarification_service
+        self.action_proposal_service = action_proposal_service
 
     def _process_one_text(
         self,
@@ -92,6 +95,7 @@ class Pipeline:
                 comparison=[],
                 findings=[],
                 messages=[],
+                action_proposals=[],
                 counts=_BLOCKED_COUNTS,
                 errors=[blocking_reason],
                 blocking_reason=blocking_reason,
@@ -123,6 +127,12 @@ class Pipeline:
             else []
         )
 
+        action_proposals = (
+            self.action_proposal_service.propose_batch_from_messages(messages)
+            if self.action_proposal_service is not None and messages
+            else []
+        )
+
         counts = PipelineCounts(
             facts=len(facts),
             canonical=len(canonical),
@@ -131,6 +141,7 @@ class Pipeline:
             comparison=len(comparison_results),
             findings=len(findings),
             messages=len(messages),
+            action_proposals=len(action_proposals),
         )
 
         return PipelineResult(
@@ -143,6 +154,7 @@ class Pipeline:
             comparison=comparison_results,
             findings=findings,
             messages=messages,
+            action_proposals=action_proposals,
             counts=counts,
             errors=errors,
             blocking_reason=None,

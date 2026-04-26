@@ -87,6 +87,7 @@ def test_pipeline_result_has_required_fields():
     assert isinstance(result.comparison, list)
     assert isinstance(result.findings, list)
     assert isinstance(result.messages, list)
+    assert isinstance(result.action_proposals, list)
     assert isinstance(result.errors, list)
     assert isinstance(result.counts, PipelineCounts)
     assert result.blocking_reason is None  # no blockers configured
@@ -118,6 +119,7 @@ def test_pipeline_result_counts_are_consistent():
     assert result.counts.comparison == len(result.comparison)
     assert result.counts.findings == len(result.findings)
     assert result.counts.messages == len(result.messages)
+    assert result.counts.action_proposals == len(result.action_proposals)
     assert result.counts.validated_entities <= result.counts.entities
 
 
@@ -199,3 +201,27 @@ def test_pipeline_result_blocked_contract():
     assert result.counts.findings == 0
     assert result.counts.messages == 0
     assert len(result.errors) >= 1
+
+
+def test_pipeline_result_action_proposals_empty_without_service():
+    pipeline, entity_repo = _make_pipeline()
+    entity_repo.save(Entity(
+        entity_id="e1", entity_type="cuit",
+        attributes={"value": "20-55555555-5", "price": 100.0},
+        validation_status="validated",
+    ))
+    entity_repo.save(Entity(
+        entity_id="e2", entity_type="cuit",
+        attributes={"value": "20-55555555-5", "price": 200.0},
+        validation_status="validated",
+    ))
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-1", text_a="Factura 20-55555555-5 emitida el 01/01/2026 por $100.00.",
+        evidence_id_b="ev-2", text_b="Factura 20-55555555-5 emitida el 01/01/2026 por $200.00.",
+        job_id="job-no-proposals",
+    )
+
+    # No action_proposal_service configured → action_proposals must be empty.
+    assert result.action_proposals == []
+    assert result.counts.action_proposals == 0

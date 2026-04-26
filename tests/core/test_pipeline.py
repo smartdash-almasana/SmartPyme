@@ -265,3 +265,52 @@ def test_pipeline_not_blocked_when_clarification_answered():
     assert result.status == "OK"
     assert result.blocking_reason is None
     assert len(result.findings) == 1
+
+
+def test_pipeline_generates_action_proposals_when_service_configured():
+    from app.services.finding_communication_service import FindingCommunicationService
+    from app.services.action_proposal_service import ActionProposalService
+    from app.contracts.action_contract import ActionProposal
+
+    fact_repo = FactRepository(_db_path("facts"))
+    canonical_repo = CanonicalRepository(_db_path("canonical"))
+    entity_repo = EntityRepository(_db_path("entities"))
+
+    pipeline = Pipeline(
+        fact_repo=fact_repo,
+        canonical_repo=canonical_repo,
+        entity_repo=entity_repo,
+        communication_service=FindingCommunicationService(),
+        action_proposal_service=ActionProposalService(),
+    )
+    _seed_validated_entities(entity_repo)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=TEXT_A,
+        evidence_id_b="ev-b", text_b=TEXT_B,
+        job_id="job-proposals",
+    )
+
+    assert len(result.messages) == 1
+    assert len(result.action_proposals) == 1
+    assert result.counts.action_proposals == 1
+
+    proposal = result.action_proposals[0]
+    assert isinstance(proposal, ActionProposal)
+    assert proposal.status == "proposed"
+    assert proposal.source_type == "message"
+    assert proposal.source_id == result.messages[0].message_id
+
+
+def test_pipeline_action_proposals_empty_without_service():
+    pipeline, entity_repo = _make_pipeline()
+    _seed_validated_entities(entity_repo)
+
+    result = pipeline.process_texts(
+        evidence_id_a="ev-a", text_a=TEXT_A,
+        evidence_id_b="ev-b", text_b=TEXT_B,
+        job_id="job-no-proposals",
+    )
+
+    assert result.action_proposals == []
+    assert result.counts.action_proposals == 0

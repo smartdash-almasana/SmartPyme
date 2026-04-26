@@ -20,6 +20,7 @@ class PipelineCounts:
     comparison: int
     findings: int
     messages: int = 0
+    action_proposals: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +34,7 @@ class PipelineResult:
     comparison: list[Any]
     findings: list[Any]
     messages: list[Any]
+    action_proposals: list[Any]
     counts: PipelineCounts
     errors: list[str] = field(default_factory=list)
     blocking_reason: str | None = None   # set when status == "BLOCKED"
