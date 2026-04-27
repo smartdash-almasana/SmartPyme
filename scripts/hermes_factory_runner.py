@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
 import sys
+import re
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
@@ -81,6 +82,17 @@ def select_task():
     return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
 
 
+def mark_task_done(rel_task):
+    try:
+        tp = (REPO / rel_task).resolve()
+        txt = tp.read_text()
+        txt = re.sub(r"status:\\s*pending", "status: done", txt)
+        tp.write_text(txt)
+        notify("TASK_DONE", str(rel_task))
+    except Exception as e:
+        notify("TASK_DONE_ERROR", str(e))
+
+
 def main():
     notify("CYCLE_START", f"repo={REPO}")
 
@@ -100,6 +112,8 @@ def main():
         notify("TASK_DISPATCH", str(rel_task))
         r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
         code = post_cycle(r.returncode)
+        if code == 0:
+            mark_task_done(rel_task)
     else:
         print("[Hermes] No task, post-cycle only.")
         notify("NO_TASK", "Sin tareas pending")
