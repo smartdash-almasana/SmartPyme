@@ -1,0 +1,4 @@
+ M docs/factory_runtime_real.md
+ D factory/hallazgos/pending/001-validar-runtime-factoria.md
+?? factory/evidence/
+?? factory/hallazgos/in_progress/
