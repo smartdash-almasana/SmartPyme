@@ -1,61 +1,44 @@
 # HALLAZGO
 
 ## META
-- id: HZ-2026-04-27-FACTORY-002
+- id: HZ-2026-04-27-EX-FACTORY-002
 - estado: pending
-- modulo_objetivo: factory-roles
-- prioridad: alta
-- origen: architect
-- repo_destino: SmartPyme
+- modulo_objetivo: factory
+- prioridad: media
+- origen: gemini-vertex
+- repo_destino: E:\BuenosPasos\smartbridge\SmartPyme
 
 ## OBJETIVO
-Formalizar la separación estricta de roles operativos de la factoría multiagente: Architect, Builder y Auditor.
+Formalizar y validar la separación de roles (Architect, Builder, Auditor) para el sistema multi-agente, asegurando que ningún agente valide su propio trabajo.
 
-## TAREAS_EJECUCION
-Crear o ajustar el archivo:
-
-`docs/multiagente_roles_operativos.md`
-
-El documento debe establecer:
-
-- Architect solo diseña hallazgos.
-- Builder solo ejecuta cambios permitidos por el hallazgo.
-- Auditor solo valida evidencia.
-- Ningún agente valida su propio trabajo.
-- Todo cambio requiere Write → Verify → Report.
-- Si no hay evidencia verificable, estado = NO VALIDADO.
-
-## RUTAS_OBJETIVO
+## RUTAS_FUENTE
 - docs/multiagente_roles_operativos.md
 
+## SLICES_CANDIDATOS
+No aplica. Este hallazgo se centra en la formalización de un documento de proceso, no en la portabilidad de código.
+
+## TOP_SLICES
+No aplica.
+
+## PROPUESTA_DE_PORTADO
+### Crear o modificar solo:
+- Validar y oficializar el documento `docs/multiagente_roles_operativos.md` como fuente de verdad para la arquitectura de agentes.
+
 ## REGLAS_DE_EJECUCION
-- No tocar código Python.
-- No tocar tests.
-- No tocar app/core/services.
-- No ejecutar worker.
-- No ejecutar factoría.
-- No hacer commit desde Builder.
+- no tocar otros módulos salvo imports mínimos imprescindibles
+- no refactor global
+- no inventar rutas
+- fail-closed obligatorio
+- humano en el loop obligatorio
+- si falta contexto, bloquear y preguntar
+- correr tests mínimos del módulo
 
 ## CRITERIO_DE_CIERRE
-- Existe `docs/multiagente_roles_operativos.md`.
-- El documento menciona Architect, Builder y Auditor.
-- El documento contiene la regla: `Ningún agente valida su propio trabajo`.
-- El documento contiene `Write → Verify → Report`.
-- El documento contiene `NO VALIDADO`.
-- No se modifica código Python.
-- No se modifican tests.
-
-## COMANDOS_DE_VALIDACION_PROPUESTOS
-```bash
-test -f docs/multiagente_roles_operativos.md
-grep -n "Ningún agente valida su propio trabajo" docs/multiagente_roles_operativos.md
-grep -n "Write → Verify → Report" docs/multiagente_roles_operativos.md
-grep -n "NO VALIDADO" docs/multiagente_roles_operativos.md
-git status --short
-```
+- El documento `docs/multiagente_roles_operativos.md` es aprobado y referenciado en la arquitectura oficial.
+- El protocolo `Write -> Verify -> Report` es aceptado como obligatorio para todos los agentes.
 
 ## DUDAS_DETECTADAS
 - ninguna
 
 ## PREGUNTA_AL_OWNER
-- null
+- ¿Se requiere algún proceso de aprobación formal o formato específico para elevar `docs/multiagente_roles_operativos.md` a documento canónico de arquitectura?
