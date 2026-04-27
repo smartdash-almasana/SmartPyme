@@ -1,0 +1,7 @@
+telegram_delivery:
+  enabled: true
+  owner_username: ahialesi
+  chat_id: "5195222166"
+  report_format: markdown
+  fallback_format: text
+  delivery_target: daily_factory_report
