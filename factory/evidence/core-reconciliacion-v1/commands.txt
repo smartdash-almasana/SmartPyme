@@ -1,0 +1,27 @@
+pwd
+git status --short
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,220p' factory/control/NEXT_CYCLE.md
+find . -maxdepth 4 -type f \( -name 'pyproject.toml' -o -path './app/core/reconciliation/*' -o -path './tests/core/*' \) | sort
+grep -R 'polars' -n . --exclude-dir=.git --exclude-dir=__pycache__ --exclude-dir=factory/evidence | sed -n '1,120p'
+python3 - <<'PY'
+try:
+    import polars
+except ModuleNotFoundError as exc:
+    print(f'POLARS_IMPORT=unavailable:{type(exc).__name__}:{exc}')
+else:
+    print(f'POLARS_IMPORT=available:{polars.__version__}')
+PY
+sed -n '450,550p' app/core/reconciliation/service.py
+sed -n '1,120p' app/core/reconciliation/__init__.py
+sed -n '1,160p' tests/core/test_reconciliation_csv.py
+pwd; test -f app/core/reconciliation/service.py; echo service_py=$?; ls -la app/core/reconciliation/service.py; test -f app/core/reconciliation/__init__.py; echo init_py=$?; ls -la app/core/reconciliation/__init__.py; test -f tests/core/test_reconciliation_csv.py; echo test_py=$?; ls -la tests/core/test_reconciliation_csv.py; test -d factory/evidence/core-reconciliacion-v1; echo evidence_dir=$?; ls -la factory/evidence/core-reconciliacion-v1
+python3 -m compileall -q app/core/reconciliation tests/core/test_reconciliation_csv.py
+python3 -m pytest tests/core/test_reconciliation_csv.py -q
+python3 -m ruff check app/core/reconciliation/service.py app/core/reconciliation/__init__.py tests/core/test_reconciliation_csv.py
+python3 - <<'PY'
+from app.core.reconciliation.service import reconcile_csv_sources
+print('IMPORT=ok', reconcile_csv_sources.__name__)
+PY
+git diff -- app/core/reconciliation/__init__.py app/core/reconciliation/service.py
+git diff --no-index -- /dev/null tests/core/test_reconciliation_csv.py

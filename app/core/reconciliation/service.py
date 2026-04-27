@@ -1,10 +1,14 @@
+import csv
+from collections.abc import Callable
+from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from math import isfinite
-from collections.abc import Callable
-from dataclasses import asdict, replace
+from pathlib import Path
 from typing import Any
 
+from app.core.hallazgos.models import Hallazgo
+from app.core.hallazgos.service import HallazgoEngine
 from app.core.reconciliation.models import (
     AmountDifferenceAssessment,
     AmountReconciliationFinding,
@@ -19,6 +23,7 @@ from app.core.reconciliation.models import (
     FailClosedStateEvaluation,
     HumanReviewDecision,
     MeliSuggestedAction,
+    OperationalDifferenceEngineResult,
     QuantifiedDiscrepancy,
     ReconciledMatch,
     ReconciliationJob,
@@ -31,7 +36,6 @@ from app.core.reconciliation.models import (
     SimpleReconciliationResult,
     UncertaintyRecord,
     UncertaintyLevel,
-    OperationalDifferenceEngineResult,
     WarningItem,
     WorkflowDecision,
 )
@@ -448,6 +452,98 @@ def reconcile_records(
         missing_in_a=missing_in_a,
         missing_in_b=missing_in_b,
     )
+
+
+def _read_csv_records(path: str | Path) -> list[dict[str, Any]]:
+    csv_path = Path(path)
+    if not csv_path.is_file():
+        raise ValueError(f"CSV_NO_EXISTE: no existe el archivo CSV: {csv_path}.")
+
+    with csv_path.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        if not reader.fieldnames:
+            raise ValueError(f"CSV_SIN_HEADERS: el CSV no tiene headers: {csv_path}.")
+        return [dict(row) for row in reader]
+
+
+def _coerce_csv_number(value: Any) -> int | float | None:
+    parsed, reason = _parse_amount_with_reason(value)
+    if reason is not None or parsed is None:
+        return None
+
+    decimal_value = Decimal(str(parsed))
+    if decimal_value == decimal_value.to_integral_value():
+        return int(decimal_value)
+    return float(decimal_value)
+
+
+def _resolve_numeric_fields(
+    source_a: list[dict[str, Any]],
+    source_b: list[dict[str, Any]],
+    key_field: str,
+    numeric_fields: tuple[str, ...] | None,
+) -> set[str]:
+    if numeric_fields is not None:
+        return set(numeric_fields)
+
+    field_names = set[str]()
+    for record in [*source_a, *source_b]:
+        field_names.update(record.keys())
+
+    resolved_fields: set[str] = set()
+    for field_name in sorted(field_names - {key_field}):
+        values = [
+            record[field_name]
+            for record in [*source_a, *source_b]
+            if field_name in record and record[field_name] not in {"", None}
+        ]
+        if values and all(_coerce_csv_number(value) is not None for value in values):
+            resolved_fields.add(field_name)
+    return resolved_fields
+
+
+def _normalize_csv_numeric_fields(
+    records: list[dict[str, Any]], numeric_fields: set[str]
+) -> list[dict[str, Any]]:
+    normalized_records: list[dict[str, Any]] = []
+    for record in records:
+        normalized = dict(record)
+        for field_name in numeric_fields:
+            if field_name not in normalized or normalized[field_name] in {"", None}:
+                continue
+            parsed_value = _coerce_csv_number(normalized[field_name])
+            if parsed_value is None:
+                raise ValueError(
+                    f"CSV_NUMERIC_FIELD_INVALIDO: '{field_name}' contiene valor no numerico."
+                )
+            normalized[field_name] = parsed_value
+        normalized_records.append(normalized)
+    return normalized_records
+
+
+def reconcile_csv_sources(
+    source_a_path: str | Path,
+    source_b_path: str | Path,
+    *,
+    key_field: str,
+    entity_type: str = "record",
+    numeric_fields: tuple[str, ...] | None = None,
+) -> list[Hallazgo]:
+    _validate_key_field(key_field)
+
+    raw_source_a = _read_csv_records(source_a_path)
+    raw_source_b = _read_csv_records(source_b_path)
+    resolved_numeric_fields = _resolve_numeric_fields(
+        raw_source_a,
+        raw_source_b,
+        key_field,
+        numeric_fields,
+    )
+
+    source_a = _normalize_csv_numeric_fields(raw_source_a, resolved_numeric_fields)
+    source_b = _normalize_csv_numeric_fields(raw_source_b, resolved_numeric_fields)
+    result = reconcile_records(source_a, source_b, key_field)
+    return HallazgoEngine().transform(result, entidad_tipo=entity_type)
 
 
 def _read_numeric_field(record: dict[str, Any], field_name: str, key: str) -> float:
@@ -1598,4 +1694,3 @@ def build_reconciliation_summary(
         "clarification_questions": result.clarification_questions,
         "warnings": accumulated_warnings,
     }
-

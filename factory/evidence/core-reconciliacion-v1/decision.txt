@@ -1,0 +1,13 @@
+VEREDICTO: BLOCKED
+
+Motivo:
+- La implementacion y el test focal existen en disco.
+- La validacion sintactica disponible paso con `compileall_exit=0`.
+- No se pudo ejecutar el test requerido porque `pytest` no esta disponible en el entorno.
+- No se pudo ejecutar Ruff porque `ruff` no esta disponible en el entorno.
+- No se pudo hacer smoke import del core porque falta `pydantic`, aunque el codigo existente ya depende de pydantic.
+- `polars` no esta disponible; la implementacion usa `csv` de libreria estandar, consistente con la restriccion "usar polars si ya esta disponible".
+- El worktree contiene cambios fuera del alcance en `factory/control/*`; no fueron tocados por esta unidad y bloquean declarar cierre limpio.
+
+Estado:
+BLOCKED_ENVIRONMENT_CONTRACT_MISSING

@@ -1,0 +1,22 @@
+/opt/smartpyme-factory/repos/SmartPyme
+service_py=0
+-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
+init_py=0
+-rw-r--r-- 1 neoalmasana neoalmasana 276 Apr 27 19:23 app/core/reconciliation/__init__.py
+test_py=0
+-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
+evidence_dir=0
+total 40
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 19:24 .
+drwxr-xr-x 24 neoalmasana neoalmasana 4096 Apr 27 19:41 ..
+-rw-r--r--  1 neoalmasana neoalmasana 1782 Apr 27 19:41 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana 1245 Apr 27 19:41 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana  627 Apr 27 19:41 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana 6883 Apr 27 19:41 git_diff.patch
+-rw-r--r--  1 neoalmasana neoalmasana  470 Apr 27 19:41 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana  569 Apr 27 19:41 tests.txt
+-rw-r--r--  1 neoalmasana neoalmasana 1051 Apr 27 19:41 verification.txt
+
+polars:
+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'

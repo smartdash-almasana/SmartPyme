@@ -1,6 +1,6 @@
 # FACTORY STATUS
 
-updated_at: 2026-04-27T18:35:27.456024+00:00
-last_cycle_result: BLOCKED_WAITING_AUDIT
+updated_at: 2026-04-27T19:50:09.629416+00:00
+last_cycle_result: WAITING_AUDIT
 audit_gate: WAITING_AUDIT
-last_error: audit gate closed
+last_error: cycle closed

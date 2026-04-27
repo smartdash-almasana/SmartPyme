@@ -1,0 +1,246 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd050-706f-7460-9b02-2cd6e27e04f6
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: core-reconciliacion-v1
+status: pending
+objetivo: Implementar primer motor de reconciliacion entre dos fuentes tabulares.
+alcance:
+  - input: 2 csv
+  - output: diferencias por entidad
+criterios_exito:
+  - detectar diferencias numericas
+  - output estructurado tipo hallazgo
+  - test validado
+restricciones:
+  - usar polars si ya esta disponible
+  - no usar logica generativa para el core
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Usare el flujo de Builder controlado: primero leo los contratos locales (`CODEX.md`, estado operativo y estructura existente) antes de decidir el alcance mínimo. Luego haré una sola unidad con evidencia en `factory/evidence/core-reconciliacion-v1/` si el contrato del repo lo permite.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc "test -f CODEX.md && sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc "test -f factory/control/NEXT_CYCLE.md && sed -n '1,220p' factory/control/NEXT_CYCLE.md || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+OBJETIVO CICLO ACTUAL:
+
+Integrar Codex como Builder formal dentro del loop SmartPyme sin romper gobernanza.
+
+TAREA:
+1. Crear template de tarea Codex en factory/tasks/template_codex_task.yaml
+2. Alinear hermes_factory_runner para priorizar tareas Codex si existen
+3. Generar ejemplo de task_id real con alcance mínimo
+4. Validar flujo: NEXT_CYCLE → tarea Codex → evidencia → commit
+
+RESTRICCIONES:
+- No usar skills externos
+- No tocar core
+- No expandir features de negocio
+
+CRITERIO DE CIERRE:
+- template creado
+- runner reconoce tareas
+- evidencia generada
+- commit consistente
+
+exec
+/bin/bash -lc 'rg --files' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: rg: command not found
+
+codex
+VEREDICTO  
+BLOCKED
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+Comandos ejecutados:
+
+```bash
+pwd
+# /opt/smartpyme-factory/repos/SmartPyme
+
+git status --short
+#  M factory/control/AUDIT_GATE.md
+#  M factory/control/FACTORY_STATUS.md
+
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,220p' factory/control/NEXT_CYCLE.md || true
+```
+
+TESTS  
+No ejecutados. La tarea queda bloqueada antes de escribir código.
+
+EVIDENCIA  
+`factory/control/NEXT_CYCLE.md` existe y define el ciclo vigente con restricciones explícitas:
+
+```text
+- No tocar core
+- No expandir features de negocio
+```
+
+La tarea solicitada (`core-reconciliacion-v1`) pide implementar un primer motor de reconciliación entre CSVs, lo que toca core/feature de negocio y contradice el ciclo vigente.
+
+DIFF  
+Sin diff generado por mí.
+
+BLOQUEOS  
+`BLOCKED`: conflicto verificable entre la orden solicitada y `factory/control/NEXT_CYCLE.md`.
+
+RIESGOS  
+Además, el árbol ya estaba sucio antes de intervenir:
+
+```text
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+```
+
+No debo mezclar una implementación nueva con cambios preexistentes ni saltarme la restricción vigente de no tocar core.
+2026-04-27T19:00:51.862180Z ERROR codex_core::session: failed to record rollout items: thread 019dd050-706f-7460-9b02-2cd6e27e04f6 not found
+tokens used
+15,513
+VEREDICTO  
+BLOCKED
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+Comandos ejecutados:
+
+```bash
+pwd
+# /opt/smartpyme-factory/repos/SmartPyme
+
+git status --short
+#  M factory/control/AUDIT_GATE.md
+#  M factory/control/FACTORY_STATUS.md
+
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,220p' factory/control/NEXT_CYCLE.md || true
+```
+
+TESTS  
+No ejecutados. La tarea queda bloqueada antes de escribir código.
+
+EVIDENCIA  
+`factory/control/NEXT_CYCLE.md` existe y define el ciclo vigente con restricciones explícitas:
+
+```text
+- No tocar core
+- No expandir features de negocio
+```
+
+La tarea solicitada (`core-reconciliacion-v1`) pide implementar un primer motor de reconciliación entre CSVs, lo que toca core/feature de negocio y contradice el ciclo vigente.
+
+DIFF  
+Sin diff generado por mí.
+
+BLOQUEOS  
+`BLOCKED`: conflicto verificable entre la orden solicitada y `factory/control/NEXT_CYCLE.md`.
+
+RIESGOS  
+Además, el árbol ya estaba sucio antes de intervenir:
+
+```text
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+```
+
+No debo mezclar una implementación nueva con cambios preexistentes ni saltarme la restricción vigente de no tocar core.

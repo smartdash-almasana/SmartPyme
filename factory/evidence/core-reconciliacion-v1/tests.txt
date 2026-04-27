@@ -1,0 +1,13 @@
+Comando: python3 -m compileall -q app/core/reconciliation tests/core/test_reconciliation_csv.py
+Resultado: compileall_exit=0
+
+Comando: python3 -m pytest tests/core/test_reconciliation_csv.py -q
+/usr/bin/python3: No module named pytest
+Resultado: pytest_exit=1
+
+Comando: python3 -m ruff check app/core/reconciliation/service.py app/core/reconciliation/__init__.py tests/core/test_reconciliation_csv.py
+/usr/bin/python3: No module named ruff
+Resultado: ruff_exit=1
+
+Comando: smoke import reconcile_csv_sources
+IMPORT=failed:ModuleNotFoundError:No module named 'pydantic'
