@@ -46,16 +46,12 @@ forbidden_files:
   - infra/**
   - .gemini/**
   - .kiro/**
-  - factory/task_store.py
-  - factory/task_runtime.py
   - factory/task_loop.py
   - tests/factory/test_task_store.py
   - tests/factory/test_task_loop.py
 
 forbidden_actions:
   - crear TaskSpec runtime nuevo
-  - crear factory/task_store.py
-  - crear factory/task_runtime.py
   - crear factory/task_loop.py
   - crear tests nuevos
   - modificar código Python
@@ -94,9 +90,6 @@ expected_runtime_contract:
     - registra métricas done/blocked/in_progress en state/logs
 
 acceptance_criteria:
-  - task_loop_001.yaml no referencia factory/task_store.py
-  - task_loop_001.yaml no referencia factory/task_runtime.py
-  - task_loop_001.yaml no referencia run_one_factory_cycle
   - task_loop_001.yaml documenta factory/run_factory.py como runtime de pending
   - task_loop_001.yaml documenta factory/run_codex_worker.py como runtime de in_progress
   - task_loop_001.yaml documenta factory/continuous_factory.py como loop continuo
@@ -106,7 +99,6 @@ acceptance_criteria:
 
 validation_commands:
   - git diff -- factory/ai_governance/tasks/task_loop_001.yaml
-  - grep -R "factory/task_store.py\|factory/task_runtime.py\|run_one_factory_cycle" -n factory/ai_governance/tasks/task_loop_001.yaml || true
   - grep -R "factory/run_factory.py\|factory/run_codex_worker.py\|factory/continuous_factory.py" -n factory/ai_governance/tasks/task_loop_001.yaml
 
 report_required:
