@@ -15,7 +15,7 @@ CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
 POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
 CONTROL = REPO / "factory" / "control"
 GATE = CONTROL / "AUDIT_GATE.md"
-STATUS = CONTROL / "FACTORY_STATUS.md"
+STATUS = CONTROL / "factory" / "control" / "FACTORY_STATUS.md"
 
 GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
 GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
@@ -26,6 +26,10 @@ def notify(status, detail=""):
         notify_cycle_result(status, detail)
     except Exception as exc:
         print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+
+
+def run_git(args, check=False):
+    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
 
 
 def ts():
@@ -146,6 +150,36 @@ def enforce_gate_before_dispatch():
     return 2
 
 
+def git_has_changes():
+    r = run_git(["status", "--porcelain"])
+    return bool(r.stdout.strip())
+
+
+def auto_commit_and_push(rel_task, code):
+    if code != 0:
+        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+        return
+    if not git_has_changes():
+        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+        return
+
+    task_label = str(rel_task) if rel_task else "no-task"
+    run_git(["add", "-A"], check=True)
+    commit_msg = f"Factory cycle: {task_label}"
+    commit = run_git(["commit", "-m", commit_msg])
+    if commit.returncode != 0:
+        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+        return
+
+    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+    push = run_git(["push", "origin", "main"])
+    if push.returncode != 0:
+        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+        return
+
+    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+
+
 def main():
     notify("CYCLE_START", f"repo={REPO}")
 
@@ -177,6 +211,7 @@ def main():
 
     if code == 0:
         notify("CYCLE_OK", "cycle closed; gate=WAITING_AUDIT")
+        auto_commit_and_push(rel_task, code)
     else:
         notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT")
 
