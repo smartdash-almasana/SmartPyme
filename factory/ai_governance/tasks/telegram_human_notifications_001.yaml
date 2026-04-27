@@ -1,0 +1,72 @@
+task_id: telegram_human_notifications_001
+mode: code_refactor
+status: pending
+human_required: false
+objective: >
+  Refactorizar factory/telegram_notify.py para que los mensajes de Telegram ayuden al owner
+  a entender el estado de la factoria y tomar decisiones sin leer logs tecnicos crudos.
+
+allowed_files:
+  - factory/telegram_notify.py
+  - tests/factory/test_telegram_notify.py
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
+  - app/**
+  - core/**
+  - services/**
+
+forbidden_actions:
+  - cambiar el gate
+  - cambiar la frecuencia del servicio
+  - tocar systemd
+  - tocar credenciales Telegram
+  - ejecutar dispatch
+
+requirements:
+  - conservar notify_cycle_result(status, details)
+  - mantener urllib sin dependencias nuevas
+  - agregar formatter humano por estados
+  - incluir contexto tecnico compacto al final
+  - explicar AUDIT_BLOCKED como pausa correcta por WAITING_AUDIT
+  - aclarar cuando Codex no fue ejecutado
+  - aclarar cuando hay que aprobar rechazar o mantener bloqueado
+  - limitar mensajes a menos de 3900 caracteres
+
+states_to_humanize:
+  - CYCLE_START
+  - AUDIT_BLOCKED
+  - TASK_DISPATCH
+  - TASK_DONE
+  - CYCLE_OK
+  - CYCLE_FAIL
+  - AUTO_PUSH_OK
+  - AUTO_PUSH_FAILED
+  - AUTO_COMMIT_SKIPPED
+  - NO_TASK
+  - INCONSISTENCY_DETECTED
+  - CYCLE_CRASH
+
+acceptance_criteria:
+  - notify_cycle_result devuelve mensajes en lenguaje humano y amable
+  - AUDIT_BLOCKED explica que no hubo dispatch ni cambios de codigo
+  - todo mensaje conserva status y details como contexto tecnico
+  - tests cubren AUDIT_BLOCKED CYCLE_START CYCLE_OK CYCLE_FAIL AUTO_PUSH_OK
+  - no se modifica runner ni gate
+
+validation_commands:
+  - pytest tests/factory/test_telegram_notify.py
+  - python -m py_compile factory/telegram_notify.py
+  - git diff -- factory/telegram_notify.py tests/factory/test_telegram_notify.py
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - MENSAJES_HUMANIZADOS
+  - TESTS_EJECUTADOS
+  - SHA
