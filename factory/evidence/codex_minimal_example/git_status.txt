@@ -1,38 +1,17 @@
+RUN_ACTUAL 2026-04-27T18:33:56Z
+
+$ git status --short
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
  M factory/evidence/codex_minimal_example/commands.txt
- M factory/evidence/codex_minimal_example/cycle.md
  M factory/evidence/codex_minimal_example/decision.txt
  M factory/evidence/codex_minimal_example/git_diff.patch
  M factory/evidence/codex_minimal_example/git_status.txt
  M factory/evidence/codex_minimal_example/tests.txt
-?? factory/control/AUDIT_GATE.md
-?? factory/control/FACTORY_STATUS.md
-?? factory/control/PRIORITY_BOARD.md
-?? factory/evidence/codex_minimal_example/verification.txt
-?? factory/evidence/codex_template_codex_task_20260427T141052Z/
-?? factory/evidence/codex_template_codex_task_20260427T141841Z/
-?? factory/evidence/codex_template_codex_task_20260427T142601Z/
-?? factory/evidence/codex_template_codex_task_20260427T143308Z/
-?? factory/evidence/codex_template_codex_task_20260427T143931Z/
-?? factory/evidence/codex_template_codex_task_20260427T144554Z/
-?? factory/evidence/codex_template_codex_task_20260427T145148Z/
-?? factory/evidence/codex_template_codex_task_20260427T145837Z/
-?? factory/evidence/codex_template_codex_task_20260427T150515Z/
-?? factory/evidence/codex_template_codex_task_20260427T151217Z/
-?? factory/evidence/codex_template_codex_task_20260427T151910Z/
+ M factory/evidence/codex_minimal_example/verification.txt
 
 Nota:
-- factory/control/AUDIT_GATE.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/control/FACTORY_STATUS.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T141052Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T141841Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T142601Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T143308Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T145837Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T150515Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T151217Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
-- factory/evidence/codex_template_codex_task_20260427T151910Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+- factory/control/AUDIT_GATE.md aparece como cambio preexistente/no relacionado y no fue modificado por esta unidad.
+- factory/control/FACTORY_STATUS.md aparece como cambio preexistente/no relacionado y no fue modificado por esta unidad.
 - factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+- Los cambios de esta unidad se limitaron a evidencia en factory/evidence/codex_minimal_example/.

@@ -87,3 +87,23 @@ $ ls -la factory/sandbox/test_codex.txt
 
 $ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
 exit=0
+
+RUN_ACTUAL_2026-04-27T18:33:56Z
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0
+
+$ git status --short
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md

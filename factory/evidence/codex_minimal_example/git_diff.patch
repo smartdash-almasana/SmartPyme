@@ -14,6 +14,7 @@ Resumen observado:
 - RUN_ACTUAL 2026-04-27T15:11:00Z agregado a verification.txt, tests.txt y decision.txt.
 - RUN_ACTUAL 2026-04-27T15:18:06Z agregado a verification.txt, tests.txt y decision.txt.
 - RUN_ACTUAL 2026-04-27T15:24:47Z agregado a verification.txt, tests.txt y decision.txt.
+- RUN_ACTUAL 2026-04-27T18:33:56Z agregado a commands.txt, verification.txt, tests.txt y decision.txt.
 - factory/sandbox/test_codex.txt sin diff de working tree.
 
 Diff de archivo objetivo:

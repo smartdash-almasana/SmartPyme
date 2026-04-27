@@ -39,3 +39,10 @@ exit=0
 
 $ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
 exit=0
+
+RUN_ACTUAL 2026-04-27T18:33:56Z
+$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+exit=0
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0
