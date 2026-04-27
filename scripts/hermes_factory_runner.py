@@ -17,6 +17,9 @@ CONTROL = REPO / "factory" / "control"
 GATE = CONTROL / "AUDIT_GATE.md"
 STATUS = CONTROL / "FACTORY_STATUS.md"
 
+GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+
 
 def notify(status, detail=""):
     try:
@@ -29,14 +32,22 @@ def ts():
     return datetime.now(timezone.utc).isoformat()
 
 
-def gate_status():
+def read_gate_text():
     if not GATE.exists():
-        return "APPROVED"
-    text = GATE.read_text(encoding="utf-8", errors="replace")
-    for line in text.splitlines():
-        if line.startswith("status:"):
-            return line.split(":", 1)[1].strip().upper()
-    return "UNKNOWN"
+        return ""
+    return GATE.read_text(encoding="utf-8", errors="replace")
+
+
+def gate_field(name, default=""):
+    prefix = f"{name}:"
+    for line in read_gate_text().splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return default
+
+
+def gate_status():
+    return gate_field("status", "APPROVED").upper()
 
 
 def write_status(result, detail=""):
@@ -47,10 +58,10 @@ def write_status(result, detail=""):
     )
 
 
-def set_gate(status, code=0):
+def set_gate(status, code=0, task=""):
     CONTROL.mkdir(parents=True, exist_ok=True)
     GATE.write_text(
-        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\n",
+        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
         encoding="utf-8",
     )
 
@@ -82,30 +93,71 @@ def select_task():
     return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
 
 
+def replace_task_status(rel_task, new_status):
+    tp = (REPO / rel_task).resolve()
+    txt = tp.read_text(encoding="utf-8", errors="replace")
+    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+    tp.write_text(txt, encoding="utf-8")
+
+
 def mark_task_done(rel_task):
     try:
-        tp = (REPO / rel_task).resolve()
-        txt = tp.read_text()
-        txt = re.sub(r"status:\\s*pending", "status: done", txt)
-        tp.write_text(txt)
+        replace_task_status(rel_task, "done")
         notify("TASK_DONE", str(rel_task))
     except Exception as e:
         notify("TASK_DONE_ERROR", str(e))
 
 
+def reopen_last_task():
+    last_task = gate_field("last_task", "").strip()
+    if not last_task or last_task == "none":
+        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+        set_gate("BLOCKED", 1, "none")
+        return 1
+    try:
+        replace_task_status(last_task, "pending")
+        notify("AUDIT_REJECTED_REOPENED", last_task)
+        set_gate("APPROVED", 0, last_task)
+        return 0
+    except Exception as exc:
+        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+        set_gate("BLOCKED", 1, last_task)
+        return 1
+
+
+def enforce_gate_before_dispatch():
+    current_gate = gate_status()
+
+    if current_gate in GATE_ALLOWED_TO_RUN:
+        return 0
+
+    if current_gate == "REJECTED":
+        return reopen_last_task()
+
+    if current_gate in GATE_BLOCKING:
+        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+        return 2
+
+    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+    notify("AUDIT_GATE_UNKNOWN", current_gate)
+    return 2
+
+
 def main():
     notify("CYCLE_START", f"repo={REPO}")
 
-    current_gate = gate_status()
-    if current_gate == "WAITING_AUDIT":
-        print("AUDIT_GATE_OBSERVED_CONTINUING")
-        write_status("AUDIT_GATE_OBSERVED_CONTINUING", "continuous mode")
-        notify("AUDIT_BLOCKED", "gate=WAITING_AUDIT; continuous mode")
+    gate_code = enforce_gate_before_dispatch()
+    if gate_code:
+        return 0
 
     set_gate("RUNNING")
     write_status("RUNNING", "cycle started")
 
     task = select_task()
+    rel_task = None
     if task:
         rel_task = task.relative_to(REPO)
         print(f"[Hermes->Codex] Dispatching task: {rel_task}")
@@ -119,7 +171,7 @@ def main():
         notify("NO_TASK", "Sin tareas pending")
         code = post_cycle(0)
 
-    set_gate("WAITING_AUDIT", code)
+    set_gate("WAITING_AUDIT", code, str(rel_task) if rel_task else "none")
     write_status("WAITING_AUDIT", "cycle closed")
     print("CYCLE_CLOSED_WAITING_AUDIT")
 
