@@ -31,7 +31,7 @@ jobs:
           echo "PWD=$(pwd)"
           command -v git
           command -v python3
-          command -v hermes
+          /opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes --help | head -5
 
       - name: Checkout SmartPyme
         uses: actions/checkout@v4
