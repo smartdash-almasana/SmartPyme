@@ -23,7 +23,7 @@ from pathlib import Path
 
 SKILL = "hermes_smartpyme_factory"
 DEFAULT_INTERVAL_SECONDS = 900
-VALID_REPO_SUFFIX = "smartpyme-factory/repos/SmartPyme"
+VALID_REPO_SUFFIXES = ("smartpyme-factory/repos/SmartPyme", "actions-runner/_work/SmartPyme/SmartPyme")
 
 
 PROMPT = """Ejecuta un ciclo SmartPyme Factory.
@@ -68,7 +68,7 @@ def ensure_repo(repo: Path) -> None:
         raise SystemExit(f"BLOCKED_REPO_NOT_FOUND: {repo}")
     if not (repo / ".git").exists():
         raise SystemExit(f"BLOCKED_NOT_GIT_REPO: {repo}")
-    if VALID_REPO_SUFFIX not in str(repo):
+    if not any(suffix in str(repo) for suffix in VALID_REPO_SUFFIXES):
         raise SystemExit(f"BLOCKED_UNEXPECTED_REPO_PATH: {repo}")
 
 
