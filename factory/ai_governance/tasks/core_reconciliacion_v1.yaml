@@ -1,0 +1,13 @@
+task_id: core-reconciliacion-v1
+status: pending
+objetivo: Implementar primer motor de reconciliacion entre dos fuentes tabulares.
+alcance:
+  - input: 2 csv
+  - output: diferencias por entidad
+criterios_exito:
+  - detectar diferencias numericas
+  - output estructurado tipo hallazgo
+  - test validado
+restricciones:
+  - usar polars si ya esta disponible
+  - no usar logica generativa para el core
