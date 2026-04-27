@@ -1,0 +1,15 @@
+[Unit]
+Description=Hermes SmartPyme Factory Pool
+After=network.target
+
+[Service]
+Type=simple
+User=neoalmasana
+WorkingDirectory=/opt/smartpyme-factory/repos/SmartPyme
+Environment=HERMES_BIN=/opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes
+ExecStart=/usr/bin/python3 /opt/smartpyme-factory/repos/SmartPyme/scripts/hermes_factory_runner.py --repo /opt/smartpyme-factory/repos/SmartPyme --loop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
