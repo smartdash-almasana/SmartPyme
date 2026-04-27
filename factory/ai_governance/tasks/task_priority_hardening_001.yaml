@@ -1,0 +1,79 @@
+task_id: task_priority_hardening_001
+mode: code_refactor
+status: pending
+human_required: false
+objective: >
+  Endurecer la factoria para que no procese tareas pending en orden FIFO ciego.
+  Implementar priorizacion deterministica antes del dispatch, sin cambiar gate ni Telegram.
+
+allowed_files:
+  - factory/task_priority.py
+  - tests/factory/test_task_priority.py
+  - scripts/hermes_factory_runner.py
+
+forbidden_files:
+  - factory/control/**
+  - factory/evidence/**
+  - factory/telegram_notify.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - app/**
+  - core/**
+  - services/**
+
+forbidden_actions:
+  - cambiar estados del gate
+  - cambiar frecuencia systemd
+  - modificar credenciales
+  - ejecutar acciones destructivas
+  - tocar core de negocio
+
+requirements:
+  - crear scorer deterministico para tareas YAML
+  - calcular final_score como impact + urgency + confidence + unblock_value - risk
+  - usar defaults seguros si faltan campos
+  - bloquear status blocked o blocking_reason no vacio
+  - clasificar BLOQUEADO CRITICO ALTO INFORMATIVO
+  - select_task debe elegir la tarea dispatchable con mayor prioridad
+  - mantener fallback actual si no hay tareas priorizables
+
+scoring_defaults:
+  impact: 1
+  urgency: 1
+  confidence: 1
+  unblock_value: 0
+  risk: 3
+
+classification_rules:
+  BLOQUEADO: status blocked o blocking_reason no vacio
+  CRITICO: final_score >= 12
+  ALTO: final_score >= 7
+  INFORMATIVO: final_score < 7
+
+selection_rules:
+  - BLOQUEADO nunca entra a dispatch
+  - INFORMATIVO no entra por defecto
+  - CRITICO y ALTO son elegibles
+  - desempate por mayor impact
+  - desempate por menor risk
+  - empate total conserva orden estable
+
+acceptance_criteria:
+  - existe factory/task_priority.py
+  - existe tests/factory/test_task_priority.py
+  - hermes_factory_runner.py usa select_next_task o equivalente
+  - tests cubren bloqueado informativo critico alto defaults y desempates
+  - no se modifica gate ni Telegram
+
+validation_commands:
+  - pytest tests/factory/test_task_priority.py
+  - python -m py_compile factory/task_priority.py scripts/hermes_factory_runner.py
+  - git diff -- factory/task_priority.py tests/factory/test_task_priority.py scripts/hermes_factory_runner.py
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - PRIORIZACION_IMPLEMENTADA
+  - TESTS_EJECUTADOS
+  - SHA
