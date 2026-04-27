@@ -4,7 +4,8 @@ import subprocess
 import sys
 
 REPO = Path(__file__).resolve().parents[1]
-CODEX_TASK = REPO / "factory/tasks/template_codex_task.yaml"
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
 CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
 POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
 CONTROL = REPO / "factory" / "control"
@@ -58,12 +59,28 @@ if gate_status() == "WAITING_AUDIT":
 set_gate("RUNNING")
 write_status("RUNNING", "cycle started")
 
-if CODEX_TASK.exists():
-    print("[Hermes→Codex] Dispatching task...")
-    r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--full-auto", "--timeout", "3600"])
+def task_is_pending(path):
+    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "task_id:" in text and "status: pending" in text
+
+def select_task():
+    if TASKS_DIR.exists():
+        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+        if pending:
+            for p in pending:
+                if p.name == "core_reconciliacion_v1.yaml":
+                    return p
+            return pending[0]
+    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+
+task = select_task()
+if task:
+    rel_task = task.relative_to(REPO)
+    print(f"[Hermes→Codex] Dispatching task: {rel_task}")
+    r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
     code = post_cycle(r.returncode)
 else:
-    print("[Hermes] No Codex task, post-cycle only.")
+    print("[Hermes] No task, post-cycle only.")
     code = post_cycle(0)
 
 set_gate("WAITING_AUDIT", code)
