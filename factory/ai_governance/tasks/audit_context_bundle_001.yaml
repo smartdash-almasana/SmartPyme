@@ -1,0 +1,66 @@
+task_id: audit_context_bundle_001
+mode: code_feature
+status: pending
+human_required: false
+objective: >
+  Crear un generador de contexto tecnico compacto para auditoria humana. Debe producir un TXT/MD
+  con gate actual, estado de factoria, ultima tarea, evidencia reciente, bugs recientes, git status
+  y ultimos commits, para facilitar decisiones APPROVED/REJECTED/BLOCKED sin revisar la VM a mano.
+
+allowed_files:
+  - scripts/build_audit_context.py
+  - tests/factory/test_build_audit_context.py
+  - docs/factory/AUDIT_CONTEXT_BUNDLE.md
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/evidence/**
+  - factory/bugs/**
+  - app/**
+  - core/**
+  - services/**
+
+forbidden_actions:
+  - cambiar el gate
+  - cambiar estados de tareas
+  - ejecutar Codex
+  - hacer commit automatico desde el script
+  - borrar evidencia o logs
+
+requirements:
+  - crear script CLI scripts/build_audit_context.py
+  - salida por stdout por defecto
+  - opcion --output para escribir archivo
+  - leer si existen factory/control/AUDIT_GATE.md y FACTORY_STATUS.md
+  - listar hasta 5 archivos recientes de factory/evidence
+  - listar hasta 5 archivos recientes de factory/bugs
+  - incluir git status --short
+  - incluir git log --oneline -5
+  - tolerar archivos ausentes sin fallar
+  - no modificar ningun estado
+  - formato legible para pegar en ChatGPT o enviar por Telegram
+
+acceptance_criteria:
+  - python scripts/build_audit_context.py imprime contexto compacto
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context.txt crea archivo
+  - tests cubren ausencia de gate/status/evidence/bugs
+  - tests verifican que no se escriben archivos salvo --output
+  - docs explican uso operativo
+
+validation_commands:
+  - pytest tests/factory/test_build_audit_context.py
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py | head -80
+  - git diff -- scripts/build_audit_context.py tests/factory/test_build_audit_context.py docs/factory/AUDIT_CONTEXT_BUNDLE.md
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - CONTEXTO_GENERADO
+  - TESTS_EJECUTADOS
+  - SHA
