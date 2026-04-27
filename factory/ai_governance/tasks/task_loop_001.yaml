@@ -1,19 +1,42 @@
 task_id: task-hermes-factory-task-loop-001
-mode: create_only
+mode: governance_doc_update
 status: pending
 human_required: false
 objective: >
-  Agregar un loop mínimo de factoría encima de la microcapa TaskSpec/evidence/reports ya validada,
-  sin modificar los contratos existentes.
+  Alinear la especificación de loop de factoría con el runtime real existente en el repo.
+  La factoría actual no usa TaskSpec runtime, task_store.py ni task_runtime.py.
+  El contrato vigente se basa en hallazgos markdown movidos por estados:
+  pending -> in_progress -> done|blocked.
+
+runtime_real:
+  tipo: hallazgos_markdown_por_estado
+  archivos_fuente:
+    - factory/run_factory.py
+    - factory/run_codex_worker.py
+    - factory/continuous_factory.py
+    - factory/mcp_bridge/tools.py
+  directorios_estado:
+    pending: factory/hallazgos/pending
+    in_progress: factory/hallazgos/in_progress
+    done: factory/hallazgos/done
+    blocked: factory/hallazgos/blocked
+
+scope:
+  tipo: documentacion_gobernanza
+  descripcion: >
+    Esta tarea corrige el contrato documental para que los agentes trabajen sobre el loop real
+    de hallazgos y no sobre una microcapa TaskSpec/evidence/reports inexistente en el repo actual.
 
 allowed_files:
-  - factory/task_loop.py
-  - tests/factory/test_task_loop.py
+  - factory/ai_governance/tasks/task_loop_001.yaml
 
 locked_files:
-  - factory/task_store.py
-  - factory/task_runtime.py
-  - tests/factory/test_task_store.py
+  - factory/run_factory.py
+  - factory/run_codex_worker.py
+  - factory/continuous_factory.py
+  - factory/mcp_bridge/tools.py
+  - factory/hallazgos/**
+  - tests/**
 
 forbidden_files:
   - app/**
@@ -23,30 +46,79 @@ forbidden_files:
   - infra/**
   - .gemini/**
   - .kiro/**
+  - factory/task_store.py
+  - factory/task_runtime.py
+  - factory/task_loop.py
+  - tests/factory/test_task_store.py
+  - tests/factory/test_task_loop.py
 
-required_tests:
-  - .venv/bin/python -m pytest tests/factory/test_task_store.py tests/factory/test_task_loop.py -v
+forbidden_actions:
+  - crear TaskSpec runtime nuevo
+  - crear factory/task_store.py
+  - crear factory/task_runtime.py
+  - crear factory/task_loop.py
+  - crear tests nuevos
+  - modificar código Python
+  - mover hallazgos reales entre estados
+  - ejecutar acciones destructivas
 
 preflight_commands:
   - git status --short
-  - test -f factory/task_store.py
-  - test -f factory/task_runtime.py
-  - grep -R "class TaskSpec" -n factory/task_store.py
-  - grep -R "def save_task_spec" -n factory/task_store.py
-  - grep -R "def save_report" -n factory/task_store.py
-  - grep -R "def create_planning_task" -n factory/task_runtime.py
+  - test -f factory/run_factory.py
+  - test -f factory/run_codex_worker.py
+  - test -f factory/continuous_factory.py
+  - grep -R "PENDING_DIR\|IN_PROGRESS_DIR\|BLOCKED_DIR\|DONE_DIR" -n factory/run_factory.py factory/run_codex_worker.py
+  - grep -R "process_pending_hallazgos\|run_codex_worker\|run_continuous_factory" -n factory/run_factory.py factory/run_codex_worker.py factory/continuous_factory.py
 
-post_commands:
-  - git status --short
-  - .venv/bin/python -m pytest tests/factory/test_task_store.py tests/factory/test_task_loop.py -v
+expected_runtime_contract:
+  hallazgo_input:
+    formato: markdown
+    ubicacion_inicial: factory/hallazgos/pending
+    campos_minimos:
+      - META.estado
+      - META.modulo_objetivo
+      - META.cantera_raiz
+      - contrato_ejecucion
+      - rutas_objetivo
+  transiciones_run_factory:
+    - pending -> in_progress cuando el hallazgo valida y requiere ejecución
+    - pending -> done cuando META.estado es done
+    - pending -> blocked cuando falla validación o viola contrato
+  transiciones_run_codex_worker:
+    - in_progress -> done cuando ejecución y tests pasan
+    - in_progress -> blocked cuando ejecución, contrato o tests fallan
+  transiciones_continuous_factory:
+    - invoca auditoría para crear hallazgos en pending
+    - procesa pending con run_factory
+    - drena in_progress con run_codex_worker
+    - registra métricas done/blocked/in_progress en state/logs
 
 acceptance_criteria:
-  - factory/task_store.py no fue modificado
-  - factory/task_runtime.py no fue modificado
-  - tests/factory/test_task_store.py no fue modificado
-  - factory/task_loop.py existe
-  - tests/factory/test_task_loop.py existe
-  - run_one_factory_cycle procesa una TaskSpec pending real con campo task_id
-  - run_one_factory_cycle escribe factory/evidence/<task_id>/cycle.txt
-  - run_one_factory_cycle marca la TaskSpec como in_progress
-  - todos los tests requeridos pasan
+  - task_loop_001.yaml no referencia factory/task_store.py
+  - task_loop_001.yaml no referencia factory/task_runtime.py
+  - task_loop_001.yaml no referencia run_one_factory_cycle
+  - task_loop_001.yaml documenta factory/run_factory.py como runtime de pending
+  - task_loop_001.yaml documenta factory/run_codex_worker.py como runtime de in_progress
+  - task_loop_001.yaml documenta factory/continuous_factory.py como loop continuo
+  - task_loop_001.yaml declara que la unidad real actual es hallazgo markdown, no TaskSpec runtime
+  - no se modifica código Python
+  - no se modifican tests
+
+validation_commands:
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml
+  - grep -R "factory/task_store.py\|factory/task_runtime.py\|run_one_factory_cycle" -n factory/ai_governance/tasks/task_loop_001.yaml || true
+  - grep -R "factory/run_factory.py\|factory/run_codex_worker.py\|factory/continuous_factory.py" -n factory/ai_governance/tasks/task_loop_001.yaml
+
+report_required:
+  - VEREDICTO
+  - ARCHIVO_MODIFICADO
+  - REFERENCIAS_OBSOLETAS_ELIMINADAS
+  - RUNTIME_REAL_DOCUMENTADO
+  - VALIDACION_EJECUTADA
+  - GIT_DIFF_RESUMIDO
+
+block_resolution:
+  obsolete_taskspec_runtime:
+    previous_assumption: "Existía una microcapa TaskSpec/evidence/reports con task_store.py y task_runtime.py."
+    actual_repo_state: "El runtime real usa hallazgos markdown por estado."
+    decision: "No fabricar archivos faltantes; corregir la especificación para obedecer el repo real."
