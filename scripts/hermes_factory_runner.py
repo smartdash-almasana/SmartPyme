@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run one or many Hermes SmartPyme Factory cycles.
 
-This runner does not implement the factory logic itself. It is only a safe
-launcher for Hermes Agent using the official non-interactive CLI:
+This runner does not implement the factory logic itself. It is a safe launcher
+for Hermes Agent using the official non-interactive CLI:
 
-    hermes chat -s hermes_smartpyme_factory -q "..."
+    hermes chat --query "..."
 
 Hermes remains the orchestrator. The repo remains the source of truth.
 """
@@ -21,24 +21,39 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-SKILL = "hermes_smartpyme_factory"
 DEFAULT_INTERVAL_SECONDS = 900
-VALID_REPO_SUFFIXES = ("smartpyme-factory/repos/SmartPyme", "actions-runner/_work/SmartPyme/SmartPyme")
+VALID_REPO_SUFFIXES = (
+    "smartpyme-factory/repos/SmartPyme",
+    "actions-runner/_work/SmartPyme/SmartPyme",
+)
 
 
-PROMPT = """Ejecuta un ciclo SmartPyme Factory.
+PROMPT = """Ejecuta un ciclo SmartPyme Factory desde este repositorio.
+
+Contexto operativo:
+- SmartPyme usa GitHub como fuente de verdad.
+- Hermes actúa como orquestador, no como fuente de estado.
+- El runner ya está ejecutándose en una VM GCP como self-hosted runner.
+- El ciclo debe trabajar solo dentro del workspace actual.
 
 Reglas obligatorias:
-- usar el skill hermes_smartpyme_factory
-- operar solo desde el workspace actual
-- un solo hallazgo o roadmap por ciclo
-- maximo tres agentes: Architect, Builder, Auditor
-- si no hay pending ni roadmap activo, responder idle
-- guardar evidencia en factory/evidence
-- usar git diff, git status y validaciones del hallazgo
-- si se toca Python, ejecutar pytest especifico y ruff check sobre alcance tocado
-- cerrar en done o blocked solamente con evidencia
-- hacer commit y push solo si el cierre es consistente
+- No dependas de memoria conversacional.
+- No dependas de skills externos no instalados.
+- Un ciclo = un hallazgo pending o una unidad de roadmap.
+- Máximo tres roles conceptuales: Architect, Builder, Auditor.
+- Si no hay pending ni roadmap activo, responder idle.
+- Guardar evidencia en factory/evidence/<task_id>/.
+- Usar git status y git diff antes de declarar resultado.
+- Si se toca Python, ejecutar pytest específico y ruff check sobre el alcance tocado.
+- Sin evidencia real, cerrar como NO_VALIDADO o blocked.
+- Hacer commit y push solo si el cierre es consistente y verificable.
+
+Prioridad del ciclo:
+1. Buscar tareas/hallazgos pending en factory/, tasks/, docs/ o roadmap activo.
+2. Elegir una sola unidad pequeña.
+3. Ejecutar el cambio mínimo.
+4. Validar con evidencia.
+5. Registrar el resultado.
 
 Salida final requerida:
 VEREDICTO_CICLO
@@ -74,7 +89,13 @@ def ensure_repo(repo: Path) -> None:
 
 def ensure_hermes() -> str:
     hermes = os.environ.get("HERMES_BIN") or "hermes"
-    probe = subprocess.run([hermes, "--version"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    probe = subprocess.run(
+        [hermes, "--version"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
     if probe.returncode != 0:
         raise SystemExit("BLOCKED_HERMES_NOT_AVAILABLE")
     return hermes
@@ -113,7 +134,7 @@ def one_cycle(repo: Path, hermes: str, timeout: int) -> int:
         hermes,
         "chat",
         "--quiet",
-                "--toolsets",
+        "--toolsets",
         "terminal,file,skills,delegation,todo",
         "--query",
         PROMPT,
