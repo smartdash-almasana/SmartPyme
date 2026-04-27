@@ -1,0 +1,61 @@
+id: RM-2026-04-27-FACTORY-001
+estado: active
+objetivo: "Auditar estado real de capas SmartPyme y producir mapa de proximas tareas"
+duracion_objetivo: "1 ciclo corto"
+max_agents: 3
+modo: auditoria_sin_codigo
+prioridad: alta
+
+contexto:
+  repo: SmartPyme
+  fuente_verdad: GitHub
+  orquestador: Hermes
+  modelo: Gemini 2.5
+
+alcance:
+  incluir:
+    - docs/**
+    - factory/**
+    - app/**
+    - core/**
+    - tests/**
+  excluir:
+    - secretos
+    - credenciales
+    - archivos fuera del repo
+
+restricciones:
+  - no modificar codigo de producto
+  - no modificar tests
+  - no hacer refactor
+  - no tocar secrets
+  - producir solo documentacion de auditoria y evidencia
+
+tareas:
+  - id: T1
+    agente: Architect
+    objetivo: "Inventariar capas reales del repo y contrastar contra contratos SmartPyme"
+    salida: "factory/evidence/RM-2026-04-27-FACTORY-001/architect_inventory.md"
+  - id: T2
+    agente: Auditor
+    objetivo: "Detectar faltantes criticos por capa: contracts, repositories, services, core/pipeline, adapters, tests"
+    salida: "factory/evidence/RM-2026-04-27-FACTORY-001/layer_gap_report.md"
+  - id: T3
+    agente: Auditor
+    objetivo: "Proponer lista priorizada de hallazgos pequenos para proximos ciclos"
+    salida: "factory/evidence/RM-2026-04-27-FACTORY-001/next_hallazgos.md"
+
+criterios_aceptacion:
+  - existe architect_inventory.md
+  - existe layer_gap_report.md
+  - existe next_hallazgos.md
+  - no se modifico codigo Python
+  - git status no muestra cambios fuera de factory/evidence y roadmap/hallazgo asociado
+
+validaciones:
+  - git status --short
+  - find app core factory tests docs -maxdepth 3 -type f | sort | head -200
+
+salida_esperada:
+  tipo: auditoria
+  commit_prefix: "factory: audit SmartPyme layer gaps"
