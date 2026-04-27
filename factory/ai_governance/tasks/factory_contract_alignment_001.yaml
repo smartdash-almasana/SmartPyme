@@ -1,0 +1,64 @@
+task_id: factory_contract_alignment_001
+mode: governance_doc_update
+status: pending
+human_required: false
+objective: >
+  Alinear la documentacion y las specs de la factoria con el runner real
+  scripts/hermes_factory_runner.py. La cola activa actual es
+  factory/ai_governance/tasks/*.yaml.
+
+runtime_real:
+  runner: scripts/hermes_factory_runner.py
+  active_queue: factory/ai_governance/tasks/*.yaml
+  gate_file: factory/control/AUDIT_GATE.md
+  status_file: factory/control/FACTORY_STATUS.md
+
+scope:
+  tipo: documentacion_gobernanza
+  descripcion: >
+    Corregir specs/docs que indiquen otro contrato de entrada como runtime activo.
+    No modificar codigo Python ni mover tareas reales.
+
+allowed_files:
+  - factory/ai_governance/tasks/task_loop_001.yaml
+  - docs/SMARTPYME_OS_ACTUAL.md
+  - docs/HERMES_MCP_RUNTIME.md
+  - docs/ROADMAP_IMPLEMENTACION.md
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
+  - app/**
+  - core/**
+  - services/**
+  - tests/**
+
+forbidden_actions:
+  - modificar codigo Python
+  - cambiar el gate
+  - disparar Codex
+  - mover hallazgos reales
+  - cambiar systemd
+  - cambiar Telegram
+
+acceptance_criteria:
+  - las docs declaran factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - las docs no presentan factory/hallazgos/* como cola activa de hermes_factory_runner.py
+  - task_loop_001.yaml queda alineado con scripts/hermes_factory_runner.py
+  - no se modifica codigo Python
+  - no se modifican tests
+
+validation_commands:
+  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - RUNTIME_REAL_ALINEADO
+  - VALIDACION_EJECUTADA
+  - SHA
