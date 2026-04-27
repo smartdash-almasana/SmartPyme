@@ -43,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           git status --short
-          python3 scripts/hermes_factory_runner.py --repo "$GITHUB_WORKSPACE" --once
+          HERMES_BIN=/opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes python3 scripts/hermes_factory_runner.py --repo "$GITHUB_WORKSPACE" --once
 
       - name: Upload runner logs
         if: always()
