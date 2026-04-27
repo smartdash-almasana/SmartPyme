@@ -1,0 +1,8 @@
+COMMAND
+test -f factory/sandbox/test_codex.txt
+
+RESULT
+PASS
+
+OUTPUT
+<sin salida; exit code 0>

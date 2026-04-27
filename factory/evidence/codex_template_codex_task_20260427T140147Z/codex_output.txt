@@ -1,0 +1,234 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: none
+reasoning summaries: none
+session id: 019dcf3e-3834-72f0-8715-f943fdebedb6
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: codex_minimal_example
+role: codex_builder
+objective: "Crear archivo de prueba sin tocar core"
+allowed_files:
+  - factory/sandbox/test_codex.txt
+forbidden_files:
+  - core/
+  - services/
+acceptance_criteria:
+  - "archivo creado"
+  - "sin errores de ejecución"
+validation_commands:
+  - "test -f factory/sandbox/test_codex.txt"
+evidence_required:
+  - "factory/evidence/<task_id>/"
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Voy a validar primero el contrato local (`CODEX.md`) y el estado del repo antes de intentar cualquier escritura. La tarea permite un único archivo, así que si el entorno impide escribir, cierro como `BLOCKED` con evidencia del bloqueo.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc "test -f CODEX.md && sed -n '1,220p' CODEX.md || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc "test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+OBJETIVO CICLO ACTUAL:
+
+Integrar Codex como Builder formal dentro del loop SmartPyme sin romper gobernanza.
+
+TAREA:
+1. Crear template de tarea Codex en factory/tasks/template_codex_task.yaml
+2. Alinear hermes_factory_runner para priorizar tareas Codex si existen
+3. Generar ejemplo de task_id real con alcance mínimo
+4. Validar flujo: NEXT_CYCLE → tarea Codex → evidencia → commit
+
+RESTRICCIONES:
+- No usar skills externos
+- No tocar core
+- No expandir features de negocio
+
+CRITERIO DE CIERRE:
+- template creado
+- runner reconoce tareas
+- evidencia generada
+- commit consistente
+
+codex
+`CODEX.md` existe y confirma el modo Builder acotado. Hay una tensión de alcance: la tarea solo permite `factory/sandbox/test_codex.txt`, pero también exige evidencia en `factory/evidence/codex_minimal_example/`; además, el sandbox de esta sesión está en modo solo lectura, así que voy a comprobar las rutas y el bloqueo de escritura de forma explícita.
+exec
+/bin/bash -lc 'test -d factory && ls -ld factory' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+drwxr-xr-x 10 neoalmasana neoalmasana 4096 Apr 27 13:57 factory
+
+exec
+/bin/bash -lc 'test -d factory/sandbox && ls -ld factory/sandbox || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'test -d factory/evidence && ls -ld factory/evidence || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+drwxr-xr-x 3 neoalmasana neoalmasana 4096 Apr 27 11:57 factory/evidence
+
+exec
+/bin/bash -lc 'test -f factory/sandbox/test_codex.txt' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 1 in 0ms:
+codex
+`factory/sandbox` no existe y el archivo objetivo tampoco existe. Voy a intentar la escritura mínima necesaria para confirmar si el entorno permite cumplir la unidad; si falla, no hay base para declarar éxito ni para generar evidencia en disco.
+codex
+La escritura falló por sistema de archivos en solo lectura antes de crear ningún archivo. Haré la verificación final (`test -f`, `git status`, `git diff`) para dejar claro que no hubo cambios y cerrar como `BLOCKED`.
+exec
+/bin/bash -lc 'test -f factory/sandbox/test_codex.txt' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 1 in 0ms:
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'test -d factory/evidence/codex_minimal_example && ls -la factory/evidence/codex_minimal_example || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+codex
+VEREDICTO  
+BLOCKED
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+`pwd` → `/opt/smartpyme-factory/repos/SmartPyme`  
+`test -f CODEX.md && sed -n '1,220p' CODEX.md` → OK, contrato leído.  
+`test -d factory/sandbox && ls -ld factory/sandbox || true` → `factory/sandbox` no existe.  
+`test -f factory/sandbox/test_codex.txt` → falló, archivo no existe.
+
+TESTS  
+`test -f factory/sandbox/test_codex.txt` → exit code `1`.
+
+EVIDENCIA  
+No se pudo crear `factory/evidence/codex_minimal_example/` porque el filesystem está en solo lectura.  
+Intento de escritura:  
+`mkdir -p factory/sandbox && printf '%s\n' 'codex_minimal_example' > factory/sandbox/test_codex.txt`  
+Resultado: `mkdir: cannot create directory ‘factory/sandbox’: Read-only file system`
+
+DIFF  
+`git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example` → sin salida.  
+`git status --short` → sin salida.
+
+BLOQUEOS  
+Filesystem en modo solo lectura. No puedo crear `factory/sandbox/test_codex.txt` ni evidencia reproducible en disco.
+
+RIESGOS  
+La tarea no queda validada: no hay archivo creado, no hay evidencia en `factory/evidence/codex_minimal_example/`, y el comando de aceptación falla.
+2026-04-27T14:01:47.453155Z ERROR codex_core::session: failed to record rollout items: thread 019dcf3e-3834-72f0-8715-f943fdebedb6 not found
+tokens used
+28,274
+VEREDICTO  
+BLOCKED
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+`pwd` → `/opt/smartpyme-factory/repos/SmartPyme`  
+`test -f CODEX.md && sed -n '1,220p' CODEX.md` → OK, contrato leído.  
+`test -d factory/sandbox && ls -ld factory/sandbox || true` → `factory/sandbox` no existe.  
+`test -f factory/sandbox/test_codex.txt` → falló, archivo no existe.
+
+TESTS  
+`test -f factory/sandbox/test_codex.txt` → exit code `1`.
+
+EVIDENCIA  
+No se pudo crear `factory/evidence/codex_minimal_example/` porque el filesystem está en solo lectura.  
+Intento de escritura:  
+`mkdir -p factory/sandbox && printf '%s\n' 'codex_minimal_example' > factory/sandbox/test_codex.txt`  
+Resultado: `mkdir: cannot create directory ‘factory/sandbox’: Read-only file system`
+
+DIFF  
+`git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example` → sin salida.  
+`git status --short` → sin salida.
+
+BLOQUEOS  
+Filesystem en modo solo lectura. No puedo crear `factory/sandbox/test_codex.txt` ni evidencia reproducible en disco.
+
+RIESGOS  
+La tarea no queda validada: no hay archivo creado, no hay evidencia en `factory/evidence/codex_minimal_example/`, y el comando de aceptación falla.

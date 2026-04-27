@@ -1,0 +1,6 @@
+?? factory/evidence/codex_minimal_example/
+?? factory/evidence/codex_template_codex_task_20260427T140147Z/
+?? factory/sandbox/
+
+Nota:
+- factory/evidence/codex_template_codex_task_20260427T140147Z/ ya existia como cambio no relacionado antes de esta tarea y no fue modificado por este ciclo.

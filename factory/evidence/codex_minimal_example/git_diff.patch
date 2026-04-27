@@ -1,0 +1,7 @@
+diff --git a/factory/sandbox/test_codex.txt b/factory/sandbox/test_codex.txt
+new file mode 100644
+index 0000000..7cd80fa
+--- /dev/null
++++ b/factory/sandbox/test_codex.txt
+@@ -0,0 +1 @@
++codex_minimal_example

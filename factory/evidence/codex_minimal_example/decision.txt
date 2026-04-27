@@ -1,0 +1,6 @@
+CORRECTO
+
+Motivo:
+- factory/sandbox/test_codex.txt existe.
+- El comando de validacion requerido termino con exit code 0.
+- No se tocaron core/ ni services/.

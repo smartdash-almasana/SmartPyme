@@ -1,0 +1,13 @@
+pwd
+git status --short
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,160p' factory/control/NEXT_CYCLE.md || true
+test -d factory && ls -la factory
+test -d factory/sandbox && ls -la factory/sandbox || true
+test -d factory/evidence && ls -la factory/evidence || true
+mkdir -p factory/sandbox
+mkdir -p factory/evidence/codex_minimal_example
+test -f factory/sandbox/test_codex.txt
+ls -la factory/sandbox/test_codex.txt
+sed -n '1,40p' factory/sandbox/test_codex.txt
+git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example
