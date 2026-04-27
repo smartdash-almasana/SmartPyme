@@ -1,116 +1,140 @@
 task_id: task-hermes-factory-task-loop-001
 mode: governance_doc_update
-status: pending
+status: done
 human_required: false
 objective: >
-  Alinear la especificación de loop de factoría con el runtime real existente en el repo.
-  La factoría actual no usa TaskSpec runtime, task_store.py ni task_runtime.py.
-  El contrato vigente se basa en hallazgos markdown movidos por estados:
-  pending -> in_progress -> done|blocked.
+  Alinear la especificacion de loop de factoria con el runtime real vigente:
+  scripts/hermes_factory_runner.py. La cola activa actual no es factory/hallazgos/*;
+  es factory/ai_governance/tasks/*.yaml.
 
 runtime_real:
-  tipo: hallazgos_markdown_por_estado
-  archivos_fuente:
-    - factory/run_factory.py
-    - factory/run_codex_worker.py
-    - factory/continuous_factory.py
-    - factory/mcp_bridge/tools.py
-  directorios_estado:
-    pending: factory/hallazgos/pending
-    in_progress: factory/hallazgos/in_progress
-    done: factory/hallazgos/done
-    blocked: factory/hallazgos/blocked
+  tipo: yaml_tasks_gobernadas_por_gate
+  runner: scripts/hermes_factory_runner.py
+  task_dir: factory/ai_governance/tasks
+  task_pattern: "*.yaml"
+  gate_file: factory/control/AUDIT_GATE.md
+  status_file: factory/control/FACTORY_STATUS.md
+  codex_runner: scripts/codex_builder_runner.py
+  post_cycle: scripts/factory_post_cycle_control.py
+  telegram_notify: factory/telegram_notify.py
+
+unidad_activa:
+  tipo: tarea_yaml_gobernada
+  ubicacion: factory/ai_governance/tasks/*.yaml
+  campos_minimos:
+    - task_id
+    - mode
+    - status
+    - objective
+    - allowed_files
+    - forbidden_files
+    - forbidden_actions
+    - acceptance_criteria
+    - validation_commands
+    - report_required
+
+estados_reales:
+  task_status:
+    - pending
+    - in_progress
+    - done
+    - blocked
+    - rejected
+  gate_status:
+    allowed_to_run:
+      - APPROVED
+      - OPEN
+      - RUN
+    blocking:
+      - WAITING_AUDIT
+      - BLOCKED
+      - HOLD
+    special:
+      - REJECTED
+      - RUNNING
+
+flujo_real:
+  - CYCLE_START
+  - enforce_gate_before_dispatch
+  - select_task desde factory/ai_governance/tasks/*.yaml
+  - TASK_DISPATCH hacia scripts/codex_builder_runner.py
+  - post_cycle_control
+  - TASK_DONE si retorno cero
+  - gate WAITING_AUDIT
+  - CYCLE_OK o CYCLE_FAIL
+  - auto_commit_and_push solo si ciclo OK
+
+regla_de_gate:
+  - si gate esta en WAITING_AUDIT/BLOCKED/HOLD no hay dispatch
+  - si gate esta en REJECTED se reabre la ultima tarea
+  - al cerrar cualquier ciclo el gate vuelve a WAITING_AUDIT
+  - ningun nuevo dispatch ocurre sin aprobacion humana o apertura explicita del gate
+
+legacy_no_activo_en_este_runner:
+  factory_hallazgos:
+    rutas:
+      - factory/hallazgos/pending
+      - factory/hallazgos/in_progress
+      - factory/hallazgos/done
+      - factory/hallazgos/blocked
+    decision: >
+      Puede conservarse como antecedente o runtime alternativo historico, pero no debe ser
+      presentado como cola activa de scripts/hermes_factory_runner.py.
 
 scope:
   tipo: documentacion_gobernanza
   descripcion: >
-    Esta tarea corrige el contrato documental para que los agentes trabajen sobre el loop real
-    de hallazgos y no sobre una microcapa TaskSpec/evidence/reports inexistente en el repo actual.
+    Esta tarea fija el contrato operativo real para que Hermes, Codex, Gemini y ChatGPT
+    fabriquen specs, skills y tareas en la ubicacion correcta, con evidencia y gate humano.
 
 allowed_files:
   - factory/ai_governance/tasks/task_loop_001.yaml
-
-locked_files:
-  - factory/run_factory.py
-  - factory/run_codex_worker.py
-  - factory/continuous_factory.py
-  - factory/mcp_bridge/tools.py
-  - factory/hallazgos/**
-  - tests/**
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
 
 forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
   - app/**
   - core/**
   - services/**
-  - docs/**
-  - infra/**
-  - .gemini/**
-  - .kiro/**
-  - factory/task_loop.py
-  - tests/factory/test_task_store.py
-  - tests/factory/test_task_loop.py
+  - tests/**
 
 forbidden_actions:
-  - crear TaskSpec runtime nuevo
-  - crear factory/task_loop.py
-  - crear tests nuevos
-  - modificar código Python
-  - mover hallazgos reales entre estados
-  - ejecutar acciones destructivas
-
-preflight_commands:
-  - git status --short
-  - test -f factory/run_factory.py
-  - test -f factory/run_codex_worker.py
-  - test -f factory/continuous_factory.py
-  - grep -R "PENDING_DIR\|IN_PROGRESS_DIR\|BLOCKED_DIR\|DONE_DIR" -n factory/run_factory.py factory/run_codex_worker.py
-  - grep -R "process_pending_hallazgos\|run_codex_worker\|run_continuous_factory" -n factory/run_factory.py factory/run_codex_worker.py factory/continuous_factory.py
-
-expected_runtime_contract:
-  hallazgo_input:
-    formato: markdown
-    ubicacion_inicial: factory/hallazgos/pending
-    campos_minimos:
-      - META.estado
-      - META.modulo_objetivo
-      - META.cantera_raiz
-      - contrato_ejecucion
-      - rutas_objetivo
-  transiciones_run_factory:
-    - pending -> in_progress cuando el hallazgo valida y requiere ejecución
-    - pending -> done cuando META.estado es done
-    - pending -> blocked cuando falla validación o viola contrato
-  transiciones_run_codex_worker:
-    - in_progress -> done cuando ejecución y tests pasan
-    - in_progress -> blocked cuando ejecución, contrato o tests fallan
-  transiciones_continuous_factory:
-    - invoca auditoría para crear hallazgos en pending
-    - procesa pending con run_factory
-    - drena in_progress con run_codex_worker
-    - registra métricas done/blocked/in_progress en state/logs
+  - modificar codigo Python
+  - cambiar gate
+  - disparar Codex desde esta tarea documental
+  - cambiar systemd
+  - cambiar Telegram
+  - mover hallazgos reales
+  - crear runtime paralelo
 
 acceptance_criteria:
-  - task_loop_001.yaml documenta factory/run_factory.py como runtime de pending
-  - task_loop_001.yaml documenta factory/run_codex_worker.py como runtime de in_progress
-  - task_loop_001.yaml documenta factory/continuous_factory.py como loop continuo
-  - task_loop_001.yaml declara que la unidad real actual es hallazgo markdown, no TaskSpec runtime
-  - no se modifica código Python
-  - no se modifican tests
+  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+  - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
+  - no se modifica codigo Python
 
 validation_commands:
-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml
-  - grep -R "factory/run_factory.py\|factory/run_codex_worker.py\|factory/continuous_factory.py" -n factory/ai_governance/tasks/task_loop_001.yaml
+  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+  - git status --short
 
 report_required:
   - VEREDICTO
-  - ARCHIVO_MODIFICADO
-  - REFERENCIAS_OBSOLETAS_ELIMINADAS
-  - RUNTIME_REAL_DOCUMENTADO
+  - ARCHIVOS_MODIFICADOS
+  - CONTRATO_REAL_ALINEADO
+  - LOOP_DOCUMENTAL_CREADO
   - VALIDACION_EJECUTADA
-  - GIT_DIFF_RESUMIDO
+  - SHA
 
 block_resolution:
-  obsolete_taskspec_runtime:
-    previous_assumption: "Existía una microcapa TaskSpec/evidence/reports con task_store.py y task_runtime.py."
-    actual_repo_state: "El runtime real usa hallazgos markdown por estado."
-    decision: "No fabricar archivos faltantes; corregir la especificación para obedecer el repo real."
+  obsolete_hallazgos_runtime:
+    previous_assumption: "factory/hallazgos/* era la cola activa de la factoria Hermes actual."
+    actual_repo_state: "scripts/hermes_factory_runner.py usa factory/ai_governance/tasks/*.yaml."
+    decision: "Alinear docs/specs al runner real y degradar factory/hallazgos/* a antecedente o runtime alternativo no activo."
