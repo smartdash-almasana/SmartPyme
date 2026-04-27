@@ -9,7 +9,7 @@ CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
 
 if CODEX_TASK.exists():
     print("[Hermes→Codex] Dispatching task...")
-    result = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO)])
+    result = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--full-auto", "--timeout", "3600"])
     sys.exit(result.returncode)
 
 # fallback to original behavior
