@@ -1,0 +1,10 @@
+task_id: telegram-cycle-closed-notify-v1
+status: pending
+objetivo: enviar aviso Telegram cuando un ciclo cierre y quede esperando auditoria
+criterios_exito:
+  - al cerrar ciclo se envia mensaje CYCLE_CLOSED_WAITING_AUDIT
+  - se usa factory/config/telegram.local.env si existe
+  - se registra estado de envio en factory/control/FACTORY_STATUS.md
+restricciones:
+  - no exponer token en logs
+  - no bloquear el loop si falla Telegram
