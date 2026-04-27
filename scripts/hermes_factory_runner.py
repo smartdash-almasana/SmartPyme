@@ -3,9 +3,11 @@ from pathlib import Path
 import subprocess
 import sys
 
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
 from factory.telegram_notify import notify_cycle_result
 
-REPO = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
 TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
 CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
