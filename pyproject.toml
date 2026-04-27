@@ -1,0 +1,32 @@
+[project]
+name = "smartpyme"
+version = "0.1.0"
+description = "SmartPyme operational core and autonomous factory"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "evidence_store",
+  "factory/evidence",
+  "factory/runner_logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
