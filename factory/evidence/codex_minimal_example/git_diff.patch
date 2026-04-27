@@ -1,7 +1,25 @@
-diff --git a/factory/sandbox/test_codex.txt b/factory/sandbox/test_codex.txt
-new file mode 100644
-index 0000000..7cd80fa
---- /dev/null
-+++ b/factory/sandbox/test_codex.txt
-@@ -0,0 +1 @@
-+codex_minimal_example
+# codex_minimal_example git diff evidence
+
+Comando ejecutado:
+git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
+
+Resumen observado:
+- factory/evidence/codex_minimal_example/commands.txt actualizado con comandos ejecutados.
+- factory/evidence/codex_minimal_example/cycle.md actualizado con PLAN/WRITE/VERIFY/INSPECT/RUN/REPORT/DECISION.
+- factory/evidence/codex_minimal_example/decision.txt actualizado con decision CORRECTO.
+- factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
+- factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
+- factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
+- factory/evidence/codex_minimal_example/decision.txt actualizado con lectura de NEXT_CYCLE y decision.
+- RUN_ACTUAL 2026-04-27T15:11:00Z agregado a verification.txt, tests.txt y decision.txt.
+- RUN_ACTUAL 2026-04-27T15:18:06Z agregado a verification.txt, tests.txt y decision.txt.
+- RUN_ACTUAL 2026-04-27T15:24:47Z agregado a verification.txt, tests.txt y decision.txt.
+- factory/sandbox/test_codex.txt sin diff de working tree.
+
+Diff de archivo objetivo:
+git diff -- factory/sandbox/test_codex.txt
+<sin salida; factory/sandbox/test_codex.txt esta versionado y sin cambios de working tree>
+
+Nota:
+- El archivo objetivo existe y fue validado con test -f.
+- La evidencia modificada pertenece a factory/evidence/codex_minimal_example/.

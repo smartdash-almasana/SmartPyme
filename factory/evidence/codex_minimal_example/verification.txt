@@ -1,0 +1,89 @@
+RUN_ID
+- 2026-04-27T15:11:00Z
+
+PLAN
+- objetivo: Crear archivo de prueba sin tocar core.
+- alcance: factory/sandbox/test_codex.txt y factory/evidence/codex_minimal_example/.
+- prohibido: core/ y services/.
+
+VERIFY
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ git ls-files --stage factory/sandbox/test_codex.txt
+100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0	factory/sandbox/test_codex.txt
+
+$ test -f factory/sandbox/test_codex.txt
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ test -f factory/evidence/codex_minimal_example/cycle.md
+exit=0
+
+$ git diff --name-only -- core services
+<sin salida>
+
+INSPECT
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+RUN
+$ test -f factory/sandbox/test_codex.txt
+exit=0
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0
+
+RUN_ACTUAL
+$ test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+OBJETIVO CICLO ACTUAL:
+Integrar Codex como Builder formal dentro del loop SmartPyme sin romper gobernanza.
+
+$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0
+
+REPORT
+- evidencia actualizada en factory/evidence/codex_minimal_example/.
+- no se modificaron core/ ni services/.
+- factory/control/PRIORITY_BOARD.md y factory/evidence/codex_template_* aparecen como cambios no relacionados y no fueron tocados por esta unidad.
+- decision: CORRECTO.
+
+RUN_ACTUAL_2026-04-27T15:18:06Z
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0
+
+RUN_ACTUAL_2026-04-27T15:24:47Z
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+exit=0

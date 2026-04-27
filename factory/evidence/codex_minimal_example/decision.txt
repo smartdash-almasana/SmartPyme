@@ -1,6 +1,12 @@
 CORRECTO
 
 Motivo:
-- factory/sandbox/test_codex.txt existe.
+- factory/sandbox/test_codex.txt existe y fue verificado con test -f.
 - El comando de validacion requerido termino con exit code 0.
-- No se tocaron core/ ni services/.
+- No se modificaron rutas prohibidas core/ ni services/.
+- La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+- Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
+- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+- RUN_ACTUAL 2026-04-27T15:11:00Z: validacion requerida test -f factory/sandbox/test_codex.txt termino con exit=0.
+- RUN_ACTUAL 2026-04-27T15:18:06Z: validacion requerida test -f factory/sandbox/test_codex.txt termino con exit=0.
+- RUN_ACTUAL 2026-04-27T15:24:47Z: validacion requerida test -f factory/sandbox/test_codex.txt termino con exit=0.

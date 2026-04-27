@@ -1,13 +1,47 @@
 pwd
 git status --short
 test -f CODEX.md && sed -n '1,220p' CODEX.md
-test -f factory/control/NEXT_CYCLE.md && sed -n '1,160p' factory/control/NEXT_CYCLE.md || true
-test -d factory && ls -la factory
-test -d factory/sandbox && ls -la factory/sandbox || true
-test -d factory/evidence && ls -la factory/evidence || true
-mkdir -p factory/sandbox
-mkdir -p factory/evidence/codex_minimal_example
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+test -e factory/sandbox/test_codex.txt; printf 'exists_status=%s\n' $?
 test -f factory/sandbox/test_codex.txt
+ls -la factory/sandbox
+ls -la factory/evidence/codex_minimal_example
 ls -la factory/sandbox/test_codex.txt
 sed -n '1,40p' factory/sandbox/test_codex.txt
-git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example
+git ls-files --stage factory/sandbox/test_codex.txt
+test -f factory/evidence/codex_minimal_example/cycle.md
+ls -la factory/evidence/codex_minimal_example/cycle.md
+git status --short
+git diff --name-only -- core services
+git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
+sed -n '1,220p' factory/evidence/codex_minimal_example/cycle.md
+sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+pwd
+git status --short
+test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+ls -la factory/sandbox/test_codex.txt
+sed -n '1,40p' factory/sandbox/test_codex.txt
+git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+date -u +%Y-%m-%dT%H:%M:%SZ
+test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+ls -la factory/sandbox/test_codex.txt
+git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+pwd
+test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+ls -la factory/sandbox/test_codex.txt
+sed -n '1,40p' factory/sandbox/test_codex.txt
+git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+git status --short
+date -u +%Y-%m-%dT%H:%M:%SZ
+date -u +%Y-%m-%dT%H:%M:%SZ
+sed -n '1,240p' factory/evidence/codex_minimal_example/verification.txt
+sed -n '1,240p' factory/evidence/codex_minimal_example/tests.txt
+sed -n '1,240p' factory/evidence/codex_minimal_example/decision.txt
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
+ls -la factory/sandbox/test_codex.txt
+sed -n '1,40p' factory/sandbox/test_codex.txt
+git diff --name-only -- core services; printf 'exit=%s\n' "$?"

@@ -1,0 +1,1511 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dcf77-a4f8-7982-824a-b5ecb20741de
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: codex_minimal_example
+role: codex_builder
+objective: "Crear archivo de prueba sin tocar core"
+allowed_files:
+  - factory/sandbox/test_codex.txt
+forbidden_files:
+  - core/
+  - services/
+acceptance_criteria:
+  - "archivo creado"
+  - "sin errores de ejecución"
+validation_commands:
+  - "test -f factory/sandbox/test_codex.txt"
+evidence_required:
+  - "factory/evidence/<task_id>/"
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Usaré la skill `hallazgo_executor` solo para alinearme con el protocolo local de ejecución controlada en SmartPyme; la tarea es mínima y limitada a `factory/sandbox/test_codex.txt` más evidencia bajo `factory/evidence/codex_minimal_example/`.
+exec
+/bin/bash -lc "sed -n '1,220p' /opt/smartpyme-factory/repos/SmartPyme/.codex/skills/hallazgo_executor/SKILL.md && sed -n '1,220p' CODEX.md && pwd && git status --short" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+---
+name: hallazgo_executor
+description: Ejecuta hallazgos validados con control fail-closed y cierre de estado en la factoria SmartPyme.
+---
+
+# Hallazgo Executor
+
+## Propósito
+Ejecutar hallazgos escritos por Gemini sobre el repositorio objetivo, con control fail-closed y validación mínima obligatoria.
+
+## Repo objetivo
+E:\BuenosPasos\smartbridge\SmartPyme
+
+## Entrada
+Un único archivo markdown tomado desde:
+- E:\BuenosPasos\smartbridge\SmartPyme\factory\hallazgos\pending
+
+## Flujo operativo
+1. Leer exactamente un hallazgo desde `pending`.
+2. Validar que el hallazgo contenga:
+   - `modulo_objetivo`
+   - `rutas_fuente`
+   - `top_slices`
+   - `propuesta_de_portado`
+   - `reglas_de_ejecucion`
+   - `criterio_de_cierre`
+3. Si falta alguno de los campos requeridos, no ejecutar cambios: completar `BLOQUEO` y mover a `blocked`.
+4. Si está completo, mover el hallazgo a `in_progress` antes de actuar.
+5. Aplicar solo cambios mínimos en SmartPyme, estrictamente dentro del alcance declarado.
+6. Correr solo tests necesarios del módulo afectado.
+7. Si todo sale bien:
+   - completar `EJECUCION_CODEX`
+   - mover hallazgo a `done`
+8. Si aparece duda, conflicto o falta de contexto:
+   - NO continuar
+   - completar `BLOQUEO`
+   - mover hallazgo a `blocked`
+
+## Restricciones duras
+- no explorar cantera por cuenta propia
+- no buscar nuevos slices por cuenta propia
+- no modificar módulos fuera del alcance del hallazgo
+- no hacer refactor global
+- no inventar contratos, rutas o dependencias
+- no cerrar un hallazgo sin verificación mínima
+- preguntar antes que asumir
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+/opt/smartpyme-factory/repos/SmartPyme
+ M factory/evidence/codex_minimal_example/commands.txt
+ M factory/evidence/codex_minimal_example/cycle.md
+ M factory/evidence/codex_minimal_example/decision.txt
+ M factory/evidence/codex_minimal_example/git_diff.patch
+ M factory/evidence/codex_minimal_example/git_status.txt
+ M factory/evidence/codex_minimal_example/tests.txt
+?? factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_minimal_example/verification.txt
+?? factory/evidence/codex_template_codex_task_20260427T141052Z/
+?? factory/evidence/codex_template_codex_task_20260427T141841Z/
+?? factory/evidence/codex_template_codex_task_20260427T142601Z/
+?? factory/evidence/codex_template_codex_task_20260427T143308Z/
+?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+
+codex
+Veo cambios ya existentes en la carpeta de evidencia de este mismo `task_id`; antes de escribir, voy a inspeccionar si el archivo objetivo existe y qué evidencia previa hay para no pisar contenido ajeno sin necesidad.
+exec
+/bin/bash -lc "test -f factory/sandbox/test_codex.txt; printf 'test_codex_exists=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+test_codex_exists=0
+
+exec
+/bin/bash -lc "find factory/evidence/codex_minimal_example -maxdepth 1 -type f -printf '%p\\n' | sort" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+factory/evidence/codex_minimal_example/commands.txt
+factory/evidence/codex_minimal_example/cycle.md
+factory/evidence/codex_minimal_example/decision.txt
+factory/evidence/codex_minimal_example/git_diff.patch
+factory/evidence/codex_minimal_example/git_status.txt
+factory/evidence/codex_minimal_example/tests.txt
+factory/evidence/codex_minimal_example/verification.txt
+
+exec
+/bin/bash -lc 'git diff -- factory/evidence/codex_minimal_example factory/sandbox/test_codex.txt' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index e8a6e97..1d2e238 100644
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -1,13 +1,20 @@
+ pwd
+ git status --short
+ test -f CODEX.md && sed -n '1,220p' CODEX.md
+-test -f factory/control/NEXT_CYCLE.md && sed -n '1,160p' factory/control/NEXT_CYCLE.md || true
+-test -d factory && ls -la factory
+-test -d factory/sandbox && ls -la factory/sandbox || true
+-test -d factory/evidence && ls -la factory/evidence || true
+-mkdir -p factory/sandbox
+-mkdir -p factory/evidence/codex_minimal_example
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -e factory/sandbox/test_codex.txt; printf 'exists_status=%s\n' $?
+ test -f factory/sandbox/test_codex.txt
++ls -la factory/sandbox
++ls -la factory/evidence/codex_minimal_example
+ ls -la factory/sandbox/test_codex.txt
+ sed -n '1,40p' factory/sandbox/test_codex.txt
+-git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example
++git ls-files --stage factory/sandbox/test_codex.txt
++test -f factory/evidence/codex_minimal_example/cycle.md
++ls -la factory/evidence/codex_minimal_example/cycle.md
++git status --short
++git diff --name-only -- core services
++git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
++sed -n '1,220p' factory/evidence/codex_minimal_example/cycle.md
++sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
++sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
++sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index ad9f13c..c506ac2 100644
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -2,26 +2,34 @@
+ 
+ PLAN
+ - objetivo: Crear archivo de prueba sin tocar core.
+-- archivos permitidos: factory/sandbox/test_codex.txt; factory/evidence/codex_minimal_example/
++- archivos permitidos: factory/sandbox/test_codex.txt; evidencia requerida en factory/evidence/codex_minimal_example/
+ - archivos prohibidos: core/; services/
+ - criterio de cierre: archivo creado; sin errores de ejecucion.
+ - tests esperados: test -f factory/sandbox/test_codex.txt
+ 
+ WRITE
+-- creado factory/sandbox/test_codex.txt
+-- creada evidencia en factory/evidence/codex_minimal_example/
+-
+-DECISION
+-- CORRECTO
++- factory/sandbox/test_codex.txt ya existia fisicamente al inicio de esta ejecucion y esta versionado con contenido valido.
++- se actualiza evidencia reproducible en factory/evidence/codex_minimal_example/ sin modificar core/ ni services/.
+ 
+ VERIFY
+ - pwd: /opt/smartpyme-factory/repos/SmartPyme
+-- git status --short: muestra cambios no trackeados de esta tarea y un directorio de evidencia previo no relacionado.
+ - test -f factory/sandbox/test_codex.txt: exit 0
+-- ls -la factory/sandbox/test_codex.txt: -rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:03 factory/sandbox/test_codex.txt
++- ls -la factory/sandbox/test_codex.txt: -rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
++- git ls-files --stage factory/sandbox/test_codex.txt: 100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0 factory/sandbox/test_codex.txt
++- test -f factory/evidence/codex_minimal_example/cycle.md: exit 0
+ 
+ INSPECT
+-- contenido: codex_minimal_example
++- contenido observado: codex_minimal_example
+ 
+ RUN
+ - test -f factory/sandbox/test_codex.txt: PASS
++- git diff --name-only -- core services: sin salida
++
++REPORT
++- archivo objetivo creado/existente y verificable.
++- no se tocaron core/ ni services/.
++- existe evidencia en factory/evidence/codex_minimal_example/.
++- hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++
++DECISION
++- CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index 041f415..e6ed453 100644
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -1,6 +1,8 @@
+ CORRECTO
+ 
+ Motivo:
+-- factory/sandbox/test_codex.txt existe.
++- factory/sandbox/test_codex.txt existe y fue verificado con test -f.
+ - El comando de validacion requerido termino con exit code 0.
+-- No se tocaron core/ ni services/.
++- No se modificaron rutas prohibidas core/ ni services/.
++- La evidencia requerida existe en factory/evidence/codex_minimal_example/.
++- Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 34291c6..38a8ed3 100644
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -1,7 +1,21 @@
+-diff --git a/factory/sandbox/test_codex.txt b/factory/sandbox/test_codex.txt
+-new file mode 100644
+-index 0000000..7cd80fa
+---- /dev/null
+-+++ b/factory/sandbox/test_codex.txt
+-@@ -0,0 +1 @@
+-+codex_minimal_example
++# codex_minimal_example git diff evidence
++
++Comando ejecutado:
++git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
++
++Resumen observado:
++- factory/evidence/codex_minimal_example/commands.txt actualizado con comandos ejecutados.
++- factory/evidence/codex_minimal_example/cycle.md actualizado con PLAN/WRITE/VERIFY/INSPECT/RUN/REPORT/DECISION.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con decision CORRECTO.
++- factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
++- factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
++- factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/sandbox/test_codex.txt sin diff de working tree.
++
++Diff de archivo objetivo:
++git diff -- factory/sandbox/test_codex.txt
++<sin salida; factory/sandbox/test_codex.txt esta versionado y sin cambios de working tree>
++
++Nota:
++- El archivo objetivo existe y fue validado con test -f.
++- La evidencia modificada pertenece a factory/evidence/codex_minimal_example/.
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index d6a63e3..a238b52 100644
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -1,6 +1,26 @@
+-?? factory/evidence/codex_minimal_example/
+-?? factory/evidence/codex_template_codex_task_20260427T140147Z/
+-?? factory/sandbox/
++ M factory/evidence/codex_minimal_example/commands.txt
++ M factory/evidence/codex_minimal_example/cycle.md
++ M factory/evidence/codex_minimal_example/decision.txt
++ M factory/evidence/codex_minimal_example/git_diff.patch
++ M factory/evidence/codex_minimal_example/git_status.txt
++ M factory/evidence/codex_minimal_example/tests.txt
++?? factory/control/PRIORITY_BOARD.md
++?? factory/evidence/codex_minimal_example/verification.txt
++?? factory/evidence/codex_template_codex_task_20260427T141052Z/
++?? factory/evidence/codex_template_codex_task_20260427T141841Z/
++?? factory/evidence/codex_template_codex_task_20260427T142601Z/
++?? factory/evidence/codex_template_codex_task_20260427T143308Z/
++?? factory/evidence/codex_template_codex_task_20260427T143931Z/
++?? factory/evidence/codex_template_codex_task_20260427T144554Z/
++?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+ 
+ Nota:
+-- factory/evidence/codex_template_codex_task_20260427T140147Z/ ya existia como cambio no relacionado antes de esta tarea y no fue modificado por este ciclo.
++- factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T141052Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T141841Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T142601Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T143308Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 03ec658..8f635cb 100644
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -1,8 +1,17 @@
+-COMMAND
+-test -f factory/sandbox/test_codex.txt
++$ test -f factory/sandbox/test_codex.txt
++exit=0
+ 
+-RESULT
+-PASS
++$ ls -la factory/sandbox/test_codex.txt
++-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+ 
+-OUTPUT
+-<sin salida; exit code 0>
++$ sed -n '1,40p' factory/sandbox/test_codex.txt
++codex_minimal_example
++
++$ git ls-files --stage factory/sandbox/test_codex.txt
++100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0	factory/sandbox/test_codex.txt
++
++$ test -f factory/evidence/codex_minimal_example/cycle.md
++exit=0
++
++$ git diff --name-only -- core services
++<sin salida>
+
+codex
+El archivo objetivo ya existe y está versionado sin diff de contenido. La unidad queda en actualizar evidencia reproducible de esta ejecución, dejando claro que no se tocó `core/` ni `services/`.
+exec
+/bin/bash -lc "sed -n '1,240p' factory/evidence/codex_minimal_example/cycle.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# codex_minimal_example
+
+PLAN
+- objetivo: Crear archivo de prueba sin tocar core.
+- archivos permitidos: factory/sandbox/test_codex.txt; evidencia requerida en factory/evidence/codex_minimal_example/
+- archivos prohibidos: core/; services/
+- criterio de cierre: archivo creado; sin errores de ejecucion.
+- tests esperados: test -f factory/sandbox/test_codex.txt
+
+WRITE
+- factory/sandbox/test_codex.txt ya existia fisicamente al inicio de esta ejecucion y esta versionado con contenido valido.
+- se actualiza evidencia reproducible en factory/evidence/codex_minimal_example/ sin modificar core/ ni services/.
+
+VERIFY
+- pwd: /opt/smartpyme-factory/repos/SmartPyme
+- test -f factory/sandbox/test_codex.txt: exit 0
+- ls -la factory/sandbox/test_codex.txt: -rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+- git ls-files --stage factory/sandbox/test_codex.txt: 100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0 factory/sandbox/test_codex.txt
+- test -f factory/evidence/codex_minimal_example/cycle.md: exit 0
+
+INSPECT
+- contenido observado: codex_minimal_example
+
+RUN
+- test -f factory/sandbox/test_codex.txt: PASS
+- git diff --name-only -- core services: sin salida
+
+REPORT
+- archivo objetivo creado/existente y verificable.
+- no se tocaron core/ ni services/.
+- existe evidencia en factory/evidence/codex_minimal_example/.
+- hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
+
+DECISION
+- CORRECTO
+
+exec
+/bin/bash -lc "sed -n '1,240p' factory/evidence/codex_minimal_example/commands.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+pwd
+git status --short
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+test -e factory/sandbox/test_codex.txt; printf 'exists_status=%s\n' $?
+test -f factory/sandbox/test_codex.txt
+ls -la factory/sandbox
+ls -la factory/evidence/codex_minimal_example
+ls -la factory/sandbox/test_codex.txt
+sed -n '1,40p' factory/sandbox/test_codex.txt
+git ls-files --stage factory/sandbox/test_codex.txt
+test -f factory/evidence/codex_minimal_example/cycle.md
+ls -la factory/evidence/codex_minimal_example/cycle.md
+git status --short
+git diff --name-only -- core services
+git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
+sed -n '1,220p' factory/evidence/codex_minimal_example/cycle.md
+sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
+
+exec
+/bin/bash -lc "sed -n '1,240p' factory/evidence/codex_minimal_example/verification.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+PLAN
+- objetivo: Crear archivo de prueba sin tocar core.
+- alcance: factory/sandbox/test_codex.txt y factory/evidence/codex_minimal_example/.
+- prohibido: core/ y services/.
+
+VERIFY
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ git ls-files --stage factory/sandbox/test_codex.txt
+100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0	factory/sandbox/test_codex.txt
+
+$ test -f factory/sandbox/test_codex.txt
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ test -f factory/evidence/codex_minimal_example/cycle.md
+exit=0
+
+$ git diff --name-only -- core services
+<sin salida>
+
+INSPECT
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+RUN
+$ test -f factory/sandbox/test_codex.txt
+exit=0
+
+REPORT
+- evidencia actualizada en factory/evidence/codex_minimal_example/.
+- no se modificaron core/ ni services/.
+- factory/control/PRIORITY_BOARD.md y factory/evidence/codex_template_* aparecen como cambios no relacionados y no fueron tocados por esta unidad.
+- decision: CORRECTO.
+
+exec
+/bin/bash -lc "sed -n '1,240p' factory/evidence/codex_minimal_example/tests.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+$ test -f factory/sandbox/test_codex.txt
+exit=0
+
+$ ls -la factory/sandbox/test_codex.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+$ sed -n '1,40p' factory/sandbox/test_codex.txt
+codex_minimal_example
+
+$ git ls-files --stage factory/sandbox/test_codex.txt
+100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0	factory/sandbox/test_codex.txt
+
+$ test -f factory/evidence/codex_minimal_example/cycle.md
+exit=0
+
+$ git diff --name-only -- core services
+<sin salida>
+
+codex
+La evidencia existente ya contiene el flujo requerido, pero voy a ejecutar otra vez la validación mínima y registrar el estado final observado. No voy a cambiar el archivo objetivo porque ya cumple el criterio y modificarlo sería ruido.
+exec
+/bin/bash -lc "test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+OBJETIVO CICLO ACTUAL:
+
+Integrar Codex como Builder formal dentro del loop SmartPyme sin romper gobernanza.
+
+TAREA:
+1. Crear template de tarea Codex en factory/tasks/template_codex_task.yaml
+2. Alinear hermes_factory_runner para priorizar tareas Codex si existen
+3. Generar ejemplo de task_id real con alcance mínimo
+4. Validar flujo: NEXT_CYCLE → tarea Codex → evidencia → commit
+
+RESTRICCIONES:
+- No usar skills externos
+- No tocar core
+- No expandir features de negocio
+
+CRITERIO DE CIERRE:
+- template creado
+- runner reconoce tareas
+- evidencia generada
+- commit consistente
+
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/evidence/codex_minimal_example/commands.txt
+ M factory/evidence/codex_minimal_example/cycle.md
+ M factory/evidence/codex_minimal_example/decision.txt
+ M factory/evidence/codex_minimal_example/git_diff.patch
+ M factory/evidence/codex_minimal_example/git_status.txt
+ M factory/evidence/codex_minimal_example/tests.txt
+?? factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_minimal_example/verification.txt
+?? factory/evidence/codex_template_codex_task_20260427T141052Z/
+?? factory/evidence/codex_template_codex_task_20260427T141841Z/
+?? factory/evidence/codex_template_codex_task_20260427T142601Z/
+?? factory/evidence/codex_template_codex_task_20260427T143308Z/
+?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+
+exec
+/bin/bash -lc "test -f factory/sandbox/test_codex.txt; printf 'exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exit=0
+
+exec
+/bin/bash -lc "ls -la factory/sandbox/test_codex.txt && sed -n '1,40p' factory/sandbox/test_codex.txt && git diff --name-only -- core services" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+codex_minimal_example
+
+exec
+/bin/bash -lc "git diff --name-only -- core services; printf 'exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exit=0
+
+codex
+Voy a actualizar solo los archivos de evidencia del `task_id` con los comandos recién ejecutados y el estado observado. El archivo permitido `factory/sandbox/test_codex.txt` queda intacto porque ya existe y pasa la validación pedida.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/commands.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/cycle.md
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/decision.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/tests.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/verification.txt
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/evidence/codex_minimal_example/commands.txt
+ M factory/evidence/codex_minimal_example/cycle.md
+ M factory/evidence/codex_minimal_example/decision.txt
+ M factory/evidence/codex_minimal_example/git_diff.patch
+ M factory/evidence/codex_minimal_example/git_status.txt
+ M factory/evidence/codex_minimal_example/tests.txt
+?? factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_minimal_example/verification.txt
+?? factory/evidence/codex_template_codex_task_20260427T141052Z/
+?? factory/evidence/codex_template_codex_task_20260427T141841Z/
+?? factory/evidence/codex_template_codex_task_20260427T142601Z/
+?? factory/evidence/codex_template_codex_task_20260427T143308Z/
+?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+
+exec
+/bin/bash -lc 'git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index e8a6e97..0d5cd01 100644
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -1,13 +1,27 @@
+ pwd
+ git status --short
+ test -f CODEX.md && sed -n '1,220p' CODEX.md
+-test -f factory/control/NEXT_CYCLE.md && sed -n '1,160p' factory/control/NEXT_CYCLE.md || true
+-test -d factory && ls -la factory
+-test -d factory/sandbox && ls -la factory/sandbox || true
+-test -d factory/evidence && ls -la factory/evidence || true
+-mkdir -p factory/sandbox
+-mkdir -p factory/evidence/codex_minimal_example
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -e factory/sandbox/test_codex.txt; printf 'exists_status=%s\n' $?
+ test -f factory/sandbox/test_codex.txt
++ls -la factory/sandbox
++ls -la factory/evidence/codex_minimal_example
+ ls -la factory/sandbox/test_codex.txt
+ sed -n '1,40p' factory/sandbox/test_codex.txt
+-git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example
++git ls-files --stage factory/sandbox/test_codex.txt
++test -f factory/evidence/codex_minimal_example/cycle.md
++ls -la factory/evidence/codex_minimal_example/cycle.md
++git status --short
++git diff --name-only -- core services
++git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
++sed -n '1,220p' factory/evidence/codex_minimal_example/cycle.md
++sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
++sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
++sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index ad9f13c..370d664 100644
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -2,26 +2,35 @@
+ 
+ PLAN
+ - objetivo: Crear archivo de prueba sin tocar core.
+-- archivos permitidos: factory/sandbox/test_codex.txt; factory/evidence/codex_minimal_example/
++- archivos permitidos: factory/sandbox/test_codex.txt; evidencia requerida en factory/evidence/codex_minimal_example/
+ - archivos prohibidos: core/; services/
+ - criterio de cierre: archivo creado; sin errores de ejecucion.
+ - tests esperados: test -f factory/sandbox/test_codex.txt
+ 
+ WRITE
+-- creado factory/sandbox/test_codex.txt
+-- creada evidencia en factory/evidence/codex_minimal_example/
+-
+-DECISION
+-- CORRECTO
++- factory/sandbox/test_codex.txt ya existia fisicamente al inicio de esta ejecucion y esta versionado con contenido valido.
++- se actualiza evidencia reproducible en factory/evidence/codex_minimal_example/ sin modificar core/ ni services/.
+ 
+ VERIFY
+ - pwd: /opt/smartpyme-factory/repos/SmartPyme
+-- git status --short: muestra cambios no trackeados de esta tarea y un directorio de evidencia previo no relacionado.
+ - test -f factory/sandbox/test_codex.txt: exit 0
+-- ls -la factory/sandbox/test_codex.txt: -rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:03 factory/sandbox/test_codex.txt
++- ls -la factory/sandbox/test_codex.txt: -rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
++- git ls-files --stage factory/sandbox/test_codex.txt: 100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0 factory/sandbox/test_codex.txt
++- test -f factory/evidence/codex_minimal_example/cycle.md: exit 0
+ 
+ INSPECT
+-- contenido: codex_minimal_example
++- contenido observado: codex_minimal_example
+ 
+ RUN
+ - test -f factory/sandbox/test_codex.txt: PASS
++- git diff --name-only -- core services: sin salida
++
++REPORT
++- archivo objetivo creado/existente y verificable.
++- no se tocaron core/ ni services/.
++- existe evidencia en factory/evidence/codex_minimal_example/.
++- hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
++
++DECISION
++- CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index 041f415..642f5e5 100644
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -1,6 +1,9 @@
+ CORRECTO
+ 
+ Motivo:
+-- factory/sandbox/test_codex.txt existe.
++- factory/sandbox/test_codex.txt existe y fue verificado con test -f.
+ - El comando de validacion requerido termino con exit code 0.
+-- No se tocaron core/ ni services/.
++- No se modificaron rutas prohibidas core/ ni services/.
++- La evidencia requerida existe en factory/evidence/codex_minimal_example/.
++- Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 34291c6..38a8ed3 100644
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -1,7 +1,21 @@
+-diff --git a/factory/sandbox/test_codex.txt b/factory/sandbox/test_codex.txt
+-new file mode 100644
+-index 0000000..7cd80fa
+---- /dev/null
+-+++ b/factory/sandbox/test_codex.txt
+-@@ -0,0 +1 @@
+-+codex_minimal_example
++# codex_minimal_example git diff evidence
++
++Comando ejecutado:
++git diff -- factory/sandbox/test_codex.txt factory/evidence/codex_minimal_example/
++
++Resumen observado:
++- factory/evidence/codex_minimal_example/commands.txt actualizado con comandos ejecutados.
++- factory/evidence/codex_minimal_example/cycle.md actualizado con PLAN/WRITE/VERIFY/INSPECT/RUN/REPORT/DECISION.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con decision CORRECTO.
++- factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
++- factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
++- factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/sandbox/test_codex.txt sin diff de working tree.
++
++Diff de archivo objetivo:
++git diff -- factory/sandbox/test_codex.txt
++<sin salida; factory/sandbox/test_codex.txt esta versionado y sin cambios de working tree>
++
++Nota:
++- El archivo objetivo existe y fue validado con test -f.
++- La evidencia modificada pertenece a factory/evidence/codex_minimal_example/.
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index d6a63e3..a238b52 100644
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -1,6 +1,26 @@
+-?? factory/evidence/codex_minimal_example/
+-?? factory/evidence/codex_template_codex_task_20260427T140147Z/
+-?? factory/sandbox/
++ M factory/evidence/codex_minimal_example/commands.txt
++ M factory/evidence/codex_minimal_example/cycle.md
++ M factory/evidence/codex_minimal_example/decision.txt
++ M factory/evidence/codex_minimal_example/git_diff.patch
++ M factory/evidence/codex_minimal_example/git_status.txt
++ M factory/evidence/codex_minimal_example/tests.txt
++?? factory/control/PRIORITY_BOARD.md
++?? factory/evidence/codex_minimal_example/verification.txt
++?? factory/evidence/codex_template_codex_task_20260427T141052Z/
++?? factory/evidence/codex_template_codex_task_20260427T141841Z/
++?? factory/evidence/codex_template_codex_task_20260427T142601Z/
++?? factory/evidence/codex_template_codex_task_20260427T143308Z/
++?? factory/evidence/codex_template_codex_task_20260427T143931Z/
++?? factory/evidence/codex_template_codex_task_20260427T144554Z/
++?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+ 
+ Nota:
+-- factory/evidence/codex_template_codex_task_20260427T140147Z/ ya existia como cambio no relacionado antes de esta tarea y no fue modificado por este ciclo.
++- factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T141052Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T141841Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T142601Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T143308Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 03ec658..94d3d13 100644
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -1,8 +1,20 @@
+-COMMAND
+-test -f factory/sandbox/test_codex.txt
++$ test -f factory/sandbox/test_codex.txt
++exit=0
+ 
+-RESULT
+-PASS
++$ ls -la factory/sandbox/test_codex.txt
++-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+ 
+-OUTPUT
+-<sin salida; exit code 0>
++$ sed -n '1,40p' factory/sandbox/test_codex.txt
++codex_minimal_example
++
++$ git ls-files --stage factory/sandbox/test_codex.txt
++100644 7cd80fa32cba359e00865ea293955857a6b10fc4 0	factory/sandbox/test_codex.txt
++
++$ test -f factory/evidence/codex_minimal_example/cycle.md
++exit=0
++
++$ git diff --name-only -- core services
++<sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+
+exec
+/bin/bash -lc "test -f factory/evidence/codex_minimal_example/cycle.md; printf 'cycle_exit=%s\\n' \""'$?"; test -f factory/evidence/codex_minimal_example/commands.txt; printf '"'commands_exit=%s\\n' \""'$?"; test -f factory/evidence/codex_minimal_example/tests.txt; printf '"'tests_exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+cycle_exit=0
+commands_exit=0
+tests_exit=0
+
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/git_diff.patch
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/codex_minimal_example/git_status.txt
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 38a8ed3877901c715af0ae0bc5aa5212671185e3..8b6ad05cb3031899c13b0278f04f02b9805254fb
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -10,6 +10,7 @@
+ - factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
+ - factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
+ - factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con lectura de NEXT_CYCLE y decision.
+ - factory/sandbox/test_codex.txt sin diff de working tree.
+ 
+ Diff de archivo objetivo:
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index a238b5257c4967c29c3c59ddcd997d3a5159f07b..3f2b2a6625e5359ff6cb3122e5c5e8f9a09ac799
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -13,6 +13,7 @@
+ ?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T145148Z/
++?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+ 
+ Nota:
+ - factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
+@@ -23,4 +24,5 @@
+ - factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145837Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 38a8ed3877901c715af0ae0bc5aa5212671185e3..8b6ad05cb3031899c13b0278f04f02b9805254fb
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -10,6 +10,7 @@
+ - factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
+ - factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
+ - factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con lectura de NEXT_CYCLE y decision.
+ - factory/sandbox/test_codex.txt sin diff de working tree.
+ 
+ Diff de archivo objetivo:
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index a238b5257c4967c29c3c59ddcd997d3a5159f07b..3f2b2a6625e5359ff6cb3122e5c5e8f9a09ac799
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -13,6 +13,7 @@
+ ?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T145148Z/
++?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+ 
+ Nota:
+ - factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
+@@ -23,4 +24,5 @@
+ - factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145837Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+codex
+La evidencia quedó actualizada. Haré la pasada final de verificación física, validación requerida y diff acotado para cerrar con el formato obligatorio.
+exec
+/bin/bash -lc "pwd && test -f factory/sandbox/test_codex.txt; printf 'test_file_exit=%s\\n' \""'$?" && ls -la factory/sandbox/test_codex.txt' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+test_file_exit=0
+-rw-r--r-- 1 neoalmasana neoalmasana 22 Apr 27 14:09 factory/sandbox/test_codex.txt
+
+exec
+/bin/bash -lc "test -d factory/evidence/codex_minimal_example; printf 'evidence_dir_exit=%s\\n' \""'$?" && ls -la factory/evidence/codex_minimal_example' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+evidence_dir_exit=0
+total 36
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 14:18 .
+drwxr-xr-x 14 neoalmasana neoalmasana 4096 Apr 27 14:58 ..
+-rw-r--r--  1 neoalmasana neoalmasana 1327 Apr 27 15:04 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana 1637 Apr 27 15:04 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana  501 Apr 27 15:04 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana 1197 Apr 27 15:04 git_diff.patch
+-rw-r--r--  1 neoalmasana neoalmasana 2274 Apr 27 15:04 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana  574 Apr 27 15:04 tests.txt
+-rw-r--r--  1 neoalmasana neoalmasana 1147 Apr 27 15:04 verification.txt
+
+exec
+/bin/bash -lc "sed -n '1,40p' factory/sandbox/test_codex.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+codex_minimal_example
+
+exec
+/bin/bash -lc "git diff --name-only -- core services; printf 'forbidden_diff_exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+forbidden_diff_exit=0
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/evidence/codex_minimal_example/commands.txt
+ M factory/evidence/codex_minimal_example/cycle.md
+ M factory/evidence/codex_minimal_example/decision.txt
+ M factory/evidence/codex_minimal_example/git_diff.patch
+ M factory/evidence/codex_minimal_example/git_status.txt
+ M factory/evidence/codex_minimal_example/tests.txt
+?? factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_minimal_example/verification.txt
+?? factory/evidence/codex_template_codex_task_20260427T141052Z/
+?? factory/evidence/codex_template_codex_task_20260427T141841Z/
+?? factory/evidence/codex_template_codex_task_20260427T142601Z/
+?? factory/evidence/codex_template_codex_task_20260427T143308Z/
+?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+?? factory/evidence/codex_template_codex_task_20260427T145148Z/
+?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 38a8ed3877901c715af0ae0bc5aa5212671185e3..8b6ad05cb3031899c13b0278f04f02b9805254fb
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -10,6 +10,7 @@
+ - factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
+ - factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
+ - factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con lectura de NEXT_CYCLE y decision.
+ - factory/sandbox/test_codex.txt sin diff de working tree.
+ 
+ Diff de archivo objetivo:
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index a238b5257c4967c29c3c59ddcd997d3a5159f07b..3f2b2a6625e5359ff6cb3122e5c5e8f9a09ac799
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -13,6 +13,7 @@
+ ?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T145148Z/
++?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+ 
+ Nota:
+ - factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
+@@ -23,4 +24,5 @@
+ - factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145837Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+codex
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- `factory/evidence/codex_minimal_example/commands.txt`
+- `factory/evidence/codex_minimal_example/cycle.md`
+- `factory/evidence/codex_minimal_example/decision.txt`
+- `factory/evidence/codex_minimal_example/git_diff.patch`
+- `factory/evidence/codex_minimal_example/git_status.txt`
+- `factory/evidence/codex_minimal_example/tests.txt`
+- `factory/evidence/codex_minimal_example/verification.txt`
+
+`factory/sandbox/test_codex.txt` ya existía y no fue modificado.
+
+VERIFICACION_FISICA  
+- `pwd`: `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f factory/sandbox/test_codex.txt`: exit `0`
+- `ls -la factory/sandbox/test_codex.txt`: archivo presente, 22 bytes
+- contenido inspeccionado: `codex_minimal_example`
+- `test -d factory/evidence/codex_minimal_example`: exit `0`
+
+TESTS  
+- `test -f factory/sandbox/test_codex.txt`: PASS
+- `git diff --name-only -- core services`: sin salida, exit `0`
+
+EVIDENCIA  
+- Evidencia dejada en `factory/evidence/codex_minimal_example/`
+- Incluye `cycle.md`, `commands.txt`, `git_status.txt`, `git_diff.patch`, `tests.txt`, `verification.txt`, `decision.txt`
+
+DIFF  
+- No hay diff en `factory/sandbox/test_codex.txt`.
+- Diff limitado a evidencia de `factory/evidence/codex_minimal_example/`.
+- No se tocaron `core/` ni `services/`.
+
+BLOQUEOS  
+Ninguno.
+
+RIESGOS  
+Hay cambios previos no relacionados en el working tree: `factory/control/PRIORITY_BOARD.md` y varios `factory/evidence/codex_template_*`. Se dejaron intactos.
+diff --git a/factory/evidence/codex_minimal_example/commands.txt b/factory/evidence/codex_minimal_example/commands.txt
+index 1d2e2386ff8ef3f5fdac0a4a11e053f0619aeda5..0d5cd01ad87072000b723499e3e7699b85fa7787
+--- a/factory/evidence/codex_minimal_example/commands.txt
++++ b/factory/evidence/codex_minimal_example/commands.txt
+@@ -18,3 +18,10 @@
+ sed -n '1,220p' factory/evidence/codex_minimal_example/commands.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/verification.txt
+ sed -n '1,220p' factory/evidence/codex_minimal_example/tests.txt
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++pwd
++git status --short
++test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++ls -la factory/sandbox/test_codex.txt
++sed -n '1,40p' factory/sandbox/test_codex.txt
++git diff --name-only -- core services; printf 'exit=%s\n' "$?"
+diff --git a/factory/evidence/codex_minimal_example/cycle.md b/factory/evidence/codex_minimal_example/cycle.md
+index c506ac2697b1a8d71c9321d3ae2fa6455dd5bfdf..370d664e79df5150dcaece018f78700345ecb9a8
+--- a/factory/evidence/codex_minimal_example/cycle.md
++++ b/factory/evidence/codex_minimal_example/cycle.md
+@@ -30,6 +30,7 @@
+ - no se tocaron core/ ni services/.
+ - existe evidencia en factory/evidence/codex_minimal_example/.
+ - hay cambios previos/no relacionados en factory/control/PRIORITY_BOARD.md y otros directorios de evidencia codex_template_* que se dejan intactos.
++- se leyo factory/control/NEXT_CYCLE.md; la orden directa del usuario limita esta unidad a codex_minimal_example.
+ 
+ DECISION
+ - CORRECTO
+diff --git a/factory/evidence/codex_minimal_example/decision.txt b/factory/evidence/codex_minimal_example/decision.txt
+index e6ed453060a8c7f2472d01ec12453627140360d2..642f5e573ea7ce1c43eef1242c799af47289bccf
+--- a/factory/evidence/codex_minimal_example/decision.txt
++++ b/factory/evidence/codex_minimal_example/decision.txt
+@@ -6,3 +6,4 @@
+ - No se modificaron rutas prohibidas core/ ni services/.
+ - La evidencia requerida existe en factory/evidence/codex_minimal_example/.
+ - Los cambios no relacionados ya presentes en factory/evidence/codex_template_* no fueron tocados.
++- factory/control/NEXT_CYCLE.md fue leido; esta unidad se mantuvo limitada por la orden directa codex_minimal_example.
+diff --git a/factory/evidence/codex_minimal_example/git_diff.patch b/factory/evidence/codex_minimal_example/git_diff.patch
+index 38a8ed3877901c715af0ae0bc5aa5212671185e3..8b6ad05cb3031899c13b0278f04f02b9805254fb
+--- a/factory/evidence/codex_minimal_example/git_diff.patch
++++ b/factory/evidence/codex_minimal_example/git_diff.patch
+@@ -10,6 +10,7 @@
+ - factory/evidence/codex_minimal_example/tests.txt actualizado con salida de validacion.
+ - factory/evidence/codex_minimal_example/verification.txt agregado como verificacion fisica.
+ - factory/evidence/codex_minimal_example/git_status.txt actualizado con estado observado.
++- factory/evidence/codex_minimal_example/decision.txt actualizado con lectura de NEXT_CYCLE y decision.
+ - factory/sandbox/test_codex.txt sin diff de working tree.
+ 
+ Diff de archivo objetivo:
+diff --git a/factory/evidence/codex_minimal_example/git_status.txt b/factory/evidence/codex_minimal_example/git_status.txt
+index a238b5257c4967c29c3c59ddcd997d3a5159f07b..3f2b2a6625e5359ff6cb3122e5c5e8f9a09ac799
+--- a/factory/evidence/codex_minimal_example/git_status.txt
++++ b/factory/evidence/codex_minimal_example/git_status.txt
+@@ -13,6 +13,7 @@
+ ?? factory/evidence/codex_template_codex_task_20260427T143931Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T144554Z/
+ ?? factory/evidence/codex_template_codex_task_20260427T145148Z/
++?? factory/evidence/codex_template_codex_task_20260427T145837Z/
+ 
+ Nota:
+ - factory/control/PRIORITY_BOARD.md ya existia como cambio no relacionado y no fue modificado por este ciclo.
+@@ -23,4 +24,5 @@
+ - factory/evidence/codex_template_codex_task_20260427T143931Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T144554Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/evidence/codex_template_codex_task_20260427T145148Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
++- factory/evidence/codex_template_codex_task_20260427T145837Z/ ya existia como cambio no relacionado y no fue modificado por este ciclo.
+ - factory/sandbox/test_codex.txt no aparece modificado en git status porque ya esta versionado y sin cambios de working tree.
+diff --git a/factory/evidence/codex_minimal_example/tests.txt b/factory/evidence/codex_minimal_example/tests.txt
+index 8f635cb1bcd021aa7eb38c2a86acc44674f9f028..94d3d13f64a6da4946df6130897046322630078d
+--- a/factory/evidence/codex_minimal_example/tests.txt
++++ b/factory/evidence/codex_minimal_example/tests.txt
+@@ -15,3 +15,6 @@
+ 
+ $ git diff --name-only -- core services
+ <sin salida>
++
++$ test -f factory/sandbox/test_codex.txt; printf 'exit=%s\n' "$?"
++exit=0
+diff --git a/factory/evidence/codex_minimal_example/verification.txt b/factory/evidence/codex_minimal_example/verification.txt
+index 8612921063b8577a9a6d0beff0a0929a293f2dd1..66833787b861527997ce88925c9f46ea1b283b46
+--- a/factory/evidence/codex_minimal_example/verification.txt
++++ b/factory/evidence/codex_minimal_example/verification.txt
+@@ -30,6 +30,9 @@
+ $ test -f factory/sandbox/test_codex.txt
+ exit=0
+ 
++$ git diff --name-only -- core services; printf 'exit=%s\n' "$?"
++exit=0
++
+ REPORT
+ - evidencia actualizada en factory/evidence/codex_minimal_example/.
+ - no se modificaron core/ ni services/.
+
+2026-04-27T15:05:14.852056Z ERROR codex_core::session: failed to record rollout items: thread 019dcf77-a4f8-7982-824a-b5ecb20741de not found
+tokens used
+58,010
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- `factory/evidence/codex_minimal_example/commands.txt`
+- `factory/evidence/codex_minimal_example/cycle.md`
+- `factory/evidence/codex_minimal_example/decision.txt`
+- `factory/evidence/codex_minimal_example/git_diff.patch`
+- `factory/evidence/codex_minimal_example/git_status.txt`
+- `factory/evidence/codex_minimal_example/tests.txt`
+- `factory/evidence/codex_minimal_example/verification.txt`
+
+`factory/sandbox/test_codex.txt` ya existía y no fue modificado.
+
+VERIFICACION_FISICA  
+- `pwd`: `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f factory/sandbox/test_codex.txt`: exit `0`
+- `ls -la factory/sandbox/test_codex.txt`: archivo presente, 22 bytes
+- contenido inspeccionado: `codex_minimal_example`
+- `test -d factory/evidence/codex_minimal_example`: exit `0`
+
+TESTS  
+- `test -f factory/sandbox/test_codex.txt`: PASS
+- `git diff --name-only -- core services`: sin salida, exit `0`
+
+EVIDENCIA  
+- Evidencia dejada en `factory/evidence/codex_minimal_example/`
+- Incluye `cycle.md`, `commands.txt`, `git_status.txt`, `git_diff.patch`, `tests.txt`, `verification.txt`, `decision.txt`
+
+DIFF  
+- No hay diff en `factory/sandbox/test_codex.txt`.
+- Diff limitado a evidencia de `factory/evidence/codex_minimal_example/`.
+- No se tocaron `core/` ni `services/`.
+
+BLOQUEOS  
+Ninguno.
+
+RIESGOS  
+Hay cambios previos no relacionados en el working tree: `factory/control/PRIORITY_BOARD.md` y varios `factory/evidence/codex_template_*`. Se dejaron intactos.
