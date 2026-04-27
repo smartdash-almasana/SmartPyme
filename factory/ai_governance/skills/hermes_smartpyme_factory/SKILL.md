@@ -1,7 +1,7 @@
 ---
 name: hermes_smartpyme_factory
-description: Orquesta la factoría multiagente de SmartPyme usando Hermes Agent, hallazgos markdown, evidencia y validación cruzada.
-version: 1.0.0
+description: Ejecuta ciclos SmartPyme Factory con Hermes, delegation, evidencia, git y maximo tres agentes.
+version: 1.1.0
 platforms: [linux]
 metadata:
   hermes:
@@ -11,53 +11,72 @@ metadata:
 
 # Hermes SmartPyme Factory
 
-## Propósito
+## Activador
 
-Este skill convierte a Hermes Agent en el orquestador operativo de SmartPyme Factory.
-
-Hermes no reemplaza al repo, no reemplaza a GitHub y no reemplaza a los agentes por rol. Hermes gobierna el flujo.
-
-Modelo operativo:
+Cuando el usuario diga:
 
 ```text
-SmartPyme repo = fuente de verdad
-Hermes = orquestador operativo
-Vertex/Gemini/Codex = motores cognitivos por rol
-Hallazgo markdown = unidad de trabajo
-GitHub = persistencia
-Evidencia = condición de cierre
+Ejecuta un ciclo SmartPyme Factory
 ```
 
-## Workspace obligatorio
+Hermes debe ejecutar UN ciclo completo sobre un unico hallazgo pending.
 
-Antes de cualquier operación, ejecutar:
+## Modelo
+
+- Hermes = orquestador.
+- Gemini 2.5 = modelo activo de Hermes.
+- SmartPyme repo = fuente de verdad.
+- Hallazgo markdown = unidad de trabajo.
+- GitHub = persistencia.
+- Evidencia = condicion de cierre.
+
+## Workspaces validos
+
+Hermes puede operar solo si `pwd` es uno de estos:
+
+```text
+/home/neoalmasana/smartpyme-factory/repos/SmartPyme
+/opt/smartpyme-factory/repos/SmartPyme
+```
+
+Precheck obligatorio:
 
 ```bash
 pwd
 git remote -v
-git log --oneline -1
 git status --short
+git log --oneline -1
 ```
 
-Condiciones obligatorias:
+Remote obligatorio:
 
 ```text
-pwd = /opt/smartpyme-factory/repos/SmartPyme
-origin = https://github.com/smartdash-almasana/SmartPyme.git
-git status --short = sin salida, salvo que la tarea sea explícitamente cerrar cambios ya auditados
+https://github.com/smartdash-almasana/SmartPyme.git
 ```
 
-Si falla cualquier condición, responder:
+Si falla: `BLOCKED_WRONG_WORKSPACE`.
+
+## Toolsets requeridos
+
+Hermes debe operar con:
 
 ```text
-BLOCKED_WRONG_WORKSPACE
+terminal
+file
+skills
+delegation
+todo
 ```
 
-No crear archivos. No modificar archivos. No continuar.
+## Maximo tres agentes
 
-## Estados de hallazgos
+1. Architect/Planner: convierte hallazgo en plan y alcance.
+2. Builder: ejecuta cambios permitidos.
+3. Auditor: valida evidencia sin modificar archivos.
 
-La factoría opera sobre archivos markdown en:
+Hermes no debe crear mas de tres subagentes para un ciclo.
+
+## Estados
 
 ```text
 factory/hallazgos/pending
@@ -66,105 +85,31 @@ factory/hallazgos/done
 factory/hallazgos/blocked
 ```
 
-Flujo oficial:
+Flujo:
 
 ```text
 pending -> in_progress -> done | blocked
 ```
 
-Estados extendidos permitidos solo como evidencia interna:
+## Ciclo autonomo
 
-```text
-submitted
-validated
-rejected
-```
+1. Si el repo esta limpio: ejecutar `git pull --rebase origin main`.
+2. Leer `factory/hallazgos/pending/*.md`.
+3. Si no hay pending: responder `status=idle`.
+4. Seleccionar un solo hallazgo.
+5. Validar que tenga objetivo, rutas, restricciones, criterios y validaciones.
+6. Moverlo a `in_progress`.
+7. Delegar a Builder con toolsets `terminal,file`.
+8. Builder modifica solo rutas autorizadas y genera evidencia.
+9. Delegar a Auditor con toolsets `terminal,file`.
+10. Auditor responde `VALIDADO` o `NO_VALIDADO`.
+11. Hermes mueve a `done` o `blocked`.
+12. Hermes escribe evidencia final.
+13. Hermes hace commit y push solo si el cierre es consistente.
 
-El estado persistente del repo siempre se expresa moviendo el archivo del hallazgo entre carpetas.
+## Evidencia obligatoria
 
-## Rol de Hermes
-
-Hermes debe:
-
-1. Leer hallazgos en `factory/hallazgos/pending`.
-2. Seleccionar una sola unidad.
-3. Validar que el hallazgo tenga objetivo, rutas objetivo, restricciones, criterios de aceptación y validaciones.
-4. Mover el hallazgo a `factory/hallazgos/in_progress`.
-5. Invocar un subagente Builder con contexto mínimo y rutas permitidas.
-6. Guardar evidencia del Builder.
-7. Invocar un subagente Auditor distinto.
-8. Guardar veredicto del Auditor.
-9. Mover el hallazgo a `done` si el Auditor declara `VALIDADO`.
-10. Mover el hallazgo a `blocked` si el Builder falla, falta evidencia o el Auditor declara `NO VALIDADO`.
-11. Commit y push solo después de cierre validado o bloqueo correctamente documentado.
-
-Hermes no debe:
-
-- escribir código de producto;
-- validar su propio trabajo;
-- actuar como Builder y Auditor en la misma unidad;
-- inventar tareas fuera del hallazgo;
-- tocar `app/**`, `core/**`, `services/**` o tests sin autorización explícita del hallazgo;
-- continuar si hay ambigüedad activa.
-
-## Builder
-
-Builder ejecuta una unidad `in_progress`.
-
-Debe:
-
-- leer el hallazgo;
-- modificar solo las rutas autorizadas;
-- generar evidencia de escritura;
-- ejecutar validaciones permitidas;
-- reportar archivos tocados, diff y resultado.
-
-No debe:
-
-- cambiar el alcance;
-- tocar rutas no declaradas;
-- auditar su propio trabajo;
-- hacer commit o push salvo autorización explícita de Hermes.
-
-Salida mínima del Builder:
-
-```text
-VEREDICTO_BUILDER: submitted | blocked
-FILES_TOUCHED:
-COMMANDS_RUN:
-TEST_RESULT:
-EVIDENCE:
-BLOCKERS:
-```
-
-## Auditor
-
-Auditor valida evidencia contra el hallazgo.
-
-Debe verificar:
-
-- rutas tocadas versus rutas permitidas;
-- criterios de aceptación;
-- comandos de validación;
-- ausencia de cambios no autorizados;
-- evidencia suficiente.
-
-No debe corregir archivos.
-
-Salida mínima del Auditor:
-
-```text
-VEREDICTO_AUDITOR: VALIDADO | NO_VALIDADO
-EVIDENCIA:
-ARCHIVOS_REVISADOS:
-VIOLACIONES:
-RIESGOS:
-SIGUIENTE_ACCION:
-```
-
-## Evidencia
-
-Para cada hallazgo, Hermes debe crear:
+Para cada hallazgo:
 
 ```text
 factory/evidence/<hallazgo_id>/builder_report.md
@@ -174,71 +119,63 @@ factory/evidence/<hallazgo_id>/diff.patch
 factory/evidence/<hallazgo_id>/status.json
 ```
 
-`status.json` mínimo:
+Sin evidencia verificable: `NO_VALIDADO` y estado `blocked`.
 
-```json
-{
-  "hallazgo_id": "",
-  "status": "done|blocked",
-  "builder_verdict": "submitted|blocked",
-  "auditor_verdict": "VALIDADO|NO_VALIDADO",
-  "files_touched": [],
-  "commit": null
-}
-```
+## Reglas de desarrollo SmartPyme
 
-Sin evidencia, el resultado es `blocked`.
-
-## Selección de siguiente unidad
-
-Orden recomendado:
-
-1. Hallazgos `prioridad: alta`.
-2. Hallazgos más antiguos.
-3. Hallazgos documentales/gobernanza antes de producto si el sistema todavía no está estable.
-4. Una sola unidad por ciclo.
-
-## Regla de cierre Git
-
-Hermes solo commitea cuando:
-
-- Builder terminó;
-- Auditor validó o bloqueó con causa exacta;
-- evidencia quedó persistida;
-- `git status --short` no contiene cambios fuera de alcance.
-
-Mensaje de commit recomendado:
+Antes de codigo de producto, Architect y Builder deben respetar:
 
 ```text
-factory: close <hallazgo_id> as <done|blocked>
+docs/specs/01-arquitectura.md
+docs/specs/02-data-model.md
+docs/specs/04-pipeline.md
+docs/guias/protocolo-write-verify-run.md
+docs/guias/reglas-ia.md
 ```
 
-## Modo bloqueo
+Si no existen o no pueden leerse: `NO_VALIDADO`.
 
-Mover a `blocked` cuando ocurra cualquiera de estas condiciones:
-
-- workspace incorrecto;
-- repo sucio no explicado;
-- hallazgo mal formado;
-- Builder toca rutas no autorizadas;
-- Auditor no encuentra evidencia;
-- tests fallan;
-- falta contrato con herramienta externa;
-- ambigüedad que requiere decisión humana.
-
-El bloqueo debe incluir causa exacta en evidencia.
-
-## Comando mental obligatorio
-
-Antes de actuar, Hermes debe responder internamente estas preguntas:
+Capas obligatorias:
 
 ```text
-¿Estoy en el workspace correcto?
-¿Hay un solo hallazgo seleccionado?
-¿Las rutas objetivo están explícitas?
-¿Puedo ejecutar sin tocar producto fuera de alcance?
-¿Quién audita este trabajo?
-¿Qué evidencia quedará registrada?
+contracts -> repositories -> services -> core/pipeline -> adapters
 ```
 
-Si alguna respuesta es negativa, bloquear.
+Prohibido saltar capas, mezclar tenants o acceder DB sin repository.
+
+## Verdad de negocio
+
+Hermes no decide la verdad. SmartPyme valida.
+
+Regla:
+
+```text
+verdad = evidencia + formula + criterio humano + contexto temporal
+```
+
+Si falta tenant_id, evidencia, formula o criterio requerido: `BLOCKED` o `CLARIFY`.
+
+## Prohibiciones
+
+- Builder no audita.
+- Auditor no corrige.
+- Hermes no valida su propio trabajo.
+- No tocar `app/**`, `core/**`, `services/**` o tests sin hallazgo explicito.
+- No inventar datos.
+- No responder sin evidencia cuando sea dato de negocio.
+
+## Salida final de ciclo
+
+Hermes debe responder:
+
+```text
+VEREDICTO_CICLO: done | blocked | idle
+HALLAZGO:
+AGENTES_USADOS:
+ARCHIVOS_TOCADOS:
+EVIDENCIA:
+TESTS:
+COMMIT:
+PUSH:
+RIESGOS:
+```
