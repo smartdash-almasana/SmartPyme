@@ -1,0 +1,57 @@
+name: Hermes Factory Cycle
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Runner mode"
+        required: true
+        default: "once"
+        type: choice
+        options:
+          - once
+      reason:
+        description: "Why this cycle is being triggered"
+        required: false
+        default: "manual dispatch"
+
+jobs:
+  run-hermes-factory-cycle:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    concurrency:
+      group: hermes-factory-cycle
+      cancel-in-progress: false
+
+    steps:
+      - name: Precheck workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PWD=$(pwd)"
+          command -v git
+          command -v python3
+          command -v hermes
+
+      - name: Checkout SmartPyme
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run one Hermes SmartPyme Factory cycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          python3 scripts/hermes_factory_runner.py --repo "$GITHUB_WORKSPACE" --once
+
+      - name: Upload runner logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-runner-logs
+          path: |
+            runner.log
+            factory/runner_logs/*.json
+            factory/evidence/**
+          if-no-files-found: ignore
