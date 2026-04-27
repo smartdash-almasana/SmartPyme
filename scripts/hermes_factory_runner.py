@@ -26,9 +26,10 @@ VALID_REPO_SUFFIXES = (
     "smartpyme-factory/repos/SmartPyme",
     "actions-runner/_work/SmartPyme/SmartPyme",
 )
+DIRECTIVE_PATH = "factory/control/NEXT_CYCLE.md"
 
 
-PROMPT = """Ejecuta un ciclo SmartPyme Factory desde este repositorio.
+BASE_PROMPT = """Ejecuta un ciclo SmartPyme Factory desde este repositorio.
 
 Contexto operativo:
 - SmartPyme usa GitHub como fuente de verdad.
@@ -41,7 +42,8 @@ Reglas obligatorias:
 - No dependas de skills externos no instalados.
 - Un ciclo = un hallazgo pending o una unidad de roadmap.
 - Máximo tres roles conceptuales: Architect, Builder, Auditor.
-- Si no hay pending ni roadmap activo, responder idle.
+- Si existe factory/control/NEXT_CYCLE.md, esa orden tiene prioridad sobre cualquier otro backlog.
+- Si no hay NEXT_CYCLE.md ni pending ni roadmap activo, responder idle.
 - Guardar evidencia en factory/evidence/<task_id>/.
 - Usar git status y git diff antes de declarar resultado.
 - Si se toca Python, ejecutar pytest específico y ruff check sobre el alcance tocado.
@@ -49,11 +51,13 @@ Reglas obligatorias:
 - Hacer commit y push solo si el cierre es consistente y verificable.
 
 Prioridad del ciclo:
-1. Buscar tareas/hallazgos pending en factory/, tasks/, docs/ o roadmap activo.
-2. Elegir una sola unidad pequeña.
-3. Ejecutar el cambio mínimo.
-4. Validar con evidencia.
-5. Registrar el resultado.
+1. Leer factory/control/NEXT_CYCLE.md si existe.
+2. Si existe, ejecutar exactamente una unidad de esa orden.
+3. Si no existe, buscar tareas/hallazgos pending en factory/, tasks/, docs/ o roadmap activo.
+4. Elegir una sola unidad pequeña.
+5. Ejecutar el cambio mínimo.
+6. Validar con evidencia.
+7. Registrar el resultado.
 
 Salida final requerida:
 VEREDICTO_CICLO
@@ -101,6 +105,15 @@ def ensure_hermes() -> str:
     return hermes
 
 
+def build_prompt(repo: Path) -> str:
+    directive_file = repo / DIRECTIVE_PATH
+    if not directive_file.exists():
+        return BASE_PROMPT
+
+    directive = directive_file.read_text(encoding="utf-8")
+    return f"{BASE_PROMPT}\n\nORDEN_DIRECTIVA_ACTUAL ({DIRECTIVE_PATH}):\n{directive}\n"
+
+
 def write_run_log(repo: Path, payload: dict) -> Path:
     log_dir = repo / "factory" / "runner_logs"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -130,6 +143,7 @@ def one_cycle(repo: Path, hermes: str, timeout: int) -> int:
         print(f"RUNNER_LOG={log_path}")
         return pull.returncode
 
+    prompt = build_prompt(repo)
     cmd = [
         hermes,
         "chat",
@@ -137,7 +151,7 @@ def one_cycle(repo: Path, hermes: str, timeout: int) -> int:
         "--toolsets",
         "terminal,file,skills,delegation,todo",
         "--query",
-        PROMPT,
+        prompt,
     ]
     result = run(cmd, cwd=repo, timeout=timeout)
     print(result.stdout)
@@ -147,6 +161,7 @@ def one_cycle(repo: Path, hermes: str, timeout: int) -> int:
         "returncode": result.returncode,
         "started_at": started,
         "finished_at": datetime.now(timezone.utc).isoformat(),
+        "directive_path": DIRECTIVE_PATH if (repo / DIRECTIVE_PATH).exists() else None,
         "hermes_output": result.stdout,
     }
     log_path = write_run_log(repo, payload)
