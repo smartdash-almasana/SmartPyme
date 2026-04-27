@@ -1,0 +1,6 @@
+task_id: telegram-delivery-setup-v1
+status: pending
+objetivo: enviar reporte diario por Telegram
+criterios_exito:
+  - envio ejecutado
+  - delivery_status registrado
