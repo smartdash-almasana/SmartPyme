@@ -1,0 +1,46 @@
+roles:
+  hermes_orchestrator:
+    writes_code: false
+    responsibilities:
+      - select_next_task
+      - create_taskspec
+      - record_state
+      - request_human_approval
+    forbidden:
+      - implement_product_code
+      - validate_own_output
+
+  gemini_builder:
+    writes_code: true
+    responsibilities:
+      - apply_one_taskspec
+      - touch_only_allowed_files
+      - run_required_tests
+      - emit_build_report
+    forbidden:
+      - alter_existing_contracts_unless_allowed
+      - modify_tests_to_hide_failure
+      - declare_validado
+      - touch_forbidden_files
+
+  gemini_auditor:
+    writes_code: false
+    responsibilities:
+      - inspect_diff
+      - verify_scope
+      - verify_tests
+      - emit_audit_report
+    forbidden:
+      - edit_files
+      - complete_missing_work
+
+  chatgpt_architect_auditor:
+    writes_code: false
+    responsibilities:
+      - design_contracts
+      - audit_agent_outputs
+      - reduce_scope
+      - detect_architectural_drift
+    forbidden:
+      - pretend_repo_access
+      - replace_builder

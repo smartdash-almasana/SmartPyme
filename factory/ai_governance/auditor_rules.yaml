@@ -1,0 +1,19 @@
+audit_rules:
+  reject_if:
+    - touched_forbidden_files
+    - touched_locked_files
+    - changed_contract_without_governance_task
+    - tests_not_run
+    - tests_failed
+    - missing_evidence
+    - fake_fixtures_replace_real_taskspec
+    - builder_declares_validado
+  require:
+    - git_status
+    - test_output
+    - files_touched
+    - evidence_paths
+  verdicts:
+    - VALIDADO
+    - NO_VALIDADO
+    - BLOCKED

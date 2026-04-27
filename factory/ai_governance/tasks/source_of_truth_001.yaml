@@ -1,0 +1,40 @@
+task_id: task-source-of-truth-contracts-001
+mode: product
+status: pending
+human_required: false
+objective: >
+  Crear contratos mínimos para que los resultados de SmartPyme puedan declarar evidencia,
+  fórmula, input humano, supuestos, confianza, tenant_id y vigencia.
+
+allowed_files:
+  - app/contracts/source_of_truth.py
+  - tests/contracts/test_source_of_truth.py
+
+locked_files: []
+
+forbidden_files:
+  - infra/**
+  - docs/**
+  - factory/**
+  - .gemini/**
+  - .kiro/**
+
+required_tests:
+  - .venv/bin/python -m pytest tests/contracts/test_source_of_truth.py -v
+
+preflight_commands:
+  - git status --short
+  - test -d app || true
+  - test -d tests || true
+
+post_commands:
+  - git status --short
+  - .venv/bin/python -m pytest tests/contracts/test_source_of_truth.py -v
+
+acceptance_criteria:
+  - SourceOfTruth exige tenant_id
+  - SourceOfTruth soporta EvidenceRef
+  - SourceOfTruth soporta FormulaRef
+  - SourceOfTruth soporta HumanInputRef
+  - ConfidenceLevel solo acepta high medium low
+  - TimeScope representa periodo de vigencia

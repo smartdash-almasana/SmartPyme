@@ -1,0 +1,52 @@
+task_id: task-hermes-factory-task-loop-001
+mode: create_only
+status: pending
+human_required: false
+objective: >
+  Agregar un loop mínimo de factoría encima de la microcapa TaskSpec/evidence/reports ya validada,
+  sin modificar los contratos existentes.
+
+allowed_files:
+  - factory/task_loop.py
+  - tests/factory/test_task_loop.py
+
+locked_files:
+  - factory/task_store.py
+  - factory/task_runtime.py
+  - tests/factory/test_task_store.py
+
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - docs/**
+  - infra/**
+  - .gemini/**
+  - .kiro/**
+
+required_tests:
+  - .venv/bin/python -m pytest tests/factory/test_task_store.py tests/factory/test_task_loop.py -v
+
+preflight_commands:
+  - git status --short
+  - test -f factory/task_store.py
+  - test -f factory/task_runtime.py
+  - grep -R "class TaskSpec" -n factory/task_store.py
+  - grep -R "def save_task_spec" -n factory/task_store.py
+  - grep -R "def save_report" -n factory/task_store.py
+  - grep -R "def create_planning_task" -n factory/task_runtime.py
+
+post_commands:
+  - git status --short
+  - .venv/bin/python -m pytest tests/factory/test_task_store.py tests/factory/test_task_loop.py -v
+
+acceptance_criteria:
+  - factory/task_store.py no fue modificado
+  - factory/task_runtime.py no fue modificado
+  - tests/factory/test_task_store.py no fue modificado
+  - factory/task_loop.py existe
+  - tests/factory/test_task_loop.py existe
+  - run_one_factory_cycle procesa una TaskSpec pending real con campo task_id
+  - run_one_factory_cycle escribe factory/evidence/<task_id>/cycle.txt
+  - run_one_factory_cycle marca la TaskSpec como in_progress
+  - todos los tests requeridos pasan
