@@ -15,7 +15,7 @@ CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
 POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
 CONTROL = REPO / "factory" / "control"
 GATE = CONTROL / "AUDIT_GATE.md"
-STATUS = CONTROL / "factory" / "control" / "FACTORY_STATUS.md"
+STATUS = CONTROL / "FACTORY_STATUS.md"
 
 GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
 GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
