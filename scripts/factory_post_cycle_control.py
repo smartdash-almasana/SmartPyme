@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +16,12 @@ CONTRACTS = [
     "CODEX.md",
     "GEMINI.md",
 ]
+
+DECISION_EXIT_CODES = {
+    "CORRECTO": 0,
+    "BLOCKED": 20,
+    "NO_VALIDADO": 30,
+}
 
 
 def run(repo: Path, cmd: list[str]) -> str:
@@ -39,11 +46,31 @@ def read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def extract_verdict(text: str) -> str | None:
+    lines = [line.strip().upper() for line in text.splitlines()]
+    for idx, line in enumerate(lines):
+        if line == "VEREDICTO":
+            for candidate in lines[idx + 1 : idx + 8]:
+                if not candidate or candidate.startswith("`"):
+                    continue
+                if "BLOCKED" in candidate:
+                    return "BLOCKED"
+                if candidate == "CORRECTO" or candidate.startswith("CORRECTO"):
+                    return "CORRECTO"
+                if "NO_VALIDADO" in candidate or "NO VALIDADO" in candidate:
+                    return "NO_VALIDADO"
+                break
+    return None
+
+
 def infer_decision(evidence: Path, returncode: int | None) -> str:
-    text = (read(evidence / "codex_output.txt") + "\n" + read(evidence / "decision.txt")).upper()
-    if "CORRECTO" in text or "PASS" in text:
-        return "CORRECTO"
-    if "BLOCKED" in text:
+    text = read(evidence / "codex_output.txt") + "\n" + read(evidence / "decision.txt")
+    verdict = extract_verdict(text)
+    if verdict:
+        return verdict
+
+    upper = text.upper()
+    if "BLOCKED_REPO" in upper or "BLOCKED_" in upper:
         return "BLOCKED"
     if returncode not in (None, 0):
         return "NO_VALIDADO"
@@ -62,7 +89,7 @@ def main() -> int:
     now = datetime.now(timezone.utc).isoformat()
     status = run(repo, ["git", "status", "--short"])
     missing = [c for c in CONTRACTS if not (repo / c).exists()]
-    anti_status = "PASS" if not missing and result != "NO_VALIDADO" else "WARNING"
+    anti_status = "PASS" if not missing and result == "CORRECTO" else "WARNING"
 
     (evidence / "qa_report.md").write_text(
         f"# QA REPORT\n\ncreated_at: {now}\ndecision: {result}\n\n## git status\n```text\n{status or '<clean>'}\n```\n",
@@ -93,9 +120,11 @@ def main() -> int:
         "4. normalizacion tabular\n",
         encoding="utf-8",
     )
+    exit_code = DECISION_EXIT_CODES.get(result, 30)
     print(f"POST_CYCLE_CONTROL={evidence}")
     print(f"POST_CYCLE_DECISION={result}")
-    return 0
+    print(f"POST_CYCLE_EXIT_CODE={exit_code}")
+    return exit_code
 
 
 if __name__ == "__main__":
