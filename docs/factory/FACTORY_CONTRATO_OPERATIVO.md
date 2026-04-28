@@ -1,13 +1,13 @@
 # SmartPyme Factory — Contrato operativo vigente
 
-Estado: CANONICO v2 — Hermes profesional
+Estado: CANONICO v3 — Hermes profesional en castellano
 
 ## Verdad de runtime
 
 El runtime activo de la factoria autonoma es Hermes Gateway.
 
 ```text
-Telegram → Hermes Gateway → Skills → Subagentes → Repo → Tests → Evidencia → Auditoria → Decision humana
+Telegram → Hermes Gateway → quick commands / skills → Repo → Tests → Evidencia → Auditoria → Decision humana
 ```
 
 Queda deprecado cualquier runtime basado en runners caseros o bots paralelos.
@@ -62,8 +62,7 @@ Owner por Telegram
 → git pull --ff-only origin main
 → lectura de archivos canonicos
 → seleccion de una unica TaskSpec pending
-→ delegacion a subagente Builder/Codex/Gemini
-→ ejecucion limitada por allowed_files/forbidden_files
+→ validacion de allowed_files / forbidden_files
 → tests obligatorios
 → evidencia en factory/evidence/
 → gate WAITING_AUDIT
@@ -71,26 +70,27 @@ Owner por Telegram
 → owner aprueba, rechaza o bloquea
 ```
 
-## Comandos Telegram previstos
+## Comandos Telegram vigentes en castellano
 
 Los comandos deben implementarse como quick commands o skills de Hermes, no como scripts paralelos:
 
 ```text
-/status  → diagnostico de gateway, repo, gate, tarea activa y evidencia reciente
-/pull    → git pull --ff-only origin main y reporte de commit actual
-/stop    → pausar factoria escribiendo estado PAUSED/HOLD en factory/control
-/resume  → reabrir gate bajo estado OPEN/RUN
-/next    → ejecutar un unico ciclo: pull → leer canonicos → tomar proxima TaskSpec → delegar → test → evidencia → WAITING_AUDIT
-/audit   → revisar evidencia reciente y emitir APPROVED/REJECTED/BLOCKED/NO_VALIDADO
+/estado      → diagnostico de gateway, repo, gate, tarea activa y evidencia reciente
+/actualizar  → git pull --ff-only origin main y reporte de commit actual
+/pausar      → pausar factoria escribiendo estado PAUSED/HOLD en factory/control
+/reanudar    → reabrir gate bajo estado OPEN/RUN si no hay auditoria pendiente
+/avanzar     → ejecutar un unico ciclo: pull → leer canonicos → tomar proxima TaskSpec → test/evidencia → WAITING_AUDIT
+/auditar     → revisar evidencia reciente y emitir APPROVED/REJECTED/BLOCKED/NO_VALIDADO
 ```
 
-## Regla obligatoria de `/next`
+No usar nombres en ingles como mando principal del owner.
 
-El primer paso de `/next` es siempre:
+## Regla obligatoria de `/avanzar`
+
+El primer paso de `/avanzar` es siempre:
 
 ```bash
-cd /opt/smartpyme-factory/repos/SmartPyme
-git pull --ff-only origin main
+cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
 ```
 
 Si el pull falla, el ciclo queda BLOCKED y no se ejecuta nada mas.
@@ -113,7 +113,7 @@ Estados bloqueantes:
 Reglas:
 
 - `WAITING_AUDIT` bloquea nuevo dispatch hasta auditoria.
-- `PAUSED` o `HOLD` bloquean `/next`.
+- `PAUSED` o `HOLD` bloquean `/avanzar`.
 - `REJECTED` reabre o corrige la ultima tarea registrada por el gate.
 - Todo ciclo cerrado vuelve a `WAITING_AUDIT`.
 - No hay loop ciego: cada ciclo requiere auditoria o apertura explicita.
@@ -148,9 +148,9 @@ post_commands: []
 |---|---|
 | Owner humano | aprueba, pausa, reanuda o bloquea |
 | ChatGPT Director-Auditor | define prioridad, audita evidencia, escribe specs |
-| Hermes Gateway | recibe comandos Telegram y orquesta skills/subagentes |
+| Hermes Gateway | recibe comandos Telegram y ejecuta quick commands/skills |
 | Skill Director | lee canonicos, gate y tareas; decide un unico proximo ciclo |
-| Builder/Codex/Gemini | ejecuta cambios bajo TaskSpec cerrada |
+| Builder/Codex/Gemini | ejecuta cambios bajo TaskSpec cerrada cuando Hermes lo delega |
 | Auditor | revisa diff, tests y evidencia; no valida trabajo propio |
 | SmartPyme kernel | verdad operativa: jobs, evidencia, clarifications, estado |
 
@@ -195,17 +195,16 @@ Reglas minimas:
 ## Validacion minima de contrato
 
 ```bash
-cd /opt/smartpyme-factory/repos/SmartPyme
-grep -R "Hermes Gateway\|telegram_factory_control.py\|hermes_factory_runner.py\|git pull --ff-only" -n ChatGPT.md GPT.md docs/factory factory/ai_governance | head -120
-git status --short
-ps -ef | grep -E "telegram_factory_control|hermes_factory_runner" | grep -v grep || true
+cd /opt/smartpyme-factory/repos/SmartPyme && grep -R "Hermes Gateway\|telegram_factory_control.py\|hermes_factory_runner.py\|git pull --ff-only" -n ChatGPT.md GPT.md docs/factory factory/ai_governance | head -120
+cd /opt/smartpyme-factory/repos/SmartPyme && git status --short
+cd /home/neoalmasana && ps -ef | grep -E "telegram_factory_control|hermes_factory_runner" | grep -v grep || true
 ```
 
 ## Criterio de aceptacion
 
 - Hermes Gateway es el unico runtime conversacional.
-- `/next` empieza con `git pull --ff-only origin main`.
-- `/stop` pausa sin matar la VM ni romper Gateway.
+- `/avanzar` empieza con `git pull --ff-only origin main`.
+- `/pausar` pausa sin matar la VM ni romper Gateway.
 - No hay procesos legacy activos.
 - La evidencia de cada ciclo queda en `factory/evidence/`.
 - La decision final queda en gate y requiere auditoria.
