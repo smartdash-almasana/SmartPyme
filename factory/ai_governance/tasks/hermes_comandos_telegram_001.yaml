@@ -1,0 +1,39 @@
+task_id: hermes_comandos_telegram_001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Implementar el contrato de comandos de control por Telegram para Hermes sin
+  reactivar componentes legados ni crear ejecuciones paralelas. Hermes debe poder
+  consultar estado, pausar, reanudar, actualizar el repositorio y ejecutar un
+  unico ciclo gobernado.
+allowed_files:
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - docs/factory/HERMES_PROFESSIONAL_SETUP.md
+  - docs/factory/HERMES_PROFESSIONAL_CONFIG.md
+  - factory/ai_governance/skills/hermes_control_telegram.yaml
+  - factory/ai_governance/tasks/hermes_comandos_telegram_001.yaml
+  - prompts/hermes_control_telegram_prompt.md
+forbidden_files:
+  - app
+  - core
+  - smartcounter_core
+  - mcp_smartpyme_bridge.py
+required_tests:
+  - Validar que no se crean ejecutores paralelos.
+  - Validar que el avance comienza con actualizacion limpia del repositorio.
+  - Validar que pausa y reanudacion solo modifican estado de control.
+  - Validar que el reporte final incluye evidencia y estado del ciclo.
+acceptance_criteria:
+  - Existe una especificacion de control Telegram para Hermes.
+  - Existe un prompt operativo para la skill de control.
+  - Los comandos estan documentados en castellano.
+  - El avance siempre actualiza primero el repositorio desde GitHub.
+  - La pausa no detiene la maquina ni rompe el servicio de Hermes.
+  - No se toca codigo productivo del core.
+preflight_commands:
+  - Actualizar repositorio desde GitHub.
+  - Revisar estado limpio del repositorio.
+post_commands:
+  - Revisar diferencias documentales.
+  - Revisar estado final del repositorio.
