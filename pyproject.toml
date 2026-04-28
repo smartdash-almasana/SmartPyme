@@ -3,7 +3,15 @@ name = "smartpyme"
 version = "0.1.0"
 description = "SmartPyme operational core and autonomous factory"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "polars>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.8",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

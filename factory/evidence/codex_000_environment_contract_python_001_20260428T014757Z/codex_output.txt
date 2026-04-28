@@ -1,0 +1,3872 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd1c2-8b1e-7513-a03e-1e9091e7d980
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: environment_contract_python_001
+mode: governance
+status: pending
+human_required: false
+objective: >
+  Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+  versionado de SmartPyme Factory. La tarea debe instalar y declarar las dependencias
+  mínimas faltantes para validación canónica: alias/comando python, pytest, ruff/linter
+  Python y polars. El cierre solo es válido si los comandos canónicos pasan o si queda
+  documentado un bloqueo de instalación con causa exacta.
+allowed_files:
+  - pyproject.toml
+  - requirements.txt
+  - requirements-dev.txt
+  - pytest.ini
+  - ruff.toml
+  - docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+  - scripts/check_python_environment.sh
+  - scripts/install_python_environment.sh
+  - scripts/hermes_factory_runner.py
+  - factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+forbidden_files:
+  - app/core/**
+  - app/services/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/bugs/**
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/telegram_notify.py
+required_tests:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+acceptance_criteria:
+  - Existe un contrato de entorno versionado en pyproject.toml o requirements-dev.txt.
+  - pytest queda disponible mediante python -m pytest.
+  - ruff queda disponible mediante python -m ruff.
+  - polars queda importable desde python.
+  - El comando python existe o queda instalado un alias/symlink documentado a python3.
+  - La validación de scripts/build_audit_context.py pasa con python y pytest.
+  - No se toca core de negocio ni servicios de aplicación.
+  - Si alguna instalación falla, el veredicto debe ser BLOCKED_ENVIRONMENT_INSTALL con causa exacta y comando fallido.
+preflight_commands:
+  - git status --short
+  - command -v python || true
+  - command -v python3 || true
+  - python --version || true
+  - python3 --version || true
+  - python -m pytest --version || true
+  - python -m ruff --version || true
+  - python -c "import polars; print(polars.__version__)" || true
+post_commands:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+  - git status --short
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Voy a arrancar por los contratos obligatorios del repo (`GPT.md`, `CODEX.md`) y el estado real del entorno. Después limitaré cualquier cambio a los archivos permitidos por la tarea.
+exec
+/bin/bash -lc "sed -n '1,220p' GPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT — ENTRADA OBLIGATORIA SMARTPYME
+
+Estado: CANONICO v1
+
+Todo chat nuevo de GPT que participe en SmartPyme debe empezar por este archivo.
+
+## Rol activo
+
+GPT actua como Director-Auditor externo de SmartPyme Factory.
+
+## Orden obligatorio de lectura
+
+1. `GPT.md`
+2. `AGENTS.md`
+3. `docs/factory/GPT_DIRECTOR_AUDITOR.md`
+4. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`
+5. `factory/ai_governance/skills/gpt_director_auditor.yaml`
+6. `factory/ai_governance/taskspec.schema.json`
+7. `factory/control/AUDIT_GATE.md`, si existe
+8. `factory/control/FACTORY_STATUS.md`, si existe
+9. `factory/control/NEXT_CYCLE.md`, si existe
+10. evidencia reciente en `factory/evidence/`
+
+## Conducta esperada
+
+- No responder desde memoria conversacional.
+- Leer estado real del repo antes de decidir.
+- Auditar evidencia antes de aprobar.
+- Proponer una sola siguiente tarea.
+- Escribir specs concretas y ejecutables.
+- Mantener foco en SmartPyme Factory.
+
+## Prohibiciones
+
+- No inventar estado del repo.
+- No aprobar sin evidencia.
+- No mezclar frentes.
+- No tocar core sin task spec explicita.
+- No entregar placeholders cuando se puede leer el repo.
+
+## Prompt minimo para chat nuevo
+
+Lee `GPT.md` del repo SmartPyme y opera como GPT Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+
+codex
+El árbol ya tiene cambios ajenos en `factory/control/*`; no los voy a tocar porque están fuera del alcance permitido. Ahora compruebo archivos permitidos y el bloqueo actual del entorno antes de editar.
+exec
+/bin/bash -lc "sed -n '1,260p' AGENTS.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# AGENTS — Gobernanza Agéntica SmartPyme
+
+## Propósito
+
+Este archivo es el contrato raíz para cualquier agente que opere sobre SmartPyme.
+
+SmartPyme es un sistema operativo para PyMEs. El repositorio es la fuente de verdad. Ningún agente puede usar memoria conversacional, supuestos o texto generado como sustituto de archivos, comandos, tests o evidencia real.
+
+## Entrada obligatoria para GPT
+
+Todo chat nuevo de GPT debe leer primero `GPT.md` antes de responder, auditar, escribir roadmap o proponer tareas. `GPT.md` es el punto de arranque operativo para evitar depender de memoria conversacional.
+
+## Jerarquía de control
+
+1. **Owner humano**: define intención de negocio y prioridades.
+2. **ChatGPT director técnico externo**: define dirección, auditoría, contratos y cierre conceptual.
+3. **Hermes**: orquestador operativo en VM. Ejecuta ciclos sobre el repo.
+4. **Codex**: Builder / reviewer de código bajo contrato.
+5. **Gemini**: auditor de cantera, análisis documental y apoyo técnico bajo protocolo.
+6. **Tests, linters y evidencia**: juez técnico final.
+
+Ningún agente valida su propio trabajo.
+
+## Fuente de verdad
+
+Orden de autoridad:
+
+1. `GPT.md` para arranque de chats GPT.
+2. Código y archivos actuales del repositorio.
+3. `factory/control/NEXT_CYCLE.md`, si existe.
+4. `docs/SMARTPYME_OS_ACTUAL.md`.
+5. `docs/HERMES_MCP_RUNTIME.md`.
+6. `docs/ROADMAP_IMPLEMENTACION.md`.
+7. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+8. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`.
+9. `factory/ai_governance/skills/gpt_director_auditor.yaml`.
+10. `GEMINI.md`.
+11. `CODEX.md`.
+12. Evidencia en `factory/evidence/` y logs en `factory/runner_logs/`.
+
+Queda prohibido usar memoria conversacional como estado operativo.
+
+## Arquitectura canónica
+
+Pipeline técnico:
+
+```text
+Ingesta → Normalización → Entity Resolution ↔ Clarification → Orquestación → Comparación → Hallazgos → Comunicación → Acción
+```
+
+Reglas del sistema:
+
+- No alucinación.
+- Fail-closed ante incertidumbre.
+- Humano en el loop cuando hay ambigüedad crítica.
+- Trazabilidad total.
+- Consistencia sobre velocidad.
+- Hallazgos siempre con entidad, diferencia cuantificada y comparación explícita.
+
+## Roles autorizados
+
+### Architect
+
+Responsabilidad:
+- Interpretar la orden vigente.
+- Definir alcance mínimo.
+- Identificar contratos afectados.
+- Bloquear si falta contexto.
+
+No puede:
+- Escribir código productivo sin Builder.
+- Saltar tests.
+- Cambiar arquitectura canónica sin orden explícita.
+
+### Builder
+
+Responsabilidad:
+- Hacer cambios mínimos en archivos reales.
+- Preservar contratos existentes.
+- Ejecutar verificación física.
+- Entregar diff y evidencia.
+
+No puede:
+- Refactor global.
+- Inventar rutas, clases o dependencias.
+- Cerrar ciclo sin tests o bloqueo documentado.
+
+### Auditor
+
+Responsabilidad:
+- Verificar que el cambio existe.
+- Revisar evidencia.
+- Exigir tests/linters cuando apliquen.
+- Marcar `NO_VALIDADO` si falta evidencia.
+
+No puede:
+- Validar su propio cambio.
+- Aceptar outputs sin comandos verificables.
+
+## Protocolo obligatorio Write-Verify-Run
+
+Toda modificación debe seguir:
+
+```text
+PLAN → WRITE → VERIFY → INSPECT → RUN → REPORT → DECISION
+```
+
+### PLAN
+
+Declarar:
+- objetivo;
+- archivos permitidos;
+- archivos prohibidos;
+- criterio de cierre;
+- tests esperados.
+
+### WRITE
+
+Crear o modificar archivos reales en disco.
+
+### VERIFY
+
+Verificar existencia física:
+
+```bash
+pwd
+git status --short
+test -f ruta/archivo
+ls -la ruta/archivo
+```
+
+En Windows/PowerShell:
+
+```powershell
+Test-Path ruta\archivo
+Get-Item ruta\archivo
+```
+
+### INSPECT
+
+Mostrar contenido relevante:
+
+```bash
+sed -n '1,160p' ruta/archivo
+grep -R "simbolo" -n ruta/
+```
+
+En Windows/PowerShell:
+
+```powershell
+Get-Content ruta\archivo -TotalCount 120
+Select-String -Path ruta\archivo -Pattern "simbolo"
+```
+
+### RUN
+
+Ejecutar la validación mínima:
+
+```bash
+python3 -m pytest tests/... -q
+ruff check ruta/archivo.py
+```
+
+Si Ruff o pytest no están disponibles, el agente debe bloquear y proponer la instalación/contrato de entorno. No puede declarar éxito.
+
+### REPORT
+
+Debe incluir:
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+COMMIT
+RIESGOS
+```
+
+### DECISION
+
+Estados válidos:
+
+```text
+CORRECTO
+NO_VALIDADO
+BLOCKED
+INCOMPLETO
+```
+
+## Reglas anti-alucinación
+
+Queda prohibido:
+
+- Decir que un archivo existe sin `test -f`, `ls`, `Get-Item` o lectura equivalente.
+- Decir que un test pasó sin mostrar comando y resultado.
+- Crear contratos implícitos.
+- Completar rutas por intuición.
+- Usar documentación como prueba de código existente.
+- Mezclar productos externos como Exceland, SmartSync u otros con SmartPyme salvo orden explícita de migración.
+- Confundir `findings` técnico legado con `hallazgos` de negocio.
+- Tocar core sin contrato.
+
+Si falta contexto:
+
+```text
+BLOCKED: falta contexto verificable
+```
+
+## Reglas específicas para Hermes
+
+Hermes opera como orquestador en la VM.
+
+Debe:
+- leer `factory/control/NEXT_CYCLE.md` si existe;
+- ejecutar una sola unidad por ciclo;
+- guardar evidencia en `factory/evidence/<task_id>/`;
+- registrar logs en `factory/runner_logs/`;
+- hacer `git status` y `git diff` antes del cierre;
+- bloquear ante incertidumbre.
+
+No debe:
+- depender de skills no instalados;
+- modificar múltiples frentes en un ciclo;
+- hacer push si no hay evidencia;
+- borrar evidencia;
+- resolver ambigüedades de negocio sin validación humana.
+
+## Reglas específicas para Codex
+
+Codex opera como Builder / reviewer.
+
+Debe cumplir `CODEX.md`.
+
+Uso esperado:
+
+```text
+Hermes detecta tarea → Codex construye o revisa → tests/evidencia → Hermes registra → auditoría externa
+```
+
+Codex no decide arquitectura ni roadmap.
+
+## Reglas específicas para Gemini
+
+Gemini opera como auditor técnico, cantera, análisis documental y soporte de razonamiento.
+
+Debe cumplir `GEMINI.md`.
+
+Gemini no puede declarar implementación real sin verificación física.
+
+## Dependencias y entorno
+
+El entorno canónico debe declararse en archivos versionados antes de exigir validaciones automáticas.
+
+Pendiente obligatorio:
+
+```text
+pyproject.toml
+Ruff
+pytest canónico
+
+exec
+/bin/bash -lc 'for f in pyproject.toml requirements.txt requirements-dev.txt pytest.ini ruff.toml docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md scripts/check_python_environment.sh scripts/install_python_environment.sh scripts/hermes_factory_runner.py factory/ai_governance/tasks/000_environment_contract_python_001.yaml scripts/build_audit_context.py tests/factory/test_build_audit_context.py; do if test -e "$f"; then printf '"'EXISTS %s\\n' \""'$f"; else printf '"'MISSING %s\\n' \""'$f"; fi; done' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+EXISTS pyproject.toml
+MISSING requirements.txt
+MISSING requirements-dev.txt
+MISSING pytest.ini
+MISSING ruff.toml
+MISSING docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+MISSING scripts/check_python_environment.sh
+MISSING scripts/install_python_environment.sh
+EXISTS scripts/hermes_factory_runner.py
+EXISTS factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+EXISTS scripts/build_audit_context.py
+EXISTS tests/factory/test_build_audit_context.py
+
+exec
+/bin/bash -lc 'command -v python || true
+command -v python3 || true
+python --version || true
+python3 --version || true
+python -m pytest --version || true
+python -m ruff --version || true
+python -c "import polars; print(polars.__version__)" || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/usr/bin/python3
+/bin/bash: line 3: python: command not found
+Python 3.11.2
+/bin/bash: line 5: python: command not found
+/bin/bash: line 6: python: command not found
+/bin/bash: line 7: python: command not found
+
+codex
+Preflight confirma el bloqueo: `python` no existe, aunque `python3` sí. Voy a versionar el contrato mínimo y scripts de instalación/verificación sin tocar core ni los archivos de control ya modificados.
+exec
+/bin/bash -lc "sed -n '1,220p' pyproject.toml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+[project]
+name = "smartpyme"
+version = "0.1.0"
+description = "SmartPyme operational core and autonomous factory"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "evidence_store",
+  "factory/evidence",
+  "factory/runner_logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/ai_governance/tasks/000_environment_contract_python_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+task_id: environment_contract_python_001
+mode: governance
+status: pending
+human_required: false
+objective: >
+  Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+  versionado de SmartPyme Factory. La tarea debe instalar y declarar las dependencias
+  mínimas faltantes para validación canónica: alias/comando python, pytest, ruff/linter
+  Python y polars. El cierre solo es válido si los comandos canónicos pasan o si queda
+  documentado un bloqueo de instalación con causa exacta.
+allowed_files:
+  - pyproject.toml
+  - requirements.txt
+  - requirements-dev.txt
+  - pytest.ini
+  - ruff.toml
+  - docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+  - scripts/check_python_environment.sh
+  - scripts/install_python_environment.sh
+  - scripts/hermes_factory_runner.py
+  - factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+forbidden_files:
+  - app/core/**
+  - app/services/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/bugs/**
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/telegram_notify.py
+required_tests:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+acceptance_criteria:
+  - Existe un contrato de entorno versionado en pyproject.toml o requirements-dev.txt.
+  - pytest queda disponible mediante python -m pytest.
+  - ruff queda disponible mediante python -m ruff.
+  - polars queda importable desde python.
+  - El comando python existe o queda instalado un alias/symlink documentado a python3.
+  - La validación de scripts/build_audit_context.py pasa con python y pytest.
+  - No se toca core de negocio ni servicios de aplicación.
+  - Si alguna instalación falla, el veredicto debe ser BLOCKED_ENVIRONMENT_INSTALL con causa exacta y comando fallido.
+preflight_commands:
+  - git status --short
+  - command -v python || true
+  - command -v python3 || true
+  - python --version || true
+  - python3 --version || true
+  - python -m pytest --version || true
+  - python -m ruff --version || true
+  - python -c "import polars; print(polars.__version__)" || true
+post_commands:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+  - git status --short
+
+exec
+/bin/bash -lc "sed -n '1,220p' scripts/hermes_factory_runner.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from datetime import datetime, timezone
+from pathlib import Path
+import subprocess
+import sys
+import re
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from factory.telegram_notify import notify_cycle_result
+
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
+CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
+POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+STATUS = CONTROL / "FACTORY_STATUS.md"
+
+GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+
+
+def notify(status, detail=""):
+    try:
+        notify_cycle_result(status, detail)
+    except Exception as exc:
+        print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+
+
+def run_git(args, check=False):
+    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
+
+
+def ts():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_gate_text():
+    if not GATE.exists():
+        return ""
+    return GATE.read_text(encoding="utf-8", errors="replace")
+
+
+def gate_field(name, default=""):
+    prefix = f"{name}:"
+    for line in read_gate_text().splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return default
+
+
+def gate_status():
+    return gate_field("status", "APPROVED").upper()
+
+
+def write_status(result, detail=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(
+        f"# FACTORY STATUS\n\nupdated_at: {ts()}\nlast_cycle_result: {result}\naudit_gate: {gate_status()}\nlast_error: {detail or 'none'}\n",
+        encoding="utf-8",
+    )
+
+
+def set_gate(status, code=0, task=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
+        encoding="utf-8",
+    )
+
+
+def post_cycle(code):
+    if not POST_CYCLE.exists():
+        print("POST_CYCLE_MISSING")
+        notify("POST_CYCLE_MISSING", str(POST_CYCLE))
+        return code
+    r = subprocess.run(["python3", str(POST_CYCLE), "--repo", str(REPO), "--codex-returncode", str(code)])
+    if r.returncode:
+        notify("INCONSISTENCY_DETECTED", f"post_cycle_returncode={r.returncode}; codex_returncode={code}")
+    return r.returncode if r.returncode else code
+
+
+def task_is_pending(path):
+    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "task_id:" in text and "status: pending" in text
+
+
+def select_task():
+    if TASKS_DIR.exists():
+        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+        if pending:
+            for p in pending:
+                if p.name == "core_reconciliacion_v1.yaml":
+                    return p
+            return pending[0]
+    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+
+
+def replace_task_status(rel_task, new_status):
+    tp = (REPO / rel_task).resolve()
+    txt = tp.read_text(encoding="utf-8", errors="replace")
+    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+    tp.write_text(txt, encoding="utf-8")
+
+
+def mark_task_done(rel_task):
+    try:
+        replace_task_status(rel_task, "done")
+        notify("TASK_DONE", str(rel_task))
+    except Exception as e:
+        notify("TASK_DONE_ERROR", str(e))
+
+
+def reopen_last_task():
+    last_task = gate_field("last_task", "").strip()
+    if not last_task or last_task == "none":
+        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+        set_gate("BLOCKED", 1, "none")
+        return 1
+    try:
+        replace_task_status(last_task, "pending")
+        notify("AUDIT_REJECTED_REOPENED", last_task)
+        set_gate("APPROVED", 0, last_task)
+        return 0
+    except Exception as exc:
+        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+        set_gate("BLOCKED", 1, last_task)
+        return 1
+
+
+def enforce_gate_before_dispatch():
+    current_gate = gate_status()
+
+    if current_gate in GATE_ALLOWED_TO_RUN:
+        return 0
+
+    if current_gate == "REJECTED":
+        return reopen_last_task()
+
+    if current_gate in GATE_BLOCKING:
+        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+        return 2
+
+    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+    notify("AUDIT_GATE_UNKNOWN", current_gate)
+    return 2
+
+
+def git_has_changes():
+    r = run_git(["status", "--porcelain"])
+    return bool(r.stdout.strip())
+
+
+def auto_commit_and_push(rel_task, code):
+    if code != 0:
+        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+        return
+    if not git_has_changes():
+        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+        return
+
+    task_label = str(rel_task) if rel_task else "no-task"
+    run_git(["add", "-A"], check=True)
+    commit_msg = f"Factory cycle: {task_label}"
+    commit = run_git(["commit", "-m", commit_msg])
+    if commit.returncode != 0:
+        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+        return
+
+    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+    push = run_git(["push", "origin", "main"])
+    if push.returncode != 0:
+        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+        return
+
+    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+
+
+def main():
+    notify("CYCLE_START", f"repo={REPO}")
+
+    gate_code = enforce_gate_before_dispatch()
+    if gate_code:
+        return 0
+
+    set_gate("RUNNING")
+    write_status("RUNNING", "cycle started")
+
+    task = select_task()
+    rel_task = None
+    if task:
+        rel_task = task.relative_to(REPO)
+        print(f"[Hermes->Codex] Dispatching task: {rel_task}")
+        notify("TASK_DISPATCH", str(rel_task))
+        r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
+        code = post_cycle(r.returncode)
+        if code == 0:
+            mark_task_done(rel_task)
+    else:
+        print("[Hermes] No task, post-cycle only.")
+        notify("NO_TASK", "Sin tareas pending")
+        code = post_cycle(0)
+
+    set_gate("WAITING_AUDIT", code, str(rel_task) if rel_task else "none")
+    write_status("WAITING_AUDIT", "cycle closed")
+    print("CYCLE_CLOSED_WAITING_AUDIT")
+
+    if code == 0:
+        notify("CYCLE_OK", "cycle closed; gate=WAITING_AUDIT")
+        auto_commit_and_push(rel_task, code)
+    else:
+        notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT")
+
+    return code
+
+
+
+exec
+/bin/bash -lc "sed -n '1,220p' scripts/build_audit_context.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import argparse
+import subprocess
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+MAX_RECENT_FILES = 5
+MAX_SECTION_CHARS = 4000
+
+
+@dataclass(frozen=True)
+class RecentFile:
+    path: Path
+    modified_at: str
+
+
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _read_optional_text(path: Path, max_chars: int = MAX_SECTION_CHARS) -> str:
+    if not path.is_file():
+        return f"NO_ENCONTRADO: {path.as_posix()}"
+
+    text = path.read_text(encoding="utf-8", errors="replace").strip()
+    if len(text) <= max_chars:
+        return text or "(archivo vacio)"
+    return f"{text[:max_chars].rstrip()}\n... [TRUNCADO]"
+
+
+def _recent_files(root: Path, limit: int = MAX_RECENT_FILES) -> list[RecentFile]:
+    if not root.is_dir():
+        return []
+
+    files = [path for path in root.rglob("*") if path.is_file()]
+    files.sort(key=lambda path: (path.stat().st_mtime, path.as_posix()), reverse=True)
+
+    recent: list[RecentFile] = []
+    for path in files[:limit]:
+        modified_at = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
+        recent.append(
+            RecentFile(
+                path=path,
+                modified_at=modified_at.replace(microsecond=0).isoformat(),
+            )
+        )
+    return recent
+
+
+def _format_recent_files(repo_root: Path, title: str, root: Path) -> str:
+    recent = _recent_files(root)
+    lines = [f"## {title}"]
+    if not recent:
+        lines.append(f"NO_ENCONTRADO_O_VACIO: {root.relative_to(repo_root).as_posix()}")
+        return "\n".join(lines)
+
+    for item in recent:
+        lines.append(f"- {item.modified_at} {item.path.relative_to(repo_root).as_posix()}")
+    return "\n".join(lines)
+
+
+def _run_git(repo_root: Path, args: list[str]) -> str:
+    command = ["git", *args]
+    result = subprocess.run(
+        command,
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    output = (result.stdout or result.stderr).strip()
+    if result.returncode != 0:
+        return f"ERROR git {' '.join(args)}: {output or f'codigo {result.returncode}'}"
+    return output or "(sin salida)"
+
+
+def build_audit_context(repo_root: Path) -> str:
+    repo_root = repo_root.resolve()
+    control = repo_root / "factory" / "control"
+
+    sections = [
+        "# SMARTPYME AUDIT CONTEXT BUNDLE",
+        f"generated_at: {_utc_timestamp()}",
+        f"repo_root: {repo_root.as_posix()}",
+        "",
+        "## GATE_ACTUAL",
+        _read_optional_text(control / "AUDIT_GATE.md"),
+        "",
+        "## ESTADO_FACTORY",
+        _read_optional_text(control / "FACTORY_STATUS.md"),
+        "",
+        "## ULTIMA_TAREA",
+        _read_optional_text(control / "NEXT_CYCLE.md"),
+        "",
+        _format_recent_files(repo_root, "EVIDENCIA_RECIENTE", repo_root / "factory" / "evidence"),
+        "",
+        _format_recent_files(repo_root, "BUGS_RECIENTES", repo_root / "factory" / "bugs"),
+        "",
+        "## GIT_STATUS_SHORT",
+        _run_git(repo_root, ["status", "--short"]),
+        "",
+        "## GIT_LOG_ONELINE_5",
+        _run_git(repo_root, ["log", "--oneline", "-5"]),
+        "",
+    ]
+    return "\n".join(sections)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Genera un contexto tecnico compacto para auditoria humana SmartPyme."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Ruta de salida. Si se omite, imprime el bundle por stdout.",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    context = build_audit_context(Path.cwd())
+
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(context, encoding="utf-8")
+        return 0
+
+    print(context)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+exec
+/bin/bash -lc "sed -n '1,220p' tests/factory/test_build_audit_context.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import importlib.util
+import sys
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SCRIPT_PATH = REPO_ROOT / "scripts" / "build_audit_context.py"
+
+
+def _load_module():
+    spec = importlib.util.spec_from_file_location("build_audit_context", SCRIPT_PATH)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_context_tolerates_missing_control_and_recent_dirs(tmp_path, monkeypatch):
+    module = _load_module()
+    monkeypatch.setattr(module, "_run_git", lambda repo_root, args: "git-ok")
+
+    context = module.build_audit_context(tmp_path)
+
+    assert "## GATE_ACTUAL" in context
+    assert "NO_ENCONTRADO: " in context
+    assert "factory/control/AUDIT_GATE.md" in context
+    assert "## ESTADO_FACTORY" in context
+    assert "factory/control/FACTORY_STATUS.md" in context
+    assert "## ULTIMA_TAREA" in context
+    assert "factory/control/NEXT_CYCLE.md" in context
+    assert "NO_ENCONTRADO_O_VACIO: factory/evidence" in context
+    assert "NO_ENCONTRADO_O_VACIO: factory/bugs" in context
+    assert context.count("git-ok") == 2
+
+
+def test_recent_evidence_and_bugs_are_limited_to_five(tmp_path, monkeypatch):
+    module = _load_module()
+    monkeypatch.setattr(module, "_run_git", lambda repo_root, args: "git-ok")
+
+    evidence = tmp_path / "factory" / "evidence"
+    bugs = tmp_path / "factory" / "bugs"
+    evidence.mkdir(parents=True)
+    bugs.mkdir(parents=True)
+    for index in range(7):
+        (evidence / f"evidence-{index}.txt").write_text(str(index), encoding="utf-8")
+        (bugs / f"bug-{index}.md").write_text(str(index), encoding="utf-8")
+
+    context = module.build_audit_context(tmp_path)
+
+    assert context.count("factory/evidence/evidence-") == 5
+    assert context.count("factory/bugs/bug-") == 5
+
+
+def test_context_does_not_write_files_without_output(tmp_path, monkeypatch):
+    module = _load_module()
+    monkeypatch.setattr(module, "_run_git", lambda repo_root, args: "git-ok")
+
+    before = sorted(path.relative_to(tmp_path).as_posix() for path in tmp_path.rglob("*"))
+    context = module.build_audit_context(tmp_path)
+    after = sorted(path.relative_to(tmp_path).as_posix() for path in tmp_path.rglob("*"))
+
+    assert context.startswith("# SMARTPYME AUDIT CONTEXT BUNDLE")
+    assert after == before
+
+
+def test_main_writes_only_requested_output(tmp_path, monkeypatch):
+    module = _load_module()
+    output = tmp_path / "out" / "audit.txt"
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(module, "_run_git", lambda repo_root, args: "git-ok")
+    monkeypatch.setattr(module, "parse_args", lambda: type("Args", (), {"output": output})())
+
+    result = module.main()
+
+    assert result == 0
+    assert output.is_file()
+    assert output.read_text(encoding="utf-8").startswith("# SMARTPYME AUDIT CONTEXT BUNDLE")
+    written = sorted(path.relative_to(tmp_path).as_posix() for path in tmp_path.rglob("*"))
+    assert written == ["out", "out/audit.txt"]
+
+exec
+/bin/bash -lc 'python3 -m pytest --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/usr/bin/python3: No module named pytest
+
+exec
+/bin/bash -lc 'python3 -m ruff --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/usr/bin/python3: No module named ruff
+
+exec
+/bin/bash -lc 'python3 -c "import polars; print(polars.__version__)" || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'polars'
+
+exec
+/bin/bash -lc "ls -la scripts docs/factory | sed -n '1,180p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs/factory:
+total 64
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 28 01:29 .
+drwxr-xr-x 4 neoalmasana neoalmasana 4096 Apr 27 13:57 ..
+-rw-r--r-- 1 neoalmasana neoalmasana 4881 Apr 27 14:23 ANTI_DERIVA_PRIORITY_QA_LOOP.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1276 Apr 28 01:10 AUDIT_CONTEXT_BUNDLE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3294 Apr 27 13:57 CODEX_BUILDER_INTEGRATION.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1470 Apr 27 14:50 DAILY_FACTORY_CLOSURE_REPORT.md
+-rw-r--r-- 1 neoalmasana neoalmasana 2712 Apr 27 13:57 DISK_RETENTION_AND_EVIDENCE_POLICY.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3364 Apr 27 23:52 FACTORY_CONTRATO_OPERATIVO.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1051 Apr 27 14:56 FACTORY_OBSERVABILITY_STATUS.md
+-rw-r--r-- 1 neoalmasana neoalmasana  546 Apr 28 01:29 GPT_DIRECTOR_AUDITOR.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3786 Apr 27 14:23 HERMES_CODEX_GEMINI_GOVERNANCE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 4598 Apr 27 23:52 LOOP_DOCUMENTACION_INDUSTRIAL.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1440 Apr 27 14:15 TECH_SPEC_QUEUE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1039 Apr 27 14:56 TELEGRAM_DAILY_REPORT_DELIVERY.md
+
+scripts:
+total 60
+drwxr-xr-x  4 neoalmasana neoalmasana 4096 Apr 28 01:08 .
+drwxr-xr-x 24 neoalmasana neoalmasana 4096 Apr 28 01:34 ..
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 28 01:11 __pycache__
+-rw-r--r--  1 neoalmasana neoalmasana 3973 Apr 28 01:08 build_audit_context.py
+-rw-r--r--  1 neoalmasana neoalmasana 3864 Apr 27 13:57 codex_builder_runner.py
+-rw-r--r--  1 neoalmasana neoalmasana 3210 Apr 27 11:57 configure_hermes_smartpyme.py
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 11:57 dev
+-rw-r--r--  1 neoalmasana neoalmasana  613 Apr 27 13:57 factory_disk_guard.py
+-rw-r--r--  1 neoalmasana neoalmasana 3490 Apr 27 14:38 factory_post_cycle_control.py
+-rw-r--r--  1 neoalmasana neoalmasana 7178 Apr 27 23:27 hermes_factory_runner.py
+-rw-r--r--  1 neoalmasana neoalmasana  860 Apr 27 22:07 install_telegram_control_service.sh
+-rw-r--r--  1 neoalmasana neoalmasana 9957 Apr 28 01:07 telegram_factory_control.py
+
+exec
+/bin/bash -lc 'python3 -m pip --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 298ms:
+pip 23.0.1 from /usr/lib/python3/dist-packages/pip (python 3.11)
+
+codex
+`python3` tampoco tiene `pytest`, `ruff` ni `polars`. El contrato puede quedar versionado, pero la instalación real probablemente dependerá de permisos del sistema o de red; voy a intentar dejar scripts reproducibles y luego ejecutar los comandos canónicos para obtener el bloqueo exacto si persiste.
+exec
+/bin/bash -lc "find . -maxdepth 3 -type f \\( -name 'pytest' -o -name 'ruff' -o -name 'python' \\) -print | sed -n '1,120p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+./.venv/bin/pytest
+
+exec
+/bin/bash -lc "find . -maxdepth 3 -type d \\( -name '.venv' -o -name 'venv' \\) -print | sed -n '1,80p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+./.venv
+
+exec
+/bin/bash -lc "python3 -m pip index versions pytest 2>&1 | sed -n '1,60p' || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 8053ms:
+WARNING: The directory '/home/neoalmasana/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+WARNING: pip index is currently an experimental command. It may be removed/changed in a future release without prior warning.
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f8cf9ed0a10>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/pytest/
+WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f8cf9ed1190>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/pytest/
+WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f8cf9ed1c10>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/pytest/
+WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f8cf9ed2610>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/pytest/
+WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<pip._vendor.urllib3.connection.HTTPSConnection object at 0x7f8cf9ed3090>: Failed to establish a new connection: [Errno -2] Name or service not known')': /simple/pytest/
+ERROR: No matching distribution found for pytest
+
+exec
+/bin/bash -lc '.venv/bin/python --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+Python 3.11.2
+
+exec
+/bin/bash -lc '.venv/bin/python -m ruff --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff
+
+exec
+/bin/bash -lc '.venv/bin/python -c "import polars; print(polars.__version__)" || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'polars'
+
+exec
+/bin/bash -lc 'ls -la .venv/bin/python .venv/bin/python3 .venv/bin/pytest 2>/dev/null || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rwxr-xr-x 1 neoalmasana neoalmasana 208 Apr 27 19:52 .venv/bin/pytest
+lrwxrwxrwx 1 neoalmasana neoalmasana   7 Apr 27 19:52 .venv/bin/python -> python3
+lrwxrwxrwx 1 neoalmasana neoalmasana  16 Apr 27 19:52 .venv/bin/python3 -> /usr/bin/python3
+
+exec
+/bin/bash -lc '.venv/bin/python -m pytest --version || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 200ms:
+pytest 9.0.3
+
+codex
+PLAN: objetivo, cerrar el contrato versionado de entorno Python; archivos permitidos a tocar: `pyproject.toml`, `requirements-dev.txt`, `docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md`, `scripts/check_python_environment.sh`, `scripts/install_python_environment.sh` y posiblemente el YAML de tarea; archivos prohibidos: core, servicios, evidencia y control. Criterio de cierre: comandos canónicos pasan o queda `BLOCKED_ENVIRONMENT_INSTALL` con comando y causa exacta.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+/opt/smartpyme-factory/repos/SmartPyme/pyproject.toml
+/opt/smartpyme-factory/repos/SmartPyme/requirements-dev.txt
+/opt/smartpyme-factory/repos/SmartPyme/scripts/check_python_environment.sh
+/opt/smartpyme-factory/repos/SmartPyme/scripts/install_python_environment.sh
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+codex
+WRITE completado en archivos permitidos: contrato, requirements dev y scripts de instalación/verificación. Ahora ajusto permisos de scripts y ejecuto la instalación para capturar si el bloqueo es de red/permisos o queda resuelto.
+exec
+/bin/bash -lc 'chmod +x scripts/check_python_environment.sh scripts/install_python_environment.sh' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'test -f pyproject.toml && ls -la pyproject.toml
+test -f requirements-dev.txt && ls -la requirements-dev.txt
+test -f docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md && ls -la docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+test -f scripts/check_python_environment.sh && ls -la scripts/check_python_environment.sh
+test -f scripts/install_python_environment.sh && ls -la scripts/install_python_environment.sh' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 689 Apr 28 01:46 pyproject.toml
+-rw-r--r-- 1 neoalmasana neoalmasana 34 Apr 28 01:46 requirements-dev.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 1577 Apr 28 01:46 docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+-rwxr-xr-x 1 neoalmasana neoalmasana 460 Apr 28 01:46 scripts/check_python_environment.sh
+-rwxr-xr-x 1 neoalmasana neoalmasana 320 Apr 28 01:46 scripts/install_python_environment.sh
+
+exec
+/bin/bash -lc "sed -n '1,180p' docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Python Environment Contract
+
+Estado: CANONICO v1
+
+Este contrato declara el entorno minimo para validar SmartPyme Factory.
+
+## Comando Python
+
+El comando canonico para automatizacion es:
+
+```bash
+python
+```
+
+El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
+Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
+crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
+
+## Dependencias minimas
+
+Las dependencias versionadas son:
+
+- `polars>=1.0`
+- `pytest>=8.0`
+- `ruff>=0.8`
+
+Fuente de verdad:
+
+- `pyproject.toml`
+- `requirements-dev.txt`
+
+## Instalacion canonica
+
+```bash
+scripts/install_python_environment.sh
+```
+
+El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
+`.venv/bin/python` existe como comando `python` dentro del entorno activado.
+
+Para operar manualmente:
+
+```bash
+source .venv/bin/activate
+```
+
+## Verificacion canonica
+
+```bash
+scripts/check_python_environment.sh
+python --version
+python3 --version
+python -m pytest --version
+python -m ruff --version
+python -c "import polars; print(polars.__version__)"
+python -m pytest tests/factory/test_build_audit_context.py -q
+python -m py_compile scripts/build_audit_context.py
+python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+```
+
+## Politica fail-closed
+
+Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
+como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
+comando fallido y la causa exacta observada.
+
+exec
+/bin/bash -lc "sed -n '1,120p' pyproject.toml && sed -n '1,80p' requirements-dev.txt && sed -n '1,120p' scripts/check_python_environment.sh && sed -n '1,120p' scripts/install_python_environment.sh" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+[project]
+name = "smartpyme"
+version = "0.1.0"
+description = "SmartPyme operational core and autonomous factory"
+requires-python = ">=3.11"
+dependencies = [
+  "polars>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "evidence_store",
+  "factory/evidence",
+  "factory/runner_logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+pytest>=8.0
+ruff>=0.8
+polars>=1.0
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+python --version
+python3 --version
+python -m pytest --version
+python -m ruff --version
+python -c "import polars; print(polars.__version__)"
+python -m pytest tests/factory/test_build_audit_context.py -q
+python -m py_compile scripts/build_audit_context.py
+python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+python3 -m venv .venv
+
+# shellcheck disable=SC1091
+source .venv/bin/activate
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+python scripts/check_python_environment.sh
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+exec
+/bin/bash -lc scripts/install_python_environment.sh in /opt/smartpyme-factory/repos/SmartPyme
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+codex
+La instalación está fallando al resolver `pypi.org`; espero el retorno final para reportar el comando exacto y no convertir un bloqueo de red en éxito parcial.
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+ exited 1 in 17427ms:
+WARNING: The directory '/home/neoalmasana/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Requirement already satisfied: pip in ./.venv/lib/python3.11/site-packages (26.1)
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/pip/
+WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/pip/
+WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/pip/
+WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/pip/
+WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/pip/
+WARNING: The directory '/home/neoalmasana/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Requirement already satisfied: pytest>=8.0 in ./.venv/lib/python3.11/site-packages (from -r requirements-dev.txt (line 1)) (9.0.3)
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/ruff/
+WARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/ruff/
+WARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/ruff/
+WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/ruff/
+WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NameResolutionError("HTTPSConnection(host='pypi.org', port=443): Failed to resolve 'pypi.org' ([Errno -2] Name or service not known)")': /simple/ruff/
+ERROR: Could not find a version that satisfies the requirement ruff>=0.8 (from versions: none)
+ERROR: No matching distribution found for ruff>=0.8
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M pyproject.toml
+?? docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+?? requirements-dev.txt
+?? scripts/check_python_environment.sh
+?? scripts/install_python_environment.sh
+
+exec
+/bin/bash -lc 'git diff -- pyproject.toml requirements-dev.txt docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md scripts/check_python_environment.sh scripts/install_python_environment.sh factory/ai_governance/tasks/000_environment_contract_python_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6..a86a0c9 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@ name = "smartpyme"
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+
+exec
+/bin/bash -lc "python --version; printf 'exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/bin/bash: line 1: python: command not found
+exit=127
+
+exec
+/bin/bash -lc ".venv/bin/python -m pytest tests/factory/test_build_audit_context.py -q; printf 'exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+ succeeded in 269ms:
+....                                                                     [100%]
+exit=0
+
+codex
+La validación parcial con `.venv/bin/python` muestra que el test existente pasa, pero los comandos canónicos siguen bloqueados porque `python` no está en `PATH` y la instalación de `ruff` no puede resolver PyPI. Voy a registrar ese bloqueo en el YAML de tarea, sin marcarlo como completado.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/ai_governance/tasks/000_environment_contract_python_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+task_id: environment_contract_python_001
+mode: governance
+status: blocked
+human_required: false
+objective: >
+  Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+  versionado de SmartPyme Factory. La tarea debe instalar y declarar las dependencias
+  mínimas faltantes para validación canónica: alias/comando python, pytest, ruff/linter
+  Python y polars. El cierre solo es válido si los comandos canónicos pasan o si queda
+  documentado un bloqueo de instalación con causa exacta.
+allowed_files:
+  - pyproject.toml
+  - requirements.txt
+  - requirements-dev.txt
+  - pytest.ini
+  - ruff.toml
+  - docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+  - scripts/check_python_environment.sh
+  - scripts/install_python_environment.sh
+  - scripts/hermes_factory_runner.py
+  - factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+forbidden_files:
+  - app/core/**
+  - app/services/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/bugs/**
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/telegram_notify.py
+required_tests:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+acceptance_criteria:
+  - Existe un contrato de entorno versionado en pyproject.toml o requirements-dev.txt.
+  - pytest queda disponible mediante python -m pytest.
+  - ruff queda disponible mediante python -m ruff.
+  - polars queda importable desde python.
+  - El comando python existe o queda instalado un alias/symlink documentado a python3.
+  - La validación de scripts/build_audit_context.py pasa con python y pytest.
+  - No se toca core de negocio ni servicios de aplicación.
+  - Si alguna instalación falla, el veredicto debe ser BLOCKED_ENVIRONMENT_INSTALL con causa exacta y comando fallido.
+preflight_commands:
+  - git status --short
+  - command -v python || true
+  - command -v python3 || true
+  - python --version || true
+  - python3 --version || true
+  - python -m pytest --version || true
+  - python -m ruff --version || true
+  - python -c "import polars; print(polars.__version__)" || true
+post_commands:
+  - python --version
+  - python3 --version
+  - python -m pytest --version
+  - python -m ruff --version
+  - python -c "import polars; print(polars.__version__)"
+  - python -m pytest tests/factory/test_build_audit_context.py -q
+  - python -m py_compile scripts/build_audit_context.py
+  - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+  - git status --short
+blocker:
+  code: BLOCKED_ENVIRONMENT_INSTALL
+  command: scripts/install_python_environment.sh
+  cause: >
+    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
+    cannot be installed, and the canonical python command is still missing from PATH.
+
+exec
+/bin/bash -lc 'pwd
+git status --short
+test -f pyproject.toml && ls -la pyproject.toml
+test -f requirements-dev.txt && ls -la requirements-dev.txt
+test -f docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md && ls -la docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+test -f scripts/check_python_environment.sh && ls -la scripts/check_python_environment.sh
+test -f scripts/install_python_environment.sh && ls -la scripts/install_python_environment.sh
+test -f factory/ai_governance/tasks/000_environment_contract_python_001.yaml && ls -la factory/ai_governance/tasks/000_environment_contract_python_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+ M factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M pyproject.toml
+?? docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+?? requirements-dev.txt
+?? scripts/check_python_environment.sh
+?? scripts/install_python_environment.sh
+-rw-r--r-- 1 neoalmasana neoalmasana 689 Apr 28 01:46 pyproject.toml
+-rw-r--r-- 1 neoalmasana neoalmasana 34 Apr 28 01:46 requirements-dev.txt
+-rw-r--r-- 1 neoalmasana neoalmasana 1577 Apr 28 01:46 docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+-rwxr-xr-x 1 neoalmasana neoalmasana 460 Apr 28 01:46 scripts/check_python_environment.sh
+-rwxr-xr-x 1 neoalmasana neoalmasana 320 Apr 28 01:46 scripts/install_python_environment.sh
+-rw-r--r-- 1 neoalmasana neoalmasana 3079 Apr 28 01:47 factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+
+exec
+/bin/bash -lc "scripts/check_python_environment.sh; printf 'exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scripts/check_python_environment.sh: line 7: python: command not found
+exit=127
+
+exec
+/bin/bash -lc "python3 --version; printf 'exit=%s\\n' \""'$?"
+.venv/bin/python -m py_compile scripts/build_audit_context.py; printf '"'venv_py_compile_exit=%s\\n' \""'$?"
+.venv/bin/python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt; printf '"'venv_build_exit=%s\\n' \""'$?"
+test -f /tmp/smartpyme_audit_context_env_test.txt && ls -la /tmp/smartpyme_audit_context_env_test.txt' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+Python 3.11.2
+exit=0
+venv_py_compile_exit=0
+venv_build_exit=0
+-rw-r--r-- 1 neoalmasana neoalmasana 2808 Apr 28 01:47 /tmp/smartpyme_audit_context_env_test.txt
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+exec
+/bin/bash -lc "command -v python || true
+command -v python3 || true
+python --version; printf 'python_version_exit=%s\\n' \""'$?"
+python3 --version; printf '"'python3_version_exit=%s\\n' \""'$?"
+python -m pytest --version; printf '"'pytest_version_exit=%s\\n' \""'$?"
+python -m ruff --version; printf '"'ruff_version_exit=%s\\n' \""'$?"
+python -c "import polars; print(polars.__version__)"; printf '"'polars_import_exit=%s\\n' \""'$?"
+python -m pytest tests/factory/test_build_audit_context.py -q; printf '"'canonical_pytest_exit=%s\\n' \""'$?"
+python -m py_compile scripts/build_audit_context.py; printf '"'canonical_py_compile_exit=%s\\n' \""'$?"
+python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt; printf '"'canonical_build_exit=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/usr/bin/python3
+/bin/bash: line 3: python: command not found
+python_version_exit=127
+Python 3.11.2
+python3_version_exit=0
+/bin/bash: line 5: python: command not found
+pytest_version_exit=127
+/bin/bash: line 6: python: command not found
+ruff_version_exit=127
+/bin/bash: line 7: python: command not found
+polars_import_exit=127
+/bin/bash: line 8: python: command not found
+canonical_pytest_exit=127
+/bin/bash: line 9: python: command not found
+canonical_py_compile_exit=127
+/bin/bash: line 10: python: command not found
+canonical_build_exit=127
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+exec
+/bin/bash -lc 'git diff -- pyproject.toml factory/ai_governance/tasks/000_environment_contract_python_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f5..a250cb4 100644
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@ post_commands:
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6..a86a0c9 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@ name = "smartpyme"
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+
+exec
+/bin/bash -lc "python3 - <<'PY'
+import tomllib
+for path in ['pyproject.toml']:
+    with open(path, 'rb') as f:
+        tomllib.load(f)
+    print(f'{path}: TOML_OK')
+PY" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+pyproject.toml: TOML_OK
+
+exec
+/bin/bash -lc 'for f in requirements-dev.txt docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md scripts/check_python_environment.sh scripts/install_python_environment.sh; do echo "--- $f"; git diff --no-index -- /dev/null "$f" || true; done' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+--- requirements-dev.txt
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000..85143eb
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+--- docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000..f7bb067
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+--- scripts/check_python_environment.sh
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000..4be0ea0
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+--- scripts/install_python_environment.sh
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000..5e2be61
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+exec
+/bin/bash -lc 'git diff --stat' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ .../tasks/000_environment_contract_python_001.yaml             |  8 +++++++-
+ factory/control/.telegram_control_offset                       |  2 +-
+ factory/control/AUDIT_GATE.md                                  |  6 +++---
+ factory/control/FACTORY_STATUS.md                              |  8 ++++----
+ pyproject.toml                                                 | 10 +++++++++-
+ 5 files changed, 24 insertions(+), 10 deletions(-)
+
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+codex
+VEREDICTO
+
+`BLOCKED_ENVIRONMENT_INSTALL`
+
+El contrato quedó versionado, pero el cierre canónico no pasa porque el entorno no puede instalar dependencias desde PyPI y `python` sigue sin existir en `PATH`.
+
+ARCHIVOS_MODIFICADOS
+
+- [pyproject.toml](/opt/smartpyme-factory/repos/SmartPyme/pyproject.toml)
+- [requirements-dev.txt](/opt/smartpyme-factory/repos/SmartPyme/requirements-dev.txt)
+- [docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md](/opt/smartpyme-factory/repos/SmartPyme/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md)
+- [scripts/check_python_environment.sh](/opt/smartpyme-factory/repos/SmartPyme/scripts/check_python_environment.sh)
+- [scripts/install_python_environment.sh](/opt/smartpyme-factory/repos/SmartPyme/scripts/install_python_environment.sh)
+- [factory/ai_governance/tasks/000_environment_contract_python_001.yaml](/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/tasks/000_environment_contract_python_001.yaml)
+
+VERIFICACION_FISICA
+
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` + `ls -la` ejecutado para todos los archivos modificados.
+- Scripts creados con permisos ejecutables: `scripts/check_python_environment.sh`, `scripts/install_python_environment.sh`.
+
+TESTS
+
+- `python --version` -> falla, `python: command not found`, exit `127`
+- `python3 --version` -> `Python 3.11.2`, exit `0`
+- `python -m pytest --version` -> falla, exit `127`
+- `python -m ruff --version` -> falla, exit `127`
+- `python -c "import polars; print(polars.__version__)"` -> falla, exit `127`
+- `scripts/check_python_environment.sh` -> falla en `python --version`, exit `127`
+- Parcial no canónico: `.venv/bin/python -m pytest tests/factory/test_build_audit_context.py -q` -> `4 passed`
+- Parcial no canónico: `.venv/bin/python -m py_compile scripts/build_audit_context.py` -> exit `0`
+- Parcial no canónico: `.venv/bin/python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt` -> exit `0`
+
+EVIDENCIA
+
+- `scripts/install_python_environment.sh` falló con exit `1`.
+- Causa exacta: `pip` no puede resolver `pypi.org`: `NameResolutionError ... Failed to resolve 'pypi.org'`.
+- Fallo concreto de instalación: `ERROR: Could not find a version that satisfies the requirement ruff>=0.8`.
+- El YAML de tarea quedó en `status: blocked` con `blocker.code: BLOCKED_ENVIRONMENT_INSTALL`.
+
+DIFF
+
+- `pyproject.toml`: añade `polars>=1.0` y extra dev con `pytest>=8.0`, `ruff>=0.8`.
+- `requirements-dev.txt`: declara `pytest`, `ruff`, `polars`.
+- Documento de contrato Python añadido.
+- Scripts de instalación y verificación añadidos.
+- YAML de tarea marcado como `blocked` con causa exacta.
+
+BLOQUEOS
+
+`BLOCKED_ENVIRONMENT_INSTALL`: sin resolución DNS/red a PyPI y sin comando canónico `python` disponible en `PATH`.
+
+RIESGOS
+
+Hay cambios previos ajenos en `factory/control/.telegram_control_offset`, `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`; no los modifiqué ni los revertí.
+diff --git a/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7bb067cfa2e622d92caea3ba87be3dd6450faf2
+--- /dev/null
++++ b/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+@@ -0,0 +1,65 @@
++# Python Environment Contract
++
++Estado: CANONICO v1
++
++Este contrato declara el entorno minimo para validar SmartPyme Factory.
++
++## Comando Python
++
++El comando canonico para automatizacion es:
++
++```bash
++python
++```
++
++El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
++Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
++crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
++
++## Dependencias minimas
++
++Las dependencias versionadas son:
++
++- `polars>=1.0`
++- `pytest>=8.0`
++- `ruff>=0.8`
++
++Fuente de verdad:
++
++- `pyproject.toml`
++- `requirements-dev.txt`
++
++## Instalacion canonica
++
++```bash
++scripts/install_python_environment.sh
++```
++
++El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
++`.venv/bin/python` existe como comando `python` dentro del entorno activado.
++
++Para operar manualmente:
++
++```bash
++source .venv/bin/activate
++```
++
++## Verificacion canonica
++
++```bash
++scripts/check_python_environment.sh
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
++```
++
++## Politica fail-closed
++
++Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
++como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
++comando fallido y la causa exacta observada.
+diff --git a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+index 9eff5f57686986a1b95478711ecaf31a378917b2..a250cb4168d33f9de4aa50ee41cc2b1e692a86b5
+--- a/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
++++ b/factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+@@ -1,6 +1,6 @@
+ task_id: environment_contract_python_001
+ mode: governance
+-status: pending
++status: blocked
+ human_required: false
+ objective: >
+   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
+@@ -65,3 +65,9 @@
+   - python -m py_compile scripts/build_audit_context.py
+   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+   - git status --short
++blocker:
++  code: BLOCKED_ENVIRONMENT_INSTALL
++  command: scripts/install_python_environment.sh
++  cause: >
++    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
++    cannot be installed, and the canonical python command is still missing from PATH.
+diff --git a/pyproject.toml b/pyproject.toml
+index 17e98f6e1c0bb12704cb207e3f2f3748f19c4972..a86a0c9e24a107d098e36791ad759aacde44f881
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,15 @@
+ version = "0.1.0"
+ description = "SmartPyme operational core and autonomous factory"
+ requires-python = ">=3.11"
+-dependencies = []
++dependencies = [
++  "polars>=1.0",
++]
++
++[project.optional-dependencies]
++dev = [
++  "pytest>=8.0",
++  "ruff>=0.8",
++]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+diff --git a/requirements-dev.txt b/requirements-dev.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..85143eb44519eea278c41f05f91f17223ac2fee9
+--- /dev/null
++++ b/requirements-dev.txt
+@@ -0,0 +1,3 @@
++pytest>=8.0
++ruff>=0.8
++polars>=1.0
+diff --git a/scripts/check_python_environment.sh b/scripts/check_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..4be0ea0d8614a521c1e77246f8109e7dbf77d267
+--- /dev/null
++++ b/scripts/check_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python --version
++python3 --version
++python -m pytest --version
++python -m ruff --version
++python -c "import polars; print(polars.__version__)"
++python -m pytest tests/factory/test_build_audit_context.py -q
++python -m py_compile scripts/build_audit_context.py
++python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+diff --git a/scripts/install_python_environment.sh b/scripts/install_python_environment.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..5e2be61e0650d75574760a73f79fa8c027689072
+--- /dev/null
++++ b/scripts/install_python_environment.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$repo_root"
++
++python3 -m venv .venv
++
++# shellcheck disable=SC1091
++source .venv/bin/activate
++
++python -m pip install --upgrade pip
++python -m pip install -r requirements-dev.txt
++python scripts/check_python_environment.sh
+
+2026-04-28T01:47:57.806696Z ERROR codex_core::session: failed to record rollout items: thread 019dd1c2-8b1e-7513-a03e-1e9091e7d980 not found
+tokens used
+109,174
+VEREDICTO
+
+`BLOCKED_ENVIRONMENT_INSTALL`
+
+El contrato quedó versionado, pero el cierre canónico no pasa porque el entorno no puede instalar dependencias desde PyPI y `python` sigue sin existir en `PATH`.
+
+ARCHIVOS_MODIFICADOS
+
+- [pyproject.toml](/opt/smartpyme-factory/repos/SmartPyme/pyproject.toml)
+- [requirements-dev.txt](/opt/smartpyme-factory/repos/SmartPyme/requirements-dev.txt)
+- [docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md](/opt/smartpyme-factory/repos/SmartPyme/docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md)
+- [scripts/check_python_environment.sh](/opt/smartpyme-factory/repos/SmartPyme/scripts/check_python_environment.sh)
+- [scripts/install_python_environment.sh](/opt/smartpyme-factory/repos/SmartPyme/scripts/install_python_environment.sh)
+- [factory/ai_governance/tasks/000_environment_contract_python_001.yaml](/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/tasks/000_environment_contract_python_001.yaml)
+
+VERIFICACION_FISICA
+
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` + `ls -la` ejecutado para todos los archivos modificados.
+- Scripts creados con permisos ejecutables: `scripts/check_python_environment.sh`, `scripts/install_python_environment.sh`.
+
+TESTS
+
+- `python --version` -> falla, `python: command not found`, exit `127`
+- `python3 --version` -> `Python 3.11.2`, exit `0`
+- `python -m pytest --version` -> falla, exit `127`
+- `python -m ruff --version` -> falla, exit `127`
+- `python -c "import polars; print(polars.__version__)"` -> falla, exit `127`
+- `scripts/check_python_environment.sh` -> falla en `python --version`, exit `127`
+- Parcial no canónico: `.venv/bin/python -m pytest tests/factory/test_build_audit_context.py -q` -> `4 passed`
+- Parcial no canónico: `.venv/bin/python -m py_compile scripts/build_audit_context.py` -> exit `0`
+- Parcial no canónico: `.venv/bin/python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt` -> exit `0`
+
+EVIDENCIA
+
+- `scripts/install_python_environment.sh` falló con exit `1`.
+- Causa exacta: `pip` no puede resolver `pypi.org`: `NameResolutionError ... Failed to resolve 'pypi.org'`.
+- Fallo concreto de instalación: `ERROR: Could not find a version that satisfies the requirement ruff>=0.8`.
+- El YAML de tarea quedó en `status: blocked` con `blocker.code: BLOCKED_ENVIRONMENT_INSTALL`.
+
+DIFF
+
+- `pyproject.toml`: añade `polars>=1.0` y extra dev con `pytest>=8.0`, `ruff>=0.8`.
+- `requirements-dev.txt`: declara `pytest`, `ruff`, `polars`.
+- Documento de contrato Python añadido.
+- Scripts de instalación y verificación añadidos.
+- YAML de tarea marcado como `blocked` con causa exacta.
+
+BLOQUEOS
+
+`BLOCKED_ENVIRONMENT_INSTALL`: sin resolución DNS/red a PyPI y sin comando canónico `python` disponible en `PATH`.
+
+RIESGOS
+
+Hay cambios previos ajenos en `factory/control/.telegram_control_offset`, `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`; no los modifiqué ni los revertí.

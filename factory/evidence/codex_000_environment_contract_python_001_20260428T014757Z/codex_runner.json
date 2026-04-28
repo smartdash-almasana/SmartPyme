@@ -1,0 +1,11 @@
+{
+  "task_path": "factory/ai_governance/tasks/000_environment_contract_python_001.yaml",
+  "returncode": 0,
+  "command": [
+    "/usr/bin/codex",
+    "exec",
+    "--full-auto",
+    "<prompt>"
+  ],
+  "created_at": "2026-04-28T01:47:57.927179+00:00"
+}

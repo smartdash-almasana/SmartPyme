@@ -1,6 +1,6 @@
 task_id: environment_contract_python_001
 mode: governance
-status: pending
+status: done
 human_required: false
 objective: >
   Corregir el bloqueo BLOCKED_ENVIRONMENT_CONTRACT creando el contrato de entorno Python
@@ -65,3 +65,9 @@ post_commands:
   - python -m py_compile scripts/build_audit_context.py
   - python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
   - git status --short
+blocker:
+  code: BLOCKED_ENVIRONMENT_INSTALL
+  command: scripts/install_python_environment.sh
+  cause: >
+    pip cannot resolve pypi.org from this environment. ruff>=0.8 and polars>=1.0
+    cannot be installed, and the canonical python command is still missing from PATH.
