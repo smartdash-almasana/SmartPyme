@@ -63,7 +63,7 @@ def control_keyboard() -> str:
         [{"text": "▶ Seguir", "callback_data": "SEGUIR"}, {"text": "⏸️ Pausar", "callback_data": "PAUSAR"}],
         [{"text": "🔁 Corregir", "callback_data": "CORREGIR"}, {"text": "📊 Estado", "callback_data": "ESTADO"}],
         [{"text": "🧭 Tareas", "callback_data": "TAREAS"}],
-    ]})
+    ]}, ensure_ascii=False)
 
 
 def send(text: str, buttons: bool = True) -> None:
@@ -121,7 +121,7 @@ def write_gate(status: str, reason: str) -> None:
         "# AUDIT GATE\n\n"
         f"status: {status}\n"
         f"updated_at: {now()}\n"
-        "updated_by: telegram_control\n"
+        f"updated_by: telegram_control\n"
         f"previous_status: {previous}\n"
         f"reason: {reason}\n",
         encoding="utf-8",
@@ -141,13 +141,13 @@ def status_text() -> str:
     data = _read_status_file()
     gate = gate_status()
     return "\n".join([
-        "📊 Estado de SmartPyme Factory", "",
+        "📊 Estado de la Factoría SmartPyme", "",
         f"Decisión actual: {gate}",
         f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
         f"Última actualización: {data.get('updated_at', 'no informada')}",
         f"Detalle para GPT: {data.get('last_error', 'sin detalle')}", "",
         "Botones:",
-        "- ▶ Seguir: hacer pull y ejecutar una vuelta.",
+        "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta.",
         "- ⏸️ Pausar: mantener detenido.",
         "- 🔁 Corregir: reabrir la última tarea.",
         "- 🧭 Tareas: ver tareas activas.",
@@ -186,25 +186,28 @@ def tasks_text() -> str:
 
 def handle_command(text: str) -> str:
     cmd = text.strip().split()[0].lower() if text.strip() else ""
-    if cmd in {"/seguir", "/run", "/go"}:
+    if cmd == "/seguir":
         return trigger_cycle()
-    if cmd in {"/pausar", "/stop"}:
+    if cmd == "/pausar":
         write_gate("BLOCKED", cmd)
         return "OK: pausado. La factoría queda frenada."
-    if cmd in {"/corregir", "/retry"}:
+    if cmd == "/corregir":
         write_gate("REJECTED", cmd)
         return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
-    if cmd in {"/estado", "/status"}:
+    if cmd == "/estado":
         return status_text()
-    if cmd in {"/tareas", "/tasks"}:
+    if cmd == "/tareas":
         return tasks_text()
-    if cmd in {"/help", "help", "/panel"}:
-        return "SmartPyme Control\n\nUsá: /seguir, /pausar, /corregir, /estado, /tareas"
+    if cmd == "/panel":
+        return "Panel de control de la Factoría SmartPyme. Usá los botones en castellano."
     return "Comando no reconocido. Usá /panel."
 
 
 def handle_callback(data: str) -> str:
-    return handle_command(BUTTONS.get(data, "")) if data in BUTTONS else "Botón no reconocido."
+    command = BUTTONS.get(data, "")
+    if not command:
+        return "Botón viejo o no reconocido. Usá /panel para abrir el panel nuevo."
+    return handle_command(command)
 
 
 def poll_once() -> None:
@@ -232,7 +235,7 @@ def poll_once() -> None:
 
 
 def main() -> None:
-    send("SmartPyme Control activo. Usá los botones.")
+    send("Panel de control de la Factoría SmartPyme. Usá los botones en castellano.")
     while True:
         try:
             poll_once()
