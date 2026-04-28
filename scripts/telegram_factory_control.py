@@ -128,9 +128,19 @@ def write_gate(status: str, reason: str) -> None:
     )
 
 
+def cycle_running_message() -> str:
+    return (
+        "Ya hay un ciclo en ejecución.\n\n"
+        "No disparo otro ciclo para evitar duplicados. "
+        "Apenas termine, te vas a enterar por acá."
+    )
+
+
 def trigger_cycle() -> str:
+    if gate_status() == "RUNNING":
+        return cycle_running_message()
     if LOCK.exists():
-        return "Ya hay un ciclo en ejecución. No disparo otro para evitar iteración repetida."
+        return cycle_running_message()
     if not TRIGGER.exists():
         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
@@ -147,7 +157,7 @@ def status_text() -> str:
         f"Última actualización: {data.get('updated_at', 'no informada')}",
         f"Detalle para GPT: {data.get('last_error', 'sin detalle')}", "",
         "Botones:",
-        "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta.",
+        "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta si no hay ciclo corriendo.",
         "- ⏸️ Pausar: mantener detenido.",
         "- 🔁 Corregir: reabrir la última tarea.",
         "- 🧭 Tareas: ver tareas activas.",
