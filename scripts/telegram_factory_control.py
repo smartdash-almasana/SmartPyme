@@ -105,13 +105,24 @@ def _read_status_file() -> dict[str, str]:
     return data
 
 
-def gate_status() -> str:
+def _read_gate_file() -> dict[str, str]:
+    data: dict[str, str] = {}
     if not GATE.exists():
-        return "APPROVED"
+        return data
     for line in GATE.read_text(encoding="utf-8", errors="replace").splitlines():
-        if line.startswith("status:"):
-            return line.split(":", 1)[1].strip().upper()
-    return "UNKNOWN"
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def gate_status() -> str:
+    return _read_gate_file().get("status", "APPROVED").upper()
+
+
+def last_task() -> str:
+    return _read_gate_file().get("last_task", "").strip()
 
 
 def write_gate(status: str, reason: str) -> None:
@@ -147,6 +158,26 @@ def trigger_cycle() -> str:
     return "OK: ciclo solicitado. Hará pull de GitHub y ejecutará una sola vuelta de Hermes."
 
 
+def correction_not_available_message() -> str:
+    gate = gate_status()
+    if gate == "RUNNING":
+        return "No puedo corregir ahora: hay un ciclo en ejecución. Apenas termine, te aviso por acá."
+    if gate != "WAITING_AUDIT":
+        return "Corregir solo está disponible cuando un ciclo cerró y espera auditoría."
+    task = last_task()
+    if not task or task == "none":
+        return "No puedo corregir: no hay última tarea trazable para reabrir."
+    return ""
+
+
+def reject_for_correction() -> str:
+    blocked_reason = correction_not_available_message()
+    if blocked_reason:
+        return blocked_reason
+    write_gate("REJECTED", "/corregir")
+    return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
+
+
 def status_text() -> str:
     data = _read_status_file()
     gate = gate_status()
@@ -159,7 +190,7 @@ def status_text() -> str:
         "Botones:",
         "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta si no hay ciclo corriendo.",
         "- ⏸️ Pausar: mantener detenido.",
-        "- 🔁 Corregir: reabrir la última tarea.",
+        "- 🔁 Corregir: activo solo cuando un ciclo cerró y espera auditoría.",
         "- 🧭 Tareas: ver tareas activas.",
     ])
 
@@ -202,8 +233,7 @@ def handle_command(text: str) -> str:
         write_gate("BLOCKED", cmd)
         return "OK: pausado. La factoría queda frenada."
     if cmd == "/corregir":
-        write_gate("REJECTED", cmd)
-        return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
+        return reject_for_correction()
     if cmd == "/estado":
         return status_text()
     if cmd == "/tareas":
