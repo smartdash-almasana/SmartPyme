@@ -1,0 +1,26 @@
+task_id: incident_hermes_breakdown_001
+mode: governance
+status: pending
+priority: 0
+objective: >
+  Documentar en el repositorio el incidente de ruptura de gobernanza
+  causado por el uso de un runner paralelo en lugar de Hermes como
+  orquestador principal. Generar un documento breve y verificable.
+allowed_files:
+  - docs/**
+  - factory/ai_governance/tasks/**
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+acceptance_criteria:
+  - Existe un archivo de incidente en docs/
+  - Describe causa raíz, impacto y decisión
+  - No excede 200 líneas
+required_tests:
+  - test -f docs/INCIDENT_HERMES_001.md
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
