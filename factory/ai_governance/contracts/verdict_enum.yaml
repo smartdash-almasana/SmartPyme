@@ -1,0 +1,45 @@
+verdict_enum:
+  version: "1.0.0"
+  description: "Vocabulario canónico de veredictos SmartPyme Factory"
+  layers:
+    builder:
+      success: "BUILD_SUCCESS"
+      failure: "BUILD_FAILED"
+      blocked: "BUILD_BLOCKED"
+      incomplete: "BUILD_INCOMPLETE"
+    auditor:
+      success: "AUDIT_PASSED"
+      failure: "AUDIT_REJECTED"
+      blocked: "AUDIT_BLOCKED"
+      incomplete: "AUDIT_INCOMPLETE"
+    director:
+      approve: "APPROVED"
+      reject: "REJECTED"
+      block: "BLOCKED"
+      defer: "NEEDS_REVIEW"
+  cross_layer_mapping:
+    BUILD_SUCCESS:
+      next_state: "WAITING_AUDIT"
+      next_agent: "auditor"
+    AUDIT_PASSED:
+      next_state: "AWAITING_HUMAN_MERGE"
+      next_agent: "human"
+    AUDIT_REJECTED:
+      next_state: "BACK_TO_BUILD"
+      next_agent: "builder"
+      max_retries: 3
+    AUDIT_BLOCKED:
+      next_state: "ESCALATED"
+      next_agent: "director"
+    APPROVED:
+      next_state: "MERGED"
+      next_agent: "human"
+    REJECTED:
+      next_state: "ABANDONED"
+  deprecated:
+    - "FALLÓ"
+    - "OK"
+    - "NO_VALIDADO"
+    - "VALIDADO"
+    - "CORRECTO"
+    - "INCOMPLETO"
