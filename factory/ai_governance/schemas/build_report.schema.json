@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BuildReport v1",
+  "type": "object",
+  "required": ["task_id", "agent_id", "timestamp", "status", "files_changed", "tests_result", "evidence_path"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "agent_id": {"type": "string", "enum": ["codex_builder"]},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["BUILD_SUCCESS", "BUILD_FAILED", "BUILD_BLOCKED", "BUILD_INCOMPLETE"]},
+    "files_changed": {"type": "array", "items": {"type": "object", "required": ["path", "lines_added", "lines_removed"], "properties": {"path": {"type": "string"}, "lines_added": {"type": "integer"}, "lines_removed": {"type": "integer"}}}},
+    "tests_result": {"type": "object", "required": ["passed", "failed"], "properties": {"passed": {"type": "integer"}, "failed": {"type": "integer"}, "coverage": {"type": "number"}}},
+    "evidence_path": {"type": "string"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "next_agent": {"type": "string", "enum": ["factory_auditor"]}
+  },
+  "additionalProperties": false
+}

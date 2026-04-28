@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://smartpyme.local/schemas/taskspec-v2.0.0.json",
+  "title": "TaskSpec v2.0.0",
+  "description": "Unidad de trabajo canónica de SmartPyme Factory",
+  "type": "object",
+  "required": ["taskspec_version", "task_id", "title", "created_at", "created_by", "priority", "cliente_id", "runtime", "context", "scope", "commands", "acceptance_criteria", "gate", "status", "retry_count", "evidence_path"],
+  "properties": {
+    "taskspec_version": {"type": "string", "enum": ["2.0.0"]},
+    "task_id": {"type": "string", "pattern": "^TASK-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{3}$"},
+    "title": {"type": "string", "minLength": 5, "maxLength": 200},
+    "created_at": {"type": "string", "format": "date-time"},
+    "created_by": {"type": "string", "enum": ["human_owner", "gpt_director", "hermes_gateway"]},
+    "priority": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
+    "cliente_id": {"type": "string"},
+    "runtime": {"type": "object", "required": ["target_skill", "target_agent", "max_retries", "timeout_minutes"], "properties": {"target_skill": {"type": "string"}, "target_agent": {"type": "string", "enum": ["codex", "gemini", "gpt_director"]}, "agent_version": {"type": "string"}, "max_retries": {"type": "integer", "minimum": 0, "maximum": 5}, "timeout_minutes": {"type": "integer", "minimum": 1, "maximum": 180}}},
+    "context": {"type": "object", "required": ["repo_ref", "base_commit", "canonical_docs"], "properties": {"repo_ref": {"type": "string"}, "base_commit": {"type": "string", "pattern": "^[a-f0-9]{7,40}$"}, "canonical_docs": {"type": "array", "items": {"type": "string"}}}},
+    "scope": {"type": "object", "required": ["allowed_files", "forbidden_files"], "properties": {"allowed_files": {"type": "array", "items": {"type": "string", "pattern": "^[a-zA-Z0-9_./-]+$"}, "minItems": 1}, "forbidden_files": {"type": "array", "items": {"type": "string", "pattern": "^[a-zA-Z0-9_./*-]+$"}}}},
+    "commands": {"type": "object", "properties": {"preflight": {"type": "array", "items": {"type": "object", "required": ["command", "description", "expected_exit_code"], "properties": {"command": {"type": "string", "minLength": 1}, "description": {"type": "string"}, "expected_exit_code": {"type": "integer"}}}}, "post": {"type": "array", "items": {"type": "object", "required": ["command", "description", "expected_exit_code"], "properties": {"command": {"type": "string", "minLength": 1}, "description": {"type": "string"}, "expected_exit_code": {"type": "integer"}}}}}},
+    "acceptance_criteria": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["description", "verification_command", "expected_output_pattern"], "properties": {"description": {"type": "string", "minLength": 10}, "verification_command": {"type": "string", "minLength": 1}, "expected_output_pattern": {"type": "string"}, "required_files": {"type": "array", "items": {"type": "string"}}}}},
+    "gate": {"type": "object", "required": ["required_audit", "auto_merge"], "properties": {"required_audit": {"type": "boolean"}, "auto_merge": {"type": "boolean"}}},
+    "status": {"type": "string", "enum": ["PENDING", "ASSIGNED", "BUILDING", "WAITING_AUDIT", "AUDITING", "AUDIT_PASSED", "AUDIT_REJECTED", "AUDIT_BLOCKED", "BACK_TO_BUILD", "ESCALATED", "AWAITING_HUMAN_MERGE", "MERGED", "CLOSED", "ABANDONED", "CANCELLED"]},
+    "retry_count": {"type": "integer", "minimum": 0},
+    "evidence_path": {"type": "string"},
+    "blockers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}
