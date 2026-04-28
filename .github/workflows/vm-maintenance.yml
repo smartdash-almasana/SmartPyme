@@ -1,0 +1,29 @@
+name: VM maintenance
+
+on:
+  workflow_dispatch:
+
+jobs:
+  repair:
+    runs-on: self-hosted
+    steps:
+      - name: Repair SmartPyme deployed working tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO=/opt/smartpyme-factory/repos/SmartPyme
+          cd "$REPO"
+
+          echo "== before =="
+          git status --short || true
+
+          git add -u factory/control factory/runner_logs || true
+          git commit -m "factory: untrack generated runtime state from VM" || true
+          git push origin main || true
+
+          git pull --ff-only --autostash origin main || true
+
+          mkdir -p factory/control factory/runner_logs
+
+          echo "== after =="
+          git status --short || true
