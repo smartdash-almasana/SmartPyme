@@ -18,6 +18,7 @@ GATE = CONTROL / "AUDIT_GATE.md"
 STATUS = CONTROL / "FACTORY_STATUS.md"
 
 GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_IN_PROGRESS = {"RUNNING"}
 GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
 
 
@@ -143,6 +144,12 @@ def enforce_gate_before_dispatch():
     if current_gate == "REJECTED":
         return reopen_last_task()
 
+    if current_gate in GATE_IN_PROGRESS:
+        print(f"CYCLE_ALREADY_RUNNING status={current_gate}")
+        write_status("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        notify("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        return 2
+
     if current_gate in GATE_BLOCKING:
         print(f"AUDIT_GATE_BLOCKING status={current_gate}")
         write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
@@ -186,11 +193,11 @@ def auto_commit_and_push(rel_task, code):
 
 
 def main():
-    notify("CYCLE_START", f"repo={REPO}")
-
     gate_code = enforce_gate_before_dispatch()
     if gate_code:
         return 0
+
+    notify("CYCLE_START", f"repo={REPO}")
 
     task = select_task()
     rel_task = task.relative_to(REPO) if task else None
