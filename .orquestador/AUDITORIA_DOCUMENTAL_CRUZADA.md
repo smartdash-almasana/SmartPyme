@@ -4,14 +4,23 @@
 
 OBLIGATORIA antes de activar Hermes Gateway en modo productivo.
 
+## Fuente previa obligatoria
+
+La auditoría de Opus queda incorporada como evidencia histórica y referencia bloqueante:
+
+- `docs/factory/OPUS_BLUEPRINT_V2_AUDITORIA.md`
+
+Regla: cualquier auditoría posterior debe contrastar el estado actual del repo contra los hallazgos B-001…B-030 de Opus y marcar explícitamente cuáles quedaron cerrados, cuáles siguen abiertos y cuáles fueron reabiertos por cambios posteriores.
+
 ## Objetivo
 
 Auditar la documentación, specs, skills, contratos y evidencias del repo para detectar contradicciones que puedan impedir operar SmartPyme Factory con Hermes.
 
 ## Auditores
 
-1. Gemini Auditor externo: lee el repo y emite informe independiente.
-2. GPT Orquestador: no aprueba su propio trabajo; solo consolida hallazgos y prepara remediación bajo gate humano.
+1. Opus: auditoría histórica del Blueprint v2.0, incorporada como referencia documental.
+2. Gemini Auditor externo: lee el repo y emite informe independiente contra la auditoría Opus y el estado actual.
+3. GPT Orquestador: no aprueba su propio trabajo; solo consolida hallazgos y prepara remediación bajo gate humano.
 
 ## Alcance obligatorio
 
@@ -42,6 +51,7 @@ Auditar la documentación, specs, skills, contratos y evidencias del repo para d
 8. Seguridad: secretos fuera del repo.
 9. Evidencia: qué es canónico y qué es histórico.
 10. Consistencia entre docs, skills, prompts y código de control.
+11. Cobertura de remediación de B-001…B-030 del informe Opus.
 
 ## Formato de salida exigido a Gemini
 
@@ -49,12 +59,13 @@ El auditor debe entregar:
 
 1. VEREDICTO
 2. MATRIZ DE CONTRADICCIONES
-3. ARCHIVOS CANÓNICOS
-4. ARCHIVOS LEGACY / DEPRECABLES
-5. BLOQUEOS P0/P1/P2
-6. REMEDIACIÓN PROPUESTA
-7. COMANDOS DE VALIDACIÓN
-8. LISTA DE ARCHIVOS QUE NO DEBEN TOCARSE
+3. COBERTURA OPUS B-001…B-030
+4. ARCHIVOS CANÓNICOS
+5. ARCHIVOS LEGACY / DEPRECABLES
+6. BLOQUEOS P0/P1/P2
+7. REMEDIACIÓN PROPUESTA
+8. COMANDOS DE VALIDACIÓN
+9. LISTA DE ARCHIVOS QUE NO DEBEN TOCARSE
 
 ## Regla de confianza
 
