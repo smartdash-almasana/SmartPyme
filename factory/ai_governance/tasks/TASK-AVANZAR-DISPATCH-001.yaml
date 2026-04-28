@@ -1,0 +1,28 @@
+task_id: TASK-AVANZAR-DISPATCH-001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Documentar la futura habilitacion segura del comando avanzar con Builder verificable,
+  manteniendo gate, evidencia y alcance controlado.
+allowed_files:
+  - factory/hermes_control_cli.py
+  - tests/factory/test_hermes_control_cli.py
+  - factory/ai_governance/tasks/TASK-AVANZAR-DISPATCH-001.yaml
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - mcp_smartpyme_bridge.py
+required_tests:
+  - python3 -m pytest tests/factory/test_hermes_control_cli.py -q
+  - python3 -m compileall factory/hermes_control_cli.py
+acceptance_criteria:
+  - El comando avanzar conserva bloqueo fail-closed.
+  - El bloqueo documenta cinco requisitos previos.
+  - El bloqueo referencia TASK-AVANZAR-DISPATCH-001.
+  - No se toca core de producto.
+preflight_commands:
+  - cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
+post_commands:
+  - cd /opt/smartpyme-factory/repos/SmartPyme && python3 -m pytest tests/factory/test_hermes_control_cli.py -q
