@@ -1,0 +1,2 @@
+1
+Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')

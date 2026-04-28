@@ -1,6 +1,6 @@
 task_id: audit_context_bundle_001
 mode: code_feature
-status: pending
+status: done
 human_required: false
 objective: >
   Crear un generador de contexto tecnico compacto para auditoria humana. Debe producir un TXT/MD

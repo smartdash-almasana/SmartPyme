@@ -1,0 +1,11 @@
+{
+  "task_path": "factory/ai_governance/tasks/core_reconciliacion_v1.yaml",
+  "returncode": 0,
+  "command": [
+    "/usr/bin/codex",
+    "exec",
+    "--full-auto",
+    "<prompt>"
+  ],
+  "created_at": "2026-04-27T20:30:42.209129+00:00"
+}

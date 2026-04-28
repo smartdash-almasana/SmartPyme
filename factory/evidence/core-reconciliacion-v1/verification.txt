@@ -1,22 +1,22 @@
+pwd:
 /opt/smartpyme-factory/repos/SmartPyme
-service_py=0
--rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
-init_py=0
--rw-r--r-- 1 neoalmasana neoalmasana 276 Apr 27 19:23 app/core/reconciliation/__init__.py
-test_py=0
--rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
-evidence_dir=0
-total 40
-drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 19:24 .
-drwxr-xr-x 24 neoalmasana neoalmasana 4096 Apr 27 19:41 ..
--rw-r--r--  1 neoalmasana neoalmasana 1782 Apr 27 19:41 commands.txt
--rw-r--r--  1 neoalmasana neoalmasana 1245 Apr 27 19:41 cycle.md
--rw-r--r--  1 neoalmasana neoalmasana  627 Apr 27 19:41 decision.txt
--rw-r--r--  1 neoalmasana neoalmasana 6883 Apr 27 19:41 git_diff.patch
--rw-r--r--  1 neoalmasana neoalmasana  470 Apr 27 19:41 git_status.txt
--rw-r--r--  1 neoalmasana neoalmasana  569 Apr 27 19:41 tests.txt
--rw-r--r--  1 neoalmasana neoalmasana 1051 Apr 27 19:41 verification.txt
 
-polars:
-polars=unavailable:ModuleNotFoundError:No module named 'polars'
-pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+OK test -f app/core/reconciliation/models.py
+OK test -f app/core/reconciliation/service.py
+OK test -f tests/core/test_reconciliation_csv.py
+
+Archivos verificados con ls:
+- app/core/reconciliation/models.py
+- app/core/reconciliation/service.py
+- tests/core/test_reconciliation_csv.py
+
+Contenido relevante inspeccionado en:
+- factory/evidence/core-reconciliacion-v1/inspect_models.txt
+- factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+- factory/evidence/core-reconciliacion-v1/inspect_test.txt
+
+Dependencias:
+- pyproject.toml existe y declara dependencies = []
+- polars no esta disponible
+- pytest esta disponible en .venv
+- Ruff no esta disponible en python3 ni en .venv

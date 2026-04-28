@@ -1,0 +1,14 @@
+No se ejecutaron pytest ni ruff.
+
+Motivo:
+- La unidad solo modifica Markdown y evidencia operativa.
+- No hay codigo Python modificado por esta tarea.
+- `python3 -m pytest --version` fallo con: No module named pytest.
+- `command -v ruff` no devolvio ruta.
+
+Validacion aplicada:
+- verificacion fisica del archivo de estado
+- inspeccion de contenido
+- git diff acotado
+
+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.

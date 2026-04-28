@@ -1,0 +1,16 @@
+pwd
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+git status --short
+find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
+test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
+date -u +%Y-%m-%dT%H:%M:%SZ
+test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
+test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
+git diff -- factory/control/FACTORY_STATUS.md
+mkdir -p factory/evidence/factory-observability-status-v1
+sed -n '1,120p' factory/control/FACTORY_STATUS.md
+sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md
+git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1
+command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true

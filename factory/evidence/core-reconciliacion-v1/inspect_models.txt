@@ -1,0 +1,36 @@
+    "dead_letter",
+]
+ReconciliationJobScope: TypeAlias = Literal["orders"]
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationRow:
+    root: dict[str, ReconciliationFieldValue]
+
+    @classmethod
+    def model_validate(cls, value: Any) -> "ReconciliationRow":
+        if not isinstance(value, dict):
+            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
+
+        validated: dict[str, ReconciliationFieldValue] = {}
+        for field_name, field_value in value.items():
+            if not isinstance(field_name, str):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
+            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
+            validated[field_name] = field_value
+        return cls(root=validated)
+
+
+@dataclass(frozen=True, slots=True)
+class ComparableRecord:
+    entity_id: str
+    entity_type: str
+    source: str
+    fields: dict[str, ReconciliationFieldValue] = field(default_factory=dict)
+
+

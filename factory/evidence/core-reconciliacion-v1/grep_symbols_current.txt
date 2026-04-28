@@ -1,0 +1,7 @@
+app/core/reconciliation/models.py:7:MismatchDetail: TypeAlias = Literal["mismatch_numerico", "mismatch_no_numerico"]
+app/core/reconciliation/models.py:65:class ReconciliationRow:
+app/core/reconciliation/service.py:421:                detail = "mismatch_numerico"
+app/core/reconciliation/service.py:524:def reconcile_csv_sources(
+app/core/hallazgos/models.py:5:FindingType: TypeAlias = Literal["mismatch_valor", "faltante_en_fuente", "incertidumbre"]
+app/core/hallazgos/service.py:46:                tipo="mismatch_valor",
+tests/core/test_reconciliation_csv.py:34:    assert hallazgo.tipo == "mismatch_valor"

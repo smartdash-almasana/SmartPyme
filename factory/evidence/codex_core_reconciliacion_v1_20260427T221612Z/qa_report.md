@@ -1,0 +1,73 @@
+# QA REPORT
+
+created_at: 2026-04-27T22:16:12.834632+00:00
+decision: CORRECTO
+
+## git status
+```text
+M app/core/reconciliation/models.py
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+?? factory/control/.telegram_control_offset
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T212832Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T213228Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215859Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T221612Z/
+?? factory/evidence/core-reconciliacion-v1/codex_builder_current_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_final_20260427T220000Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_validation_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_verification_20260427T215040Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/dependencies_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_core_current.patch
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final_current.txt
+?? factory/evidence/core-reconciliacion-v1/grep_symbols_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test_current.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files_current.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation_current.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/pwd_current.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile_current.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/ruff_current.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_current.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related_current.txt
+```

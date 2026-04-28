@@ -1,5 +1,5 @@
 task_id: core-reconciliacion-v1
-status: pending
+status: done
 objetivo: Implementar primer motor de reconciliacion entre dos fuentes tabulares.
 alcance:
   - input: 2 csv

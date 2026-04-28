@@ -1,0 +1,9 @@
+ app/core/reconciliation/models.py                  |  21 +-
+ .../evidence/core-reconciliacion-v1/commands.txt   |  43 ++--
+ factory/evidence/core-reconciliacion-v1/cycle.md   |  42 ++--
+ .../evidence/core-reconciliacion-v1/decision.txt   |  27 +--
+ .../evidence/core-reconciliacion-v1/git_diff.patch | 237 +++------------------
+ .../evidence/core-reconciliacion-v1/git_status.txt |  43 +++-
+ factory/evidence/core-reconciliacion-v1/tests.txt  |  14 +-
+ .../core-reconciliacion-v1/verification.txt        |  40 ++--
+ 8 files changed, 162 insertions(+), 305 deletions(-)

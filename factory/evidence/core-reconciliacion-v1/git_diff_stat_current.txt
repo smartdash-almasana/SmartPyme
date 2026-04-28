@@ -1,0 +1,12 @@
+ app/core/reconciliation/models.py                  |  21 +-
+ factory/control/AUDIT_GATE.md                      |   7 +-
+ factory/control/FACTORY_STATUS.md                  |   8 +-
+ factory/control/PRIORITY_BOARD.md                  |   2 +-
+ .../evidence/core-reconciliacion-v1/commands.txt   |  43 +-
+ factory/evidence/core-reconciliacion-v1/cycle.md   |  42 +-
+ .../evidence/core-reconciliacion-v1/decision.txt   |  27 +-
+ .../evidence/core-reconciliacion-v1/git_diff.patch | 676 +++++++++++++++------
+ .../evidence/core-reconciliacion-v1/git_status.txt |  43 +-
+ factory/evidence/core-reconciliacion-v1/tests.txt  |  14 +-
+ .../core-reconciliacion-v1/verification.txt        |  40 +-
+ 11 files changed, 620 insertions(+), 303 deletions(-)

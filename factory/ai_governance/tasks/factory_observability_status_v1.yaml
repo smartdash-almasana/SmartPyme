@@ -1,5 +1,5 @@
 task_id: factory-observability-status-v1
-status: pending
+status: done
 objetivo: registrar estado de la factoria en FACTORY_STATUS.md
 criterios_exito:
   - FACTORY_STATUS.md actualizado por ciclo

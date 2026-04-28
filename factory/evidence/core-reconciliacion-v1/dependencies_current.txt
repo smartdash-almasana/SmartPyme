@@ -1,0 +1,5 @@
+pyproject_exists=True
+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+pytest=unavailable:ModuleNotFoundError:No module named 'pytest'
+ruff=unavailable:ModuleNotFoundError:No module named 'ruff'
+venv_python_exists=True

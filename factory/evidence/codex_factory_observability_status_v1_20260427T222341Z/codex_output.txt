@@ -1,0 +1,1919 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd108-4f07-7601-9955-2296d7b946f5
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: factory-observability-status-v1
+status: pending
+objetivo: registrar estado de la factoria en FACTORY_STATUS.md
+criterios_exito:
+  - FACTORY_STATUS.md actualizado por ciclo
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Usaré la skill local `hallazgo_executor` solo si sus instrucciones son necesarias para el control de evidencia SmartPyme; primero voy a leer los contratos reales del repo (`CODEX.md`, estado actual y estructura) antes de tocar nada.
+exec
+/bin/bash -lc "test -f CODEX.md && sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M app/core/reconciliation/models.py
+ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+?? factory/control/.telegram_control_offset
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T212832Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T213228Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215859Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T221612Z/
+?? factory/evidence/core-reconciliacion-v1/codex_builder_current_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_final_20260427T220000Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_validation_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_verification_20260427T215040Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/dependencies_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_core_current.patch
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final_current.txt
+?? factory/evidence/core-reconciliacion-v1/grep_symbols_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test_current.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files_current.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation_current.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/pwd_current.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile_current.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/ruff_current.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_current.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related_current.txt
+
+exec
+/bin/bash -lc "rg --files | rg '("'^|/)FACTORY_STATUS'"\\.md"'$|''^factory/control/NEXT_CYCLE'"\\.md"'$|''^docs/SMARTPYME_OS_ACTUAL'"\\.md"'$|''^pyproject'"\\.toml"'$'"'" in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+
+codex
+`rg` no está instalado en este entorno, así que continúo con utilidades básicas. El árbol ya está sucio, incluyendo `factory/control/FACTORY_STATUS.md`; voy a leer ese archivo y trabajar con el contenido existente sin revertir nada.
+exec
+/bin/bash -lc "test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# FACTORY STATUS
+
+updated_at: 2026-04-27T22:21:14.811526+00:00
+last_cycle_result: RUNNING
+audit_gate: RUNNING
+last_error: cycle started
+
+exec
+/bin/bash -lc "find . -path './.git' -prune -o \\( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \\) -print" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+./docs/SMARTPYME_OS_ACTUAL.md
+./factory/control/NEXT_CYCLE.md
+./factory/control/FACTORY_STATUS.md
+./pyproject.toml
+
+exec
+/bin/bash -lc "test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+OBJETIVO CICLO ACTUAL:
+
+Implementar core-reconciliacion-v1.
+
+TAREA:
+1. Implementar primer motor deterministico de reconciliacion entre dos fuentes CSV.
+2. Crear o modificar solo los archivos minimos necesarios para esta unidad.
+3. Agregar tests especificos para validar una diferencia numerica por entidad.
+4. Generar evidencia en factory/evidence/core-reconciliacion-v1/ o en el directorio de evidencia del runner.
+5. Cerrar con git status, git diff, tests y decision verificable.
+
+ALCANCE AUTORIZADO:
+- Se autoriza tocar codigo de core o modulo equivalente si es necesario para implementar la reconciliacion.
+- Se autoriza crear tests especificos.
+- Se autoriza definir estructuras minimas de salida tipo hallazgo.
+
+RESTRICCIONES:
+- No usar IA para logica core.
+- No hacer refactor global.
+- No tocar integraciones externas.
+- No mezclar con Telegram, reporting ni systemd.
+- Mantener salida de negocio con entidad, diferencia cuantificada y fuentes.
+
+CRITERIO DE CIERRE:
+- input: 2 CSV.
+- output: diferencias por entidad.
+- al menos un test pasa.
+- no hay cambios fuera del alcance.
+- evidencia real guardada.
+
+exec
+/bin/bash -lc "test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+[project]
+name = "smartpyme"
+version = "0.1.0"
+description = "SmartPyme operational core and autonomous factory"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "evidence_store",
+  "factory/evidence",
+  "factory/runner_logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+codex
+PLAN para esta unidad: objetivo `factory-observability-status-v1`; alcance permitido `factory/control/FACTORY_STATUS.md` y `factory/evidence/factory-observability-status-v1/*`; prohibido tocar core, tests de reconciliación o control no relacionado; cierre con verificación física, inspección del contenido, diff y validación mínima de entorno. Como `NEXT_CYCLE.md` apunta a otra tarea en curso, mantendré este cambio limitado a observabilidad y dejaré ese conflicto como riesgo, no como excusa para tocar otros frentes.
+exec
+/bin/bash -lc 'date -u +%Y-%m-%dT%H:%M:%SZ' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+2026-04-27T22:21:50Z
+
+exec
+/bin/bash -lc "test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\\n' \""'$?"' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exists=1
+
+exec
+/bin/bash -lc "test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\\n' \""'$?"; ls -la factory/control/FACTORY_STATUS.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+factory_status_exists=0
+-rw-r--r-- 1 neoalmasana neoalmasana 136 Apr 27 22:21 factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc 'git diff -- factory/control/FACTORY_STATUS.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index d1ed0d1..e8bfe15 100644
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,6 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T19:50:09.629416+00:00
+-last_cycle_result: WAITING_AUDIT
+-audit_gate: WAITING_AUDIT
+-last_error: cycle closed
++updated_at: 2026-04-27T22:21:14.811526+00:00
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
+
+codex
+Voy a actualizar el estado existente sin borrar las señales actuales (`RUNNING`, `cycle started`). Agregaré campos explícitos de observabilidad para que el ciclo quede registrado y sea verificable por archivo, no por memoria.
+exec
+/bin/bash -lc 'mkdir -p factory/evidence/factory-observability-status-v1' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/control/FACTORY_STATUS.md
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/commands.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/cycle.md
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/decision.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/tests.txt
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+codex
+Cambio aplicado. Ahora haré la fase VERIFY/INSPECT/RUN: comprobaré existencia, leeré contenido relevante, revisaré diff acotado y evaluaré si hay test ejecutable aplicable a esta unidad documental.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M app/core/reconciliation/models.py
+ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+?? factory/control/.telegram_control_offset
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T212832Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T213228Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T215859Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T221612Z/
+?? factory/evidence/core-reconciliacion-v1/codex_builder_current_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_final_20260427T220000Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_validation_20260427.md
+?? factory/evidence/core-reconciliacion-v1/codex_builder_verification_20260427T215040Z.md
+?? factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/dependencies_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_core_current.patch
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_current.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final_current.txt
+?? factory/evidence/core-reconciliacion-v1/grep_symbols_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources_current.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test_current.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files_current.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation_current.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/pwd_current.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile_current.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/ruff_current.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_current.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related_current.txt
+?? factory/evidence/factory-observability-status-v1/
+
+exec
+/bin/bash -lc "test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\\n' \""'$?"; ls -la factory/control/FACTORY_STATUS.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+factory_status_exists=0
+-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc "test -f factory/evidence/factory-observability-status-v1/cycle.md; printf 'cycle_exists=%s\\n' \""'$?"; ls -la factory/evidence/factory-observability-status-v1' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+cycle_exists=0
+total 24
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 22:22 .
+drwxr-xr-x 42 neoalmasana neoalmasana 4096 Apr 27 22:21 ..
+-rw-r--r--  1 neoalmasana neoalmasana  897 Apr 27 22:22 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana  560 Apr 27 22:22 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana  291 Apr 27 22:22 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana  340 Apr 27 22:22 tests.txt
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+exec
+/bin/bash -lc "sed -n '1,120p' factory/control/FACTORY_STATUS.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# FACTORY STATUS
+
+updated_at: 2026-04-27T22:21:50Z
+last_cycle_result: RUNNING
+audit_gate: RUNNING
+last_error: cycle started
+observability_cycle_id: factory-observability-status-v1
+observability_cycle_status: UPDATED
+observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+exec
+/bin/bash -lc "sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# factory-observability-status-v1
+
+objective: registrar estado de la factoria en FACTORY_STATUS.md
+status: completed
+updated_at: 2026-04-27T22:21:50Z
+
+scope_allowed:
+- factory/control/FACTORY_STATUS.md
+- factory/evidence/factory-observability-status-v1/
+
+scope_forbidden:
+- app/core/
+- tests/
+- integraciones externas
+- refactor global
+
+closure_criteria:
+- FACTORY_STATUS.md actualizado por ciclo
+
+decision: INCOMPLETO
+reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+
+exec
+/bin/bash -lc 'git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index d1ed0d1..bcd9e3a 100644
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T19:50:09.629416+00:00
+-last_cycle_result: WAITING_AUDIT
+-audit_gate: WAITING_AUDIT
+-last_error: cycle closed
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+exec
+/bin/bash -lc 'command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/usr/bin/python3
+/usr/bin/python3: No module named pytest
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+codex
+La comprobación de entorno encontró `python3`, pero `pytest` no está instalado y `ruff` no aparece disponible. Voy a cerrar conservadoramente como `INCOMPLETO/BLOCKED_ENV` para tests, y completar la evidencia física del ciclo con status/diff acotados.
+2026-04-27T22:22:58.756826Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/commands.txt:
+command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/evidence/factory-observability-status-v1/commands.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+pwd
+test -f CODEX.md && sed -n '1,220p' CODEX.md
+git status --short
+find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
+test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
+test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
+test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
+date -u +%Y-%m-%dT%H:%M:%SZ
+test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
+test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
+git diff -- factory/control/FACTORY_STATUS.md
+mkdir -p factory/evidence/factory-observability-status-v1
+
+exec
+/bin/bash -lc "sed -n '1,160p' factory/evidence/factory-observability-status-v1/tests.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+No se ejecutaron pytest ni ruff.
+
+Motivo:
+- La unidad solo modifica Markdown y evidencia operativa.
+- No hay codigo Python modificado por esta tarea.
+
+Validacion aplicada:
+- verificacion fisica del archivo de estado
+- inspeccion de contenido
+- git diff acotado
+
+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..608fe802b1b96da38356d27570599e551dc1a39e
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,12 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..3031d144b8a17a1d1ac1e18c32f04712aab0a205
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,12 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/commands.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/git_diff.patch
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/git_status.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/tests.txt
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/verification.txt
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd090fa0efa2d6ef9052491d72c3d4c02801989b
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,16 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
++sed -n '1,120p' factory/control/FACTORY_STATUS.md
++sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md
++git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1
++command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/git_diff.patch b/factory/evidence/factory-observability-status-v1/git_diff.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecba706517e7b28d9b0d28dde8cc5fab736fd145
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_diff.patch
+@@ -0,0 +1,21 @@
++diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
++index d1ed0d1..bcd9e3a 100644
++--- a/factory/control/FACTORY_STATUS.md
+++++ b/factory/control/FACTORY_STATUS.md
++@@ -1,6 +1,9 @@
++ # FACTORY STATUS
++ 
++-updated_at: 2026-04-27T19:50:09.629416+00:00
++-last_cycle_result: WAITING_AUDIT
++-audit_gate: WAITING_AUDIT
++-last_error: cycle closed
+++updated_at: 2026-04-27T22:21:50Z
+++last_cycle_result: RUNNING
+++audit_gate: RUNNING
+++last_error: cycle started
+++observability_cycle_id: factory-observability-status-v1
+++observability_cycle_status: UPDATED
+++observability_cycle_updated_at: 2026-04-27T22:21:50Z
++
++Added evidence directory:
++factory/evidence/factory-observability-status-v1/
+diff --git a/factory/evidence/factory-observability-status-v1/git_status.txt b/factory/evidence/factory-observability-status-v1/git_status.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d40e1d64ffdc4d6461574ebb464a07df5214bba9
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_status.txt
+@@ -0,0 +1,19 @@
++Relevant status after this task:
++ M factory/control/FACTORY_STATUS.md
++?? factory/evidence/factory-observability-status-v1/
++
++Pre-existing unrelated dirty state was present before this task, including:
++ M app/core/reconciliation/models.py
++ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
++ M factory/control/AUDIT_GATE.md
++ M factory/control/PRIORITY_BOARD.md
++ M factory/evidence/core-reconciliacion-v1/commands.txt
++ M factory/evidence/core-reconciliacion-v1/cycle.md
++ M factory/evidence/core-reconciliacion-v1/decision.txt
++ M factory/evidence/core-reconciliacion-v1/git_diff.patch
++ M factory/evidence/core-reconciliacion-v1/git_status.txt
++ M factory/evidence/core-reconciliacion-v1/tests.txt
++ M factory/evidence/core-reconciliacion-v1/verification.txt
++?? factory/control/.telegram_control_offset
++?? factory/evidence/codex_core_reconciliacion_v1_*/
++?? factory/evidence/core-reconciliacion-v1/*_current.txt
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ecc2c30e2855a49e31c155d6df529b854476a36
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,14 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++- `python3 -m pytest --version` fallo con: No module named pytest.
++- `command -v ruff` no devolvio ruta.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+diff --git a/factory/evidence/factory-observability-status-v1/verification.txt b/factory/evidence/factory-observability-status-v1/verification.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..12a8b4af63112d243e12db62a6283f0627aad461
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/verification.txt
+@@ -0,0 +1,24 @@
++pwd:
++/opt/smartpyme-factory/repos/SmartPyme
++
++factory_status_exists:
++factory_status_exists=0
++-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
++
++evidence_exists:
++cycle_exists=0
++factory/evidence/factory-observability-status-v1/cycle.md
++factory/evidence/factory-observability-status-v1/commands.txt
++factory/evidence/factory-observability-status-v1/tests.txt
++factory/evidence/factory-observability-status-v1/decision.txt
++
++inspected_status:
++# FACTORY STATUS
++
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd090fa0efa2d6ef9052491d72c3d4c02801989b
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,16 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
++sed -n '1,120p' factory/control/FACTORY_STATUS.md
++sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md
++git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1
++command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/git_diff.patch b/factory/evidence/factory-observability-status-v1/git_diff.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecba706517e7b28d9b0d28dde8cc5fab736fd145
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_diff.patch
+@@ -0,0 +1,21 @@
++diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
++index d1ed0d1..bcd9e3a 100644
++--- a/factory/control/FACTORY_STATUS.md
+++++ b/factory/control/FACTORY_STATUS.md
++@@ -1,6 +1,9 @@
++ # FACTORY STATUS
++ 
++-updated_at: 2026-04-27T19:50:09.629416+00:00
++-last_cycle_result: WAITING_AUDIT
++-audit_gate: WAITING_AUDIT
++-last_error: cycle closed
+++updated_at: 2026-04-27T22:21:50Z
+++last_cycle_result: RUNNING
+++audit_gate: RUNNING
+++last_error: cycle started
+++observability_cycle_id: factory-observability-status-v1
+++observability_cycle_status: UPDATED
+++observability_cycle_updated_at: 2026-04-27T22:21:50Z
++
++Added evidence directory:
++factory/evidence/factory-observability-status-v1/
+diff --git a/factory/evidence/factory-observability-status-v1/git_status.txt b/factory/evidence/factory-observability-status-v1/git_status.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d40e1d64ffdc4d6461574ebb464a07df5214bba9
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_status.txt
+@@ -0,0 +1,19 @@
++Relevant status after this task:
++ M factory/control/FACTORY_STATUS.md
++?? factory/evidence/factory-observability-status-v1/
++
++Pre-existing unrelated dirty state was present before this task, including:
++ M app/core/reconciliation/models.py
++ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
++ M factory/control/AUDIT_GATE.md
++ M factory/control/PRIORITY_BOARD.md
++ M factory/evidence/core-reconciliacion-v1/commands.txt
++ M factory/evidence/core-reconciliacion-v1/cycle.md
++ M factory/evidence/core-reconciliacion-v1/decision.txt
++ M factory/evidence/core-reconciliacion-v1/git_diff.patch
++ M factory/evidence/core-reconciliacion-v1/git_status.txt
++ M factory/evidence/core-reconciliacion-v1/tests.txt
++ M factory/evidence/core-reconciliacion-v1/verification.txt
++?? factory/control/.telegram_control_offset
++?? factory/evidence/codex_core_reconciliacion_v1_*/
++?? factory/evidence/core-reconciliacion-v1/*_current.txt
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ecc2c30e2855a49e31c155d6df529b854476a36
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,14 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++- `python3 -m pytest --version` fallo con: No module named pytest.
++- `command -v ruff` no devolvio ruta.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+diff --git a/factory/evidence/factory-observability-status-v1/verification.txt b/factory/evidence/factory-observability-status-v1/verification.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..12a8b4af63112d243e12db62a6283f0627aad461
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/verification.txt
+@@ -0,0 +1,24 @@
++pwd:
++/opt/smartpyme-factory/repos/SmartPyme
++
++factory_status_exists:
++factory_status_exists=0
++-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
++
++evidence_exists:
++cycle_exists=0
++factory/evidence/factory-observability-status-v1/cycle.md
++factory/evidence/factory-observability-status-v1/commands.txt
++factory/evidence/factory-observability-status-v1/tests.txt
++factory/evidence/factory-observability-status-v1/decision.txt
++
++inspected_status:
++# FACTORY STATUS
++
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+codex
+Evidencia mínima añadida en el directorio de la tarea. Haré una última lectura física y diff para cerrar con datos concretos.
+exec
+/bin/bash -lc "test -f factory/evidence/factory-observability-status-v1/git_diff.patch; printf 'git_diff_evidence_exists=%s\\n' \""'$?"; ls -la factory/evidence/factory-observability-status-v1' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+git_diff_evidence_exists=0
+total 36
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 27 22:23 .
+drwxr-xr-x 42 neoalmasana neoalmasana 4096 Apr 27 22:21 ..
+-rw-r--r--  1 neoalmasana neoalmasana 1202 Apr 27 22:23 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana  560 Apr 27 22:22 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana  291 Apr 27 22:22 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana  697 Apr 27 22:23 git_diff.patch
+-rw-r--r--  1 neoalmasana neoalmasana  912 Apr 27 22:23 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana  445 Apr 27 22:23 tests.txt
+-rw-r--r--  1 neoalmasana neoalmasana  742 Apr 27 22:23 verification.txt
+
+exec
+/bin/bash -lc "sed -n '1,140p' factory/evidence/factory-observability-status-v1/tests.txt" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+No se ejecutaron pytest ni ruff.
+
+Motivo:
+- La unidad solo modifica Markdown y evidencia operativa.
+- No hay codigo Python modificado por esta tarea.
+- `python3 -m pytest --version` fallo con: No module named pytest.
+- `command -v ruff` no devolvio ruta.
+
+Validacion aplicada:
+- verificacion fisica del archivo de estado
+- inspeccion de contenido
+- git diff acotado
+
+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+
+exec
+/bin/bash -lc 'git diff -- factory/control/FACTORY_STATUS.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index d1ed0d1..bcd9e3a 100644
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T19:50:09.629416+00:00
+-last_cycle_result: WAITING_AUDIT
+-audit_gate: WAITING_AUDIT
+-last_error: cycle closed
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+exec
+/bin/bash -lc 'git status --short factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/control/FACTORY_STATUS.md
+?? factory/evidence/factory-observability-status-v1/
+
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd090fa0efa2d6ef9052491d72c3d4c02801989b
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,16 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
++sed -n '1,120p' factory/control/FACTORY_STATUS.md
++sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md
++git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1
++command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/git_diff.patch b/factory/evidence/factory-observability-status-v1/git_diff.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecba706517e7b28d9b0d28dde8cc5fab736fd145
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_diff.patch
+@@ -0,0 +1,21 @@
++diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
++index d1ed0d1..bcd9e3a 100644
++--- a/factory/control/FACTORY_STATUS.md
+++++ b/factory/control/FACTORY_STATUS.md
++@@ -1,6 +1,9 @@
++ # FACTORY STATUS
++ 
++-updated_at: 2026-04-27T19:50:09.629416+00:00
++-last_cycle_result: WAITING_AUDIT
++-audit_gate: WAITING_AUDIT
++-last_error: cycle closed
+++updated_at: 2026-04-27T22:21:50Z
+++last_cycle_result: RUNNING
+++audit_gate: RUNNING
+++last_error: cycle started
+++observability_cycle_id: factory-observability-status-v1
+++observability_cycle_status: UPDATED
+++observability_cycle_updated_at: 2026-04-27T22:21:50Z
++
++Added evidence directory:
++factory/evidence/factory-observability-status-v1/
+diff --git a/factory/evidence/factory-observability-status-v1/git_status.txt b/factory/evidence/factory-observability-status-v1/git_status.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d40e1d64ffdc4d6461574ebb464a07df5214bba9
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_status.txt
+@@ -0,0 +1,19 @@
++Relevant status after this task:
++ M factory/control/FACTORY_STATUS.md
++?? factory/evidence/factory-observability-status-v1/
++
++Pre-existing unrelated dirty state was present before this task, including:
++ M app/core/reconciliation/models.py
++ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
++ M factory/control/AUDIT_GATE.md
++ M factory/control/PRIORITY_BOARD.md
++ M factory/evidence/core-reconciliacion-v1/commands.txt
++ M factory/evidence/core-reconciliacion-v1/cycle.md
++ M factory/evidence/core-reconciliacion-v1/decision.txt
++ M factory/evidence/core-reconciliacion-v1/git_diff.patch
++ M factory/evidence/core-reconciliacion-v1/git_status.txt
++ M factory/evidence/core-reconciliacion-v1/tests.txt
++ M factory/evidence/core-reconciliacion-v1/verification.txt
++?? factory/control/.telegram_control_offset
++?? factory/evidence/codex_core_reconciliacion_v1_*/
++?? factory/evidence/core-reconciliacion-v1/*_current.txt
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ecc2c30e2855a49e31c155d6df529b854476a36
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,14 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++- `python3 -m pytest --version` fallo con: No module named pytest.
++- `command -v ruff` no devolvio ruta.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+diff --git a/factory/evidence/factory-observability-status-v1/verification.txt b/factory/evidence/factory-observability-status-v1/verification.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..12a8b4af63112d243e12db62a6283f0627aad461
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/verification.txt
+@@ -0,0 +1,24 @@
++pwd:
++/opt/smartpyme-factory/repos/SmartPyme
++
++factory_status_exists:
++factory_status_exists=0
++-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
++
++evidence_exists:
++cycle_exists=0
++factory/evidence/factory-observability-status-v1/cycle.md
++factory/evidence/factory-observability-status-v1/commands.txt
++factory/evidence/factory-observability-status-v1/tests.txt
++factory/evidence/factory-observability-status-v1/decision.txt
++
++inspected_status:
++# FACTORY STATUS
++
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+codex
+VEREDICTO  
+INCOMPLETO
+
+ARCHIVOS_MODIFICADOS  
+- `factory/control/FACTORY_STATUS.md`
+- `factory/evidence/factory-observability-status-v1/`
+
+VERIFICACION_FISICA  
+- `pwd` → `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f factory/control/FACTORY_STATUS.md` → `0`
+- `ls -la factory/evidence/factory-observability-status-v1` confirma evidencia creada.
+
+TESTS  
+No ejecutados. `python3 -m pytest --version` falla con `No module named pytest`; `ruff` no está disponible. La unidad solo tocó Markdown/evidencia, pero según AGENTS.md no declaro `CORRECTO` sin test/linter.
+
+EVIDENCIA  
+Creada en `factory/evidence/factory-observability-status-v1/`:
+- `cycle.md`
+- `commands.txt`
+- `tests.txt`
+- `decision.txt`
+- `verification.txt`
+- `git_status.txt`
+- `git_diff.patch`
+
+DIFF  
+`factory/control/FACTORY_STATUS.md` ahora registra:
+
+```text
+observability_cycle_id: factory-observability-status-v1
+observability_cycle_status: UPDATED
+observability_cycle_updated_at: 2026-04-27T22:21:50Z
+```
+
+BLOQUEOS  
+- `pytest` no instalado.
+- `ruff` no disponible.
+- Worktree ya estaba sucio antes de esta tarea, incluyendo cambios en core/reconciliación y control factory.
+
+RIESGOS  
+`factory/control/NEXT_CYCLE.md` sigue apuntando a `core-reconciliacion-v1`, no a esta tarea; este cambio se mantuvo acotado a observabilidad.
+diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
+index e8bfe15595428f9efcc9c0038bba556be30ebb3d..bcd9e3a055394fa1b7a625c2aed5392795efd87c
+--- a/factory/control/FACTORY_STATUS.md
++++ b/factory/control/FACTORY_STATUS.md
+@@ -1,6 +1,9 @@
+ # FACTORY STATUS
+ 
+-updated_at: 2026-04-27T22:21:14.811526+00:00
++updated_at: 2026-04-27T22:21:50Z
+ last_cycle_result: RUNNING
+ audit_gate: RUNNING
+ last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+diff --git a/factory/evidence/factory-observability-status-v1/commands.txt b/factory/evidence/factory-observability-status-v1/commands.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd090fa0efa2d6ef9052491d72c3d4c02801989b
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/commands.txt
+@@ -0,0 +1,16 @@
++pwd
++test -f CODEX.md && sed -n '1,220p' CODEX.md
++git status --short
++find . -path './.git' -prune -o \( -path './FACTORY_STATUS.md' -o -path './factory/control/FACTORY_STATUS.md' -o -path './factory/control/NEXT_CYCLE.md' -o -path './docs/SMARTPYME_OS_ACTUAL.md' -o -path './pyproject.toml' \) -print
++test -f factory/control/FACTORY_STATUS.md && sed -n '1,220p' factory/control/FACTORY_STATUS.md
++test -f factory/control/NEXT_CYCLE.md && sed -n '1,180p' factory/control/NEXT_CYCLE.md || true
++test -f pyproject.toml && sed -n '1,220p' pyproject.toml || true
++date -u +%Y-%m-%dT%H:%M:%SZ
++test -d factory/evidence/factory-observability-status-v1; printf 'exists=%s\n' "$?"
++test -f factory/control/FACTORY_STATUS.md; printf 'factory_status_exists=%s\n' "$?"; ls -la factory/control/FACTORY_STATUS.md
++git diff -- factory/control/FACTORY_STATUS.md
++mkdir -p factory/evidence/factory-observability-status-v1
++sed -n '1,120p' factory/control/FACTORY_STATUS.md
++sed -n '1,160p' factory/evidence/factory-observability-status-v1/cycle.md
++git diff -- factory/control/FACTORY_STATUS.md factory/evidence/factory-observability-status-v1
++command -v python3; command -v ruff || true; python3 -m pytest --version 2>&1 || true
+diff --git a/factory/evidence/factory-observability-status-v1/cycle.md b/factory/evidence/factory-observability-status-v1/cycle.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..554766c246ed92a0a73636e54160e745d292ede7
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/cycle.md
+@@ -0,0 +1,21 @@
++# factory-observability-status-v1
++
++objective: registrar estado de la factoria en FACTORY_STATUS.md
++status: completed
++updated_at: 2026-04-27T22:21:50Z
++
++scope_allowed:
++- factory/control/FACTORY_STATUS.md
++- factory/evidence/factory-observability-status-v1/
++
++scope_forbidden:
++- app/core/
++- tests/
++- integraciones externas
++- refactor global
++
++closure_criteria:
++- FACTORY_STATUS.md actualizado por ciclo
++
++decision: INCOMPLETO
++reason: cambio aplicado y verificado fisicamente; no se ejecuto pytest/ruff porque la unidad modifica Markdown/evidencia, sin codigo Python.
+diff --git a/factory/evidence/factory-observability-status-v1/decision.txt b/factory/evidence/factory-observability-status-v1/decision.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..175db6cf1662680b823e09e483e7e020bd27b411
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/decision.txt
+@@ -0,0 +1,5 @@
++VEREDICTO: INCOMPLETO
++
++La tarea actualizo factory/control/FACTORY_STATUS.md con el ciclo factory-observability-status-v1.
++
++No se declara CORRECTO porque no se ejecuto test/linter. La razon es que el alcance no toca codigo ejecutable; se deja decision conservadora segun protocolo SmartPyme.
+diff --git a/factory/evidence/factory-observability-status-v1/git_diff.patch b/factory/evidence/factory-observability-status-v1/git_diff.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecba706517e7b28d9b0d28dde8cc5fab736fd145
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_diff.patch
+@@ -0,0 +1,21 @@
++diff --git a/factory/control/FACTORY_STATUS.md b/factory/control/FACTORY_STATUS.md
++index d1ed0d1..bcd9e3a 100644
++--- a/factory/control/FACTORY_STATUS.md
+++++ b/factory/control/FACTORY_STATUS.md
++@@ -1,6 +1,9 @@
++ # FACTORY STATUS
++ 
++-updated_at: 2026-04-27T19:50:09.629416+00:00
++-last_cycle_result: WAITING_AUDIT
++-audit_gate: WAITING_AUDIT
++-last_error: cycle closed
+++updated_at: 2026-04-27T22:21:50Z
+++last_cycle_result: RUNNING
+++audit_gate: RUNNING
+++last_error: cycle started
+++observability_cycle_id: factory-observability-status-v1
+++observability_cycle_status: UPDATED
+++observability_cycle_updated_at: 2026-04-27T22:21:50Z
++
++Added evidence directory:
++factory/evidence/factory-observability-status-v1/
+diff --git a/factory/evidence/factory-observability-status-v1/git_status.txt b/factory/evidence/factory-observability-status-v1/git_status.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d40e1d64ffdc4d6461574ebb464a07df5214bba9
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/git_status.txt
+@@ -0,0 +1,19 @@
++Relevant status after this task:
++ M factory/control/FACTORY_STATUS.md
++?? factory/evidence/factory-observability-status-v1/
++
++Pre-existing unrelated dirty state was present before this task, including:
++ M app/core/reconciliation/models.py
++ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
++ M factory/control/AUDIT_GATE.md
++ M factory/control/PRIORITY_BOARD.md
++ M factory/evidence/core-reconciliacion-v1/commands.txt
++ M factory/evidence/core-reconciliacion-v1/cycle.md
++ M factory/evidence/core-reconciliacion-v1/decision.txt
++ M factory/evidence/core-reconciliacion-v1/git_diff.patch
++ M factory/evidence/core-reconciliacion-v1/git_status.txt
++ M factory/evidence/core-reconciliacion-v1/tests.txt
++ M factory/evidence/core-reconciliacion-v1/verification.txt
++?? factory/control/.telegram_control_offset
++?? factory/evidence/codex_core_reconciliacion_v1_*/
++?? factory/evidence/core-reconciliacion-v1/*_current.txt
+diff --git a/factory/evidence/factory-observability-status-v1/tests.txt b/factory/evidence/factory-observability-status-v1/tests.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ecc2c30e2855a49e31c155d6df529b854476a36
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/tests.txt
+@@ -0,0 +1,14 @@
++No se ejecutaron pytest ni ruff.
++
++Motivo:
++- La unidad solo modifica Markdown y evidencia operativa.
++- No hay codigo Python modificado por esta tarea.
++- `python3 -m pytest --version` fallo con: No module named pytest.
++- `command -v ruff` no devolvio ruta.
++
++Validacion aplicada:
++- verificacion fisica del archivo de estado
++- inspeccion de contenido
++- git diff acotado
++
++Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+diff --git a/factory/evidence/factory-observability-status-v1/verification.txt b/factory/evidence/factory-observability-status-v1/verification.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..12a8b4af63112d243e12db62a6283f0627aad461
+--- /dev/null
++++ b/factory/evidence/factory-observability-status-v1/verification.txt
+@@ -0,0 +1,24 @@
++pwd:
++/opt/smartpyme-factory/repos/SmartPyme
++
++factory_status_exists:
++factory_status_exists=0
++-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
++
++evidence_exists:
++cycle_exists=0
++factory/evidence/factory-observability-status-v1/cycle.md
++factory/evidence/factory-observability-status-v1/commands.txt
++factory/evidence/factory-observability-status-v1/tests.txt
++factory/evidence/factory-observability-status-v1/decision.txt
++
++inspected_status:
++# FACTORY STATUS
++
++updated_at: 2026-04-27T22:21:50Z
++last_cycle_result: RUNNING
++audit_gate: RUNNING
++last_error: cycle started
++observability_cycle_id: factory-observability-status-v1
++observability_cycle_status: UPDATED
++observability_cycle_updated_at: 2026-04-27T22:21:50Z
+
+2026-04-27T22:23:41.435520Z ERROR codex_core::session: failed to record rollout items: thread 019dd108-4f07-7601-9955-2296d7b946f5 not found
+tokens used
+60,764
+VEREDICTO  
+INCOMPLETO
+
+ARCHIVOS_MODIFICADOS  
+- `factory/control/FACTORY_STATUS.md`
+- `factory/evidence/factory-observability-status-v1/`
+
+VERIFICACION_FISICA  
+- `pwd` → `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f factory/control/FACTORY_STATUS.md` → `0`
+- `ls -la factory/evidence/factory-observability-status-v1` confirma evidencia creada.
+
+TESTS  
+No ejecutados. `python3 -m pytest --version` falla con `No module named pytest`; `ruff` no está disponible. La unidad solo tocó Markdown/evidencia, pero según AGENTS.md no declaro `CORRECTO` sin test/linter.
+
+EVIDENCIA  
+Creada en `factory/evidence/factory-observability-status-v1/`:
+- `cycle.md`
+- `commands.txt`
+- `tests.txt`
+- `decision.txt`
+- `verification.txt`
+- `git_status.txt`
+- `git_diff.patch`
+
+DIFF  
+`factory/control/FACTORY_STATUS.md` ahora registra:
+
+```text
+observability_cycle_id: factory-observability-status-v1
+observability_cycle_status: UPDATED
+observability_cycle_updated_at: 2026-04-27T22:21:50Z
+```
+
+BLOQUEOS  
+- `pytest` no instalado.
+- `ruff` no disponible.
+- Worktree ya estaba sucio antes de esta tarea, incluyendo cambios en core/reconciliación y control factory.
+
+RIESGOS  
+`factory/control/NEXT_CYCLE.md` sigue apuntando a `core-reconciliacion-v1`, no a esta tarea; este cambio se mantuvo acotado a observabilidad.

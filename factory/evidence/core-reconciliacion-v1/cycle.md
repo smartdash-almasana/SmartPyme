@@ -1,24 +1,26 @@
-# core-reconciliacion-v1
+PLAN
+objetivo: implementar/verificar motor minimo de reconciliacion entre dos CSV con salida de hallazgos por entidad.
+archivos_permitidos: app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py factory/evidence/core-reconciliacion-v1/*
+archivos_prohibidos: resto del repo; sin refactor global; sin cambios de control factory en esta unidad.
+criterio_cierre: detectar diferencia numerica entre fuentes CSV y emitir Hallazgo estructurado con entidad, delta y evidencia comparativa.
+tests_esperados: pytest focal, pytest relacionado de reconciliacion/hallazgos, py_compile/compileall y Ruff si esta disponible.
 
-Objetivo: implementar primer motor deterministico de reconciliacion entre dos fuentes CSV.
+WRITE
+app/core/reconciliation/service.py expone reconcile_csv_sources con lectura deterministica de dos CSV, normalizacion numerica y transformacion a Hallazgo.
+tests/core/test_reconciliation_csv.py valida diferencia numerica por entidad y evidencia estructurada.
+app/core/reconciliation/models.py mantiene ReconciliationRow sin dependencia runtime externa no declarada.
+No se usa polars porque no esta instalado ni declarado en pyproject.toml.
 
-PLAN:
-- Objetivo: leer dos CSV, comparar por entidad y emitir diferencias estructuradas como `Hallazgo`.
-- Archivos permitidos: `app/core/reconciliation/service.py`, `app/core/reconciliation/__init__.py`, `tests/core/test_reconciliation_csv.py`, `factory/evidence/core-reconciliacion-v1/*`.
-- Archivos prohibidos/no tocados por esta unidad: integraciones externas, reporting, systemd y refactors globales.
-- Criterio de cierre: diferencia numerica detectada por entidad, salida tipo hallazgo, test focal validado.
-- Tests esperados: `python3 -m pytest tests/core/test_reconciliation_csv.py -q` y `python3 -m ruff check ...`.
+VERIFY
+ver pwd.txt, git_status.txt, ls_files.txt e inspect_*.txt.
 
-WRITE:
-- Se agrego entrada publica `reconcile_csv_sources`.
-- Se agregaron helpers deterministas para lectura CSV y normalizacion numerica.
-- Se agrego test focal para una diferencia numerica por entidad.
+RUN
+.venv/bin/python -m pytest tests/core/test_reconciliation_csv.py -q
+.venv/bin/python -m pytest tests/core/test_reconciliation.py tests/core/test_reconciliation_csv.py tests/core/test_hallazgos_service.py -q
+.venv/bin/python -m py_compile app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
+python3 -m compileall app/core/reconciliation app/core/hallazgos tests/core/test_reconciliation_csv.py -q
+.venv/bin/python manual reconcile_csv_sources smoke
+.venv/bin/python -m ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
 
-VERIFY/RUN:
-- La existencia fisica fue verificada en `verification.txt`.
-- `compileall` paso.
-- `pytest` y `ruff` no estan disponibles en el entorno.
-- El import del core falla por dependencia existente faltante: `pydantic`.
-
-DECISION:
-- `BLOCKED` por contrato/entorno de dependencias faltante.
+DECISION
+BLOCKED: pytest focal y tests relacionados pasan en .venv, py_compile/compileall pasan y el smoke deterministico emite un Hallazgo correcto. Ruff no esta instalado en python3 ni en .venv, por lo que no se declara CORRECTO segun AGENTS.md.

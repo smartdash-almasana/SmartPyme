@@ -1,0 +1,19 @@
+Relevant status after this task:
+ M factory/control/FACTORY_STATUS.md
+?? factory/evidence/factory-observability-status-v1/
+
+Pre-existing unrelated dirty state was present before this task, including:
+ M app/core/reconciliation/models.py
+ M factory/ai_governance/tasks/core_reconciliacion_v1.yaml
+ M factory/control/AUDIT_GATE.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+?? factory/control/.telegram_control_offset
+?? factory/evidence/codex_core_reconciliacion_v1_*/
+?? factory/evidence/core-reconciliacion-v1/*_current.txt

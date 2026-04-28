@@ -1,0 +1,3939 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd0d5-95df-7563-b33a-da543f768210
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: core-reconciliacion-v1
+status: pending
+objetivo: Implementar primer motor de reconciliacion entre dos fuentes tabulares.
+alcance:
+  - input: 2 csv
+  - output: diferencias por entidad
+criterios_exito:
+  - detectar diferencias numericas
+  - output estructurado tipo hallazgo
+  - test validado
+restricciones:
+  - usar polars si ya esta disponible
+  - no usar logica generativa para el core
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Usaré la skill `hallazgo_executor` porque la tarea pide implementar un hallazgo validado con evidencia y cierre controlado. Primero voy a leer los contratos locales (`CODEX.md`, estado del repo y archivos relevantes) antes de tocar nada.
+exec
+/bin/bash -lc 'pwd && git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+ M app/core/reconciliation/models.py
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+ M scripts/hermes_factory_runner.py
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+exec
+/bin/bash -lc "sed -n '1,220p' /opt/smartpyme-factory/repos/SmartPyme/.codex/skills/hallazgo_executor/SKILL.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+ succeeded in 0ms:
+---
+name: hallazgo_executor
+description: Ejecuta hallazgos validados con control fail-closed y cierre de estado en la factoria SmartPyme.
+---
+
+# Hallazgo Executor
+
+## Propósito
+Ejecutar hallazgos escritos por Gemini sobre el repositorio objetivo, con control fail-closed y validación mínima obligatoria.
+
+## Repo objetivo
+E:\BuenosPasos\smartbridge\SmartPyme
+
+## Entrada
+Un único archivo markdown tomado desde:
+- E:\BuenosPasos\smartbridge\SmartPyme\factory\hallazgos\pending
+
+## Flujo operativo
+1. Leer exactamente un hallazgo desde `pending`.
+2. Validar que el hallazgo contenga:
+   - `modulo_objetivo`
+   - `rutas_fuente`
+   - `top_slices`
+   - `propuesta_de_portado`
+   - `reglas_de_ejecucion`
+   - `criterio_de_cierre`
+3. Si falta alguno de los campos requeridos, no ejecutar cambios: completar `BLOQUEO` y mover a `blocked`.
+4. Si está completo, mover el hallazgo a `in_progress` antes de actuar.
+5. Aplicar solo cambios mínimos en SmartPyme, estrictamente dentro del alcance declarado.
+6. Correr solo tests necesarios del módulo afectado.
+7. Si todo sale bien:
+   - completar `EJECUCION_CODEX`
+   - mover hallazgo a `done`
+8. Si aparece duda, conflicto o falta de contexto:
+   - NO continuar
+   - completar `BLOQUEO`
+   - mover hallazgo a `blocked`
+
+## Restricciones duras
+- no explorar cantera por cuenta propia
+- no buscar nuevos slices por cuenta propia
+- no modificar módulos fuera del alcance del hallazgo
+- no hacer refactor global
+- no inventar contratos, rutas o dependencias
+- no cerrar un hallazgo sin verificación mínima
+- preguntar antes que asumir
+
+exec
+/bin/bash -lc "find . -maxdepth 3 -type f | sort | sed -n '1,220p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+./.agent/memory/catalog_patologias.json
+./.agent/memory/decision_log.md
+./.agent/rules/determinismo.md
+./.agent/rules/sacred-modernism.md
+./.agents/plugins/marketplace.json
+./.gemini/skills/write_verify_protocol.md
+./.git/COMMIT_EDITMSG
+./.git/FETCH_HEAD
+./.git/HEAD
+./.git/ORIG_HEAD
+./.git/REBASE_HEAD
+./.git/config
+./.git/description
+./.git/hooks/applypatch-msg.sample
+./.git/hooks/commit-msg.sample
+./.git/hooks/fsmonitor-watchman.sample
+./.git/hooks/post-update.sample
+./.git/hooks/pre-applypatch.sample
+./.git/hooks/pre-commit.sample
+./.git/hooks/pre-merge-commit.sample
+./.git/hooks/pre-push.sample
+./.git/hooks/pre-rebase.sample
+./.git/hooks/pre-receive.sample
+./.git/hooks/prepare-commit-msg.sample
+./.git/hooks/push-to-checkout.sample
+./.git/hooks/update.sample
+./.git/index
+./.git/info/exclude
+./.git/logs/HEAD
+./.git/packed-refs
+./.github/workflows/hermes-factory-cycle.yml
+./.gitignore
+./.pytest_cache/.gitignore
+./.pytest_cache/CACHEDIR.TAG
+./.pytest_cache/README.md
+./.venv/bin/Activate.ps1
+./.venv/bin/activate
+./.venv/bin/activate.csh
+./.venv/bin/activate.fish
+./.venv/bin/pip
+./.venv/bin/pip3
+./.venv/bin/pip3.11
+./.venv/bin/py.test
+./.venv/bin/pygmentize
+./.venv/bin/pytest
+./.venv/pyvenv.cfg
+./AGENTS.md
+./CODEX.md
+./GEMINI.md
+./README.md
+./SMARTPYME_AI_OPERATING_SYSTEM.md
+./agent.py
+./app/__init__.py
+./app/__pycache__/__init__.cpython-311.pyc
+./app/catalog/__init__.py
+./app/catalog/patologias.py
+./app/contracts/__init__.py
+./app/contracts/action_contract.py
+./app/contracts/clarification_contract.py
+./app/contracts/communication_contract.py
+./app/contracts/entity_contract.py
+./app/contracts/evidence_contract.py
+./app/contracts/execution_adapter_contract.py
+./app/contracts/operational_plan_contract.py
+./app/contracts/pipeline_contract.py
+./app/contracts/skill_contract.py
+./app/core/__init__.py
+./app/core/calculators.py
+./app/core/entities.py
+./app/core/pipeline.py
+./app/core/test_calculators.py
+./app/core/test_entities.py
+./app/extraction/__init__.py
+./app/knowledge/__init__.py
+./app/main.py
+./app/mcp/__init__.py
+./app/memory/__init__.py
+./app/modules/__init__.py
+./app/modules/findings_engine.py
+./app/modules/test_findings_engine.py
+./app/orchestration/__init__.py
+./app/orchestration/pipeline.py
+./app/orchestration/test_pipeline.py
+./app/repositories/__init__.py
+./app/repositories/canonical_repository.py
+./app/repositories/clarification_repository.py
+./app/repositories/entity_repository.py
+./app/repositories/fact_repository.py
+./app/repositories/finding_repository.py
+./app/repositories/raw_document_registry.py
+./app/runtime/__init__.py
+./app/runtime/hermes_smartpyme_runtime.py
+./app/services/action_decision_service.py
+./app/services/action_execution_service.py
+./app/services/action_proposal_service.py
+./app/services/canonicalization_service.py
+./app/services/clarification_service.py
+./app/services/comparison_service.py
+./app/services/entity_resolution_service.py
+./app/services/fact_extraction_service.py
+./app/services/finding_communication_service.py
+./app/services/findings_service.py
+./app/source_connectors/__init__.py
+./app/system_growth/__init__.py
+./app/user_layer/__init__.py
+./core/adapters/meli_oauth_client.py
+./core/job.py
+./core/models/meli_oauth_token.py
+./core/orchestrator.py
+./core/repositories/meli_oauth_token_repository.py
+./core/services/meli_token_manager.py
+./docs/ARCHIVO_LEGACY.md
+./docs/ARQUITECTURA_NORMALIZADA.md
+./docs/CORE_PIPELINE_STATUS.md
+./docs/DAILY_PROGRESS_2026-04-25.md
+./docs/EVIDENCE_CONTRACT.md
+./docs/FUENTES_Y_JERARQUIA.md
+./docs/HERMES_AGENT_CAPABILITIES_AUDIT.md
+./docs/HERMES_MCP_RUNTIME.md
+./docs/HERMES_SMARTPYME_NO_ALUCINACION.md
+./docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md
+./docs/HERMES_VM_SETUP.md
+./docs/RAG_RETRIEVAL_PLAN.md
+./docs/RAW_RAG_INGESTION_ARCHITECTURE.md
+./docs/ROADMAP_IMPLEMENTACION.md
+./docs/SKILLS_CATALOGO_SMARTPYME.md
+./docs/SMARTPYME_OS_ACTUAL.md
+./docs/archive/80.000pdf.md
+./docs/archive/FUENTES_DEPRECABLES.md
+./docs/archive/factory_hallazgos_cierre_2026-04-23.md
+./docs/archive/smarttimes_full_architecture.md
+./docs/factory/ANTI_DERIVA_PRIORITY_QA_LOOP.md
+./docs/factory/CODEX_BUILDER_INTEGRATION.md
+./docs/factory/DAILY_FACTORY_CLOSURE_REPORT.md
+./docs/factory/DISK_RETENTION_AND_EVIDENCE_POLICY.md
+./docs/factory/FACTORY_OBSERVABILITY_STATUS.md
+./docs/factory/HERMES_CODEX_GEMINI_GOVERNANCE.md
+./docs/factory/TECH_SPEC_QUEUE.md
+./docs/factory/TELEGRAM_DAILY_REPORT_DELIVERY.md
+./docs/factory_runtime_real.md
+./docs/multiagente_roles_operativos.md
+./docs/topologia.txt
+./evidence_store/citation_index/.gitkeep
+./evidence_store/document_chunks/.gitkeep
+./evidence_store/raw_documents/.gitkeep
+./evidence_store/vector_index/.gitkeep
+./extraction/chunker.py
+./extraction/docling_parser.py
+./extraction/metadata_extractor.py
+./extraction/ocr_fallback.py
+./factory/README_CODEX_WORKER.md
+./factory/README_CONTINUOUS_FACTORY.md
+./factory/README_FACTORY.md
+./factory/__init__.py
+./factory/__pycache__/__init__.cpython-311.pyc
+./factory/__pycache__/telegram_notify.cpython-311.pyc
+./factory/ai_governance/HERMES_FACTORY_LOOP.md
+./factory/ai_governance/agent_roles.yaml
+./factory/ai_governance/auditor_rules.yaml
+./factory/ai_governance/gemini_execution_contract.md
+./factory/ai_governance/hermes_memory_model.md
+./factory/ai_governance/hermes_orchestrator_contract.md
+./factory/ai_governance/mcp_surfaces.md
+./factory/ai_governance/queue_notes.md
+./factory/ai_governance/skill_lifecycle_policy.md
+./factory/ai_governance/taskspec.schema.json
+./factory/atoms_catalog.py
+./factory/atoms_planner.py
+./factory/canteras_manifest.json
+./factory/config/telegram.local.env
+./factory/config/telegram_delivery.yaml
+./factory/continuous_factory.py
+./factory/control/AUDIT_GATE.md
+./factory/control/FACTORY_STATUS.md
+./factory/control/NEXT_CYCLE.md
+./factory/control/PRIORITY_BOARD.md
+./factory/gemini_slice_auditor.py
+./factory/hallazgos/BLOCKING_RULE.md
+./factory/hallazgos/HALLAZGO_TEMPLATE.md
+./factory/local_mcp_server.py
+./factory/mcp_bridge/__init__.py
+./factory/mcp_bridge/server.py
+./factory/mcp_bridge/tools.py
+./factory/multiagent_runner.py
+./factory/orchestrator/__init__.py
+./factory/orchestrator/agent_runner.py
+./factory/orchestrator/evidence_store.py
+./factory/orchestrator/hallazgo_store.py
+./factory/orchestrator/hermes_loop.py
+./factory/roadmaps/active.yaml
+./factory/run_codex_worker.py
+./factory/run_factory.py
+./factory/sandbox/test_codex.txt
+./factory/tasks/template_codex_task.yaml
+./factory/telegram_notify.py
+./factory/test_multiagent.py
+./factory/topology_catalog.json
+./factory/topology_catalog.py
+./infra/systemd/hermes-factory-pool.service
+./mcp_smartpyme_bridge.py
+./models/document_models.py
+./pyproject.toml
+./scripts/__pycache__/hermes_factory_runner.cpython-311.pyc
+./scripts/codex_builder_runner.py
+./scripts/configure_hermes_smartpyme.py
+./scripts/dev/seed_clarifications_db.py
+./scripts/dev/seed_evidence_store.py
+./scripts/dev/seed_jobs_db.py
+./scripts/dev/validate_orchestration.py
+./scripts/factory_disk_guard.py
+./scripts/factory_post_cycle_control.py
+./scripts/hermes_factory_runner.py
+./services/document_ingestion_service.py
+./services/document_query_service.py
+./services/retrieval_service.py
+./tests/core/test_action_contract.py
+./tests/core/test_action_decision_service.py
+./tests/core/test_action_execution_service.py
+./tests/core/test_action_proposal_service.py
+./tests/core/test_canonicalization_service.py
+
+codex
+El repo ya está sucio y contiene cambios previos en la misma tarea (`core-reconciliacion-v1`). Para no pisar trabajo existente, voy a inspeccionar esos archivos y validar si la unidad ya está implementada o si falta un ajuste mínimo.
+exec
+/bin/bash -lc 'find app/core -maxdepth 3 -type f | sort' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/__init__.py
+app/core/__pycache__/__init__.cpython-311.pyc
+app/core/calculators.py
+app/core/clarification/__init__.py
+app/core/clarification/models.py
+app/core/clarification/persistence.py
+app/core/clarification/service.py
+app/core/entities.py
+app/core/findings/__init__.py
+app/core/findings/models.py
+app/core/findings/service.py
+app/core/hallazgos/__init__.py
+app/core/hallazgos/__pycache__/__init__.cpython-311.pyc
+app/core/hallazgos/__pycache__/models.cpython-311.pyc
+app/core/hallazgos/__pycache__/service.cpython-311.pyc
+app/core/hallazgos/models.py
+app/core/hallazgos/service.py
+app/core/orchestrator/__init__.py
+app/core/orchestrator/models.py
+app/core/orchestrator/pipeline.py
+app/core/orchestrator/service.py
+app/core/pipeline.py
+app/core/reconciliation/__init__.py
+app/core/reconciliation/__pycache__/__init__.cpython-311.pyc
+app/core/reconciliation/__pycache__/models.cpython-311.pyc
+app/core/reconciliation/__pycache__/service.cpython-311.pyc
+app/core/reconciliation/models.py
+app/core/reconciliation/service.py
+app/core/repositories/__pycache__/hallazgo_repository.cpython-311.pyc
+app/core/repositories/hallazgo_repository.py
+app/core/test_calculators.py
+app/core/test_entities.py
+app/core/validation/__init__.py
+app/core/validation/models.py
+app/core/validation/service.py
+
+exec
+/bin/bash -lc "sed -n '1,240p' app/core/reconciliation/models.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Literal, TypeAlias
+
+ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
+DifferenceType: TypeAlias = Literal["faltante_en_a", "faltante_en_b", "valor_distinto"]
+MismatchDetail: TypeAlias = Literal["mismatch_numerico", "mismatch_no_numerico"]
+ClarificationState: TypeAlias = Literal["no_requiere", "pending_validation"]
+UncertaintyReason: TypeAlias = Literal["currency_ambiguous", "non_numeric", "monto_incierto"]
+SuggestedAction: TypeAlias = Literal[
+    "sin_accion",
+    "solicitar_revision_humana",
+    "sugerir_cobro_diferencia",
+    "sugerir_revision_sobrepago",
+]
+MeliActionType: TypeAlias = Literal["solicitar_revision_humana", "generar_documento"]
+AmountFindingReason: TypeAlias = Literal[
+    "monto_diferente",
+    "monto_incierto",
+    "non_numeric",
+    "currency_ambiguous",
+]
+WorkflowDecision: TypeAlias = Literal[
+    "direct_parse",
+    "guided_curation",
+    "human_review_required",
+]
+EconomicImpactDirection: TypeAlias = Literal["balanced", "shortfall", "overpayment"]
+HumanReviewVerdict: TypeAlias = Literal["confirm", "cancel"]
+ResolutionStatus: TypeAlias = Literal[
+    "pending_validation",
+    "handoff_confirmed",
+    "handoff_cancelled",
+]
+UncertaintyLevel: TypeAlias = Literal["low", "medium", "high"]
+WarningCode: TypeAlias = Literal[
+    "color_semantics_out_of_scope",
+    "currency_ambiguous",
+    "formula_without_value",
+    "unknown_semantic_mapping",
+]
+WarningSeverity: TypeAlias = Literal["info", "warning", "critical"]
+WarningDetails: TypeAlias = dict[str, Any]
+FailClosedTrigger: TypeAlias = Literal[
+    "none",
+    "warnings",
+    "uncertainties",
+    "warnings_and_uncertainties",
+]
+ReconciliationJobStatus: TypeAlias = Literal[
+    "pending",
+    "running",
+    "failed",
+    "done",
+    "dead_letter",
+]
+ReconciliationJobScope: TypeAlias = Literal["orders"]
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationRow:
+    root: dict[str, ReconciliationFieldValue]
+
+    @classmethod
+    def model_validate(cls, value: Any) -> "ReconciliationRow":
+        if not isinstance(value, dict):
+            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
+
+        validated: dict[str, ReconciliationFieldValue] = {}
+        for field_name, field_value in value.items():
+            if not isinstance(field_name, str):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
+            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
+            validated[field_name] = field_value
+        return cls(root=validated)
+
+
+@dataclass(frozen=True, slots=True)
+class ComparableRecord:
+    entity_id: str
+    entity_type: str
+    source: str
+    fields: dict[str, ReconciliationFieldValue] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class DifferenceRecord:
+    entity_id: str
+    entity_type: str
+    field_name: str
+    source_a: str
+    source_b: str
+    value_a: ReconciliationFieldValue
+    value_b: ReconciliationFieldValue
+    difference_type: DifferenceType
+    blocking: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciledMatch:
+    key: str
+    record_a: ReconciliationRow
+    record_b: ReconciliationRow
+
+
+@dataclass(frozen=True, slots=True)
+class QuantifiedDiscrepancy:
+    key: str
+    field_name: str
+    value_a: ReconciliationFieldValue
+    value_b: ReconciliationFieldValue
+    delta: float | None
+    detail: MismatchDetail
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationResult:
+    matches: list[ReconciledMatch]
+    mismatches: list[QuantifiedDiscrepancy]
+    missing_in_a: list[ReconciliationRow]
+    missing_in_b: list[ReconciliationRow]
+
+
+@dataclass(frozen=True, slots=True)
+class UncertaintyRecord:
+    key: str
+    field_name: str
+    raw_value: ReconciliationFieldValue
+    reason: UncertaintyReason
+    uncertainty_level: UncertaintyLevel
+    blocking: bool
+    clarification_state: ClarificationState
+    pending_validation: bool
+
+
+@dataclass(frozen=True, slots=True)
+class AmountReconciliationFinding:
+    key: str
+    expected_amount: float
+    actual_amount: float
+    delta: float
+    blocking: bool
+    reason: AmountFindingReason
+    uncertainty_level: UncertaintyLevel
+    clarification_state: ClarificationState
+    pending_validation: bool
+    suggested_action: SuggestedAction
+    human_question: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ClarificationQuestion:
+    key: str
+    reason: AmountFindingReason
+    question: str
+    clarification_state: ClarificationState
+    expected_amount: float | None = None
+    actual_amount: float | None = None
+    delta: float | None = None
+    pending_validation: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class AmountReconciliationResult:
+    total_records: int
+    ok_records: int
+    findings: list[AmountReconciliationFinding]
+    uncertainty_records: list[UncertaintyRecord]
+    suggested_actions: list[SuggestedAction]
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    max_uncertainty_level: UncertaintyLevel
+    has_blocking_pending: bool
+    human_review_questions: list[str] = field(default_factory=list)
+    clarification_questions: list[ClarificationQuestion] = field(default_factory=list)
+    warnings: list["WarningItem"] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class AmountDifferenceAssessment:
+    delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalDifferenceEngineResult:
+    delta: float
+    absolute_delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class EconomicImpact:
+    delta: float
+    absolute_delta: float
+    direction: EconomicImpactDirection
+
+
+@dataclass(frozen=True, slots=True)
+class HumanReviewDecision:
+    verdict: HumanReviewVerdict
+    actor: str
+    note: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class WarningItem:
+    code: WarningCode
+    message: str
+    key: str | None = None
+    field_name: str | None = None
+    details: WarningDetails | None = None
+    severity: WarningSeverity = "warning"
+    blocking: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationStateMachineResult:
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    has_blocking_pending: bool
+
+
+@dataclass(frozen=True, slots=True)
+class FailClosedStateEvaluation:
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    has_blocking_pending: bool
+    trigger: FailClosedTrigger
+
+
+
+exec
+/bin/bash -lc "find app/core/reconciliation -maxdepth 2 -type f -print -exec sed -n '1,220p' {} \\;" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/reconciliation/__init__.py
+from app.core.reconciliation.models import ComparableRecord, DifferenceRecord
+from app.core.reconciliation.service import compare_records, reconcile_csv_sources
+
+__all__ = [
+    "ComparableRecord",
+    "DifferenceRecord",
+    "compare_records",
+    "reconcile_csv_sources",
+]
+app/core/reconciliation/__pycache__/__init__.cpython-311.pyc
+�
+
+    ���i  �                   �.   � d dl mZmZ d dlmZmZ g d�ZdS )�    )�ComparableRecord�DifferenceRecord)�compare_records�reconcile_csv_sources)r   r   r   r   N)�app.core.reconciliation.modelsr   r   �app.core.reconciliation.servicer   r   �__all__� �    �#app/core/reconciliation/__init__.py�<module>r
+      sJ   �� M� M� M� M� M� M� M� M� R� R� R� R� R� R� R� R�� � ���r   app/core/reconciliation/__pycache__/service.cpython-311.pyc
+�
+
+    k��i��  �                   �
+  � U d dl Z d dlmZ d dlmZmZ d dlmZmZmZ d dl	m
+Z
+ d dlmZ d dl
+mZ d dlmZ d d	lmZ d d
+lmZ d dlmZmZmZmZmZmZmZmZmZmZm Z m!Z!m"Z"m#Z#m$Z$m%Z%m&Z&m'Z'm(Z(m)Z)m*Z*m+Z+m,Z,m-Z-m.Z.m/Z/m0Z0m1Z1 h d�Z2d
+Z3dZ4dZ5e5e3e4hZ6h d�Z7h d�Z8dhZ9dZ:dZ;h d�Z<e=e(         e>d<   dhZ?e=e'         e>d<   dZ@dZAdZBdedeCfd�ZDdeEeFz  eGz  eCz  dz  deCfd�ZHdedeGfd �ZIdefd!�ZJded"eEddfd#�ZKdeEd"eEdeEfd$�ZLd%e&ddfd&�ZMdddd'�d(eEd)eEd*e'd+eNeEef         dz  d,edz  de&fd-�ZOd.ddd/�d0ePe&         d1eEd2eFd*e'd,edz  dePe&         fd3�ZQddd4�d%e&d+eNeEef         dz  d,edz  de&fd5�ZRdeBd6�d%e&d7eEd,edz  d8eFde&f
+d9�ZSd:edeEfd;�ZTd<ed=edePe         fd>�ZUd?eEddfd@�ZVdAePeNeEef                  d?eEdBeEdeNeEeNeEef         f         fdC�ZWdDePeNeEef                  dEePeNeEef                  d?eEde*fdF�ZXdGeEez  dePeNeEef                  fdH�ZYdedeFeGz  dz  fdI�ZZdDePeNeEef                  dEePeNeEef                  d?eEdJe[eEdKf         dz  de=eE         f
+dL�Z\dMePeNeEef                  dJe=eE         dePeNeEef                  fdN�Z]dOddP�dQeEez  dReEez  d?eEdSeEdJe[eEdKf         dz  dePe         fdT�Z^dOeNeEef         d"eEdUeEdeGfdV�Z_dede[eGdz  eEdz  f         fdW�Z`dede[eGdz  eEdz  f         fdX�ZadOeNeEef         dYeEdZe[eEdKf         de[eeEdz  f         fd[�ZbdUeEd\eGdz  d]eGdz  d^eEdeEf
+d_�ZcdUeEd^eEd`eEd\eGdz  d]eGdz  daeGdz  defdb�ZddUeEd\eGdz  d]eGdz  d^eEdef
+dc�ZedaeGddeCdeEfde�Zfd^eEde/fdf�ZgdgePe/         de/fdh�Zhdie/de1fdj�Zidke1dle1de1fdm�ZjdneCdefdo�ZkdpePe0         dz  dePe0         fdq�ZldpePe0         dz  de1fdr�ZmdpePe0         dz  dsePe.         dtePe         de fdu�ZndpePe0         dz  dsePe.         dtePe         de fdv�ZodUeEdweEdxeEdyedzed^eEdtePe         dsePe.         d{ePeE         ddfd|�Zpd\eGd]eGdeGfd}�Zqd\eGd]eGdefd~�Zrd\eGd]eGdeGd�eGdz  def
+d��Zsd\eGd]eGdeGd�eGdz  de#f
+d��ZtdUeEd\eGd]eGdeGd�eGdz  dedz  fd��ZudUeEd\eGd]eGdeGd�eGdz  dedz  fd��ZvdtePe         d�ePe/         d{ePeE         de[e+e/ePeE         f         fd��Zwd�ePeNeEef                  de1fd��ZxdtePe         defd��Zyd�e1d�ePeNeEef                  dz  dpePe0         dz  dsePe.         dtePe         defd��Zzd�e"deNeEef         fd��Z{d�ePeNeEef                  ez  deNeEef         fd��Z|d�eNeEef         ddfd��Z}	 d�d:eNeEef         d�e!d�eeNeEef         e!eNeEef         geNeEef         dz  f         dz  deNeEef         fd��Z~	 d�d:eNeEef         d�e!d�eeNeEef         e!eNeEef         geNeEef         dz  f         dz  deNeEef         fd��Zd�d\d]d�dd��dMePeNeEef                  d?eEdweEdxeEdeGd�eGdz  defd��Z�dddd�d\d]d�dd��dMePeNeEef                  d:eNeEef         dz  d�ePeNeEef                  dz  dpePe0         dz  d?eEdweEdxeEdeGd�eGdz  defd��Z�dd��d�ePeNeEef                  ez  d:eNeEef         dz  deNeEef         fd��Z�d�e1de+fd��Z�d�d�d�d��d�ePeN         d?eEdweEdxeEde-f
+d��Z�dd��d�edpePe0         dz  deNeEef         fd��Z�dS )��    N)�Callable)�asdict�replace)�datetime�	timedelta�timezone)�Decimal)�isfinite)�Path)�Any)�Hallazgo)�HallazgoEngine)�AmountDifferenceAssessment�AmountReconciliationFinding�AmountReconciliationResult�ClarificationQuestion�ClarificationState�ComparableRecord� DeterministicDiscrepancySnapshot�DeterministicHitlEvaluation�DifferenceRecord�EconomicImpact�FailClosedStateEvaluation�HumanReviewDecision�MeliSuggestedAction�!OperationalDifferenceEngineResult�QuantifiedDiscrepancy�ReconciledMatch�ReconciliationJob�ReconciliationJobScope�ReconciliationJobStatus�ReconciliationRow�ReconciliationResult� ReconciliationStateMachineResult�SimpleReconciliationFinding�SimpleReconciliationResult�UncertaintyRecord�UncertaintyLevel�WarningItem�WorkflowDecision>   �sku�cuil�cuit�	entity_id�handoff_confirmed�handoff_cancelled�pending_validation>   �
+empty_dataset�too_few_columns�missing_core_fields>   �currency_noise�duplicate_rows�unknown_headers�alias_headers_used�mostly_empty_columns�fecha_needs_normalization�%fecha_vencimiento_needs_normalization�color_semantics_out_of_scope)�amount_expected�expected_amount)�paid_amount�amount_paid�
+actual_amount>   �done�failed�pending�running�dead_letter�RECONCILIATION_JOB_STATUSES�orders�RECONCILIATION_JOB_SCOPES�<   i  �
+   �value�returnc                 �f   � t          | t          t          f�  �        ot          | t          �  �         S �N)�
+isinstance�int�float�bool�rL   s    �"app/core/reconciliation/service.py�
+_is_numberrV   R   s(   � ��e�c�5�\�*�*�J�:�e�T�3J�3J�/J�J�    c                 �
+   � | d uS rO   � rT   s    rU   �_is_presentrZ   V   s
+   � ����rW   c                 �R   � 	 t          | �  �        S # t          t          f$ r Y dS w xY w)N�        )rR   �	TypeError�
+ValueErrorrT   s    rU   �_to_float_or_zeror_   Z   s:   � ���U�|�|����z�"� � � ��s�s����s   � �&�&c                  �>   � t          j        t          j        �  �        S rO   )r   �nowr   �utcrY   rW   rU   �_utc_nowrc   a   s   � ��<���%�%�%rW   �
+field_namec                 �h   � t          | t          �  �        r| j        �t          |� d|� d��  �        �d S )N�_INVALIDO: z debe tener timezone.)rP   r   �tzinfor^   )rL   rd   s     rU   �_validate_aware_datetimerh   e   sC   � ��e�X�&�&� V�%�,�*>��J�T�T�:�T�T�T�U�U�U� +?�*>rW   c                 �   � t          | t          �  �        st          |� d|� d��  �        �| �                    �   �         }|st          |� d|� d��  �        �|S )Nrf   z debe ser texto.z no puede ser vacio.)rP   �strr^   �strip)rL   rd   �
+normalizeds      rU   �_normalize_job_textrm   j   so   � ��e�S�!�!� Q��J�O�O�:�O�O�O�P�P�P������J�� U��J�S�S�:�S�S�S�T�T�T��rW   �jobc                 �   � t          | j        d�  �         t          | j        d�  �         | j        t          vrt          d�  �        �| j        t          vrt          d�  �        �| j        �)t          | j        t          �  �        st          d�  �        �| j        dk     rt          d�  �        �t          | j
+        d�  �         t          | j        d	�  �         t          | j        d
+�  �         | j        �t          | j        d�  �         | j        �t          | j        d�  �         | j        �| j        st          d
+�  �        �| j        dk    r| j        �| j        st          d�  �        �| j        dk    r| j        �t          d�  �        �d S d S )N�JOB_ID�STORE_ID�3RECONCILIATION_SCOPE_INVALIDO: scope no reconocido.z9RECONCILIATION_JOB_STATUS_INVALIDO: status no reconocido.�<RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.r   zARECONCILIATION_ATTEMPTS_INVALIDO: attempts no puede ser negativo.�NEXT_ELIGIBLE_AT�
+CREATED_AT�
+UPDATED_AT�	LOCKED_AT�DEAD_LETTER_ATzORECONCILIATION_LOCK_INVALIDO: locked_by es obligatorio cuando locked_at existe.rE   zARECONCILIATION_LOCK_INVALIDO: jobs running requieren lock activo.rF   zCRECONCILIATION_DEAD_LETTER_INVALIDO: dead_letter_at es obligatorio.)rm   �job_id�store_id�scoperI   r^   �statusrG   �cursorrP   �dict�attemptsrh   �next_eligible_at�
+created_at�
+updated_at�	locked_at�dead_letter_at�	locked_by�rn   s    rU   �_validate_reconciliation_jobr�   s   s�  � ���
+�H�-�-�-����j�1�1�1�
+�y�1�1�1��N�O�O�O�
+�z�4�4�4��T�U�U�U�
+�z��j���T�&B�&B���W�X�X�X�
+�|�a����\�]�]�]��S�1�3E�F�F�F��S�^�\�:�:�:��S�^�\�:�:�:�
+�}� � ����<�<�<�
+��%� ��!3�5E�F�F�F�
+�}� ��� ��]�
+� 
+� 	
+� �z�Y���C�M�$9���$9��O�
+� 
+� 	
+� �z�]�"�"�s�'9�'A��Q�
+� 
+� 	
+� #�"�'A�'ArW   )r{   r}   ra   ry   rz   r{   r}   ra   c                 �:  � |p
+t          �   �         }t          |d�  �         |�$t          |t          �  �        st	          d�  �        �t          t
+          | d�  �        t
+          |d�  �        ||�t          |�  �        nd dd|||��	  �	        }t          |�  �         |S )N�NOWrs   rp   rq   rD   r   )	ry   rz   r{   r}   r|   r   r�   r�   r�   )rc   rh   rP   r~   r^   r   rm   r�   )ry   rz   r{   r}   ra   �	timestamprn   s          rU   �create_reconciliation_jobr�   �   s�   � � �!�x�z�z�I��Y��.�.�.�
+��*�V�T�":�":���W�X�X�X�
+�"�6�8�4�4�$�X�z�:�:��%�1�t�F�|�|�|�t���"���
+� 
+� 
+�C� !��%�%�%��JrW   �   )�limitr{   ra   �jobs�workerr�   c                �d  ���� |dk    rt          d�  �        ��t          vrt          d�  �        �t          |d�  �        �|p
+t          �   �         �t	          �d�  �         | D ]}t          |�  �         ���fd�| D �   �         }|�                    d� ��  �         ��fd	�|d |�         D �   �         S )
+Nr   z=RECONCILIATION_CLAIM_LIMIT_INVALIDO: limit debe ser positivo.rr   �WORKERr�   c                 �`   �� g | ]*}|j         �k    r|j        d v r|j        �
+|j        �k    �(|��+S )>   rC   rD   )r{   r|   r�   r�   )�.0rn   r{   r�   s     ��rU   �
+<listcomp>z-claim_reconciliation_jobs.<locals>.<listcomp>�   sV   �� � � � ���9�����J�/�/�/��M�!�� �I�-�-� 	�
+ 
+.�-�-rW   c                 �*   � | j         | j        | j        fS rO   )r�   r�   ry   r�   s    rU   �<lambda>z+claim_reconciliation_jobs.<locals>.<lambda>�   s   � ��(<�c�n�c�j�'Y� rW   )�keyc           
+      �J   �� g | ]}t          |d |j        dz   �����  �        �� S )rE   r�   )r|   r   r�   r�   r�   )r   r   )r�   rn   r�   �	worker_ids     ��rU   r�   z-claim_reconciliation_jobs.<locals>.<listcomp>�   sS   �� � 
+� 
+� 
+� 
+� 	����\�A�%��� �
+	
+� 	
+� 	
+�
+� 
+� 
+rW   )r^   rI   rm   rc   rh   r�   �sort)	r�   r�   r�   r{   ra   rn   �
+eligible_jobsr�   r�   s	      `   @@rU   �claim_reconciliation_jobsr�   �   s  ���� � 
+��z�z��X�Y�Y�Y��-�-�-��N�O�O�O�#�F�H�5�5�I��!�x�z�z�I��Y��.�.�.�� *� *��$�S�)�)�)�)�� � � � ��� � �M� ���Y�Y��Z�Z�Z�
+� 
+� 
+� 
+� 
+� !��%��(�
+� 
+� 
+� 
+rW   )r}   ra   c          	      �Z  � t          | �  �         | j        dk    rt          d�  �        �|�$t          |t          �  �        st          d�  �        �|p
+t          �   �         }t
+          |d�  �         t          | |�t	          |�  �        n| j        dd d d |��  �        }t          |�  �         |S )NrE   zARECONCILIATION_JOB_NO_RUNNING: solo jobs running pueden cerrarse.rs   r�   rB   )r}   r|   r�   r�   �
+last_errorr�   )	r�   r|   r^   rP   r~   rc   rh   r   r}   )rn   r}   ra   r�   �	completeds        rU   �complete_reconciliation_jobr�   �   s�   � � !��%�%�%�
+�z�Y����\�]�]�]�
+��*�V�T�":�":���W�X�X�X��!�x�z�z�I��Y��.�.�.���%�1�t�F�|�|�|�s�z������� � �I� !��+�+�+��rW   )ra   �max_attempts�errorr�   c                ��  � t          | �  �         | j        dk    rt          d�  �        �|dk    rt          d�  �        �t          |d�  �        }|p
+t	          �   �         }t          |d�  �         | j        |k    rt          | dd d |||��  �        }n]t          t          d	t          | j        d
+z
+  d�  �        z  z  t          �  �        }t          | dd d ||t          |��  �        z   |�
+�  �        }t          |�  �         |S )NrE   z?RECONCILIATION_JOB_NO_RUNNING: solo jobs running pueden fallar.r   zERECONCILIATION_MAX_ATTEMPTS_INVALIDO: max_attempts debe ser positivo.�ERRORr�   rF   )r|   r�   r�   r�   r�   r�   �   r�   rC   )�seconds)r|   r�   r�   r�   r�   r�   )
+r�   r|   r^   rm   rc   rh   r   r   �min�%RECONCILIATION_JOB_RETRY_BASE_SECONDS�max�$RECONCILIATION_JOB_RETRY_CAP_SECONDSr   )rn   r�   ra   r�   �
+error_messager�   rC   �
+delay_secondss           rU   �fail_reconciliation_jobr�   �   s0  � � !��%�%�%�
+�z�Y����Z�[�[�[��q����`�a�a�a�'��w�7�7�M��!�x�z�z�I��Y��.�.�.�
+�|�|�#�#��� ���$�$� �
+� 
+� 
+��� �1�Q�#�c�l�Q�>N�PQ�:R�:R�5R�S�0�
+� 
+�
+� �����$�&��=�)I�)I�)I�I� �
+� 
+� 
+�� !��(�(�(��MrW   �	job_statec                 �<  � t          | t          �  �        st          d�  �        �| �                    d�  �        }t          |t          �  �        st          d�  �        �|�                    �   �         �                    �   �         }|t          vrt          d�  �        �|S )NzCRECONCILIATION_STATE_INVALIDO: estado invalido para reconciliacion.r|   zIRECONCILIATION_STATUS_INVALIDO: estado no reconocido para reconciliacion.)rP   r~   r^   �getrj   rk   �lower�"RECOGNIZED_RECONCILIATION_STATUSES)r�   r|   �normalized_statuss      rU   � _normalize_reconciliation_statusr�      s�   � ��i��&�&� 
+��Q�
+� 
+� 	
+� �]�]�8�
+$�
+$�F��f�c�"�"� 
+��W�
+� 
+� 	
+� �����,�,�.�.��� B�B�B��W�
+� 
+� 	
+� �rW   �record_a�record_bc                 �  � | j         |j         k    rt          d�  �        �| j        |j        k    rt          d�  �        �t          t	          | j        �                    �   �         �  �        t	          |j        �                    �   �         �  �        z  �  �        }g }|D ]�}| j        �                    |�  �        }|j        �                    |�  �        }||k    r�=t          |�  �        }t          |�  �        }|s|rd}	n	|r|sd}	nd}	|�	                    t          | j         | j        || j        |j        |||	|t          v ��	  �	        �  �         ��|S )NzKENTITY_ID_MISMATCH: los records comparables deben tener el mismo entity_id.zOENTITY_TYPE_MISMATCH: los records comparables deben tener el mismo entity_type.�
+faltante_en_a�
+faltante_en_b�valor_distinto)	r.   �entity_typerd   �source_a�source_b�value_a�value_b�difference_type�blocking)
+r.   r^   r�   �sorted�set�fields�keysr�   rZ   �appendr   �source�BLOCKING_FIELDS)
+r�   r�   �field_names�differencesrd   r�   r�   �	present_a�	present_br�   s
+             rU   �compare_recordsr�   2  s�  � ���X�/�/�/��Y�
+� 
+� 	
+� ��x�3�3�3��]�
+� 
+� 	
+� ��X�_�1�1�3�3�4�4�s�8�?�;O�;O�;Q�;Q�7R�7R�R�S�S�K�*,�K�!� 
+� 
+�
+��/�%�%�j�1�1���/�%�%�j�1�1���g������(�(�	���(�(�	�� 	/�Y� 	/�-�O�O�
+� 	/�y� 	/�-�O�O�.�O�����"�,�$�0�%�!��!���� /�#��6�
+
+� 
+
+� 
+
+�	
+� 	
+� 	
+� 	
+� �rW   �	key_fieldc                 �P   � | r| �                     �   �         st          d�  �        �d S )Nz1KEY_FIELD_INVALIDO: key_field no puede ser vacio.)rk   r^   )r�   s    rU   �_validate_key_fieldr�   b  s8   � �� N�I�O�O�-�-� N��L�M�M�M�N� NrW   r�   �source_namec                 �f  � i }| D ]�}	 t          j        |�  �        j        }n&# t          $ r}t	          d|� d��  �        |�d }~ww xY w||vrt	          d|� d|� d��  �        �||         }|�t	          d|� d|� d��  �        �t          |�  �        }||v rt	          d|� d	|� d��  �        �|||<   ��|S )
+Nz#ROW_INVALIDA: registro invalido en z. Ejecucion bloqueada.�KEY_FIELD_FALTANTE: falta 'z' en un registro de �.�KEY_FIELD_NULO: 'z' es nulo en un registro de �KEY_DUPLICADA: 'z' duplicada en )r"   �model_validate�root�	Exceptionr^   rj   )	r�   r�   r�   �indexed�
+raw_record�record�exc�	key_valuer�   s	            rU   �_index_recordsr�   g  s3  � � *,�G�� � �
+�	�&�5�j�A�A�F�F�F��� 	� 	� 	��Y�k�Y�Y�Y�� ��
+�����	���� �F�"�"��[�i�[�[�[�[�[�[�� � 
+� �9�%�	����Y�I�Y�Y�;�Y�Y�Y�� � 
+� �)�n�n���'�>�>��Z�3�Z�Z�{�Z�Z�Z�� � 
+� ������Ns   �"�
+A�A � Ar�   r�   c                 �B  ��� t          |�  �         t          | |d�  �        �t          ||d�  �        �t          ��                    �   �         �  �        }t          ��                    �   �         �  �        }t	          ||z  �  �        }t	          ||z
+  �  �        }t	          ||z
+  �  �        }g }g }	|D �]>}
+�|
+         }�|
+         }t	          t          |�                    �   �         �  �        t          |�                    �   �         �  �        z  |hz
+  �  �        }
+d}|
+D ]�}||         }||         }||k    r�d}t          |�  �        r1t          |�  �        r"t
+          |�  �        t
+          |�  �        z
+  }d}nd }d}|	�                    t          |
+|||||��  �        �  �         ��|sI|�                    t          |
+t          j        |�  �        t          j        |�  �        ��  �        �  �         ��@�fd	�|D �   �         }�fd
+�|D �   �         }t          ||	||��  �        S )Nr�   r�   FT�mismatch_numerico�mismatch_no_numerico)r�   rd   r�   r�   �delta�detail)r�   r�   r�   c                 �D   �� g | ]}t          j        �|         �  �        ��S rY   �r"   r�   )r�   r�   �	indexed_bs     �rU   r�   z%reconcile_records.<locals>.<listcomp>�  �)   �� �b�b�b��%�4�Y�s�^�D�D�b�b�brW   c                 �D   �� g | ]}t          j        �|         �  �        ��S rY   r�   )r�   r�   �	indexed_as     �rU   r�   z%reconcile_records.<locals>.<listcomp>�  r�   rW   )�matches�
+mismatches�missing_in_a�missing_in_b)
+r�   r�   r�   r�   r�   rV   rR   r�   r   r   r"   r�   r#   )r�   r�   r�   �keys_a�keys_b�common_keys�missing_in_a_keys�missing_in_b_keysr�   r�   r�   r�   r�   �
+common_fields�key_has_mismatchrd   r�   r�   r�   r�   r�   r�   r�   r�   s                         @@rU   �reconcile_recordsr�   �  sn  ��� � �	�"�"�"��x��J�?�?�I��x��J�?�?�I�
+����!�!�
+"�
+"�F�
+����!�!�
+"�
+"�F���&��)�)�K��v���/�/���v���/�/��%'�G�.0�J�� &� &���S�>���S�>����H�M�M�O�O� 4� 4�s�8�=�=�?�?�7K�7K� K�PY�{�Z�[�[�
+� ��'� 	� 	�J��z�*�G��z�*�G��'�!�!��#���'�"�"� 
+0�z�'�':�':� 
+0��g����w���7��,�����/�����%��)�#�#��!�
+� � �	
+� 	
+� 	
+� 	
+�  � 	��N�N���.�=�h�G�G�.�=�h�G�G�� � �
+� 
+� 
+�� c�b�b�b�Pa�b�b�b�L�b�b�b�b�Pa�b�b�b�L����!�!�	� � � rW   �pathc                 �D  � t          | �  �        }|�                    �   �         st          d|� d��  �        �|�                    dd��  �        5 }t	          j        |�  �        }|j        st          d|� d��  �        �d� |D �   �         cd d d �  �         S # 1 swxY w Y   d S )Nz)CSV_NO_EXISTE: no existe el archivo CSV: r�   � zutf-8)�newline�encodingz*CSV_SIN_HEADERS: el CSV no tiene headers: c                 �,   � g | ]}t          |�  �        ��S rY   )r~   )r�   �rows     rU   r�   z%_read_csv_records.<locals>.<listcomp>�  s   � �,�,�,�c��S�	�	�,�,�,rW   )r   �is_filer^   �open�csv�
+DictReader�
+fieldnames)r�   �csv_path�csv_file�readers       rU   �_read_csv_recordsr  �  s�   � ��D�z�z�H������ R��P�X�P�P�P�Q�Q�Q�	���r�G��	4�	4� -�����)�)��� � 	W��U�(�U�U�U�V�V�V�,�,�V�,�,�,�	-� -� -� -� -� -� -� -� -� -� -� -���� -� -� -� -� -� -s   �:B�B�Bc                 ��   � t          | �  �        \  }}|�|�d S t          t          |�  �        �  �        }||�                    �   �         k    rt	          |�  �        S t          |�  �        S rO   )�_parse_amount_with_reasonr	   rj   �to_integral_valuerQ   rR   )rL   �parsed�reason�
+decimal_values       rU   �_coerce_csv_numberr
+  �  sh   � �.�u�5�5�N�F�F�
+��V�^��t��C��K�K�(�(�M��
+�7�7�9�9�9�9��=�!�!�!�����rW   �numeric_fields.c                 �  �� |�t          |�  �        S t          t                   �   �         }g | �|�D ])}|�                    |�                    �   �         �  �         �*t          �   �         }t	          ||hz
+  �  �        D ]D��fd�g | �|�D �   �         }|r.t          d� |D �   �         �  �        r|�                    ��  �         �E|S )Nc                 �<   �� g | ]}�|v �|�         d v�|�         ��S )�   Nr�   rY   )r�   r�   rd   s     �rU   r�   z+_resolve_numeric_fields.<locals>.<listcomp>�  sB   �� � 
+� 
+� 
+���V�#�#��z�(:�*�(L�(L� 
+�:��(L�(L�(LrW   c              3   �8   K  � | ]}t          |�  �        d uV � �d S rO   )r
+  )r�   rL   s     rU   �	<genexpr>z*_resolve_numeric_fields.<locals>.<genexpr>�  s0   � � � �T�T�E�,�U�3�3�4�?�T�T�T�T�T�TrW   )r�   rj   �updater�   r�   �all�add)	r�   r�   r�   r  r�   r�   �resolved_fields�valuesrd   s	           @rU   �_resolve_numeric_fieldsr  �  s�   �� � �!��>�"�"�"��c�(�*�*�K�(�H�(�x�(� *� *�����6�;�;�=�=�)�)�)�)� #���O��[�I�;�6�7�7� ,� ,�
+�
+� 
+� 
+� 
+�0�H�0�x�0�
+� 
+� 
+��
+ � 	,�c�T�T�V�T�T�T�T�T� 	,����
+�+�+�+���rW   �recordsc                 ��   � g }| D ]i}t          |�  �        }|D ]@}||vs
+||         dv r�t          ||         �  �        }|�t          d|� d��  �        �|||<   �A|�                    |�  �         �j|S )Nr  zCSV_NUMERIC_FIELD_INVALIDO: 'z' contiene valor no numerico.)r~   r
+  r^   r�   )r  r  �normalized_recordsr�   rl   rd   �parsed_values          rU   �_normalize_csv_numeric_fieldsr  �  s�   � � 02��� .� .���&�\�\�
+�(� 	2� 	2�J���+�+�z�*�/E��/S�/S��-�j��.D�E�E�L��#� �]�J�]�]�]�� � � &2�J�z�"�"��!�!�*�-�-�-�-��rW   r�   )r�   r  �
+source_a_path�
+source_b_pathr�   c                �(  � t          |�  �         t          | �  �        }t          |�  �        }t          ||||�  �        }t          ||�  �        }t          ||�  �        }	t	          ||	|�  �        }
+t          �   �         �                    |
+|��  �        S )N)�entidad_tipo)r�   r  r  r  r�   r   �	transform)r  r   r�   r�   r  �raw_source_a�raw_source_b�resolved_numeric_fieldsr�   r�   �results              rU   �reconcile_csv_sourcesr(    s�   � � �	�"�"�"�$�]�3�3�L�$�]�3�3�L�5�����	� �� -�\�;R�S�S�H�,�\�;R�S�S�H�
+�x��9�
+=�
+=�F����%�%�f�;�%�G�G�GrW   r�   c                 ��   � || vrt          d|� d|� d��  �        �| |         }|�t          d|� d|� d��  �        �t          |�  �        st          d|� d|� d��  �        �t          |�  �        S )NzCAMPO_FALTANTE: falta 'z' en registro key=r�   z
+CAMPO_NULO: 'z' es nulo en registro key=zCAMPO_NO_NUMERICO: 'z$' debe ser numerico en registro key=)r^   rV   rR   )r�   rd   r�   rL   s       rU   �_read_numeric_fieldr*  %  s�   � ������W�:�W�W�QT�W�W�W�X�X�X��:��E��}��U��U�U�s�U�U�U�V�V�V��e��� 
+��Y�:�Y�Y�SV�Y�Y�Y�
+� 
+� 	
+� ��<�<�rW   c                 ��  � t          | �  �        rt          | �  �        d fS t          | t          �  �        sdS | �                    �   �         �                    dd�  �        }dD ]}|�                    |d�  �        }�|sdS t
+          d� |D �   �         �  �        rdS d|v rd|v rdS |�                    d�  �        d	k    rdS d|v r{|�                    dd	�  �        \  }}|r|sdS |d
+         dv r
+|d	d �         n|}|�	                    �   �         r|�	                    �   �         sdS t          |�  �        dk    rdS |� d|� �}	 t          |�  �        d fS # t          $ r Y dS w xY w)
+N)N�non_numeric� r�   )�$u   €�   £�   ¥c              3   �>   K  � | ]}|�                     �   �         V � �d S rO   )�isalpha)r�   �chars     rU   r  z,_parse_amount_with_reason.<locals>.<genexpr>>  s*   � � � �
+1�
+1�d�4�<�<�>�>�
+1�
+1�
+1�
+1�
+1�
+1rW   �,r�   )N�currency_ambiguousr�   r   z+-�   )rV   rR   rP   rj   rk   r   �any�count�rsplit�isdigit�lenr^   )rL   rl   �symbol�left�right�left_no_signs         rU   r  r  2  s�  � ��%��� "��U�|�|�T�!�!��e�S�!�!� #�"�"������&�&�s�B�/�/�J�*� 4� 4���'�'���3�3�
+�
+�� #�"�"�
+�
+1�
+1�j�
+1�
+1�
+1�1�1� #�"�"�
+�j���S�J�.�.�)�)�������q� � �)�)�
+�j��� �'�'��Q�/�/���e�� 	'�5� 	'�&�&�#'��7�d�?�?�t�A�B�B�x�x����#�#�%�%� 	'�U�]�]�_�_� 	'�&�&��u�:�:��?�?�-�-��&�&�u�&�&�
+�#��Z� � �$�&�&��� #� #� #�"�"�"�#���s   �?E �
+E�Ec                 �    � t          | �  �        S rO   )r  rT   s    rU   �detect_deterministic_ambiguityrA  V  s   � �$�U�+�+�+rW   �
+primary_field�aliasesc                 �   � || v r| �                     |�  �        |fS |D ]}|| v r| �                     |�  �        |fc S � dS )N)NN)r�   )r�   rB  rC  �aliass       rU   �_resolve_amount_fieldrF  Z  sg   � � �����z�z�-�(�(�-�7�7�� ,� ,���F�?�?��:�:�e�$�$�e�+�+�+�+� � �:rW   r>   rA   r  c                 �n   � |dk    r|�|�d| � d|d�d|d�d�S |dk    rd| � d�S |d	k    rd| � d
+�S d| � d�S )N�monto_diferentez	Registro z: monto esperado z.2fz
+ y pagado u/   . ¿Confirmas el ajuste manual de conciliacion?�monto_inciertoui   : no se pudo confirmar uno o ambos montos. ¿Puedes validar manualmente los importes esperados y pagados?r5  u`   : el formato monetario es ambiguo. ¿Puedes confirmar manualmente la moneda y el monto correcto?uV   : se detecto un monto no numerico. ¿Puedes corregir o confirmar manualmente el valor?rY   �r�   r>   rA   r  s       rU   �_build_human_questionrK  g  s�   � � �"�"�"��'B�}�G`�
+<�� 
+<� 
+<�o�b� 
+<� 
+<�]�b� 
+<� 
+<� 
+<�	
+� �!�!�!�
+M�� 
+M� 
+M� 
+M�	
+� �%�%�%�
+L�� 
+L� 
+L� 
+L�	
+�
+	>�C� 	>� 	>� 	>�rW   �questionr�   c           
+      �0   � t          | ||d|||d��  �        S )Nr1   T)r�   r  rL  �clarification_stater>   rA   r�   r1   )r   �r�   r  rL  r>   rA   r�   s         rU   �_build_clarification_questionrP  �  s3   � � !����0�'�#���	� 	� 	� 	rW   c                 �   � t          | |�|nd|�|ndt          d�  �        d|ddddt          | |||��  �        ��  �        S )	Nr\   �infT�highr1   �solicitar_revision_humanarJ  �r�   r>   rA   r�   r�   r  �uncertainty_levelrN  r1   �suggested_action�human_question)r   rR   rK  rJ  s       rU   �_build_uncertainty_findingrY  �  so   � � '��+:�+F���C�'4�'@�m�m�c��E�l�l��� �0��4�,��+�'��	
+� 
+� 
+�� � � rW   �is_uncertainc                 �   � |rdS | dk    rdS dS )NrT  r   �sugerir_cobro_diferencia�sugerir_revision_sobrepagorY   )r�   rZ  s     rU   �_build_suggested_actionr^  �  s%   � �� +�*�*��q�y�y�)�)�'�'rW   c                 �"   � | dv rdS | dk    rdS dS )N>   r,  rI  r5  rS  rH  �mediumrY   )r  s    rU   �_uncertainty_level_for_reasonra  �  s)   � �
+�H�H�H��v�
+�"�"�"��x��6rW   �levelsc                 �&   � | sdS d| v rdS d| v rdS dS )N�lowrS  r`  rY   )rb  s    rU   �_max_uncertainty_levelre  �  s4   � �� ��u�
+�����v��6����x��5rW   �levelc                 �&   � | dk    rdS | dk    rdS dS )NrS  �human_review_requiredr`  �guided_curation�direct_parserY   )rf  s    rU   � _route_workflow_from_uncertaintyrk  �  s'   � �����&�&����� � ��>rW   r=  r>  c                 �:   � dddd�}||          ||         k    r| n|S )Nr   r�   r�   )rj  ri  rh  rY   )r=  r>  �rankings      rU   �_max_workflow_decisionrn  �  s7   � � ��!"�,� ,�G�
+ �4�=�G�E�N�2�2�4�4��=rW   �has_blocking_pendingc                 �   � | rdndS )Nr1   �no_requiererY   )ro  s    rU   �"_clarification_state_from_blockingrr  �  s   � �#7�J���]�JrW   �warningsc                 �"  � | sg S g }t          �   �         }| D ]w}|j        |j        pd|j        pd|j        |j        �t
+          |j        �  �        nd|j        |j        f}||v r�M|�	                    |�  �         |�
+                    |�  �         �x|S )Nr�   )r�   �coder�   rd   �message�details�repr�severityr�   r  r�   )rs  �deduped�seen�warning�	signatures        rU   �_accumulate_warningsr~  �  s�   � �� ��	�!#�G�;>�5�5�D�� 
+ � 
+ ���L��K��2���$�"��O�%,�_�%@�D���!�!�!�b�����
+�	� ���������������w������NrW   c                 �   � t          | �  �        }|sdS |D ]+}|j        r dS |j        dk    r dS |j        t          v r dS �,dS )Nrj  rh  �critical)r~  r�   ry  ru  �CRITICAL_WARNING_CODES)rs  �accumulated_warningsr|  s      rU   �evaluate_warnings_fail_closedr�  �  sz   � �/��9�9��� ��~�'� +� +���� 	+�*�*�*���z�)�)�*�*�*��<�1�1�1�*�*�*� 2� �>rW   �uncertainty_records�findingsc                 ��   � t          | �  �        }|dk    }t          |�  �        pt          |�  �        }|p|}|r|rd}n|rd}n|rd}nd}|rdnd}t          |t          |�  �        ||��  �        S )Nrh  �warnings_and_uncertaintiesrs  �
+uncertainties�nonerj  )�workflow_decisionrN  ro  �trigger)r�  rS   r   rr  )	rs  r�  r�  �warning_decision�has_warning_blocker�has_uncertainty_blockerro  r�  r�  s	            rU   �evaluate_fail_closed_rulesr�    s�   � � 5�X�>�>��*�.E�E��"�#6�7�7�I�4��>�>��.�I�2I��� �6� �.���	� ����	 � �!�����3G�[�/�/�^��$�+�>�?S�T�T�1��	� � � rW   c                 �&   � t          | ||��  �        S )N�rs  r�  r�  )r�  r�  s      rU   �'initialize_fail_closed_human_validationr�  (  s$   � � &��/��� � � rW   �expected_amount_field�actual_amount_field�expected_raw�
+actual_raw�suggested_actionsc        	         �p  � |�*|�                     t          | |||dddd��  �        �  �         |�*|�                     t          | |||dddd��  �        �  �         |�                     t          | t          |�  �        r|nd t          |�  �        r|nd |��  �        �  �         |�                     d�  �         d S )NrS  Tr1   �r�   rd   �	raw_valuer  rV  r�   rN  r1   rJ  rT  )r�   r'   rY  rV   �	r�   r�  r�  r�  r�  r  r�  r�  r�  s	            rU   �%_append_uncertainty_blocking_findingsr�  5  s  � � ���"�"���0�&��"(��$8�#'�	
+� 	
+� 	
+�	
+� 	
+� 	
+� ���"�"���.�$��"(��$8�#'�	
+� 	
+� 	
+�	
+� 	
+� 	
+� 
+�O�O�"��,6�|�,D�,D�N�L�L�$�(2�:�(>�(>�H�*�*�D��		
+� 	
+� 	
+�� � � ���8�9�9�9�9�9rW   c                 �   � t          t          | �  �        �  �        }t          t          |�  �        �  �        }t          ||z
+  �  �        S rO   )r	   rj   rR   )r>   rA   �expected_decimal�actual_decimals       rU   �_compute_exact_deltar�  h  sA   � ��s�?�3�3�4�4���S��/�/�0�0�N��!�N�2�3�3�3rW   c                 �   � t          | |�  �        }|dk    rd}n|dk     rd}nd}t          |t          |�  �        |��  �        S )Nr   �	shortfall�overpayment�balanced)r�   �absolute_delta�	direction)r�  r   �abs)r>   rA   r�   r�  s       rU   �calculate_economic_impactr�  n  sQ   � � ��-�@�@�E��q�y�y��	�	�	����!�	�	��	���c�%�j�j�I�V�V�V�VrW   �	tolerance�uncertainty_thresholdc                 �v   � t          | |||��  �        }t          |j        |j        |j        |j        ��  �        S )N�r>   rA   r�  r�  )r�   �has_difference�	uncertainr  )�%compute_operational_difference_enginer   r�   r�  r�  r  )r>   rA   r�  r�  �
+engine_results        rU   �detect_amount_differencer�  z  sU   � � :�'�#��3�	� � �M� &��!�$�3��)��#�	� � � rW   c                 ��   � t          | |�  �        }|j        dk    rt          |j        |j        ddd ��  �        S |d uo
+|j        |k    }|rdnd}t          |j        |j        d||��  �        S )Nr   F)r�   r�  r�  r�  r  rI  rH  T)r�  r�  r   r�   )r>   rA   r�  r�  �impactr�  r  s          rU   r�  r�  �  s�   � � '��
+�
+F�
+F�F�
+���!�!�0��,�!�0� ���
+� 
+� 
+� 	
+� &�T�1�d�f�6K�Od�6d�I�!*�
+A�
+�
+�0A�F�,��l��,����� � � rW   c                 ��   � t          ||||��  �        }|j        sd S t          |j        |j        �  �        }t          | |||j        d|j        pdddd|t          | |||j        pd��  �        ��  �        S )Nr�  TrH  rS  r1   rJ  rU  )r�  r�  r^  r�   r�  r   r  rK  )r�   r>   rA   r�  r�  �
+differencerW  s          rU   � _build_amount_difference_findingr�  �  s�   � � *�'�#��3�	� � �J� �$� ��t�.�z�/?��AU�V�V��&��'�#����� �5�$5� �0��)�,��+�'��$�9�(9�	
+� 
+� 
+�� � � rW   c                 �*   � t          | ||||��  �        S )N�r�   r>   rA   r�  r�  )r�  r�  s        rU   �$resolve_deterministic_amount_findingr�  �  s*   � � ,��'�#��3�� � � rW   �uncertainty_levelsc                 �  � t          | �  �        }t          |�  �        }|rdnt          |�  �        }t          |��  �        }t	          |�  �        }|j        r|�                    d�  �         ||t          t          |�  �        �  �        fS )Nrh  ��amount_workflow_decisionrT  )	rS   re  rk  �$resolve_reconciliation_state_machine�listro  r�   r�   r�   )r�  r�  r�  ro  �max_uncertainty_levelr�  �
+state_machine�resolved_actionss           rU   �,route_amount_reconciliation_for_human_reviewr�  �  s�   � �  ��>�>��2�3E�F�F��  �	E���
+-�.C�
+D�
+D� �
+ 9�!9�� � �M� �-�.�.���)� =���� ;�<�<�<��/���<L�8M�8M�1N�1N�N�NrW   �issuesc                 ��   � | sdS t          �   �         }| D ]B}t          |t          �  �        s dS |�                    |�                    d�  �        �  �         �Cd |v rdS |t
+          z  rdS |t          z  rdS dS )Nrj  rh  ru  ri  )r�   rP   r~   r  r�   �HUMAN_REVIEW_ISSUE_CODES�GUIDED_CURATION_ISSUE_CODES)r�  �issue_codes�issues      rU   �decide_next_action_from_issuesr�  �  s�   � �� ��~�#&�5�5�K�� +� +���%��&�&� 	+�*�*�*�����	�	�&�)�)�*�*�*�*��{���&�&��-�-� '�&�&��0�0� !� � �"�"rW   c           
+      �D  � g }d}d}| D ]�}t          |j        �  �        }|r|dz
+  }||j        z
+  }|�                    dd|j        � �|j        |r|j        nd |rt	          |j        �  �        nd |j        |j        |j        |j        d�	�  �         ��t          |||��  �        S )Nr   r\   r�   rS  zDiferencia detectada en orden )	ry  rv  �entity�diff�money_impactrN  r1   r  rX  )r�  �orders_with_diff�total_diff_amount)
+r
+   r�   r�   r�   r�  rN  r1   r  rX  r   )r�  �mapped_findingsr�  r�  �finding�finite_deltas         rU   �(build_deterministic_discrepancy_snapshotr�    s�   � � -/�O������ 
+� 
+����
+�.�.��� 	/���!�����.�����"�I�G�K�I�I�!�+�)5�?��
+�
+�4�6B� L��G�M� 2� 2� 2��'.�'B�&-�&@�!�.�")�"8�
+
+� 
+
+�	
+� 	
+� 	
+� 	
+� ,� �)�+�� � � rW   r�  c                 �  � t          |pg �  �        }t          |||��  �        }t          | |�  �        }t          ||j        �  �        }t	          |��  �        }t          || |j        |j        |j        |j        ��  �        S )Nr�  r�  )�issue_decision�amount_decision�fail_closed_decisionr�  rN  ro  )r�  r�  rn  r�  r�  r   rN  ro  )	r�  r�  rs  r�  r�  r�  �fail_closed_stater�  r�  s	            rU   �!evaluate_deterministic_hitl_stater�  ,  s�   � � 4�F�L�b�A�A�N�?��/��� � ��
+ /�/G��X�X��.��,�>�� �� 9�!2�� � �M� '�%�0�.�@�'�9�)�=�*�?�
+� � � rW   �actionc                 �^   � t          | �  �        }|d         �|�                    d�  �         |S )N�economic_impact)r   �pop)r�  �payloads     rU   �_meli_action_to_dictr�  K  s1   � ��V�n�n�G�� �!�)����%�&�&�&��NrW   �rowsc                 ��  � t          | t          �  �        st          d�  �        �| D ]&}t          |t          �  �        st          d�  �        ��'| }t	          |ddd��  �        }t          |j        �  �        }|j        }|j        }|j        }g }|j	        rF|�
+                    t          t          ddd	|j
+        |j        |j        d
+���  �        �  �        �  �         |dk    rZ|�
+                    t          t          d
+ddt!          |�  �        dd|||j
+        |j        |j	        d�d���  �        �  �        �  �         |j        ||t!          |�  �        |j
+        |j        |j	        |j        d�}	|||	|d�S )NzHROW_INVALIDA: rows debe ser una lista de registros. Ejecucion bloqueada.z=ROW_INVALIDA: registro invalido en rows. Ejecucion bloqueada.�order_idr=   r@   �r�   r�  r�  rT  u   Revisión humana requeridazFFlujo bloqueado en pending_validation por diferencias o incertidumbre.)r�  rN  �human_review_questions)�action_type�title�descriptionr�  r   �generar_documentou'   Resumen de diferencias de conciliaciónzBSe detectaron diferencias entre montos esperados y pagos recibidos�pdf�meli_reconciliation_diff)r�  r�  r�  rN  �requires_human_validation)�format�template�data)r�  r�  r�  r�  r�  )�total_ordersr�  r�  �estimated_recoverable_amountr�  rN  ro  r�  )�canonical_rowsr�  �summaryr�  )rP   r�  r^   r~   �analyze_amount_reconciliationr�  r�  r�  r�  ro  r�   r�  r   r�  rN  r�  r�  �
+total_records)
+app/core/reconciliation/__pycache__/models.cpython-311.pyc
+�
+
+    }��i!  �                   �  � U d dl mZmZ d dlmZmZ d dlmZmZmZ e	e
+z  ez  ez  dz  Z
+eed<   ed         Zeed<   ed         Zeed	<   ed
+         Zeed<   ed         Zeed
+<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed         Zeed<   ed          Zeed!<   ee	ef         Zeed"<   ed#         Zeed$<   ed%         Z eed&<   ed'         Z!eed(<   d)efd*�Z" ed+d+�,�  �         G d-� d.�  �        �   �         Z# ed+d+�,�  �         G d/� d0�  �        �   �         Z$ ed+d+�,�  �         G d1� d2�  �        �   �         Z% ed+d+�,�  �         G d3� d4�  �        �   �         Z& ed+d+�,�  �         G d5� d6�  �        �   �         Z' ed+d+�,�  �         G d7� d8�  �        �   �         Z( ed+d+�,�  �         G d9� d:�  �        �   �         Z) ed+d+�,�  �         G d;� d<�  �        �   �         Z* ed+d+�,�  �         G d=� d>�  �        �   �         Z+ ed+d+�,�  �         G d?� d@�  �        �   �         Z, ed+d+�,�  �         G dA� dB�  �        �   �         Z- ed+d+�,�  �         G dC� dD�  �        �   �         Z. ed+d+�,�  �         G dE� dF�  �        �   �         Z/ ed+d+�,�  �         G dG� dH�  �        �   �         Z0 ed+d+�,�  �         G dI� dJ�  �        �   �         Z1 ed+d+�,�  �         G dK� dL�  �        �   �         Z2 ed+d+�,�  �         G dM� dN�  �        �   �         Z3 ed+d+�,�  �         G dO� dP�  �        �   �         Z4 ed+d+�,�  �         G dQ� dR�  �        �   �         Z5 ed+d+�,�  �         G dS� dT�  �        �   �         Z6 ed+d+�,�  �         G dU� dV�  �        �   �         Z7 ed+d+�,�  �         G dW� dX�  �        �   �         Z8 ed+d+�,�  �         G dY� dZ�  �        �   �         Z9dS )[�    )�	dataclass�field)�datetime�timezone)�Any�Literal�	TypeAliasN�ReconciliationFieldValue)�
+faltante_en_a�
+faltante_en_b�valor_distinto�DifferenceType)�mismatch_numerico�mismatch_no_numerico�MismatchDetail)�no_requiere�pending_validation�ClarificationState)�currency_ambiguous�non_numeric�monto_incierto�UncertaintyReason)�
+sin_accion�solicitar_revision_humana�sugerir_cobro_diferencia�sugerir_revision_sobrepago�SuggestedAction)r   �generar_documento�MeliActionType)�monto_diferenter   r   r   �AmountFindingReason)�direct_parse�guided_curation�human_review_required�WorkflowDecision)�balanced�	shortfall�overpayment�EconomicImpactDirection)�confirm�cancel�HumanReviewVerdict)r   �handoff_confirmed�handoff_cancelled�ResolutionStatus)�low�medium�high�UncertaintyLevel)�color_semantics_out_of_scoper   �formula_without_value�unknown_semantic_mapping�WarningCode)�info�warning�critical�WarningSeverity�WarningDetails)�none�warnings�
+uncertainties�warnings_and_uncertainties�FailClosedTrigger)�pending�running�failed�done�dead_letter�ReconciliationJobStatus�orders�ReconciliationJobScope�returnc                  �>   � t          j        t          j        �  �        S )N)r   �nowr   �utc� �    �!app/core/reconciliation/models.py�_utc_nowrQ   <   s   � ��<���%�%�%rO   T)�frozen�slotsc                   �J   � e Zd ZU eeef         ed<   ededd fd��   �         Z	dS )�ReconciliationRow�root�valuerJ   c                 �^  � t          |t          �  �        st          d�  �        �i }|�                    �   �         D ]g\  }}t          |t          �  �        st          d�  �        �|�7t          |t          t
+          t          t          f�  �        st          d�  �        �|||<   �h | |��  �        S )Nz/RECONCILIATION_ROW_INVALIDA: row debe ser dict.z5RECONCILIATION_ROW_INVALIDA: headers deben ser texto.z0RECONCILIATION_ROW_INVALIDA: valor no soportado.)rV   )�
+isinstance�dict�
+ValueError�items�str�int�float�bool)�clsrW   �	validated�
+field_name�field_values        rP   �model_validatez ReconciliationRow.model_validateD   s�   � ��%��&�&� 	P��N�O�O�O�9;�	�',�{�{�}�}� 	0� 	0�#�J���j�#�.�.� 
+Z� �!X�Y�Y�Y��&�z�+��S�RW�Y]�G^�/_�/_�&� �!S�T�T�T�$/�I�j�!�!��s�	�"�"�"�"rO   N)
+�__name__�
+__module__�__qualname__rZ   r]   r
+   �__annotations__�classmethodr   re   rN   rO   rP   rU   rU   @   sZ   � � � � � � �
+�s�,�,�
+-�-�-�-��#�3� #�+>� #� #� #� �[�#� #� #rO   rU   c                   �`   � e Zd ZU eed<   eed<   eed<    ee��  �        Zeeef         ed<   dS )�ComparableRecord�	entity_id�entity_type�source��default_factory�fieldsN)	rf   rg   rh   r]   ri   r   rZ   rr   r
+   rN   rO   rP   rl   rl   S   sX   � � � � � � ��N�N�N������K�K�K�27�%��2M�2M�2M�F�D��.�.�/�M�M�M�M�MrO   rl   c                   �j   � e Zd ZU eed<   eed<   eed<   eed<   eed<   eed<   eed<   eed<   eed	<   d
+S )�DifferenceRecordrm   rn   rc   �source_a�source_b�value_a�value_b�difference_type�blockingN)rf   rg   rh   r]   ri   r
+   r   r`   rN   rO   rP   rt   rt   [   sm   � � � � � � ��N�N�N������O�O�O��M�M�M��M�M�M�
+%�%�%�%�
+%�%�%�%�#�#�#�#��N�N�N�N�NrO   rt   c                   �.   � e Zd ZU eed<   eed<   eed<   dS )�ReconciledMatch�key�record_a�record_bN)rf   rg   rh   r]   ri   rU   rN   rO   rP   r|   r|   h   s3   � � � � � � �	�H�H�H����������rO   r|   c                   �R   � e Zd ZU eed<   eed<   eed<   eed<   edz  ed<   eed<   dS )�QuantifiedDiscrepancyr}   rc   rw   rx   N�delta�detail)rf   rg   rh   r]   ri   r
+   r_   r   rN   rO   rP   r�   r�   o   sX   � � � � � � �	�H�H�H��O�O�O�
+%�%�%�%�
+%�%�%�%��4�<���������rO   r�   c                   �h   � e Zd ZU ee         ed<   ee         ed<   ee         ed<   ee         ed<   dS )�ReconciliationResult�matches�
+mismatches�missing_in_a�missing_in_bN)rf   rg   rh   �listr|   ri   r�   rU   rN   rO   rP   r�   r�   y   sY   � � � � � � �
+�/�
+"�"�"�"��*�+�+�+�+��(�)�)�)�)��(�)�)�)�)�)�)rO   r�   c                   �`   � e Zd ZU eed<   eed<   eed<   eed<   eed<   eed<   e	ed<   eed<   d	S )
+�UncertaintyRecordr}   rc   �	raw_value�reason�uncertainty_levelrz   �clarification_stater   N)
+rf   rg   rh   r]   ri   r
+   r   r3   r`   r   rN   rO   rP   r�   r�   �   si   � � � � � � �	�H�H�H��O�O�O�'�'�'�'�����'�'�'�'��N�N�N�+�+�+�+������rO   r�   c                   �   � e Zd ZU eed<   eed<   eed<   eed<   eed<   eed<   eed<   e	ed<   eed	<   e
+ed
+<   dZedz  ed<   dS )
+�AmountReconciliationFindingr}   �expected_amount�
+actual_amountr�   rz   r�   r�   r�   r   �suggested_actionN�human_question)rf   rg   rh   r]   ri   r_   r`   r!   r3   r   r   r�   rN   rO   rP   r�   r�   �   s�   � � � � � � �	�H�H�H����������L�L�L��N�N�N�����'�'�'�'�+�+�+�+�����%�%�%�%�!%�N�C�$�J�%�%�%�%�%rO   r�   c                   �   � e Zd ZU eed<   eed<   eed<   eed<   dZedz  ed<   dZ	edz  ed<   dZ
+edz  ed<   d	Zeed
+<   dS )�ClarificationQuestionr}   r�   �questionr�   Nr�   r�   r�   Tr   )
+rf   rg   rh   r]   ri   r!   r   r�   r_   r�   r�   r   r`   rN   rO   rP   r�   r�   �   s�   � � � � � � �	�H�H�H������M�M�M�+�+�+�+�$(�O�U�T�\�(�(�(�"&�M�5�4�<�&�&�&��E�5�4�<����#���#�#�#�#�#rO   r�   c                   �  � e Zd ZU eed<   eed<   ee         ed<   ee         ed<   ee         ed<   e	ed<   e
+ed<   eed<   eed	<    e
+e�
+�  �        Zee         ed<    e
+e�
+�  �        Zee         ed<    e
+e�
+�  �        Zed
+         ed<   dS )�AmountReconciliationResult�
+total_records�
+ok_records�findings�uncertainty_records�suggested_actions�workflow_decisionr�   �max_uncertainty_level�has_blocking_pendingrp   �human_review_questions�clarification_questions�WarningItemr>   N)rf   rg   rh   r^   ri   r�   r�   r�   r   r%   r   r3   r`   r   r�   r]   r�   r�   r>   rN   rO   rP   r�   r�   �   s�   � � � � � � ������O�O�O��.�/�/�/�/��/�0�0�0�0��O�,�,�,�,�'�'�'�'�+�+�+�+�+�+�+�+�����(-��d�(C�(C�(C��D��I�C�C�C�;@�5�QU�;V�;V�;V��T�"7�8�V�V�V�$)�E�$�$?�$?�$?�H�d�=�!�?�?�?�?�?rO   r�   c                   �>   � e Zd ZU eed<   eed<   eed<   edz  ed<   dS )�AmountDifferenceAssessmentr�   �has_difference�	uncertainNr�   �rf   rg   rh   r_   ri   r`   r!   rN   rO   rP   r�   r�   �   sA   � � � � � � ��L�L�L������O�O�O��$�&�&�&�&�&�&rO   r�   c                   �H   � e Zd ZU eed<   eed<   eed<   eed<   edz  ed<   dS )�!OperationalDifferenceEngineResultr�   �absolute_deltar�   r�   Nr�   r�   rN   rO   rP   r�   r�   �   sM   � � � � � � ��L�L�L����������O�O�O��$�&�&�&�&�&�&rO   r�   c                   �.   � e Zd ZU eed<   eed<   eed<   dS )�EconomicImpactr�   r�   �	directionN)rf   rg   rh   r_   ri   r)   rN   rO   rP   r�   r�   �   s3   � � � � � � ��L�L�L�����&�&�&�&�&�&rO   r�   c                   �8   � e Zd ZU eed<   eed<   dZedz  ed<   dS )�HumanReviewDecision�verdict�actorN�note)rf   rg   rh   r,   ri   r]   r�   rN   rO   rP   r�   r�   �   s;   � � � � � � �
+�����J�J�J��D�#��*�����rO   r�   c                   �|   � e Zd ZU eed<   eed<   dZedz  ed<   dZedz  ed<   dZe	dz  ed<   dZ
+eed<   d	Ze
+ed
+<   dS )r�   �code�messageNr}   rc   �detailsr9   �severityFrz   )rf   rg   rh   r7   ri   r]   r}   rc   r�   r<   r�   r;   rz   r`   rN   rO   rP   r�   r�   �   s�   � � � � � � �
+����
+�L�L�L��C��t�����!�J��d�
+�!�!�!�%)�G�^�d�
+"�)�)�)� )�H�o�)�)�)��H�d�����rO   r�   c                   �.   � e Zd ZU eed<   eed<   eed<   dS )� ReconciliationStateMachineResultr�   r�   r�   N�rf   rg   rh   r%   ri   r   r`   rN   rO   rP   r�   r�   �   s6   � � � � � � �'�'�'�'�+�+�+�+������rO   r�   c                   �8   � e Zd ZU eed<   eed<   eed<   eed<   dS )�FailClosedStateEvaluationr�   r�   r�   �triggerN)rf   rg   rh   r%   ri   r   r`   rA   rN   rO   rP   r�   r�   �   sB   � � � � � � �'�'�'�'�+�+�+�+�����
+�����rO   r�   c                   �(  � e Zd ZU eed<   eed<   dZeed<   dZeee	f         dz  ed<   dZ
+eed<   d	Ze
+ed
+<    ee��  �        Zeed<   dZedz  ed
+<   dZedz  ed<   dZedz  ed<   dZedz  ed<    ee��  �        Zeed<    ee��  �        Zeed<   dS )�ReconciliationJob�job_id�store_idrH   �scopeN�cursorrB   �statusr   �attemptsrp   �next_eligible_at�	locked_at�	locked_by�
+last_error�dead_letter_at�
+created_at�
+updated_at)rf   rg   rh   r]   ri   r�   rI   r�   rZ   r   r�   rG   r�   r^   r   rQ   r�   r   r�   r�   r�   r�   r�   r�   rN   rO   rP   r�   r�   �   s  � � � � � � ��K�K�K��M�M�M�$,�E�!�,�,�,�$(�F�D��c��N�T�!�(�(�(�&/�F�#�/�/�/��H�c����!&��x�!@�!@�!@��h�@�@�@�!%�I�x�$��%�%�%� �I�s�T�z� � � �!�J��d�
+�!�!�!�&*�N�H�t�O�*�*�*� �5��:�:�:�J��:�:�:� �5��:�:�:�J��:�:�:�:�:rO   r�   c                   �J   � e Zd ZU eeeef                  ed<   eed<   e	ed<   dS )� DeterministicDiscrepancySnapshotr�   �orders_with_diff�total_diff_amountN)
+rf   rg   rh   r�   rZ   r]   r   ri   r^   r_   rN   rO   rP   r�   r�     sC   � � � � � � ��4��S��>�"�"�"�"����������rO   r�   c                   �L   � e Zd ZU eed<   eed<   eed<   eed<   eed<   eed<   dS )�DeterministicHitlEvaluation�issue_decision�amount_decision�fail_closed_decisionr�   r�   r�   Nr�   rN   rO   rP   r�   r�   	  sZ   � � � � � � �$�$�$�$�%�%�%�%�*�*�*�*�'�'�'�'�+�+�+�+������rO   r�   c                   �\   � e Zd ZU eed<   eed<   eed<   eeef         ed<   dZe	dz  ed<   dS )�MeliSuggestedAction�action_type�title�description�payloadN�economic_impact)
+rf   rg   rh   r   ri   r]   rZ   r   r�   r_   rN   rO   rP   r�   r�     s[   � � � � � � ������J�J�J�����
+�#�s�(�^����$(�O�U�T�\�(�(�(�(�(rO   r�   c                   �.   � e Zd ZU eed<   eed<   eed<   dS )�SimpleReconciliationFindingrm   �diff�money_impactN)rf   rg   rh   r]   ri   r_   rN   rO   rP   r�   r�     s0   � � � � � � ��N�N�N�
+�K�K�K������rO   r�   c                   �D   � e Zd ZU ee         ed<   eed<   eed<   eed<   dS )�SimpleReconciliationResultr�   r�   �records_with_diffr�   N)rf   rg   rh   r�   r�   ri   r^   r_   rN   rO   rP   r�   r�   #  sH   � � � � � � ��.�/�/�/�/��������������rO   r�   ):�dataclassesr   r   r   r   �typingr   r   r	   r]   r^   r_   r`   r
+   ri   r   r   r   r   r   r   r!   r%   r)   r,   r/   r3   r7   r;   rZ   r<   rA   rG   rI   rQ   rU   rl   rt   r|   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   r�   rN   rO   rP   �<module>r�      s�  �� (� (� (� (� (� (� (� (� (� '� '� '� '� '� '� '� '� *� *� *� *� *� *� *� *� *� *�&)�C�i�%�&7�$�&>��&E� �)� E� E� E�#�$V�W��	� W� W� W�#�$O�P��	� P� P� P� '�(K� L� �I� L� L� L�&�'\�]� �9� ]� ]� ]�$�"���� � � � $�$T�U��	� U� U� U�!(��"� �Y� � � � &��� �)� � � �
+ &-�-S�%T� �� T� T� T� '�(;� <� �I� <� <� <�%��� �)� � � �
+ &�&=�>� �)� >� >� >� � ���Y� � � � %�%B�C��� C� C� C� ��c��N��	� *� *� *�&�"� � �9� � � � &-��&� �� � � � %,�H�$5� �	� 5� 5� 5�&�(� &� &� &� &� ��$�d�#�#�#�#� #� #� #� #� #� #� $�#�#�$ ��$�d�#�#�#�N� N� N� N� N� N� N� $�#�N� ��$�d�#�#�#�	� 	� 	� 	� 	� 	� 	� $�#�	� ��$�d�#�#�#� �  �  �  �  �  �  � $�#� � ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�*� *� *� *� *� *� *� $�#�*� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�&� &� &� &� &� &� &� $�#�&� ��$�d�#�#�#�$� $� $� $� $� $� $� $�#�$� ��$�d�#�#�#�@� @� @� @� @� @� @� $�#�@� ��$�d�#�#�#�'� '� '� '� '� '� '� $�#�'� ��$�d�#�#�#�'� '� '� '� '� '� '� $�#�'� ��$�d�#�#�#�'� '� '� '� '� '� '� $�#�'� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�
+;� 
+;� 
+;� 
+;� 
+;� 
+;� 
+;� $�#�
+;�  ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�)� )� )� )� )� )� )� $�#�)� ��$�d�#�#�#�� � � � � � � $�#�� ��$�d�#�#�#�� � � � � � � $�#�� � rO   app/core/reconciliation/models.py
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from typing import Any, Literal, TypeAlias
+
+ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
+DifferenceType: TypeAlias = Literal["faltante_en_a", "faltante_en_b", "valor_distinto"]
+MismatchDetail: TypeAlias = Literal["mismatch_numerico", "mismatch_no_numerico"]
+ClarificationState: TypeAlias = Literal["no_requiere", "pending_validation"]
+UncertaintyReason: TypeAlias = Literal["currency_ambiguous", "non_numeric", "monto_incierto"]
+SuggestedAction: TypeAlias = Literal[
+    "sin_accion",
+    "solicitar_revision_humana",
+    "sugerir_cobro_diferencia",
+    "sugerir_revision_sobrepago",
+]
+MeliActionType: TypeAlias = Literal["solicitar_revision_humana", "generar_documento"]
+AmountFindingReason: TypeAlias = Literal[
+    "monto_diferente",
+    "monto_incierto",
+    "non_numeric",
+    "currency_ambiguous",
+]
+WorkflowDecision: TypeAlias = Literal[
+    "direct_parse",
+    "guided_curation",
+    "human_review_required",
+]
+EconomicImpactDirection: TypeAlias = Literal["balanced", "shortfall", "overpayment"]
+HumanReviewVerdict: TypeAlias = Literal["confirm", "cancel"]
+ResolutionStatus: TypeAlias = Literal[
+    "pending_validation",
+    "handoff_confirmed",
+    "handoff_cancelled",
+]
+UncertaintyLevel: TypeAlias = Literal["low", "medium", "high"]
+WarningCode: TypeAlias = Literal[
+    "color_semantics_out_of_scope",
+    "currency_ambiguous",
+    "formula_without_value",
+    "unknown_semantic_mapping",
+]
+WarningSeverity: TypeAlias = Literal["info", "warning", "critical"]
+WarningDetails: TypeAlias = dict[str, Any]
+FailClosedTrigger: TypeAlias = Literal[
+    "none",
+    "warnings",
+    "uncertainties",
+    "warnings_and_uncertainties",
+]
+ReconciliationJobStatus: TypeAlias = Literal[
+    "pending",
+    "running",
+    "failed",
+    "done",
+    "dead_letter",
+]
+ReconciliationJobScope: TypeAlias = Literal["orders"]
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationRow:
+    root: dict[str, ReconciliationFieldValue]
+
+    @classmethod
+    def model_validate(cls, value: Any) -> "ReconciliationRow":
+        if not isinstance(value, dict):
+            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
+
+        validated: dict[str, ReconciliationFieldValue] = {}
+        for field_name, field_value in value.items():
+            if not isinstance(field_name, str):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
+            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
+            validated[field_name] = field_value
+        return cls(root=validated)
+
+
+@dataclass(frozen=True, slots=True)
+class ComparableRecord:
+    entity_id: str
+    entity_type: str
+    source: str
+    fields: dict[str, ReconciliationFieldValue] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class DifferenceRecord:
+    entity_id: str
+    entity_type: str
+    field_name: str
+    source_a: str
+    source_b: str
+    value_a: ReconciliationFieldValue
+    value_b: ReconciliationFieldValue
+    difference_type: DifferenceType
+    blocking: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciledMatch:
+    key: str
+    record_a: ReconciliationRow
+    record_b: ReconciliationRow
+
+
+@dataclass(frozen=True, slots=True)
+class QuantifiedDiscrepancy:
+    key: str
+    field_name: str
+    value_a: ReconciliationFieldValue
+    value_b: ReconciliationFieldValue
+    delta: float | None
+    detail: MismatchDetail
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationResult:
+    matches: list[ReconciledMatch]
+    mismatches: list[QuantifiedDiscrepancy]
+    missing_in_a: list[ReconciliationRow]
+    missing_in_b: list[ReconciliationRow]
+
+
+@dataclass(frozen=True, slots=True)
+class UncertaintyRecord:
+    key: str
+    field_name: str
+    raw_value: ReconciliationFieldValue
+    reason: UncertaintyReason
+    uncertainty_level: UncertaintyLevel
+    blocking: bool
+    clarification_state: ClarificationState
+    pending_validation: bool
+
+
+@dataclass(frozen=True, slots=True)
+class AmountReconciliationFinding:
+    key: str
+    expected_amount: float
+    actual_amount: float
+    delta: float
+    blocking: bool
+    reason: AmountFindingReason
+    uncertainty_level: UncertaintyLevel
+    clarification_state: ClarificationState
+    pending_validation: bool
+    suggested_action: SuggestedAction
+    human_question: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ClarificationQuestion:
+    key: str
+    reason: AmountFindingReason
+    question: str
+    clarification_state: ClarificationState
+    expected_amount: float | None = None
+    actual_amount: float | None = None
+    delta: float | None = None
+    pending_validation: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class AmountReconciliationResult:
+    total_records: int
+    ok_records: int
+    findings: list[AmountReconciliationFinding]
+    uncertainty_records: list[UncertaintyRecord]
+    suggested_actions: list[SuggestedAction]
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    max_uncertainty_level: UncertaintyLevel
+    has_blocking_pending: bool
+    human_review_questions: list[str] = field(default_factory=list)
+    clarification_questions: list[ClarificationQuestion] = field(default_factory=list)
+    warnings: list["WarningItem"] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class AmountDifferenceAssessment:
+    delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalDifferenceEngineResult:
+    delta: float
+    absolute_delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class EconomicImpact:
+    delta: float
+    absolute_delta: float
+    direction: EconomicImpactDirection
+
+
+@dataclass(frozen=True, slots=True)
+class HumanReviewDecision:
+    verdict: HumanReviewVerdict
+    actor: str
+    note: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class WarningItem:
+    code: WarningCode
+    message: str
+    key: str | None = None
+    field_name: str | None = None
+app/core/reconciliation/service.py
+import csv
+from collections.abc import Callable
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from math import isfinite
+from pathlib import Path
+from typing import Any
+
+from app.core.hallazgos.models import Hallazgo
+from app.core.hallazgos.service import HallazgoEngine
+from app.core.reconciliation.models import (
+    AmountDifferenceAssessment,
+    AmountReconciliationFinding,
+    AmountReconciliationResult,
+    ClarificationQuestion,
+    ClarificationState,
+    ComparableRecord,
+    DeterministicDiscrepancySnapshot,
+    DeterministicHitlEvaluation,
+    DifferenceRecord,
+    EconomicImpact,
+    FailClosedStateEvaluation,
+    HumanReviewDecision,
+    MeliSuggestedAction,
+    OperationalDifferenceEngineResult,
+    QuantifiedDiscrepancy,
+    ReconciledMatch,
+    ReconciliationJob,
+    ReconciliationJobScope,
+    ReconciliationJobStatus,
+    ReconciliationRow,
+    ReconciliationResult,
+    ReconciliationStateMachineResult,
+    SimpleReconciliationFinding,
+    SimpleReconciliationResult,
+    UncertaintyRecord,
+    UncertaintyLevel,
+    WarningItem,
+    WorkflowDecision,
+)
+
+BLOCKING_FIELDS = {"cuit", "cuil", "sku", "entity_id"}
+LOCKED_RECONCILIATION_STATUS = "handoff_confirmed"
+LOCKED_RECONCILIATION_CANCELLED_STATUS = "handoff_cancelled"
+PENDING_VALIDATION_STATUS = "pending_validation"
+RECOGNIZED_RECONCILIATION_STATUSES = {
+    PENDING_VALIDATION_STATUS,
+    LOCKED_RECONCILIATION_STATUS,
+    LOCKED_RECONCILIATION_CANCELLED_STATUS,
+}
+HUMAN_REVIEW_ISSUE_CODES = {
+    "missing_core_fields",
+    "too_few_columns",
+    "empty_dataset",
+}
+GUIDED_CURATION_ISSUE_CODES = {
+    "alias_headers_used",
+    "currency_noise",
+    "fecha_needs_normalization",
+    "fecha_vencimiento_needs_normalization",
+    "unknown_headers",
+    "mostly_empty_columns",
+    "duplicate_rows",
+}
+CRITICAL_WARNING_CODES = {"color_semantics_out_of_scope"}
+EXPECTED_AMOUNT_FIELD_ALIASES = ("amount_expected", "expected_amount")
+ACTUAL_AMOUNT_FIELD_ALIASES = ("paid_amount", "amount_paid", "actual_amount")
+RECONCILIATION_JOB_STATUSES: set[ReconciliationJobStatus] = {
+    "pending",
+    "running",
+    "failed",
+    "done",
+    "dead_letter",
+}
+RECONCILIATION_JOB_SCOPES: set[ReconciliationJobScope] = {"orders"}
+RECONCILIATION_JOB_RETRY_BASE_SECONDS = 60
+RECONCILIATION_JOB_RETRY_CAP_SECONDS = 1800
+RECONCILIATION_JOB_MAX_ATTEMPTS = 10
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _is_present(value: str | int | float | bool | None) -> bool:
+    return value is not None
+
+
+def _to_float_or_zero(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _validate_aware_datetime(value: datetime, field_name: str) -> None:
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} debe tener timezone.")
+
+
+def _normalize_job_text(value: str, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} debe ser texto.")
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} no puede ser vacio.")
+    return normalized
+
+
+def _validate_reconciliation_job(job: ReconciliationJob) -> None:
+    _normalize_job_text(job.job_id, "JOB_ID")
+    _normalize_job_text(job.store_id, "STORE_ID")
+    if job.scope not in RECONCILIATION_JOB_SCOPES:
+        raise ValueError("RECONCILIATION_SCOPE_INVALIDO: scope no reconocido.")
+    if job.status not in RECONCILIATION_JOB_STATUSES:
+        raise ValueError("RECONCILIATION_JOB_STATUS_INVALIDO: status no reconocido.")
+    if job.cursor is not None and not isinstance(job.cursor, dict):
+        raise ValueError("RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.")
+    if job.attempts < 0:
+        raise ValueError("RECONCILIATION_ATTEMPTS_INVALIDO: attempts no puede ser negativo.")
+    _validate_aware_datetime(job.next_eligible_at, "NEXT_ELIGIBLE_AT")
+    _validate_aware_datetime(job.created_at, "CREATED_AT")
+    _validate_aware_datetime(job.updated_at, "UPDATED_AT")
+    if job.locked_at is not None:
+        _validate_aware_datetime(job.locked_at, "LOCKED_AT")
+    if job.dead_letter_at is not None:
+        _validate_aware_datetime(job.dead_letter_at, "DEAD_LETTER_AT")
+    if job.locked_at is not None and not job.locked_by:
+        raise ValueError(
+            "RECONCILIATION_LOCK_INVALIDO: locked_by es obligatorio cuando locked_at existe."
+        )
+    if job.status == "running" and (job.locked_at is None or not job.locked_by):
+        raise ValueError(
+            "RECONCILIATION_LOCK_INVALIDO: jobs running requieren lock activo."
+        )
+    if job.status == "dead_letter" and job.dead_letter_at is None:
+        raise ValueError(
+            "RECONCILIATION_DEAD_LETTER_INVALIDO: dead_letter_at es obligatorio."
+        )
+
+
+def create_reconciliation_job(
+    *,
+    job_id: str,
+    store_id: str,
+    scope: ReconciliationJobScope = "orders",
+    cursor: dict[str, Any] | None = None,
+    now: datetime | None = None,
+) -> ReconciliationJob:
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+    if cursor is not None and not isinstance(cursor, dict):
+        raise ValueError("RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.")
+
+    job = ReconciliationJob(
+        job_id=_normalize_job_text(job_id, "JOB_ID"),
+        store_id=_normalize_job_text(store_id, "STORE_ID"),
+        scope=scope,
+        cursor=dict(cursor) if cursor is not None else None,
+        status="pending",
+        attempts=0,
+        next_eligible_at=timestamp,
+        created_at=timestamp,
+        updated_at=timestamp,
+    )
+    _validate_reconciliation_job(job)
+    return job
+
+
+def claim_reconciliation_jobs(
+    jobs: list[ReconciliationJob],
+    *,
+    worker: str,
+    limit: int = 1,
+    scope: ReconciliationJobScope = "orders",
+    now: datetime | None = None,
+) -> list[ReconciliationJob]:
+    if limit <= 0:
+        raise ValueError("RECONCILIATION_CLAIM_LIMIT_INVALIDO: limit debe ser positivo.")
+    if scope not in RECONCILIATION_JOB_SCOPES:
+        raise ValueError("RECONCILIATION_SCOPE_INVALIDO: scope no reconocido.")
+
+    worker_id = _normalize_job_text(worker, "WORKER")
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+    for job in jobs:
+        _validate_reconciliation_job(job)
+
+    eligible_jobs = [
+        job
+        for job in jobs
+        if job.scope == scope
+        and job.status in {"pending", "failed"}
+        and job.locked_at is None
+        and job.next_eligible_at <= timestamp
+    ]
+    eligible_jobs.sort(key=lambda job: (job.next_eligible_at, job.created_at, job.job_id))
+
+    return [
+        replace(
+            job,
+            status="running",
+            attempts=job.attempts + 1,
+            locked_at=timestamp,
+            locked_by=worker_id,
+            updated_at=timestamp,
+        )
+        for job in eligible_jobs[:limit]
+    ]
+
+
+def complete_reconciliation_job(
+    job: ReconciliationJob,
+    *,
+    cursor: dict[str, Any] | None = None,
+
+exec
+/bin/bash -lc "find tests app -path '*reconcil*' -type f -print" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+tests/core/test_reconciliation_csv.py
+tests/core/__pycache__/test_reconciliation_service.cpython-311-pytest-9.0.3.pyc
+tests/core/__pycache__/test_reconciliation_csv.cpython-311-pytest-9.0.3.pyc
+tests/core/__pycache__/test_reconciliation_csv.cpython-311.pyc
+tests/core/__pycache__/test_reconciliation.cpython-311.pyc
+tests/core/__pycache__/test_reconciliation.cpython-311-pytest-9.0.3.pyc
+tests/core/test_reconciliation_service.py
+tests/core/test_reconciliation.py
+app/core/reconciliation/__init__.py
+app/core/reconciliation/__pycache__/__init__.cpython-311.pyc
+app/core/reconciliation/__pycache__/service.cpython-311.pyc
+app/core/reconciliation/__pycache__/models.cpython-311.pyc
+app/core/reconciliation/models.py
+app/core/reconciliation/service.py
+
+exec
+/bin/bash -lc "sed -n '1,220p' pyproject.toml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+[project]
+name = "smartpyme"
+version = "0.1.0"
+description = "SmartPyme operational core and autonomous factory"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "evidence_store",
+  "factory/evidence",
+  "factory/runner_logs"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+codex
+Hay implementación existente de reconciliación y tests específicos. El siguiente paso es revisar el diff real y ejecutar una validación enfocada; si falla por un detalle de contrato, haré solo ese ajuste.
+exec
+/bin/bash -lc 'git diff -- app/core/reconciliation tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/app/core/reconciliation/models.py b/app/core/reconciliation/models.py
+index c38cc55..56166ea 100644
+--- a/app/core/reconciliation/models.py
++++ b/app/core/reconciliation/models.py
+@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
+ from datetime import datetime, timezone
+ from typing import Any, Literal, TypeAlias
+ 
+-from pydantic import ConfigDict, RootModel
+-
+ ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
+ DifferenceType: TypeAlias = Literal["faltante_en_a", "faltante_en_b", "valor_distinto"]
+ MismatchDetail: TypeAlias = Literal["mismatch_numerico", "mismatch_no_numerico"]
+@@ -63,8 +61,23 @@ def _utc_now() -> datetime:
+     return datetime.now(timezone.utc)
+ 
+ 
+-class ReconciliationRow(RootModel[dict[str, ReconciliationFieldValue]]):
+-    model_config = ConfigDict(strict=True)
++@dataclass(frozen=True, slots=True)
++class ReconciliationRow:
++    root: dict[str, ReconciliationFieldValue]
++
++    @classmethod
++    def model_validate(cls, value: Any) -> "ReconciliationRow":
++        if not isinstance(value, dict):
++            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
++
++        validated: dict[str, ReconciliationFieldValue] = {}
++        for field_name, field_value in value.items():
++            if not isinstance(field_name, str):
++                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
++            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
++                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
++            validated[field_name] = field_value
++        return cls(root=validated)
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+
+exec
+/bin/bash -lc "sed -n '220,620p' app/core/reconciliation/service.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    cursor: dict[str, Any] | None = None,
+    now: datetime | None = None,
+) -> ReconciliationJob:
+    _validate_reconciliation_job(job)
+    if job.status != "running":
+        raise ValueError("RECONCILIATION_JOB_NO_RUNNING: solo jobs running pueden cerrarse.")
+    if cursor is not None and not isinstance(cursor, dict):
+        raise ValueError("RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.")
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+
+    completed = replace(
+        job,
+        cursor=dict(cursor) if cursor is not None else job.cursor,
+        status="done",
+        locked_at=None,
+        locked_by=None,
+        last_error=None,
+        updated_at=timestamp,
+    )
+    _validate_reconciliation_job(completed)
+    return completed
+
+
+def fail_reconciliation_job(
+    job: ReconciliationJob,
+    *,
+    error: str,
+    now: datetime | None = None,
+    max_attempts: int = RECONCILIATION_JOB_MAX_ATTEMPTS,
+) -> ReconciliationJob:
+    _validate_reconciliation_job(job)
+    if job.status != "running":
+        raise ValueError("RECONCILIATION_JOB_NO_RUNNING: solo jobs running pueden fallar.")
+    if max_attempts <= 0:
+        raise ValueError("RECONCILIATION_MAX_ATTEMPTS_INVALIDO: max_attempts debe ser positivo.")
+    error_message = _normalize_job_text(error, "ERROR")
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+
+    if job.attempts >= max_attempts:
+        failed = replace(
+            job,
+            status="dead_letter",
+            locked_at=None,
+            locked_by=None,
+            last_error=error_message,
+            dead_letter_at=timestamp,
+            updated_at=timestamp,
+        )
+    else:
+        delay_seconds = min(
+            RECONCILIATION_JOB_RETRY_BASE_SECONDS * (2 ** max(job.attempts - 1, 0)),
+            RECONCILIATION_JOB_RETRY_CAP_SECONDS,
+        )
+        failed = replace(
+            job,
+            status="failed",
+            locked_at=None,
+            locked_by=None,
+            last_error=error_message,
+            next_eligible_at=timestamp + timedelta(seconds=delay_seconds),
+            updated_at=timestamp,
+        )
+    _validate_reconciliation_job(failed)
+    return failed
+
+
+def _normalize_reconciliation_status(job_state: Any) -> str:
+    if not isinstance(job_state, dict):
+        raise ValueError(
+            "RECONCILIATION_STATE_INVALIDO: estado invalido para reconciliacion."
+        )
+    status = job_state.get("status")
+    if not isinstance(status, str):
+        raise ValueError(
+            "RECONCILIATION_STATUS_INVALIDO: estado no reconocido para reconciliacion."
+        )
+    normalized_status = status.strip().lower()
+    if normalized_status not in RECOGNIZED_RECONCILIATION_STATUSES:
+        raise ValueError(
+            "RECONCILIATION_STATUS_INVALIDO: estado no reconocido para reconciliacion."
+        )
+    return normalized_status
+
+
+def compare_records(record_a: ComparableRecord, record_b: ComparableRecord) -> list[DifferenceRecord]:
+    if record_a.entity_id != record_b.entity_id:
+        raise ValueError(
+            "ENTITY_ID_MISMATCH: los records comparables deben tener el mismo entity_id."
+        )
+
+    if record_a.entity_type != record_b.entity_type:
+        raise ValueError(
+            "ENTITY_TYPE_MISMATCH: los records comparables deben tener el mismo entity_type."
+        )
+
+    field_names = sorted(set(record_a.fields.keys()) | set(record_b.fields.keys()))
+    differences: list[DifferenceRecord] = []
+
+    for field_name in field_names:
+        value_a = record_a.fields.get(field_name)
+        value_b = record_b.fields.get(field_name)
+
+        if value_a == value_b:
+            continue
+
+        present_a = _is_present(value_a)
+        present_b = _is_present(value_b)
+
+        if not present_a and present_b:
+            difference_type = "faltante_en_a"
+        elif present_a and not present_b:
+            difference_type = "faltante_en_b"
+        else:
+            difference_type = "valor_distinto"
+
+        differences.append(
+            DifferenceRecord(
+                entity_id=record_a.entity_id,
+                entity_type=record_a.entity_type,
+                field_name=field_name,
+                source_a=record_a.source,
+                source_b=record_b.source,
+                value_a=value_a,
+                value_b=value_b,
+                difference_type=difference_type,
+                blocking=field_name in BLOCKING_FIELDS,
+            )
+        )
+
+    return differences
+
+
+def _validate_key_field(key_field: str) -> None:
+    if not key_field or not key_field.strip():
+        raise ValueError("KEY_FIELD_INVALIDO: key_field no puede ser vacio.")
+
+
+def _index_records(
+    source: list[dict[str, Any]], key_field: str, source_name: str
+) -> dict[str, dict[str, Any]]:
+    indexed: dict[str, dict[str, Any]] = {}
+    for raw_record in source:
+        try:
+            record = ReconciliationRow.model_validate(raw_record).root
+        except Exception as exc:
+            raise ValueError(
+                f"ROW_INVALIDA: registro invalido en {source_name}. Ejecucion bloqueada."
+            ) from exc
+        if key_field not in record:
+            raise ValueError(
+                f"KEY_FIELD_FALTANTE: falta '{key_field}' en un registro de {source_name}."
+            )
+        key_value = record[key_field]
+        if key_value is None:
+            raise ValueError(
+                f"KEY_FIELD_NULO: '{key_field}' es nulo en un registro de {source_name}."
+            )
+        key = str(key_value)
+        if key in indexed:
+            raise ValueError(
+                f"KEY_DUPLICADA: '{key}' duplicada en {source_name}. Ejecucion bloqueada."
+            )
+        indexed[key] = record
+    return indexed
+
+
+def reconcile_records(
+    source_a: list[dict[str, Any]], source_b: list[dict[str, Any]], key_field: str
+) -> ReconciliationResult:
+    _validate_key_field(key_field)
+
+    indexed_a = _index_records(source_a, key_field, "source_a")
+    indexed_b = _index_records(source_b, key_field, "source_b")
+
+    keys_a = set(indexed_a.keys())
+    keys_b = set(indexed_b.keys())
+
+    common_keys = sorted(keys_a & keys_b)
+    missing_in_a_keys = sorted(keys_b - keys_a)
+    missing_in_b_keys = sorted(keys_a - keys_b)
+
+    matches: list[ReconciledMatch] = []
+    mismatches: list[QuantifiedDiscrepancy] = []
+
+    for key in common_keys:
+        record_a = indexed_a[key]
+        record_b = indexed_b[key]
+        common_fields = sorted((set(record_a.keys()) & set(record_b.keys())) - {key_field})
+
+        key_has_mismatch = False
+        for field_name in common_fields:
+            value_a = record_a[field_name]
+            value_b = record_b[field_name]
+            if value_a == value_b:
+                continue
+
+            key_has_mismatch = True
+            if _is_number(value_a) and _is_number(value_b):
+                delta = float(value_b) - float(value_a)
+                detail = "mismatch_numerico"
+            else:
+                delta = None
+                detail = "mismatch_no_numerico"
+
+            mismatches.append(
+                QuantifiedDiscrepancy(
+                    key=key,
+                    field_name=field_name,
+                    value_a=value_a,
+                    value_b=value_b,
+                    delta=delta,
+                    detail=detail,
+                )
+            )
+
+        if not key_has_mismatch:
+            matches.append(
+                ReconciledMatch(
+                    key=key,
+                    record_a=ReconciliationRow.model_validate(record_a),
+                    record_b=ReconciliationRow.model_validate(record_b),
+                )
+            )
+
+    missing_in_a = [ReconciliationRow.model_validate(indexed_b[key]) for key in missing_in_a_keys]
+    missing_in_b = [ReconciliationRow.model_validate(indexed_a[key]) for key in missing_in_b_keys]
+
+    return ReconciliationResult(
+        matches=matches,
+        mismatches=mismatches,
+        missing_in_a=missing_in_a,
+        missing_in_b=missing_in_b,
+    )
+
+
+def _read_csv_records(path: str | Path) -> list[dict[str, Any]]:
+    csv_path = Path(path)
+    if not csv_path.is_file():
+        raise ValueError(f"CSV_NO_EXISTE: no existe el archivo CSV: {csv_path}.")
+
+    with csv_path.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        if not reader.fieldnames:
+            raise ValueError(f"CSV_SIN_HEADERS: el CSV no tiene headers: {csv_path}.")
+        return [dict(row) for row in reader]
+
+
+def _coerce_csv_number(value: Any) -> int | float | None:
+    parsed, reason = _parse_amount_with_reason(value)
+    if reason is not None or parsed is None:
+        return None
+
+    decimal_value = Decimal(str(parsed))
+    if decimal_value == decimal_value.to_integral_value():
+        return int(decimal_value)
+    return float(decimal_value)
+
+
+def _resolve_numeric_fields(
+    source_a: list[dict[str, Any]],
+    source_b: list[dict[str, Any]],
+    key_field: str,
+    numeric_fields: tuple[str, ...] | None,
+) -> set[str]:
+    if numeric_fields is not None:
+        return set(numeric_fields)
+
+    field_names = set[str]()
+    for record in [*source_a, *source_b]:
+        field_names.update(record.keys())
+
+    resolved_fields: set[str] = set()
+    for field_name in sorted(field_names - {key_field}):
+        values = [
+            record[field_name]
+            for record in [*source_a, *source_b]
+            if field_name in record and record[field_name] not in {"", None}
+        ]
+        if values and all(_coerce_csv_number(value) is not None for value in values):
+            resolved_fields.add(field_name)
+    return resolved_fields
+
+
+def _normalize_csv_numeric_fields(
+    records: list[dict[str, Any]], numeric_fields: set[str]
+) -> list[dict[str, Any]]:
+    normalized_records: list[dict[str, Any]] = []
+    for record in records:
+        normalized = dict(record)
+        for field_name in numeric_fields:
+            if field_name not in normalized or normalized[field_name] in {"", None}:
+                continue
+            parsed_value = _coerce_csv_number(normalized[field_name])
+            if parsed_value is None:
+                raise ValueError(
+                    f"CSV_NUMERIC_FIELD_INVALIDO: '{field_name}' contiene valor no numerico."
+                )
+            normalized[field_name] = parsed_value
+        normalized_records.append(normalized)
+    return normalized_records
+
+
+def reconcile_csv_sources(
+    source_a_path: str | Path,
+    source_b_path: str | Path,
+    *,
+    key_field: str,
+    entity_type: str = "record",
+    numeric_fields: tuple[str, ...] | None = None,
+) -> list[Hallazgo]:
+    _validate_key_field(key_field)
+
+    raw_source_a = _read_csv_records(source_a_path)
+    raw_source_b = _read_csv_records(source_b_path)
+    resolved_numeric_fields = _resolve_numeric_fields(
+        raw_source_a,
+        raw_source_b,
+        key_field,
+        numeric_fields,
+    )
+
+    source_a = _normalize_csv_numeric_fields(raw_source_a, resolved_numeric_fields)
+    source_b = _normalize_csv_numeric_fields(raw_source_b, resolved_numeric_fields)
+    result = reconcile_records(source_a, source_b, key_field)
+    return HallazgoEngine().transform(result, entidad_tipo=entity_type)
+
+
+def _read_numeric_field(record: dict[str, Any], field_name: str, key: str) -> float:
+    if field_name not in record:
+        raise ValueError(f"CAMPO_FALTANTE: falta '{field_name}' en registro key={key}.")
+    value = record[field_name]
+    if value is None:
+        raise ValueError(f"CAMPO_NULO: '{field_name}' es nulo en registro key={key}.")
+    if not _is_number(value):
+        raise ValueError(
+            f"CAMPO_NO_NUMERICO: '{field_name}' debe ser numerico en registro key={key}."
+        )
+    return float(value)
+
+
+def _parse_amount_with_reason(value: Any) -> tuple[float | None, str | None]:
+    if _is_number(value):
+        return float(value), None
+    if not isinstance(value, str):
+        return None, "non_numeric"
+
+    normalized = value.strip().replace(" ", "")
+    for symbol in ("$", "€", "£", "¥"):
+        normalized = normalized.replace(symbol, "")
+
+    if not normalized:
+        return None, "non_numeric"
+    if any(char.isalpha() for char in normalized):
+        return None, "non_numeric"
+    if "," in normalized and "." in normalized:
+        return None, "currency_ambiguous"
+    if normalized.count(".") > 1:
+        return None, "currency_ambiguous"
+
+    if "," in normalized:
+        left, right = normalized.rsplit(",", 1)
+        if not left or not right:
+            return None, "non_numeric"
+        left_no_sign = left[1:] if left[0] in "+-" else left
+        if not left_no_sign.isdigit() or not right.isdigit():
+            return None, "non_numeric"
+        if len(right) == 3:
+            return None, "currency_ambiguous"
+        normalized = f"{left}.{right}"
+
+    try:
+        return float(normalized), None
+    except ValueError:
+        return None, "non_numeric"
+
+
+def detect_deterministic_ambiguity(value: Any) -> tuple[float | None, str | None]:
+    return _parse_amount_with_reason(value)
+
+
+def _resolve_amount_field(
+    record: dict[str, Any], primary_field: str, aliases: tuple[str, ...]
+) -> tuple[Any, str | None]:
+    if primary_field in record:
+        return record.get(primary_field), primary_field
+
+    for alias in aliases:
+        if alias in record:
+            return record.get(alias), alias
+
+    return None, None
+
+
+def _build_human_question(
+    *,
+    key: str,
+    expected_amount: float | None,
+    actual_amount: float | None,
+    reason: str,
+
+exec
+/bin/bash -lc "sed -n '160,360p' app/core/reconciliation/models.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    question: str
+    clarification_state: ClarificationState
+    expected_amount: float | None = None
+    actual_amount: float | None = None
+    delta: float | None = None
+    pending_validation: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class AmountReconciliationResult:
+    total_records: int
+    ok_records: int
+    findings: list[AmountReconciliationFinding]
+    uncertainty_records: list[UncertaintyRecord]
+    suggested_actions: list[SuggestedAction]
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    max_uncertainty_level: UncertaintyLevel
+    has_blocking_pending: bool
+    human_review_questions: list[str] = field(default_factory=list)
+    clarification_questions: list[ClarificationQuestion] = field(default_factory=list)
+    warnings: list["WarningItem"] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class AmountDifferenceAssessment:
+    delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalDifferenceEngineResult:
+    delta: float
+    absolute_delta: float
+    has_difference: bool
+    uncertain: bool
+    reason: AmountFindingReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class EconomicImpact:
+    delta: float
+    absolute_delta: float
+    direction: EconomicImpactDirection
+
+
+@dataclass(frozen=True, slots=True)
+class HumanReviewDecision:
+    verdict: HumanReviewVerdict
+    actor: str
+    note: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class WarningItem:
+    code: WarningCode
+    message: str
+    key: str | None = None
+    field_name: str | None = None
+    details: WarningDetails | None = None
+    severity: WarningSeverity = "warning"
+    blocking: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationStateMachineResult:
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    has_blocking_pending: bool
+
+
+@dataclass(frozen=True, slots=True)
+class FailClosedStateEvaluation:
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    has_blocking_pending: bool
+    trigger: FailClosedTrigger
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationJob:
+    job_id: str
+    store_id: str
+    scope: ReconciliationJobScope = "orders"
+    cursor: dict[str, Any] | None = None
+    status: ReconciliationJobStatus = "pending"
+    attempts: int = 0
+    next_eligible_at: datetime = field(default_factory=_utc_now)
+    locked_at: datetime | None = None
+    locked_by: str | None = None
+    last_error: str | None = None
+    dead_letter_at: datetime | None = None
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
+
+
+@dataclass(frozen=True, slots=True)
+class DeterministicDiscrepancySnapshot:
+    findings: list[dict[str, Any]]
+    orders_with_diff: int
+    total_diff_amount: float
+
+
+@dataclass(frozen=True, slots=True)
+class DeterministicHitlEvaluation:
+    issue_decision: WorkflowDecision
+    amount_decision: WorkflowDecision
+    fail_closed_decision: WorkflowDecision
+    workflow_decision: WorkflowDecision
+    clarification_state: ClarificationState
+    has_blocking_pending: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MeliSuggestedAction:
+    action_type: MeliActionType
+    title: str
+    description: str
+    payload: dict[str, Any]
+    economic_impact: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SimpleReconciliationFinding:
+    entity_id: str
+    diff: float
+    money_impact: float
+
+
+@dataclass(frozen=True, slots=True)
+class SimpleReconciliationResult:
+    findings: list[SimpleReconciliationFinding]
+    total_records: int
+    records_with_diff: int
+    total_diff_amount: float
+
+exec
+/bin/bash -lc "sed -n '1,260p' tests/core/test_reconciliation_csv.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from app.core.reconciliation.service import reconcile_csv_sources
+
+
+def test_reconcile_csv_sources_returns_hallazgo_for_numeric_difference(tmp_path):
+    source_a = tmp_path / "source_a.csv"
+    source_b = tmp_path / "source_b.csv"
+    source_a.write_text(
+        "order_id,amount,status\n"
+        "o-1,100.00,paid\n"
+        "o-2,50.00,paid\n",
+        encoding="utf-8",
+    )
+    source_b.write_text(
+        "order_id,amount,status\n"
+        "o-1,125.50,paid\n"
+        "o-2,50.00,paid\n",
+        encoding="utf-8",
+    )
+
+    hallazgos = reconcile_csv_sources(
+        source_a,
+        source_b,
+        key_field="order_id",
+        entity_type="order",
+    )
+
+    assert len(hallazgos) == 1
+    hallazgo = hallazgos[0]
+    assert hallazgo.tipo == "mismatch_valor"
+    assert hallazgo.entidad_id == "o-1"
+    assert hallazgo.entidad_tipo == "order"
+    assert hallazgo.diferencia_cuantificada == 25.5
+    assert hallazgo.evidencia == {
+        "field": "amount",
+        "value_a": 100,
+        "value_b": 125.5,
+        "delta": 25.5,
+    }
+
+exec
+/bin/bash -lc "python3 - <<'PY'
+try:
+ import polars
+ print('polars_available', polars.__version__)
+except Exception as exc:
+ print('polars_unavailable', type(exc).__name__, str(exc))
+PY" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+polars_unavailable ModuleNotFoundError No module named 'polars'
+
+exec
+/bin/bash -lc "sed -n '1,240p' app/core/hallazgos/models.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from dataclasses import dataclass
+from typing import Any, Literal, TypeAlias, TypedDict
+
+FindingSeverity: TypeAlias = Literal["info", "warning", "critical"]
+FindingType: TypeAlias = Literal["mismatch_valor", "faltante_en_fuente", "incertidumbre"]
+FindingStatus: TypeAlias = Literal["pending", "in_progress", "done", "blocked"]
+
+class MismatchEvidence(TypedDict):
+    field: str
+    value_a: Any
+    value_b: Any
+    delta: float | None
+
+class MissingEvidence(TypedDict):
+    missing_in: Literal["source_a", "source_b"]
+    data: dict[str, Any]
+
+class UncertaintyEvidence(TypedDict):
+    reason: str
+    raw_value: Any
+
+@dataclass(frozen=True, slots=True)
+class Hallazgo:
+    id: str  # SHA-256 de dedupe_key
+    tipo: FindingType
+    severidad: FindingSeverity
+    entidad_id: str
+    entidad_tipo: str
+    diferencia_cuantificada: float | str | None
+    evidencia: MismatchEvidence | MissingEvidence | UncertaintyEvidence
+    dedupe_key: str
+    status: FindingStatus = "pending"
+
+exec
+/bin/bash -lc "sed -n '1,260p' app/core/hallazgos/service.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+import hashlib
+from typing import Any, Optional, Dict
+from dataclasses import replace
+from app.core.hallazgos.models import (
+    Hallazgo, 
+    FindingSeverity, 
+    FindingType, 
+    FindingStatus,
+    MismatchEvidence, 
+    MissingEvidence
+)
+from app.core.reconciliation.models import ReconciliationResult, QuantifiedDiscrepancy
+from app.core.repositories.hallazgo_repository import HallazgoRepository
+
+class HallazgoEngine:
+    """Motor endurecido para la generación de hallazgos determinísticos."""
+
+    CRITICAL_THRESHOLD = 500.0
+
+    @staticmethod
+    def generate_dedupe_key(tipo: str, entidad_id: str, field_name: str = "") -> str:
+        return f"{tipo}:{entidad_id}:{field_name}".strip(":")
+
+    @staticmethod
+    def generate_id(dedupe_key: str) -> str:
+        return hashlib.sha256(dedupe_key.encode()).hexdigest()
+
+    def get_mismatch_severity(self, delta: float | None) -> FindingSeverity:
+        if delta is None:
+            return "warning"
+        return "critical" if abs(delta) >= self.CRITICAL_THRESHOLD else "warning"
+
+    def transform(self, result: ReconciliationResult, entidad_tipo: str = "order") -> list[Hallazgo]:
+        hallazgos = []
+
+        for mismatch in result.mismatches:
+            dedupe_key = self.generate_dedupe_key("mismatch", mismatch.key, mismatch.field_name)
+            evidence: MismatchEvidence = {
+                "field": mismatch.field_name,
+                "value_a": mismatch.value_a,
+                "value_b": mismatch.value_b,
+                "delta": mismatch.delta
+            }
+            hallazgos.append(Hallazgo(
+                id=self.generate_id(dedupe_key),
+                tipo="mismatch_valor",
+                severidad=self.get_mismatch_severity(mismatch.delta),
+                entidad_id=mismatch.key,
+                entidad_tipo=entidad_tipo,
+                diferencia_cuantificada=mismatch.delta,
+                evidencia=evidence,
+                dedupe_key=dedupe_key
+            ))
+
+        for missing in result.missing_in_a:
+            entity_id = str(missing.root.get("id", "unknown"))
+            dedupe_key = self.generate_dedupe_key("missing_a", entity_id)
+            evidence: MissingEvidence = {"missing_in": "source_a", "data": missing.root}
+            hallazgos.append(Hallazgo(
+                id=self.generate_id(dedupe_key),
+                tipo="faltante_en_fuente",
+                severidad="critical",
+                entidad_id=entity_id,
+                entidad_tipo=entidad_tipo,
+                diferencia_cuantificada="missing_a",
+                evidencia=evidence,
+                dedupe_key=dedupe_key
+            ))
+
+        for missing in result.missing_in_b:
+            entity_id = str(missing.root.get("id", "unknown"))
+            dedupe_key = self.generate_dedupe_key("missing_b", entity_id)
+            evidence: MissingEvidence = {"missing_in": "source_b", "data": missing.root}
+            hallazgos.append(Hallazgo(
+                id=self.generate_id(dedupe_key),
+                tipo="faltante_en_fuente",
+                severidad="critical",
+                entidad_id=entity_id,
+                entidad_tipo=entidad_tipo,
+                diferencia_cuantificada="missing_b",
+                evidencia=evidence,
+                dedupe_key=dedupe_key
+            ))
+
+        return self.deduplicate(hallazgos)
+
+    def deduplicate(self, hallazgos: list[Hallazgo]) -> list[Hallazgo]:
+        unique = {}
+        for h in hallazgos:
+            unique[h.dedupe_key] = h
+        return list(unique.values())
+
+class HallazgoService:
+    """Servicio de lectura y gestión de ciclo de vida de hallazgos."""
+
+    def __init__(self, repository: HallazgoRepository):
+        self.repository = repository
+
+    def get_findings(
+        self, 
+        status: Optional[FindingStatus] = None,
+        severity: Optional[FindingSeverity] = None,
+        tipo: Optional[FindingType] = None
+    ) -> list[Hallazgo]:
+        """Consulta hallazgos con filtros determinísticos."""
+        return self.repository.list_all(status=status, severity=severity, tipo=tipo)
+
+    def get_summary(self) -> Dict[str, Any]:
+        """Genera un resumen estadístico de los hallazgos persistidos."""
+        all_findings = self.repository.list_all()
+        
+        summary = {
+            "total": len(all_findings),
+            "by_status": {s: 0 for s in ["pending", "in_progress", "done", "blocked"]},
+            "by_severity": {sev: 0 for s, sev in [("", "info"), ("", "warning"), ("", "critical")]},
+            "critical_pending": 0
+        }
+        
+        for h in all_findings:
+            summary["by_status"][h.status] += 1
+            summary["by_severity"][h.severidad] += 1
+            if h.severidad == "critical" and h.status == "pending":
+                summary["critical_pending"] += 1
+                
+        return summary
+
+    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Optional[Hallazgo]:
+        """Actualiza el estado de un hallazgo existente."""
+        hallazgo = self.repository.get_by_id(hallazgo_id)
+        if not hallazgo:
+            return None
+            
+        updated = replace(hallazgo, status=new_status)
+        self.repository.save(updated)
+        return updated
+
+exec
+/bin/bash -lc 'ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: ruff: command not found
+
+exec
+/bin/bash -lc 'python3 -m pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 1 in 0ms:
+/usr/bin/python3: No module named pytest
+
+codex
+`python3` global no tiene pytest y `ruff` no está en PATH. Hay `.venv` versionado/local con `pytest`; voy a usarlo para la validación mínima y comprobar si también trae Ruff antes de bloquear por lint.
+exec
+/bin/bash -lc 'test -x .venv/bin/pytest; echo pytest_exit=$?; test -x .venv/bin/ruff; echo ruff_exit=$?; ls -la .venv/bin/pytest .venv/bin/ruff 2>&1' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 2 in 0ms:
+pytest_exit=0
+ruff_exit=1
+ls: cannot access '.venv/bin/ruff': No such file or directory
+-rwxr-xr-x 1 neoalmasana neoalmasana 208 Apr 27 19:52 .venv/bin/pytest
+
+exec
+/bin/bash -lc 'git ls-files app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py app/core/reconciliation/__init__.py app/core/reconciliation/models.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/reconciliation/__init__.py
+app/core/reconciliation/models.py
+app/core/reconciliation/service.py
+tests/core/test_reconciliation_csv.py
+
+exec
+/bin/bash -lc '.venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 287ms:
+........................................................................ [ 90%]
+........                                                                 [100%]
+
+codex
+La prueba enfocada pasa con `.venv/bin/pytest`; Ruff no existe ni global ni en `.venv`, así que ese punto queda bloqueado por herramienta ausente. Haré verificación física explícita y registraré evidencia textual de esta ejecución en `factory/evidence/core-reconciliacion-v1/`.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M app/core/reconciliation/models.py
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+ M scripts/hermes_factory_runner.py
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+
+exec
+/bin/bash -lc 'test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
+
+exec
+/bin/bash -lc 'test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
+
+exec
+/bin/bash -lc 'test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
+
+exec
+/bin/bash -lc 'rg -n "class ReconciliationRow|class SimpleReconciliation|def reconcile_records|def reconcile_csv_sources|_resolve_numeric_fields|_normalize_csv_numeric_fields" app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc "sed -n '52,92p' app/core/reconciliation/models.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    "running",
+    "failed",
+    "done",
+    "dead_letter",
+]
+ReconciliationJobScope: TypeAlias = Literal["orders"]
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True, slots=True)
+class ReconciliationRow:
+    root: dict[str, ReconciliationFieldValue]
+
+    @classmethod
+    def model_validate(cls, value: Any) -> "ReconciliationRow":
+        if not isinstance(value, dict):
+            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
+
+        validated: dict[str, ReconciliationFieldValue] = {}
+        for field_name, field_value in value.items():
+            if not isinstance(field_name, str):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
+            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
+                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
+            validated[field_name] = field_value
+        return cls(root=validated)
+
+
+@dataclass(frozen=True, slots=True)
+class ComparableRecord:
+    entity_id: str
+    entity_type: str
+    source: str
+    fields: dict[str, ReconciliationFieldValue] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class DifferenceRecord:
+
+exec
+/bin/bash -lc "sed -n '320,450p' app/core/reconciliation/service.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    for field_name in field_names:
+        value_a = record_a.fields.get(field_name)
+        value_b = record_b.fields.get(field_name)
+
+        if value_a == value_b:
+            continue
+
+        present_a = _is_present(value_a)
+        present_b = _is_present(value_b)
+
+        if not present_a and present_b:
+            difference_type = "faltante_en_a"
+        elif present_a and not present_b:
+            difference_type = "faltante_en_b"
+        else:
+            difference_type = "valor_distinto"
+
+        differences.append(
+            DifferenceRecord(
+                entity_id=record_a.entity_id,
+                entity_type=record_a.entity_type,
+                field_name=field_name,
+                source_a=record_a.source,
+                source_b=record_b.source,
+                value_a=value_a,
+                value_b=value_b,
+                difference_type=difference_type,
+                blocking=field_name in BLOCKING_FIELDS,
+            )
+        )
+
+    return differences
+
+
+def _validate_key_field(key_field: str) -> None:
+    if not key_field or not key_field.strip():
+        raise ValueError("KEY_FIELD_INVALIDO: key_field no puede ser vacio.")
+
+
+def _index_records(
+    source: list[dict[str, Any]], key_field: str, source_name: str
+) -> dict[str, dict[str, Any]]:
+    indexed: dict[str, dict[str, Any]] = {}
+    for raw_record in source:
+        try:
+            record = ReconciliationRow.model_validate(raw_record).root
+        except Exception as exc:
+            raise ValueError(
+                f"ROW_INVALIDA: registro invalido en {source_name}. Ejecucion bloqueada."
+            ) from exc
+        if key_field not in record:
+            raise ValueError(
+                f"KEY_FIELD_FALTANTE: falta '{key_field}' en un registro de {source_name}."
+            )
+        key_value = record[key_field]
+        if key_value is None:
+            raise ValueError(
+                f"KEY_FIELD_NULO: '{key_field}' es nulo en un registro de {source_name}."
+            )
+        key = str(key_value)
+        if key in indexed:
+            raise ValueError(
+                f"KEY_DUPLICADA: '{key}' duplicada en {source_name}. Ejecucion bloqueada."
+            )
+        indexed[key] = record
+    return indexed
+
+
+def reconcile_records(
+    source_a: list[dict[str, Any]], source_b: list[dict[str, Any]], key_field: str
+) -> ReconciliationResult:
+    _validate_key_field(key_field)
+
+    indexed_a = _index_records(source_a, key_field, "source_a")
+    indexed_b = _index_records(source_b, key_field, "source_b")
+
+    keys_a = set(indexed_a.keys())
+    keys_b = set(indexed_b.keys())
+
+    common_keys = sorted(keys_a & keys_b)
+    missing_in_a_keys = sorted(keys_b - keys_a)
+    missing_in_b_keys = sorted(keys_a - keys_b)
+
+    matches: list[ReconciledMatch] = []
+    mismatches: list[QuantifiedDiscrepancy] = []
+
+    for key in common_keys:
+        record_a = indexed_a[key]
+        record_b = indexed_b[key]
+        common_fields = sorted((set(record_a.keys()) & set(record_b.keys())) - {key_field})
+
+        key_has_mismatch = False
+        for field_name in common_fields:
+            value_a = record_a[field_name]
+            value_b = record_b[field_name]
+            if value_a == value_b:
+                continue
+
+            key_has_mismatch = True
+            if _is_number(value_a) and _is_number(value_b):
+                delta = float(value_b) - float(value_a)
+                detail = "mismatch_numerico"
+            else:
+                delta = None
+                detail = "mismatch_no_numerico"
+
+            mismatches.append(
+                QuantifiedDiscrepancy(
+                    key=key,
+                    field_name=field_name,
+                    value_a=value_a,
+                    value_b=value_b,
+                    delta=delta,
+                    detail=detail,
+                )
+            )
+
+        if not key_has_mismatch:
+            matches.append(
+                ReconciledMatch(
+                    key=key,
+                    record_a=ReconciliationRow.model_validate(record_a),
+                    record_b=ReconciliationRow.model_validate(record_b),
+                )
+            )
+
+    missing_in_a = [ReconciliationRow.model_validate(indexed_b[key]) for key in missing_in_a_keys]
+    missing_in_b = [ReconciliationRow.model_validate(indexed_a[key]) for key in missing_in_b_keys]
+
+    return ReconciliationResult(
+        matches=matches,
+
+exec
+/bin/bash -lc "sed -n '1,90p' tests/core/test_reconciliation_csv.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from app.core.reconciliation.service import reconcile_csv_sources
+
+
+def test_reconcile_csv_sources_returns_hallazgo_for_numeric_difference(tmp_path):
+    source_a = tmp_path / "source_a.csv"
+    source_b = tmp_path / "source_b.csv"
+    source_a.write_text(
+        "order_id,amount,status\n"
+        "o-1,100.00,paid\n"
+        "o-2,50.00,paid\n",
+        encoding="utf-8",
+    )
+    source_b.write_text(
+        "order_id,amount,status\n"
+        "o-1,125.50,paid\n"
+        "o-2,50.00,paid\n",
+        encoding="utf-8",
+    )
+
+    hallazgos = reconcile_csv_sources(
+        source_a,
+        source_b,
+        key_field="order_id",
+        entity_type="order",
+    )
+
+    assert len(hallazgos) == 1
+    hallazgo = hallazgos[0]
+    assert hallazgo.tipo == "mismatch_valor"
+    assert hallazgo.entidad_id == "o-1"
+    assert hallazgo.entidad_tipo == "order"
+    assert hallazgo.diferencia_cuantificada == 25.5
+    assert hallazgo.evidencia == {
+        "field": "amount",
+        "value_a": 100,
+        "value_b": 125.5,
+        "delta": 25.5,
+    }
+
+exec
+/bin/bash -lc 'git diff --stat && git diff -- app/core/reconciliation/models.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ app/core/reconciliation/models.py                  |  21 +-
+ factory/control/AUDIT_GATE.md                      |   7 +-
+ factory/control/FACTORY_STATUS.md                  |   8 +-
+ factory/control/PRIORITY_BOARD.md                  |   2 +-
+ .../evidence/core-reconciliacion-v1/commands.txt   |  43 +-
+ factory/evidence/core-reconciliacion-v1/cycle.md   |  42 +-
+ .../evidence/core-reconciliacion-v1/decision.txt   |  27 +-
+ .../evidence/core-reconciliacion-v1/git_diff.patch | 717 +++++++++++++++------
+ .../evidence/core-reconciliacion-v1/git_status.txt |  43 +-
+ factory/evidence/core-reconciliacion-v1/tests.txt  |  14 +-
+ .../core-reconciliacion-v1/verification.txt        |  40 +-
+ scripts/hermes_factory_runner.py                   |  10 +
+ 12 files changed, 671 insertions(+), 303 deletions(-)
+diff --git a/app/core/reconciliation/models.py b/app/core/reconciliation/models.py
+index c38cc55..56166ea 100644
+--- a/app/core/reconciliation/models.py
++++ b/app/core/reconciliation/models.py
+@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
+ from datetime import datetime, timezone
+ from typing import Any, Literal, TypeAlias
+ 
+-from pydantic import ConfigDict, RootModel
+-
+ ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
+ DifferenceType: TypeAlias = Literal["faltante_en_a", "faltante_en_b", "valor_distinto"]
+ MismatchDetail: TypeAlias = Literal["mismatch_numerico", "mismatch_no_numerico"]
+@@ -63,8 +61,23 @@ def _utc_now() -> datetime:
+     return datetime.now(timezone.utc)
+ 
+ 
+-class ReconciliationRow(RootModel[dict[str, ReconciliationFieldValue]]):
+-    model_config = ConfigDict(strict=True)
++@dataclass(frozen=True, slots=True)
++class ReconciliationRow:
++    root: dict[str, ReconciliationFieldValue]
++
++    @classmethod
++    def model_validate(cls, value: Any) -> "ReconciliationRow":
++        if not isinstance(value, dict):
++            raise ValueError("RECONCILIATION_ROW_INVALIDA: row debe ser dict.")
++
++        validated: dict[str, ReconciliationFieldValue] = {}
++        for field_name, field_value in value.items():
++            if not isinstance(field_name, str):
++                raise ValueError("RECONCILIATION_ROW_INVALIDA: headers deben ser texto.")
++            if field_value is not None and not isinstance(field_value, (str, int, float, bool)):
++                raise ValueError("RECONCILIATION_ROW_INVALIDA: valor no soportado.")
++            validated[field_name] = field_value
++        return cls(root=validated)
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+
+exec
+/bin/bash -lc "sed -n '430,530p' app/core/reconciliation/service.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+                    value_a=value_a,
+                    value_b=value_b,
+                    delta=delta,
+                    detail=detail,
+                )
+            )
+
+        if not key_has_mismatch:
+            matches.append(
+                ReconciledMatch(
+                    key=key,
+                    record_a=ReconciliationRow.model_validate(record_a),
+                    record_b=ReconciliationRow.model_validate(record_b),
+                )
+            )
+
+    missing_in_a = [ReconciliationRow.model_validate(indexed_b[key]) for key in missing_in_a_keys]
+    missing_in_b = [ReconciliationRow.model_validate(indexed_a[key]) for key in missing_in_b_keys]
+
+    return ReconciliationResult(
+        matches=matches,
+        mismatches=mismatches,
+        missing_in_a=missing_in_a,
+        missing_in_b=missing_in_b,
+    )
+
+
+def _read_csv_records(path: str | Path) -> list[dict[str, Any]]:
+    csv_path = Path(path)
+    if not csv_path.is_file():
+        raise ValueError(f"CSV_NO_EXISTE: no existe el archivo CSV: {csv_path}.")
+
+    with csv_path.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        if not reader.fieldnames:
+            raise ValueError(f"CSV_SIN_HEADERS: el CSV no tiene headers: {csv_path}.")
+        return [dict(row) for row in reader]
+
+
+def _coerce_csv_number(value: Any) -> int | float | None:
+    parsed, reason = _parse_amount_with_reason(value)
+    if reason is not None or parsed is None:
+        return None
+
+    decimal_value = Decimal(str(parsed))
+    if decimal_value == decimal_value.to_integral_value():
+        return int(decimal_value)
+    return float(decimal_value)
+
+
+def _resolve_numeric_fields(
+    source_a: list[dict[str, Any]],
+    source_b: list[dict[str, Any]],
+    key_field: str,
+    numeric_fields: tuple[str, ...] | None,
+) -> set[str]:
+    if numeric_fields is not None:
+        return set(numeric_fields)
+
+    field_names = set[str]()
+    for record in [*source_a, *source_b]:
+        field_names.update(record.keys())
+
+    resolved_fields: set[str] = set()
+    for field_name in sorted(field_names - {key_field}):
+        values = [
+            record[field_name]
+            for record in [*source_a, *source_b]
+            if field_name in record and record[field_name] not in {"", None}
+        ]
+        if values and all(_coerce_csv_number(value) is not None for value in values):
+            resolved_fields.add(field_name)
+    return resolved_fields
+
+
+def _normalize_csv_numeric_fields(
+    records: list[dict[str, Any]], numeric_fields: set[str]
+) -> list[dict[str, Any]]:
+    normalized_records: list[dict[str, Any]] = []
+    for record in records:
+        normalized = dict(record)
+        for field_name in numeric_fields:
+            if field_name not in normalized or normalized[field_name] in {"", None}:
+                continue
+            parsed_value = _coerce_csv_number(normalized[field_name])
+            if parsed_value is None:
+                raise ValueError(
+                    f"CSV_NUMERIC_FIELD_INVALIDO: '{field_name}' contiene valor no numerico."
+                )
+            normalized[field_name] = parsed_value
+        normalized_records.append(normalized)
+    return normalized_records
+
+
+def reconcile_csv_sources(
+    source_a_path: str | Path,
+    source_b_path: str | Path,
+    *,
+    key_field: str,
+    entity_type: str = "record",
+    numeric_fields: tuple[str, ...] | None = None,
+
+exec
+/bin/bash -lc "grep -R \"polars\" -n pyproject.toml requirements*.txt app tests 2>/dev/null | sed -n '1,80p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc '.venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc ".venv/bin/python - <<'PY'
+from pathlib import Path
+from app.core.reconciliation.service import reconcile_csv_sources
+from tempfile import TemporaryDirectory
+
+with TemporaryDirectory() as tmpdir:
+    a = Path(tmpdir) / 'a.csv'
+    b = Path(tmpdir) / 'b.csv'
+    a.write_text('order_id,amount,status\\no-1,100.00,paid\\no-2,50.00,paid\\n', encoding='utf-8')
+    b.write_text('order_id,amount,status\\no-1,125.50,paid\\no-2,50.00,paid\\n', encoding='utf-8')
+    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
+    for hallazgo in hallazgos:
+        print(hallazgo)
+PY" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
+
+exec
+/bin/bash -lc "sed -n '530,580p' app/core/reconciliation/service.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    numeric_fields: tuple[str, ...] | None = None,
+) -> list[Hallazgo]:
+    _validate_key_field(key_field)
+
+    raw_source_a = _read_csv_records(source_a_path)
+    raw_source_b = _read_csv_records(source_b_path)
+    resolved_numeric_fields = _resolve_numeric_fields(
+        raw_source_a,
+        raw_source_b,
+        key_field,
+        numeric_fields,
+    )
+
+    source_a = _normalize_csv_numeric_fields(raw_source_a, resolved_numeric_fields)
+    source_b = _normalize_csv_numeric_fields(raw_source_b, resolved_numeric_fields)
+    result = reconcile_records(source_a, source_b, key_field)
+    return HallazgoEngine().transform(result, entidad_tipo=entity_type)
+
+
+def _read_numeric_field(record: dict[str, Any], field_name: str, key: str) -> float:
+    if field_name not in record:
+        raise ValueError(f"CAMPO_FALTANTE: falta '{field_name}' en registro key={key}.")
+    value = record[field_name]
+    if value is None:
+        raise ValueError(f"CAMPO_NULO: '{field_name}' es nulo en registro key={key}.")
+    if not _is_number(value):
+        raise ValueError(
+            f"CAMPO_NO_NUMERICO: '{field_name}' debe ser numerico en registro key={key}."
+        )
+    return float(value)
+
+
+def _parse_amount_with_reason(value: Any) -> tuple[float | None, str | None]:
+    if _is_number(value):
+        return float(value), None
+    if not isinstance(value, str):
+        return None, "non_numeric"
+
+    normalized = value.strip().replace(" ", "")
+    for symbol in ("$", "€", "£", "¥"):
+        normalized = normalized.replace(symbol, "")
+
+    if not normalized:
+        return None, "non_numeric"
+    if any(char.isalpha() for char in normalized):
+        return None, "non_numeric"
+    if "," in normalized and "." in normalized:
+        return None, "currency_ambiguous"
+    if normalized.count(".") > 1:
+        return None, "currency_ambiguous"
+
+
+exec
+/bin/bash -lc "grep -R \"def reconcile_csv_sources\\|def reconcile_records\\|class ReconciliationRow\\|class SimpleReconciliation\" -n app/core/reconciliation tests/core/test_reconciliation_csv.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/reconciliation/models.py:65:class ReconciliationRow:
+app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
+app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
+app/core/reconciliation/service.py:388:def reconcile_records(
+app/core/reconciliation/service.py:524:def reconcile_csv_sources(
+
+exec
+/bin/bash -lc 'git diff -- app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py app/core/reconciliation/__init__.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git diff --name-only' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/reconciliation/models.py
+factory/control/AUDIT_GATE.md
+factory/control/FACTORY_STATUS.md
+factory/control/PRIORITY_BOARD.md
+factory/evidence/core-reconciliacion-v1/commands.txt
+factory/evidence/core-reconciliacion-v1/cycle.md
+factory/evidence/core-reconciliacion-v1/decision.txt
+factory/evidence/core-reconciliacion-v1/git_diff.patch
+factory/evidence/core-reconciliacion-v1/git_status.txt
+factory/evidence/core-reconciliacion-v1/tests.txt
+factory/evidence/core-reconciliacion-v1/verification.txt
+scripts/hermes_factory_runner.py
+
+exec
+/bin/bash -lc 'date -u +%Y%m%dT%H%M%SZ' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+20260427T212729Z
+
+codex
+Voy a añadir un archivo de evidencia nuevo y acotado para esta validación, sin tocar los archivos de control que ya estaban modificados. El código productivo no requiere otro cambio: el motor CSV ya está presente en `service.py`; el diff activo que afecta ejecución elimina una dependencia no declarada de `models.py`.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dad0cdb46005df93d1ae6f0be97f1e7d1105f546
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records:
++app/core/reconciliation/service.py:524:def reconcile_csv_sources:
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dad0cdb46005df93d1ae6f0be97f1e7d1105f546
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records:
++app/core/reconciliation/service.py:524:def reconcile_csv_sources:
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+exec
+/bin/bash -lc 'test -f factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md && ls -la factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 3820 Apr 27 21:27 factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Codex validation core-reconciliacion-v1 20260427T212729Z
+
+## PLAN
+- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
+- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
+- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
+- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
+- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
+
+## VERIFY
+```text
+$ pwd
+/opt/smartpyme-factory/repos/SmartPyme
+
+$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
+-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
+
+$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
+-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
+
+$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
+-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
+```
+
+## INSPECT
+```text
+$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
+app/core/reconciliation/models.py:65:class ReconciliationRow:
+app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
+app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
+app/core/reconciliation/service.py:388:def reconcile_records:
+app/core/reconciliation/service.py:524:def reconcile_csv_sources:
+```
+
+## RUN
+```text
+$ python3 - <<'PY'
+try:
+ import polars
+ print('polars_available', polars.__version__)
+except Exception as exc:
+ print('polars_unavailable', type(exc).__name__, str(exc))
+PY
+polars_unavailable ModuleNotFoundError No module named 'polars'
+
+$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
+........................................................................ [ 90%]
+........                                                                 [100%]
+
+$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
+<sin salida; exit code 0>
+
+$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
+/bin/bash: line 1: ruff: command not found
+
+$ test -x .venv/bin/ruff; echo ruff_exit=$?
+ruff_exit=1
+```
+
+## MANUAL RECONCILIATION CHECK
+```text
+$ .venv/bin/python - <<'PY'
+from pathlib import Path
+from app.core.reconciliation.service import reconcile_csv_sources
+from tempfile import TemporaryDirectory
+
+with TemporaryDirectory() as tmpdir:
+    a = Path(tmpdir) / 'a.csv'
+    b = Path(tmpdir) / 'b.csv'
+    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
+    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
+    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
+    for hallazgo in hallazgos:
+        print(hallazgo)
+PY
+Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
+```
+
+## DECISION
+INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M app/core/reconciliation/models.py
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M factory/control/PRIORITY_BOARD.md
+ M factory/evidence/core-reconciliacion-v1/commands.txt
+ M factory/evidence/core-reconciliacion-v1/cycle.md
+ M factory/evidence/core-reconciliacion-v1/decision.txt
+ M factory/evidence/core-reconciliacion-v1/git_diff.patch
+ M factory/evidence/core-reconciliacion-v1/git_status.txt
+ M factory/evidence/core-reconciliacion-v1/tests.txt
+ M factory/evidence/core-reconciliacion-v1/verification.txt
+ M scripts/hermes_factory_runner.py
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T195847Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T200558Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T201350Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T202220Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203042Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T203845Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T205454Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T210303Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211125Z/
+?? factory/evidence/codex_core_reconciliacion_v1_20260427T211936Z/
+?? factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+?? factory/evidence/core-reconciliacion-v1/compileall.txt
+?? factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+?? factory/evidence/core-reconciliacion-v1/git_status_final.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_models.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+?? factory/evidence/core-reconciliacion-v1/inspect_test.txt
+?? factory/evidence/core-reconciliacion-v1/ls_files.txt
+?? factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+?? factory/evidence/core-reconciliacion-v1/polars.txt
+?? factory/evidence/core-reconciliacion-v1/pwd.txt
+?? factory/evidence/core-reconciliacion-v1/py_compile.txt
+?? factory/evidence/core-reconciliacion-v1/ruff.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_models.txt
+?? factory/evidence/core-reconciliacion-v1/test_file_service.txt
+?? factory/evidence/core-reconciliacion-v1/tests_related.txt
+
+exec
+/bin/bash -lc 'git diff --stat' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ app/core/reconciliation/models.py                  |  21 +-
+ factory/control/AUDIT_GATE.md                      |   7 +-
+ factory/control/FACTORY_STATUS.md                  |   8 +-
+ factory/control/PRIORITY_BOARD.md                  |   2 +-
+ .../evidence/core-reconciliacion-v1/commands.txt   |  43 +-
+ factory/evidence/core-reconciliacion-v1/cycle.md   |  42 +-
+ .../evidence/core-reconciliacion-v1/decision.txt   |  27 +-
+ .../evidence/core-reconciliacion-v1/git_diff.patch | 717 +++++++++++++++------
+ .../evidence/core-reconciliacion-v1/git_status.txt |  43 +-
+ factory/evidence/core-reconciliacion-v1/tests.txt  |  14 +-
+ .../core-reconciliacion-v1/verification.txt        |  40 +-
+ scripts/hermes_factory_runner.py                   |  10 +
+ 12 files changed, 671 insertions(+), 303 deletions(-)
+
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dad0cdb46005df93d1ae6f0be97f1e7d1105f546
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records:
++app/core/reconciliation/service.py:524:def reconcile_csv_sources:
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+exec
+/bin/bash -lc "grep -R \"def reconcile_csv_sources\\|def reconcile_records\\|class ReconciliationRow\\|class SimpleReconciliation\" -n app/core/reconciliation tests/core/test_reconciliation_csv.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+app/core/reconciliation/models.py:65:class ReconciliationRow:
+app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
+app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
+app/core/reconciliation/service.py:388:def reconcile_records(
+app/core/reconciliation/service.py:524:def reconcile_csv_sources(
+
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dad0cdb46005df93d1ae6f0be97f1e7d1105f546
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records:
++app/core/reconciliation/service.py:524:def reconcile_csv_sources:
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..777dcfde949a09e8c6a7855e44bdae42121b35ef
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records(
++app/core/reconciliation/service.py:524:def reconcile_csv_sources(
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..777dcfde949a09e8c6a7855e44bdae42121b35ef
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records(
++app/core/reconciliation/service.py:524:def reconcile_csv_sources(
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+codex
+VEREDICTO  
+BLOCKED por lint: la validación funcional pasa, pero `ruff` no está instalado ni en PATH ni en `.venv`, así que no puedo declarar cierre `CORRECTO`.
+
+ARCHIVOS_MODIFICADOS  
+- [app/core/reconciliation/models.py](/opt/smartpyme-factory/repos/SmartPyme/app/core/reconciliation/models.py:65): diff activo reemplaza dependencia `pydantic` por `dataclass` local para `ReconciliationRow`.
+- [codex_validation_20260427T212729Z.md](/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md:1): evidencia nueva de esta validación.
+
+VERIFICACION_FISICA  
+- `pwd` confirmó `/opt/smartpyme-factory/repos/SmartPyme`.
+- `test -f && ls -la` confirmado para:
+  - `app/core/reconciliation/models.py`
+  - `app/core/reconciliation/service.py`
+  - `tests/core/test_reconciliation_csv.py`
+  - evidencia nueva.
+
+TESTS  
+- `.venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q` pasó: `80 passed`.
+- `.venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q` pasó.
+- `ruff check ...` falló por entorno: `/bin/bash: ruff: command not found`.
+- `.venv/bin/ruff` no existe.
+
+EVIDENCIA  
+- [codex_validation_20260427T212729Z.md](/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md:1)
+- Validación manual generó `Hallazgo(tipo='mismatch_valor', entidad_id='o-1', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5})`.
+- `polars` no está disponible: se usó lectura CSV estándar existente.
+
+DIFF  
+- Diff productivo activo: `app/core/reconciliation/models.py` elimina import no declarado de `pydantic` y mantiene `ReconciliationRow.model_validate()` como implementación determinística local.
+- El motor `reconcile_csv_sources()` ya está presente en `app/core/reconciliation/service.py` y validado por tests.
+
+BLOQUEOS  
+- `ruff` no disponible global ni en `.venv`; no se puede cerrar como `CORRECTO`.
+
+RIESGOS  
+- El worktree ya tenía cambios no relacionados en `factory/control/*`, `scripts/hermes_factory_runner.py` y evidencia previa. No los revertí ni los mezclé.
+diff --git a/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..777dcfde949a09e8c6a7855e44bdae42121b35ef
+--- /dev/null
++++ b/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+@@ -0,0 +1,80 @@
++# Codex validation core-reconciliacion-v1 20260427T212729Z
++
++## PLAN
++- objetivo: validar una unidad pequena del motor de reconciliacion entre dos CSV con salida tipo hallazgo.
++- archivos permitidos: app/core/reconciliation/models.py, app/core/reconciliation/service.py, tests/core/test_reconciliation_csv.py, factory/evidence/core-reconciliacion-v1/.
++- archivos prohibidos: cambios de arquitectura, controles factory no relacionados, refactor global.
++- criterio de cierre: detectar diferencia numerica y devolver Hallazgo estructurado con entidad y delta cuantificado.
++- tests esperados: tests/core/test_reconciliation_csv.py y tests relacionados de reconciliation.
++
++## VERIFY
++```text
++$ pwd
++/opt/smartpyme-factory/repos/SmartPyme
++
++$ test -f app/core/reconciliation/models.py && ls -la app/core/reconciliation/models.py
++-rw-r--r-- 1 neoalmasana neoalmasana 8478 Apr 27 19:56 app/core/reconciliation/models.py
++
++$ test -f app/core/reconciliation/service.py && ls -la app/core/reconciliation/service.py
++-rw-r--r-- 1 neoalmasana neoalmasana 60132 Apr 27 19:47 app/core/reconciliation/service.py
++
++$ test -f tests/core/test_reconciliation_csv.py && ls -la tests/core/test_reconciliation_csv.py
++-rw-r--r-- 1 neoalmasana neoalmasana 1150 Apr 27 19:21 tests/core/test_reconciliation_csv.py
++```
++
++## INSPECT
++```text
++$ grep -R "def reconcile_csv_sources\|def reconcile_records\|class ReconciliationRow\|class SimpleReconciliation" -n app/core/reconciliation tests/core/test_reconciliation_csv.py
++app/core/reconciliation/models.py:65:class ReconciliationRow:
++app/core/reconciliation/models.py:285:class SimpleReconciliationFinding:
++app/core/reconciliation/models.py:292:class SimpleReconciliationResult:
++app/core/reconciliation/service.py:388:def reconcile_records(
++app/core/reconciliation/service.py:524:def reconcile_csv_sources(
++```
++
++## RUN
++```text
++$ python3 - <<'PY'
++try:
++ import polars
++ print('polars_available', polars.__version__)
++except Exception as exc:
++ print('polars_unavailable', type(exc).__name__, str(exc))
++PY
++polars_unavailable ModuleNotFoundError No module named 'polars'
++
++$ .venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q
++........................................................................ [ 90%]
++........                                                                 [100%]
++
++$ .venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q
++<sin salida; exit code 0>
++
++$ ruff check app/core/reconciliation/models.py app/core/reconciliation/service.py tests/core/test_reconciliation_csv.py
++/bin/bash: line 1: ruff: command not found
++
++$ test -x .venv/bin/ruff; echo ruff_exit=$?
++ruff_exit=1
++```
++
++## MANUAL RECONCILIATION CHECK
++```text
++$ .venv/bin/python - <<'PY'
++from pathlib import Path
++from app.core.reconciliation.service import reconcile_csv_sources
++from tempfile import TemporaryDirectory
++
++with TemporaryDirectory() as tmpdir:
++    a = Path(tmpdir) / 'a.csv'
++    b = Path(tmpdir) / 'b.csv'
++    a.write_text('order_id,amount,status\no-1,100.00,paid\no-2,50.00,paid\n', encoding='utf-8')
++    b.write_text('order_id,amount,status\no-1,125.50,paid\no-2,50.00,paid\n', encoding='utf-8')
++    hallazgos = reconcile_csv_sources(a, b, key_field='order_id', entity_type='order')
++    for hallazgo in hallazgos:
++        print(hallazgo)
++PY
++Hallazgo(id='cc06007061f00b4196053c6e1b515f497f329331ffae175eececb0d5d932aaa4', tipo='mismatch_valor', severidad='warning', entidad_id='o-1', entidad_tipo='order', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}, dedupe_key='mismatch:o-1:amount', status='pending')
++```
++
++## DECISION
++INCOMPLETO: pytest y verificacion manual pasan, pero Ruff queda bloqueado porque no esta instalado en PATH ni en .venv.
+
+2026-04-27T21:28:32.613292Z ERROR codex_core::session: failed to record rollout items: thread 019dd0d5-95df-7563-b33a-da543f768210 not found
+tokens used
+69,328
+VEREDICTO  
+BLOCKED por lint: la validación funcional pasa, pero `ruff` no está instalado ni en PATH ni en `.venv`, así que no puedo declarar cierre `CORRECTO`.
+
+ARCHIVOS_MODIFICADOS  
+- [app/core/reconciliation/models.py](/opt/smartpyme-factory/repos/SmartPyme/app/core/reconciliation/models.py:65): diff activo reemplaza dependencia `pydantic` por `dataclass` local para `ReconciliationRow`.
+- [codex_validation_20260427T212729Z.md](/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md:1): evidencia nueva de esta validación.
+
+VERIFICACION_FISICA  
+- `pwd` confirmó `/opt/smartpyme-factory/repos/SmartPyme`.
+- `test -f && ls -la` confirmado para:
+  - `app/core/reconciliation/models.py`
+  - `app/core/reconciliation/service.py`
+  - `tests/core/test_reconciliation_csv.py`
+  - evidencia nueva.
+
+TESTS  
+- `.venv/bin/pytest tests/core/test_reconciliation_csv.py tests/core/test_reconciliation.py tests/core/test_reconciliation_service.py -q` pasó: `80 passed`.
+- `.venv/bin/python -m compileall app/core/reconciliation tests/core/test_reconciliation_csv.py -q` pasó.
+- `ruff check ...` falló por entorno: `/bin/bash: ruff: command not found`.
+- `.venv/bin/ruff` no existe.
+
+EVIDENCIA  
+- [codex_validation_20260427T212729Z.md](/opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md:1)
+- Validación manual generó `Hallazgo(tipo='mismatch_valor', entidad_id='o-1', diferencia_cuantificada=25.5, evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5})`.
+- `polars` no está disponible: se usó lectura CSV estándar existente.
+
+DIFF  
+- Diff productivo activo: `app/core/reconciliation/models.py` elimina import no declarado de `pydantic` y mantiene `ReconciliationRow.model_validate()` como implementación determinística local.
+- El motor `reconcile_csv_sources()` ya está presente en `app/core/reconciliation/service.py` y validado por tests.
+
+BLOQUEOS  
+- `ruff` no disponible global ni en `.venv`; no se puede cerrar como `CORRECTO`.
+
+RIESGOS  
+- El worktree ya tenía cambios no relacionados en `factory/control/*`, `scripts/hermes_factory_runner.py` y evidencia previa. No los revertí ni los mezclé.

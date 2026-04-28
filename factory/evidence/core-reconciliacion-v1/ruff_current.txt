@@ -1,0 +1,1 @@
+/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff

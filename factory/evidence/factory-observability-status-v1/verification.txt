@@ -1,0 +1,24 @@
+pwd:
+/opt/smartpyme-factory/repos/SmartPyme
+
+factory_status_exists:
+factory_status_exists=0
+-rw-r--r-- 1 neoalmasana neoalmasana 269 Apr 27 22:22 factory/control/FACTORY_STATUS.md
+
+evidence_exists:
+cycle_exists=0
+factory/evidence/factory-observability-status-v1/cycle.md
+factory/evidence/factory-observability-status-v1/commands.txt
+factory/evidence/factory-observability-status-v1/tests.txt
+factory/evidence/factory-observability-status-v1/decision.txt
+
+inspected_status:
+# FACTORY STATUS
+
+updated_at: 2026-04-27T22:21:50Z
+last_cycle_result: RUNNING
+audit_gate: RUNNING
+last_error: cycle started
+observability_cycle_id: factory-observability-status-v1
+observability_cycle_status: UPDATED
+observability_cycle_updated_at: 2026-04-27T22:21:50Z

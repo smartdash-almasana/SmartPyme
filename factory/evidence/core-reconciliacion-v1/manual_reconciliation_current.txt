@@ -1,0 +1,6 @@
+hallazgos_count=1
+tipo=mismatch_valor
+entidad_id=o-1
+entidad_tipo=order
+diferencia_cuantificada=25.5
+evidencia={'field': 'amount', 'value_a': 100, 'value_b': 125.5, 'delta': 25.5}
