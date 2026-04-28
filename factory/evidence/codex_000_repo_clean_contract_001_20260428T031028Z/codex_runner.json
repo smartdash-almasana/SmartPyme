@@ -1,0 +1,11 @@
+{
+  "task_path": "factory/ai_governance/tasks/000_repo_clean_contract_001.yaml",
+  "returncode": 0,
+  "command": [
+    "/usr/bin/codex",
+    "exec",
+    "--full-auto",
+    "<prompt>"
+  ],
+  "created_at": "2026-04-28T03:10:28.040247+00:00"
+}

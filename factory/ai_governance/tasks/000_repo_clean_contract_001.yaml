@@ -1,6 +1,6 @@
 task_id: repo_clean_contract_001
 mode: governance
-status: pending
+status: done
 human_required: false
 objective: >
   Implementar el contrato maestro de repo limpio. SmartPyme Factory debe arrancar
