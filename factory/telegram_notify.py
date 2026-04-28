@@ -27,10 +27,13 @@ def format_cycle_message(status: str, details: str = "") -> str:
         )
     elif status_key == "AUDIT_BLOCKED":
         text = (
-            "SmartPyme Factory esta pausada esperando tu revision.\n\n"
-            "El sistema quiso iniciar un nuevo ciclo, pero se detuvo correctamente porque falta una decision humana sobre el ciclo anterior.\n\n"
-            "No se ejecuto ninguna tarea, no corrio Codex y no se tocaron archivos.\n\n"
-            "Decision pendiente: aprobar, rechazar o mantener pausado."
+            "SmartPyme Factory esta pausada.\n\n"
+            "No arranco una nueva tarea porque antes falta decidir que hacer con el ultimo ciclo cerrado.\n\n"
+            "Tenes tres opciones claras:\n"
+            "1. Aprobar: el ultimo ciclo queda aceptado y la factoria puede seguir con la proxima tarea.\n"
+            "2. Rechazar: la ultima tarea se reabre para corregirla.\n"
+            "3. Mantener pausado: no se ejecuta nada hasta revisar mas evidencia.\n\n"
+            "Estado seguro: no se ejecuto ninguna tarea nueva, no corrio Codex y no se tocaron archivos."
         )
     elif status_key == "TASK_DISPATCH":
         text = (
@@ -45,17 +48,17 @@ def format_cycle_message(status: str, details: str = "") -> str:
     elif status_key == "CYCLE_OK":
         text = (
             "SmartPyme Factory cerro el ciclo correctamente.\n\n"
-            "El sistema queda pausado hasta que revises y decidas el proximo paso."
+            "Ahora tenes que decidir si ese ciclo queda aprobado, si debe corregirse o si preferis mantener la factoria pausada para revisar mas evidencia."
         )
     elif status_key == "CYCLE_FAIL":
         text = (
             "SmartPyme Factory encontro un problema durante el ciclo.\n\n"
-            "No conviene aprobar nada hasta revisar la evidencia."
+            "La decision recomendada es mantener pausado o rechazar el ciclo hasta revisar la evidencia."
         )
     elif status_key == "AUTO_PUSH_OK":
         text = (
             "SmartPyme Factory guardo los cambios en el repo.\n\n"
-            "Hay un nuevo commit disponible para revisar."
+            "Hay un nuevo commit disponible para revisar antes de aprobar el siguiente ciclo."
         )
     elif status_key == "NO_TASK":
         text = (
@@ -65,7 +68,7 @@ def format_cycle_message(status: str, details: str = "") -> str:
     else:
         text = (
             "SmartPyme Factory envio una actualizacion.\n\n"
-            "Conviene revisar el contexto reservado antes de decidir."
+            "La parte reservada a GPT contiene el detalle tecnico para interpretar el evento."
         )
 
     return text + _reserved_for_gpt(status_key, details)
