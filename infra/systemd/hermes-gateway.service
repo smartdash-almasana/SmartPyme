@@ -1,0 +1,21 @@
+[Unit]
+Description=Hermes Gateway — SmartPyme Factory v2.1
+After=network.target
+
+[Service]
+Type=simple
+User=neoalmasana
+Group=neoalmasana
+WorkingDirectory=/home/neoalmasana/.hermes/hermes-agent
+Environment="SMARTPYME_ENV=production"
+EnvironmentFile=/home/neoalmasana/.hermes/.env
+ExecStart=/home/neoalmasana/.hermes/venv/bin/hermes gateway start --config /home/neoalmasana/.hermes/config.yaml
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/neoalmasana/smartpyme-factory/repos/SmartPyme /home/neoalmasana/.hermes
+
+[Install]
+WantedBy=multi-user.target

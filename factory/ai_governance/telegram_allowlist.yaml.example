@@ -1,0 +1,8 @@
+owner:
+  user_id: 0
+  role: owner
+  enabled: true
+
+moderators: []
+
+auditors: []

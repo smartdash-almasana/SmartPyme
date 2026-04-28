@@ -1,0 +1,28 @@
+hermes:
+  gateway:
+    name: "smartpyme_factory_gateway"
+    version: "2.1.0"
+    runtime_mode: "$SMARTPYME_ENV"
+
+  telegram:
+    enabled: true
+    bot_token: "$TELEGRAM_BOT_TOKEN"
+    allowed_chat_ids:
+      - "$TELEGRAM_OWNER_CHAT_ID"
+    parse_mode: "MarkdownV2"
+
+  skills:
+    search_paths:
+      - "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills"
+
+  mcp:
+    servers:
+      smartpyme:
+        transport: "stdio"
+        command: "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/.venv/bin/python"
+        args:
+          - "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/mcp_smartpyme_bridge.py"
+        env:
+          SMARTPYME_REPO: "/home/neoalmasana/smartpyme-factory/repos/SmartPyme"
+        timeout_seconds: 30
+        restart_on_crash: true
