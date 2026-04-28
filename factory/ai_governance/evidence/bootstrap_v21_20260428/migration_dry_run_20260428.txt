@@ -1,0 +1,26 @@
+Found 21 TaskSpec files.
+base_commit=b0da6cd9c3c34267306227c89a00540cd1932176
+  ✓ 0000_hermes_avanzar_dispatch_real_001.yaml -> TASK-2026-04-28-001
+  ✓ 0000_hermes_professional_reset_001.yaml -> TASK-2026-04-28-002
+  ✓ 0000_incident_hermes_breakdown_001.yaml -> TASK-2026-04-28-003
+  ✓ 0000_legacy_isolation_001.yaml -> TASK-2026-04-28-004
+  ✓ 0000_telegram_control_idempotency_001.yaml -> TASK-2026-04-28-005
+  ✓ 000_environment_contract_python_001.yaml -> TASK-2026-04-28-006
+  ✓ 000_repo_clean_contract_001.yaml -> TASK-2026-04-28-007
+  ✓ audit_context_bundle_001.yaml -> TASK-2026-04-28-008
+  ✓ core_reconciliacion_v1.yaml -> TASK-2026-04-28-009
+  ✓ factory_contract_alignment_001.yaml -> TASK-2026-04-28-010
+  ✓ factory_observability_status_v1.yaml -> TASK-2026-04-28-011
+  ✓ gpt_director_auditor_bootstrap_001.yaml -> TASK-2026-04-28-012
+  ✓ hermes_comandos_telegram_001.yaml -> TASK-2026-04-28-013
+  ✓ kernel_total_audit_001.yaml -> TASK-2026-04-28-014
+  ✓ product_final_concept_audit_001.yaml -> TASK-2026-04-28-015
+  ✓ source_of_truth_001.yaml -> TASK-2026-04-28-016
+  ✓ task_loop_001.yaml -> TASK-2026-04-28-017
+  ✓ task_priority_hardening_001.yaml -> TASK-2026-04-28-018
+  ✓ telegram_cycle_closed_notify_v1.yaml -> TASK-2026-04-28-019
+  ✓ telegram_delivery_setup_v1.yaml -> TASK-2026-04-28-020
+  ✓ telegram_human_notifications_001.yaml -> TASK-2026-04-28-021
+
+Summary: 21 valid, 0 errors
+This was a dry run. Use --execute to apply changes.
