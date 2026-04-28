@@ -1,0 +1,66 @@
+taskspec_version: "2.0.0"
+task_id: "TASK-2026-04-28-901"
+title: "Auditoría documental cruzada SmartPyme Factory"
+created_at: "2026-04-28T21:00:00+00:00"
+created_by: "gpt_director"
+priority: "P0"
+cliente_id: "smartpyme-core"
+runtime:
+  target_skill: "factory_auditor"
+  target_agent: "gemini"
+  max_retries: 1
+  timeout_minutes: 60
+context:
+  repo_ref: "main"
+  base_commit: "8215726467861877980dd2aa3ed73d90a80d3948"
+  canonical_docs:
+    - ".orquestador/JAULA_OPERATIVA.md"
+    - ".orquestador/ESTADO_ACTUAL.md"
+    - "docs/factory/RUNTIME_VIGENTE.md"
+    - "docs/HERMES_MCP_RUNTIME.md"
+    - "docs/factory/MCP_TOOLS_CONTRACT.md"
+    - "docs/factory/TELEGRAM_WEBHOOK_CONTRACT.md"
+    - "factory/ai_governance/contracts/verdict_enum.yaml"
+    - "factory/ai_governance/schemas/taskspec.schema.json"
+    - "prompts/gemini_documental_auditor_prompt.md"
+scope:
+  allowed_files:
+    - ".orquestador/AUDITORIA_DOCUMENTAL_CRUZADA.md"
+    - "prompts/gemini_documental_auditor_prompt.md"
+    - "factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md"
+  forbidden_files:
+    - "mcp_smartpyme_bridge.py"
+    - "factory/config/telegram.local.env"
+    - "factory/install_hermes_telegram_control.py"
+    - "app/**"
+    - "core/**"
+    - "services/**"
+    - "infra/systemd/**"
+commands:
+  preflight:
+    - command: "test -f .orquestador/JAULA_OPERATIVA.md"
+      description: "Existe jaula operativa"
+      expected_exit_code: 0
+    - command: "test -f prompts/gemini_documental_auditor_prompt.md"
+      description: "Existe prompt de auditoría Gemini"
+      expected_exit_code: 0
+  post:
+    - command: "test -f factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md"
+      description: "Gemini produjo informe de auditoría"
+      expected_exit_code: 0
+acceptance_criteria:
+  - description: "Gemini entrega matriz de contradicciones con archivo y fragmento concreto"
+    verification_command: "grep -n 'MATRIZ DE CONTRADICCIONES' factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md"
+    expected_output_pattern: "MATRIZ DE CONTRADICCIONES"
+    required_files:
+      - "factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md"
+  - description: "El informe decide explícitamente si se puede ejecutar dry_run"
+    verification_command: "grep -E 'APROBADO_PARA_DRY_RUN|BLOQUEADO_' factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md"
+    expected_output_pattern: "APROBADO_PARA_DRY_RUN|BLOQUEADO_"
+    required_files: []
+gate:
+  required_audit: true
+  auto_merge: false
+status: "PENDING"
+retry_count: 0
+evidence_path: "factory/ai_governance/evidence/documental_cross_audit_20260428"
