@@ -22,53 +22,60 @@ def format_cycle_message(status: str, details: str = "") -> str:
     if status_key == "CYCLE_START":
         text = (
             "SmartPyme Factory esta activa.\n\n"
-            "Estoy revisando si corresponde iniciar una nueva tarea. "
-            "Por ahora no se modifico codigo ni se envio trabajo al constructor."
+            "Estoy revisando si hay una tarea autorizada para trabajar. "
+            "Esto es solo una comprobacion automatica: todavia no se modifico codigo."
         )
     elif status_key == "AUDIT_BLOCKED":
         text = (
-            "SmartPyme Factory esta pausada.\n\n"
-            "No arranco una nueva tarea porque antes falta decidir que hacer con el ultimo ciclo cerrado.\n\n"
-            "Tenes tres opciones claras:\n"
-            "1. Aprobar: el ultimo ciclo queda aceptado y la factoria puede seguir con la proxima tarea.\n"
-            "2. Rechazar: la ultima tarea se reabre para corregirla.\n"
-            "3. Mantener pausado: no se ejecuta nada hasta revisar mas evidencia.\n\n"
+            "SmartPyme Factory esta pausada y necesita una orden tuya.\n\n"
+            "No tengo suficiente informacion en este aviso para decirte si conviene aprobar o rechazar. "
+            "Este mensaje solo confirma que la factoria esta detenida de forma segura.\n\n"
+            "Responde una de estas opciones:\n"
+            "APROBAR: si ya revisaste el ultimo ciclo y queres que siga con la proxima tarea.\n"
+            "RECHAZAR: si el ultimo ciclo estuvo mal y queres que se corrija.\n"
+            "PAUSAR: si queres que no haga nada por ahora.\n"
+            "CONTEXTO: si queres recibir un resumen tecnico para pasarselo a GPT antes de decidir.\n\n"
+            "Recomendacion si no estas seguro: responde CONTEXTO.\n\n"
             "Estado seguro: no se ejecuto ninguna tarea nueva, no corrio Codex y no se tocaron archivos."
         )
     elif status_key == "TASK_DISPATCH":
         text = (
-            "SmartPyme Factory empezo a trabajar en una tarea aprobada.\n\n"
-            "El constructor recibio una tarea con alcance limitado."
+            "SmartPyme Factory empezo una tarea aprobada.\n\n"
+            "No tenes que responder ahora. Espera el resultado del ciclo."
         )
     elif status_key == "TASK_DONE":
         text = (
             "SmartPyme Factory termino una tarea.\n\n"
-            "Ahora conviene revisar la evidencia antes de permitir otro ciclo."
+            "Ahora espera el cierre del ciclo y la evidencia antes de decidir."
         )
     elif status_key == "CYCLE_OK":
         text = (
-            "SmartPyme Factory cerro el ciclo correctamente.\n\n"
-            "Ahora tenes que decidir si ese ciclo queda aprobado, si debe corregirse o si preferis mantener la factoria pausada para revisar mas evidencia."
+            "SmartPyme Factory termino el ciclo sin errores.\n\n"
+            "Ahora responde una de estas opciones:\n"
+            "APROBAR: aceptar el ciclo y permitir que siga.\n"
+            "RECHAZAR: reabrir la ultima tarea para corregirla.\n"
+            "PAUSAR: dejar la factoria detenida.\n"
+            "CONTEXTO: pedir resumen tecnico para revisar con GPT."
         )
     elif status_key == "CYCLE_FAIL":
         text = (
             "SmartPyme Factory encontro un problema durante el ciclo.\n\n"
-            "La decision recomendada es mantener pausado o rechazar el ciclo hasta revisar la evidencia."
+            "Respuesta recomendada: CONTEXTO o PAUSAR. No aprobar sin revisar evidencia."
         )
     elif status_key == "AUTO_PUSH_OK":
         text = (
-            "SmartPyme Factory guardo los cambios en el repo.\n\n"
-            "Hay un nuevo commit disponible para revisar antes de aprobar el siguiente ciclo."
+            "SmartPyme Factory guardo cambios en el repo.\n\n"
+            "Hay un nuevo commit para revisar. Si no sabes si aprobar, responde CONTEXTO."
         )
     elif status_key == "NO_TASK":
         text = (
             "SmartPyme Factory no encontro tareas pendientes.\n\n"
-            "El sistema esta activo, pero no tiene trabajo listo para ejecutar."
+            "No tenes que responder nada salvo que quieras cargar una nueva tarea."
         )
     else:
         text = (
             "SmartPyme Factory envio una actualizacion.\n\n"
-            "La parte reservada a GPT contiene el detalle tecnico para interpretar el evento."
+            "Si no sabes que decidir, responde CONTEXTO y pasa ese resumen a GPT."
         )
 
     return text + _reserved_for_gpt(status_key, details)
