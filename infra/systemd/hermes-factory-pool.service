@@ -1,15 +1,15 @@
+# DEPRECATED por auditoría P0 — no usar runner legacy.
+# Este service fue reemplazado por Hermes Gateway externo.
+# No habilitar. No ejecutar. No usar scripts/hermes_factory_runner.py.
+# Ver docs/factory/RUNTIME_VIGENTE.md.
+
 [Unit]
-Description=Hermes SmartPyme Factory Pool
-After=network.target
+Description=Hermes Factory Pool (DEPRECATED — DO NOT ENABLE)
+ConditionPathExists=/nonexistent/smartpyme-legacy-hermes-factory-pool-disabled
 
 [Service]
-Type=simple
-User=neoalmasana
-WorkingDirectory=/opt/smartpyme-factory/repos/SmartPyme
-Environment=HERMES_BIN=/opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes
-ExecStart=/usr/bin/python3 /opt/smartpyme-factory/repos/SmartPyme/scripts/hermes_factory_runner.py --repo /opt/smartpyme-factory/repos/SmartPyme --loop
-Restart=always
-RestartSec=10
+Type=oneshot
+ExecStart=/bin/false
 
 [Install]
 WantedBy=multi-user.target
