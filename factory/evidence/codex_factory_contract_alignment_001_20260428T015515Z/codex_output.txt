@@ -1,0 +1,2622 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd1ca-33b6-7ee3-b4d7-3d5683d7102c
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: factory_contract_alignment_001
+mode: governance_doc_update
+status: pending
+human_required: false
+objective: >
+  Alinear la documentacion y las specs de la factoria con el runner real
+  scripts/hermes_factory_runner.py. La cola activa actual es
+  factory/ai_governance/tasks/*.yaml.
+
+runtime_real:
+  runner: scripts/hermes_factory_runner.py
+  active_queue: factory/ai_governance/tasks/*.yaml
+  gate_file: factory/control/AUDIT_GATE.md
+  status_file: factory/control/FACTORY_STATUS.md
+
+scope:
+  tipo: documentacion_gobernanza
+  descripcion: >
+    Corregir specs/docs que indiquen otro contrato de entrada como runtime activo.
+    No modificar codigo Python ni mover tareas reales.
+
+allowed_files:
+  - factory/ai_governance/tasks/task_loop_001.yaml
+  - docs/SMARTPYME_OS_ACTUAL.md
+  - docs/HERMES_MCP_RUNTIME.md
+  - docs/ROADMAP_IMPLEMENTACION.md
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
+  - app/**
+  - core/**
+  - services/**
+  - tests/**
+
+forbidden_actions:
+  - modificar codigo Python
+  - cambiar el gate
+  - disparar Codex
+  - mover hallazgos reales
+  - cambiar systemd
+  - cambiar Telegram
+
+acceptance_criteria:
+  - las docs declaran factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - las docs no presentan factory/hallazgos/* como cola activa de hermes_factory_runner.py
+  - task_loop_001.yaml queda alineado con scripts/hermes_factory_runner.py
+  - no se modifica codigo Python
+  - no se modifican tests
+
+validation_commands:
+  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - RUNTIME_REAL_ALINEADO
+  - VALIDACION_EJECUTADA
+  - SHA
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Uso las instrucciones raíz del repo y voy a leer `GPT.md` y `CODEX.md` antes de tocar nada. Después limitaré el cambio a los cuatro archivos permitidos y validaré con los comandos pedidos.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc "sed -n '1,220p' GPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT — ENTRADA OBLIGATORIA SMARTPYME
+
+Estado: CANONICO v1
+
+Todo chat nuevo de GPT que participe en SmartPyme debe empezar por este archivo.
+
+## Rol activo
+
+GPT actua como Director-Auditor externo de SmartPyme Factory.
+
+## Orden obligatorio de lectura
+
+1. `GPT.md`
+2. `AGENTS.md`
+3. `docs/factory/GPT_DIRECTOR_AUDITOR.md`
+4. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`
+5. `factory/ai_governance/skills/gpt_director_auditor.yaml`
+6. `factory/ai_governance/taskspec.schema.json`
+7. `factory/control/AUDIT_GATE.md`, si existe
+8. `factory/control/FACTORY_STATUS.md`, si existe
+9. `factory/control/NEXT_CYCLE.md`, si existe
+10. evidencia reciente en `factory/evidence/`
+
+## Conducta esperada
+
+- No responder desde memoria conversacional.
+- Leer estado real del repo antes de decidir.
+- Auditar evidencia antes de aprobar.
+- Proponer una sola siguiente tarea.
+- Escribir specs concretas y ejecutables.
+- Mantener foco en SmartPyme Factory.
+
+## Prohibiciones
+
+- No inventar estado del repo.
+- No aprobar sin evidencia.
+- No mezclar frentes.
+- No tocar core sin task spec explicita.
+- No entregar placeholders cuando se puede leer el repo.
+
+## Prompt minimo para chat nuevo
+
+Lee `GPT.md` del repo SmartPyme y opera como GPT Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+
+codex
+El estado inicial ya muestra cambios ajenos en `factory/control/*`, que están fuera de alcance y no los voy a tocar. Ahora inspecciono los archivos permitidos y el runner solo en lectura para alinear texto con el contrato real.
+exec
+/bin/bash -lc "sed -n '1,260p' AGENTS.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# AGENTS — Gobernanza Agéntica SmartPyme
+
+## Propósito
+
+Este archivo es el contrato raíz para cualquier agente que opere sobre SmartPyme.
+
+SmartPyme es un sistema operativo para PyMEs. El repositorio es la fuente de verdad. Ningún agente puede usar memoria conversacional, supuestos o texto generado como sustituto de archivos, comandos, tests o evidencia real.
+
+## Entrada obligatoria para GPT
+
+Todo chat nuevo de GPT debe leer primero `GPT.md` antes de responder, auditar, escribir roadmap o proponer tareas. `GPT.md` es el punto de arranque operativo para evitar depender de memoria conversacional.
+
+## Jerarquía de control
+
+1. **Owner humano**: define intención de negocio y prioridades.
+2. **ChatGPT director técnico externo**: define dirección, auditoría, contratos y cierre conceptual.
+3. **Hermes**: orquestador operativo en VM. Ejecuta ciclos sobre el repo.
+4. **Codex**: Builder / reviewer de código bajo contrato.
+5. **Gemini**: auditor de cantera, análisis documental y apoyo técnico bajo protocolo.
+6. **Tests, linters y evidencia**: juez técnico final.
+
+Ningún agente valida su propio trabajo.
+
+## Fuente de verdad
+
+Orden de autoridad:
+
+1. `GPT.md` para arranque de chats GPT.
+2. Código y archivos actuales del repositorio.
+3. `factory/control/NEXT_CYCLE.md`, si existe.
+4. `docs/SMARTPYME_OS_ACTUAL.md`.
+5. `docs/HERMES_MCP_RUNTIME.md`.
+6. `docs/ROADMAP_IMPLEMENTACION.md`.
+7. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+8. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`.
+9. `factory/ai_governance/skills/gpt_director_auditor.yaml`.
+10. `GEMINI.md`.
+11. `CODEX.md`.
+12. Evidencia en `factory/evidence/` y logs en `factory/runner_logs/`.
+
+Queda prohibido usar memoria conversacional como estado operativo.
+
+## Arquitectura canónica
+
+Pipeline técnico:
+
+```text
+Ingesta → Normalización → Entity Resolution ↔ Clarification → Orquestación → Comparación → Hallazgos → Comunicación → Acción
+```
+
+Reglas del sistema:
+
+- No alucinación.
+- Fail-closed ante incertidumbre.
+- Humano en el loop cuando hay ambigüedad crítica.
+- Trazabilidad total.
+- Consistencia sobre velocidad.
+- Hallazgos siempre con entidad, diferencia cuantificada y comparación explícita.
+
+## Roles autorizados
+
+### Architect
+
+Responsabilidad:
+- Interpretar la orden vigente.
+- Definir alcance mínimo.
+- Identificar contratos afectados.
+- Bloquear si falta contexto.
+
+No puede:
+- Escribir código productivo sin Builder.
+- Saltar tests.
+- Cambiar arquitectura canónica sin orden explícita.
+
+### Builder
+
+Responsabilidad:
+- Hacer cambios mínimos en archivos reales.
+- Preservar contratos existentes.
+- Ejecutar verificación física.
+- Entregar diff y evidencia.
+
+No puede:
+- Refactor global.
+- Inventar rutas, clases o dependencias.
+- Cerrar ciclo sin tests o bloqueo documentado.
+
+### Auditor
+
+Responsabilidad:
+- Verificar que el cambio existe.
+- Revisar evidencia.
+- Exigir tests/linters cuando apliquen.
+- Marcar `NO_VALIDADO` si falta evidencia.
+
+No puede:
+- Validar su propio cambio.
+- Aceptar outputs sin comandos verificables.
+
+## Protocolo obligatorio Write-Verify-Run
+
+Toda modificación debe seguir:
+
+```text
+PLAN → WRITE → VERIFY → INSPECT → RUN → REPORT → DECISION
+```
+
+### PLAN
+
+Declarar:
+- objetivo;
+- archivos permitidos;
+- archivos prohibidos;
+- criterio de cierre;
+- tests esperados.
+
+### WRITE
+
+Crear o modificar archivos reales en disco.
+
+### VERIFY
+
+Verificar existencia física:
+
+```bash
+pwd
+git status --short
+test -f ruta/archivo
+ls -la ruta/archivo
+```
+
+En Windows/PowerShell:
+
+```powershell
+Test-Path ruta\archivo
+Get-Item ruta\archivo
+```
+
+### INSPECT
+
+Mostrar contenido relevante:
+
+```bash
+sed -n '1,160p' ruta/archivo
+grep -R "simbolo" -n ruta/
+```
+
+En Windows/PowerShell:
+
+```powershell
+Get-Content ruta\archivo -TotalCount 120
+Select-String -Path ruta\archivo -Pattern "simbolo"
+```
+
+### RUN
+
+Ejecutar la validación mínima:
+
+```bash
+python3 -m pytest tests/... -q
+ruff check ruta/archivo.py
+```
+
+Si Ruff o pytest no están disponibles, el agente debe bloquear y proponer la instalación/contrato de entorno. No puede declarar éxito.
+
+### REPORT
+
+Debe incluir:
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+COMMIT
+RIESGOS
+```
+
+### DECISION
+
+Estados válidos:
+
+```text
+CORRECTO
+NO_VALIDADO
+BLOCKED
+INCOMPLETO
+```
+
+## Reglas anti-alucinación
+
+Queda prohibido:
+
+- Decir que un archivo existe sin `test -f`, `ls`, `Get-Item` o lectura equivalente.
+- Decir que un test pasó sin mostrar comando y resultado.
+- Crear contratos implícitos.
+- Completar rutas por intuición.
+- Usar documentación como prueba de código existente.
+- Mezclar productos externos como Exceland, SmartSync u otros con SmartPyme salvo orden explícita de migración.
+- Confundir `findings` técnico legado con `hallazgos` de negocio.
+- Tocar core sin contrato.
+
+Si falta contexto:
+
+```text
+BLOCKED: falta contexto verificable
+```
+
+## Reglas específicas para Hermes
+
+Hermes opera como orquestador en la VM.
+
+Debe:
+- leer `factory/control/NEXT_CYCLE.md` si existe;
+- ejecutar una sola unidad por ciclo;
+- guardar evidencia en `factory/evidence/<task_id>/`;
+- registrar logs en `factory/runner_logs/`;
+- hacer `git status` y `git diff` antes del cierre;
+- bloquear ante incertidumbre.
+
+No debe:
+- depender de skills no instalados;
+- modificar múltiples frentes en un ciclo;
+- hacer push si no hay evidencia;
+- borrar evidencia;
+- resolver ambigüedades de negocio sin validación humana.
+
+## Reglas específicas para Codex
+
+Codex opera como Builder / reviewer.
+
+Debe cumplir `CODEX.md`.
+
+Uso esperado:
+
+```text
+Hermes detecta tarea → Codex construye o revisa → tests/evidencia → Hermes registra → auditoría externa
+```
+
+Codex no decide arquitectura ni roadmap.
+
+## Reglas específicas para Gemini
+
+Gemini opera como auditor técnico, cantera, análisis documental y soporte de razonamiento.
+
+Debe cumplir `GEMINI.md`.
+
+Gemini no puede declarar implementación real sin verificación física.
+
+## Dependencias y entorno
+
+El entorno canónico debe declararse en archivos versionados antes de exigir validaciones automáticas.
+
+Pendiente obligatorio:
+
+```text
+pyproject.toml
+Ruff
+pytest canónico
+
+exec
+/bin/bash -lc "sed -n '1,240p' scripts/hermes_factory_runner.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from datetime import datetime, timezone
+from pathlib import Path
+import subprocess
+import sys
+import re
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from factory.telegram_notify import notify_cycle_result
+
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
+CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
+POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+STATUS = CONTROL / "FACTORY_STATUS.md"
+
+GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+
+
+def notify(status, detail=""):
+    try:
+        notify_cycle_result(status, detail)
+    except Exception as exc:
+        print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+
+
+def run_git(args, check=False):
+    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
+
+
+def ts():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_gate_text():
+    if not GATE.exists():
+        return ""
+    return GATE.read_text(encoding="utf-8", errors="replace")
+
+
+def gate_field(name, default=""):
+    prefix = f"{name}:"
+    for line in read_gate_text().splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return default
+
+
+def gate_status():
+    return gate_field("status", "APPROVED").upper()
+
+
+def write_status(result, detail=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(
+        f"# FACTORY STATUS\n\nupdated_at: {ts()}\nlast_cycle_result: {result}\naudit_gate: {gate_status()}\nlast_error: {detail or 'none'}\n",
+        encoding="utf-8",
+    )
+
+
+def set_gate(status, code=0, task=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
+        encoding="utf-8",
+    )
+
+
+def post_cycle(code):
+    if not POST_CYCLE.exists():
+        print("POST_CYCLE_MISSING")
+        notify("POST_CYCLE_MISSING", str(POST_CYCLE))
+        return code
+    r = subprocess.run(["python3", str(POST_CYCLE), "--repo", str(REPO), "--codex-returncode", str(code)])
+    if r.returncode:
+        notify("INCONSISTENCY_DETECTED", f"post_cycle_returncode={r.returncode}; codex_returncode={code}")
+    return r.returncode if r.returncode else code
+
+
+def task_is_pending(path):
+    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "task_id:" in text and "status: pending" in text
+
+
+def select_task():
+    if TASKS_DIR.exists():
+        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+        if pending:
+            for p in pending:
+                if p.name == "core_reconciliacion_v1.yaml":
+                    return p
+            return pending[0]
+    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+
+
+def replace_task_status(rel_task, new_status):
+    tp = (REPO / rel_task).resolve()
+    txt = tp.read_text(encoding="utf-8", errors="replace")
+    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+    tp.write_text(txt, encoding="utf-8")
+
+
+def mark_task_done(rel_task):
+    try:
+        replace_task_status(rel_task, "done")
+        notify("TASK_DONE", str(rel_task))
+    except Exception as e:
+        notify("TASK_DONE_ERROR", str(e))
+
+
+def reopen_last_task():
+    last_task = gate_field("last_task", "").strip()
+    if not last_task or last_task == "none":
+        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+        set_gate("BLOCKED", 1, "none")
+        return 1
+    try:
+        replace_task_status(last_task, "pending")
+        notify("AUDIT_REJECTED_REOPENED", last_task)
+        set_gate("APPROVED", 0, last_task)
+        return 0
+    except Exception as exc:
+        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+        set_gate("BLOCKED", 1, last_task)
+        return 1
+
+
+def enforce_gate_before_dispatch():
+    current_gate = gate_status()
+
+    if current_gate in GATE_ALLOWED_TO_RUN:
+        return 0
+
+    if current_gate == "REJECTED":
+        return reopen_last_task()
+
+    if current_gate in GATE_BLOCKING:
+        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+        return 2
+
+    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+    notify("AUDIT_GATE_UNKNOWN", current_gate)
+    return 2
+
+
+def git_has_changes():
+    r = run_git(["status", "--porcelain"])
+    return bool(r.stdout.strip())
+
+
+def auto_commit_and_push(rel_task, code):
+    if code != 0:
+        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+        return
+    if not git_has_changes():
+        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+        return
+
+    task_label = str(rel_task) if rel_task else "no-task"
+    run_git(["add", "-A"], check=True)
+    commit_msg = f"Factory cycle: {task_label}"
+    commit = run_git(["commit", "-m", commit_msg])
+    if commit.returncode != 0:
+        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+        return
+
+    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+    push = run_git(["push", "origin", "main"])
+    if push.returncode != 0:
+        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+        return
+
+    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+
+
+def main():
+    notify("CYCLE_START", f"repo={REPO}")
+
+    gate_code = enforce_gate_before_dispatch()
+    if gate_code:
+        return 0
+
+    set_gate("RUNNING")
+    write_status("RUNNING", "cycle started")
+
+    task = select_task()
+    rel_task = None
+    if task:
+        rel_task = task.relative_to(REPO)
+        print(f"[Hermes->Codex] Dispatching task: {rel_task}")
+        notify("TASK_DISPATCH", str(rel_task))
+        r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
+        code = post_cycle(r.returncode)
+        if code == 0:
+            mark_task_done(rel_task)
+    else:
+        print("[Hermes] No task, post-cycle only.")
+        notify("NO_TASK", "Sin tareas pending")
+        code = post_cycle(0)
+
+    set_gate("WAITING_AUDIT", code, str(rel_task) if rel_task else "none")
+    write_status("WAITING_AUDIT", "cycle closed")
+    print("CYCLE_CLOSED_WAITING_AUDIT")
+
+    if code == 0:
+        notify("CYCLE_OK", "cycle closed; gate=WAITING_AUDIT")
+        auto_commit_and_push(rel_task, code)
+    else:
+        notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT")
+
+    return code
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        notify("CYCLE_INTERRUPTED", "KeyboardInterrupt")
+        raise
+    except Exception as exc:
+        notify("CYCLE_CRASH", f"{type(exc).__name__}: {exc}")
+        raise
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/ai_governance/tasks/task_loop_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+task_id: task-hermes-factory-task-loop-001
+mode: governance_doc_update
+status: done
+human_required: false
+objective: >
+  Alinear la especificacion de loop de factoria con el runtime real vigente:
+  scripts/hermes_factory_runner.py. La cola activa actual no es factory/hallazgos/*;
+  es factory/ai_governance/tasks/*.yaml.
+
+runtime_real:
+  tipo: yaml_tasks_gobernadas_por_gate
+  runner: scripts/hermes_factory_runner.py
+  task_dir: factory/ai_governance/tasks
+  task_pattern: "*.yaml"
+  gate_file: factory/control/AUDIT_GATE.md
+  status_file: factory/control/FACTORY_STATUS.md
+  codex_runner: scripts/codex_builder_runner.py
+  post_cycle: scripts/factory_post_cycle_control.py
+  telegram_notify: factory/telegram_notify.py
+
+unidad_activa:
+  tipo: tarea_yaml_gobernada
+  ubicacion: factory/ai_governance/tasks/*.yaml
+  campos_minimos:
+    - task_id
+    - mode
+    - status
+    - objective
+    - allowed_files
+    - forbidden_files
+    - forbidden_actions
+    - acceptance_criteria
+    - validation_commands
+    - report_required
+
+estados_reales:
+  task_status:
+    - pending
+    - in_progress
+    - done
+    - blocked
+    - rejected
+  gate_status:
+    allowed_to_run:
+      - APPROVED
+      - OPEN
+      - RUN
+    blocking:
+      - WAITING_AUDIT
+      - BLOCKED
+      - HOLD
+    special:
+      - REJECTED
+      - RUNNING
+
+flujo_real:
+  - CYCLE_START
+  - enforce_gate_before_dispatch
+  - select_task desde factory/ai_governance/tasks/*.yaml
+  - TASK_DISPATCH hacia scripts/codex_builder_runner.py
+  - post_cycle_control
+  - TASK_DONE si retorno cero
+  - gate WAITING_AUDIT
+  - CYCLE_OK o CYCLE_FAIL
+  - auto_commit_and_push solo si ciclo OK
+
+regla_de_gate:
+  - si gate esta en WAITING_AUDIT/BLOCKED/HOLD no hay dispatch
+  - si gate esta en REJECTED se reabre la ultima tarea
+  - al cerrar cualquier ciclo el gate vuelve a WAITING_AUDIT
+  - ningun nuevo dispatch ocurre sin aprobacion humana o apertura explicita del gate
+
+legacy_no_activo_en_este_runner:
+  factory_hallazgos:
+    rutas:
+      - factory/hallazgos/pending
+      - factory/hallazgos/in_progress
+      - factory/hallazgos/done
+      - factory/hallazgos/blocked
+    decision: >
+      Puede conservarse como antecedente o runtime alternativo historico, pero no debe ser
+      presentado como cola activa de scripts/hermes_factory_runner.py.
+
+scope:
+  tipo: documentacion_gobernanza
+  descripcion: >
+    Esta tarea fija el contrato operativo real para que Hermes, Codex, Gemini y ChatGPT
+    fabriquen specs, skills y tareas en la ubicacion correcta, con evidencia y gate humano.
+
+allowed_files:
+  - factory/ai_governance/tasks/task_loop_001.yaml
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
+  - app/**
+  - core/**
+  - services/**
+  - tests/**
+
+forbidden_actions:
+  - modificar codigo Python
+  - cambiar gate
+  - disparar Codex desde esta tarea documental
+  - cambiar systemd
+  - cambiar Telegram
+  - mover hallazgos reales
+  - crear runtime paralelo
+
+acceptance_criteria:
+  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+  - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
+  - no se modifica codigo Python
+
+validation_commands:
+  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+  - CONTRATO_REAL_ALINEADO
+  - LOOP_DOCUMENTAL_CREADO
+  - VALIDACION_EJECUTADA
+  - SHA
+
+block_resolution:
+  obsolete_hallazgos_runtime:
+    previous_assumption: "factory/hallazgos/* era la cola activa de la factoria Hermes actual."
+    actual_repo_state: "scripts/hermes_factory_runner.py usa factory/ai_governance/tasks/*.yaml."
+    decision: "Alinear docs/specs al runner real y degradar factory/hallazgos/* a antecedente o runtime alternativo no activo."
+
+exec
+/bin/bash -lc "sed -n '1,220p' docs/SMARTPYME_OS_ACTUAL.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# SmartPyme OS actual
+
+## Verdad operativa
+
+SmartPyme es el sistema de verdad del dominio operativo. Guarda estado, evidencias, clarificaciones y ejecuciones. No es el operador conversacional.
+
+Hermes Agent es el operador conversacional. Recibe la conversacion con el usuario y llama tools MCP cuando necesita leer o modificar estado de SmartPyme.
+
+MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+
+## Roles
+
+| componente | rol actual | no gobierna |
+|---|---|---|
+| Hermes Agent | Operador conversacional y cliente MCP | Persistencia, reglas de negocio, verdad de jobs |
+| MCP | Contrato de tools entre Hermes y SmartPyme | Arquitectura conceptual del core |
+| SmartPyme | Sistema de verdad, persistencia y servicios | Interfaz conversacional principal |
+| Factory | Herramientas de crecimiento, skills y orquestacion interna minima | Runtime conversacional de usuario |
+
+## Capas reales evidenciadas
+
+| capa | estado | archivo principal | observacion |
+|---|---|---|---|
+| Bridge MCP | implementado y validado | `mcp_smartpyme_bridge.py` | Expone tools reales por stdio para Hermes. |
+| Jobs | implementado minimo | `app/factory/orchestrator/persistence.py` | SQLite real en `data/jobs.db`; persiste estado, `skill_id` y `payload_json`. |
+| Orquestacion de jobs | implementado minimo | `app/factory/orchestrator/service.py` | Persiste transiciones `CREATED -> RUNNING -> COMPLETED/BLOCKED`. |
+| Clarifications | implementado y validado | `app/core/clarification/persistence.py` | CRUD minimo real en SQLite. |
+| EvidenceStore | implementado minimo | `services/document_ingestion_service.py` | JSONL local para documentos y chunks. |
+| Ingesta documental | implementado y validado por bridge | `services/document_ingestion_service.py` | `ingest_document` usa el servicio y devuelve evidencias. |
+| Consulta de evidencia | implementado y validado por bridge | `mcp_smartpyme_bridge.py` | Lee `evidence_store/document_chunks/chunks.jsonl`. |
+| Reconciliation | implementado parcialmente | `app/core/reconciliation/service.py` | Hay servicio y tests, pero no esta expuesto por MCP. |
+| Hallazgos | implementado parcialmente | `app/core/hallazgos/service.py` | Existe dominio, pero no gobierna aun el runtime MCP. |
+| Normalizacion / canonical rows | conceptual pendiente | no evidenciado como runtime cerrado | Debe separarse de ingesta y reconciliation. |
+| Entity resolution | conceptual pendiente | no evidenciado como runtime cerrado | No debe darse por cerrado. |
+| Action engine | conceptual pendiente | no evidenciado | No hay contrato operativo MCP activo. |
+
+## Persistencias reales
+
+| persistencia | archivo / ubicacion | uso actual |
+|---|---|---|
+| Jobs SQLite | `data/jobs.db` | Estado de jobs consultado por `get_job_status`. |
+| Clarifications SQLite | `data/clarifications.db` | Clarificaciones pendientes y resueltas. |
+| EvidenceStore JSONL | `evidence_store/document_chunks/chunks.jsonl` | Chunks consultables por `get_evidence`. |
+| Raw documents JSONL | `evidence_store/raw_documents/documents.jsonl` | Documentos ingestados. |
+| Citation index JSON | `evidence_store/citation_index/citations.json` | Indice liviano de citas. |
+
+## Tools MCP activas
+
+| tool | estado | backend real | observacion |
+|---|---|---|---|
+| `get_job_status` | implementada | `app.factory.orchestrator.persistence.get_job` | Devuelve `source: real`; `NOT_FOUND` si no existe. |
+| `create_job` | implementada | `app.contracts.operational_plan_contract.create_operational_plan` + `app.factory.orchestrator.persistence.save_job` | Crea plan declarativo y job en `CREATED`; persiste `skill_id` y payload del plan. |
+| `list_pending_validations` | implementada | `app.core.clarification.persistence.list_pending_clarifications` | `owner_id` existe en contrato, aun no filtra. |
+| `resolve_clarification` | implementada | `app.core.clarification.persistence.resolve_clarification` | Resuelve pendientes en SQLite. |
+| `save_clarification` | implementada | `app.core.clarification.persistence.save_clarification` | Crea clarificacion manual bloqueante. |
+| `get_evidence` | implementada | JSONL en EvidenceStore | Si falta el store responde `stub_explicit`; con store real lee JSONL. |
+| `ingest_document` | implementada | `DocumentIngestionService` | Ingesta archivo local y devuelve `evidence_ids`. |
+
+## Validacion E2E existente
+
+La validacion E2E esta en `tests/e2e/validate_bridge_e2e.py`.
+
+Valida, en un flujo completo:
+
+1. `get_job_status`
+2. `save_clarification`
+3. `list_pending_validations`
+4. `resolve_clarification`
+5. confirmacion de resolucion
+6. `ingest_document`
+7. `get_evidence`
+
+Comando documentado:
+
+```powershell
+python tests/e2e/validate_bridge_e2e.py
+```
+
+Advertencia operativa: el script limpia `jobs.db`, `clarifications.db`, el documento temporal E2E y `evidence_store` al finalizar. Debe correrse en entorno de validacion o con datos descartables.
+
+exec
+/bin/bash -lc "sed -n '1,260p' docs/HERMES_MCP_RUNTIME.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Hermes MCP runtime
+
+## Config real de Hermes
+
+Hermes carga SmartPyme desde:
+
+`C:\Users\PC\.hermes\config.yaml`
+
+Configuracion observada:
+
+```yaml
+mcp_servers:
+  smartpyme:
+    enabled: true
+    command: "C:/Python314/python.exe"
+    args:
+      - "E:/BuenosPasos/smartbridge/SmartPyme/mcp_smartpyme_bridge.py"
+```
+
+Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+
+## Bridge MCP
+
+El bridge activo es:
+
+`mcp_smartpyme_bridge.py`
+
+Corre como servidor MCP por stdio:
+
+```python
+mcp = FastMCP("SmartPyme-Bridge")
+...
+mcp.run()
+```
+
+Hermes no importa el core de SmartPyme como libreria de aplicacion. Hermes invoca tools MCP registradas por el bridge.
+
+## Tools registradas
+
+| tool MCP | funcion | persistencia / servicio |
+|---|---|---|
+| `create_job` | Crea un job desde un OperationalPlanContract minimo | SQLite `data/jobs.db` |
+| `get_job_status` | Consulta estado de un job | SQLite `data/jobs.db` |
+| `list_pending_validations` | Lista clarificaciones pendientes | SQLite `data/clarifications.db` |
+| `resolve_clarification` | Resuelve una clarificacion | SQLite `data/clarifications.db` |
+| `save_clarification` | Crea una clarificacion manual | SQLite `data/clarifications.db` |
+| `get_evidence` | Recupera un chunk de evidencia | `evidence_store/document_chunks/chunks.jsonl` |
+| `ingest_document` | Ingesta un archivo local | `DocumentIngestionService` + EvidenceStore |
+
+## Comando de validacion
+
+Validacion E2E del bridge:
+
+```powershell
+python tests/e2e/validate_bridge_e2e.py
+```
+
+El script importa `handle_function_call` desde `hermes-agent` y llama las tools como `mcp_smartpyme_<tool>`.
+
+Advertencia: el script borra bases y evidence store de prueba al limpiar. No ejecutarlo contra datos que deban conservarse.
+
+## Limites de Hermes
+
+Hermes puede:
+
+- conversar con el usuario;
+- pedir estado real a SmartPyme por MCP;
+- registrar clarificaciones;
+- resolver clarificaciones con respuesta humana;
+- pedir ingesta de documentos locales;
+- pedir evidencia por ID.
+
+Hermes no debe:
+
+- decidir estados de negocio por fuera de SmartPyme;
+- escribir directo en SQLite;
+- editar `data/jobs.db` o `data/clarifications.db`;
+- saltear MCP para modificar verdad operativa;
+- inventar jobs, hallazgos, evidencias o estados no devueltos por SmartPyme;
+- gobernar normalizacion, entity resolution, reconciliacion o action engine si no existe tool MCP activa para eso;
+- tratar skeletons, blueprints o documentos historicos como runtime real.
+
+## Lectura correcta del runtime
+
+La frase correcta ya no es "bridge stub". El bridge tiene tools reales.
+
+Matiz importante: algunas respuestas contemplan ausencia de datos, por ejemplo `get_evidence` devuelve `stub_explicit` si falta el evidence store. Eso no convierte al bridge completo en stub; indica una rama explicita de error/ausencia.
+
+exec
+/bin/bash -lc "sed -n '1,260p' docs/ROADMAP_IMPLEMENTACION.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Roadmap de implementacion
+
+Este roadmap congela el orden recomendado despues de la normalizacion documental. No habilita nuevas features por si mismo.
+
+## Cerrado / evidenciado
+
+1. Bridge MCP real entre Hermes y SmartPyme.
+2. Config de Hermes apuntando a `mcp_smartpyme_bridge.py`.
+3. `get_job_status` leyendo SQLite real.
+4. Persistencia minima de jobs en `data/jobs.db`.
+5. `orchestrate_job` persistiendo transiciones.
+6. Clarifications CRUD minimo en SQLite.
+7. `ingest_document` usando `DocumentIngestionService`.
+8. `get_evidence` leyendo EvidenceStore JSONL.
+9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+10. RawDocument registry local en SQLite.
+11. Hash SHA-256 de archivo original antes de ingesta.
+## Siguiente inmediato
+
+1. Limpieza repo sin borrar todavia.
+   - Marcar documentos y scripts por categoria.
+   - Proponer archivo controlado en `docs/archive/`.
+   - Separar runtime MCP de factory/skeletons.
+   - Actualizar README para no afirmar que no hay codigo funcional.
+
+2. OperationalPlanContract.
+   - Definido como contrato minimo declarativo en `app/contracts/operational_plan_contract.py`.
+
+3. `create_job` via MCP.
+   - Tool MCP minima implementada.
+   - Persiste job en `CREATED`, `skill_id` y payload del plan.
+
+## Wrapper de Operación Conversacional
+
+4. Implementar `HermesSmartPymeRuntime` wrapper. (Completado)
+   - Crear el wrapper siguiendo la estrategia definida en `docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md`.
+   - Utilizar la configuración segura canónica de `AIAgent`.
+   - Mapear `job_id` a `session_id`.
+   - Exponer una interfaz mínima para iniciar una conversación y recibir el resultado.
+
+## Pendiente medio plazo
+
+4. RAW/RAG local antes de Supabase.
+   - RawDocument registry local. Implementado minimo.
+   - Hash de archivo original + metadata minima. Implementado minimo.
+   - Batch ingestion.
+   - EvidenceRepository formal local.
+   - Retrieval local por texto/metadata.
+   - ExtractedFactCandidate.
+   - CanonicalRowCandidate.
+   - Repository interfaces.
+   - Supabase adapter.
+
+5. Ingesta batch.
+   - Extender ingesta de archivo unico a lotes controlados.
+   - Mantener trazabilidad de source_id, chunks y errores.
+
+6. Normalizacion / canonical rows.
+   - Separar texto/chunks de filas canonicas.
+   - Definir contratos de entrada/salida.
+   - No mezclar con reconciliation.
+
+7. Entity resolution.
+   - Resolver identidades de entidades antes de comparar.
+   - Integrar con clarifications cuando haya incertidumbre.
+
+8. Reconciliacion.
+   - Llevar el servicio existente a contrato operativo cerrado.
+   - Exponer por MCP solo cuando el flujo de datos anterior este definido.
+
+## Pendiente largo plazo
+
+9. Hallazgos.
+   - Consolidar termino de negocio "hallazgos".
+   - Definir repositorio, severidad, trazabilidad y ciclo de vida.
+   - Mantener `findings` solo donde sea nombre tecnico legado.
+
+10. Action engine.
+   - Acciones despues de hallazgos validados.
+   - No ejecutar acciones sin trazabilidad, autorizacion y estados cerrados.
+
+## RAW/RAG antes de Supabase
+
+Orden congelado:
+
+1. RawDocument registry local. Implementado minimo.
+2. Hash + metadata. Implementado minimo.
+3. Batch ingestion.
+4. EvidenceRepository formal local.
+5. Retrieval local por texto/metadata.
+6. ExtractedFactCandidate.
+7. CanonicalRowCandidate.
+8. Repository interfaces.
+9. Supabase adapter.
+
+## Regla de orden
+
+No avanzar a una capa si la anterior no tiene:
+
+- contrato minimo;
+- persistencia definida si corresponde;
+- tests de contrato;
+- documentacion operativa;
+- criterio de bloqueo ante incertidumbre.
+
+codex
+PLAN: objetivo: alinear solo documentación/spec permitida al runner real `scripts/hermes_factory_runner.py`; archivos permitidos: `task_loop_001.yaml` y tres docs indicadas; prohibidos: Python, control, evidencia, tests y core; cierre: referencias explícitas a `factory/ai_governance/tasks/*.yaml` como cola activa y ausencia de `factory/hallazgos/*` como cola activa; tests esperados: validaciones grep/diff/status pedidas, sin pytest/ruff por ser cambio documental.
+exec
+/bin/bash -lc 'rg -n "factory/hallazgos|hallazgos|factory/ai_governance/tasks|TASKS_DIR|hermes_factory_runner|AUDIT_GATE|FACTORY_STATUS" factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md scripts/hermes_factory_runner.py' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc 'git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'test -f factory/ai_governance/tasks/task_loop_001.yaml && ls -la factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md scripts/hermes_factory_runner.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 2834 Apr 27 11:57 docs/HERMES_MCP_RUNTIME.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3564 Apr 27 11:57 docs/ROADMAP_IMPLEMENTACION.md
+-rw-r--r-- 1 neoalmasana neoalmasana 4925 Apr 27 11:57 docs/SMARTPYME_OS_ACTUAL.md
+-rw-r--r-- 1 neoalmasana neoalmasana 4498 Apr 27 23:52 factory/ai_governance/tasks/task_loop_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 7178 Apr 27 23:27 scripts/hermes_factory_runner.py
+
+codex
+`rg` no está instalado en este entorno, así que uso `grep` para la inspección textual. El diff inicial de los archivos permitidos está vacío; los cambios actuales del worktree están únicamente en control y quedan fuera de esta unidad.
+exec
+/bin/bash -lc "grep -R \"factory/hallazgos\\|hallazgos\\|factory/ai_governance/tasks\\|TASKS_DIR\\|hermes_factory_runner\\|AUDIT_GATE\\|FACTORY_STATUS\" -n factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md scripts/hermes_factory_runner.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+factory/ai_governance/tasks/task_loop_001.yaml:7:  scripts/hermes_factory_runner.py. La cola activa actual no es factory/hallazgos/*;
+factory/ai_governance/tasks/task_loop_001.yaml:8:  es factory/ai_governance/tasks/*.yaml.
+factory/ai_governance/tasks/task_loop_001.yaml:12:  runner: scripts/hermes_factory_runner.py
+factory/ai_governance/tasks/task_loop_001.yaml:13:  task_dir: factory/ai_governance/tasks
+factory/ai_governance/tasks/task_loop_001.yaml:15:  gate_file: factory/control/AUDIT_GATE.md
+factory/ai_governance/tasks/task_loop_001.yaml:16:  status_file: factory/control/FACTORY_STATUS.md
+factory/ai_governance/tasks/task_loop_001.yaml:23:  ubicacion: factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:59:  - select_task desde factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:74:  factory_hallazgos:
+factory/ai_governance/tasks/task_loop_001.yaml:76:      - factory/hallazgos/pending
+factory/ai_governance/tasks/task_loop_001.yaml:77:      - factory/hallazgos/in_progress
+factory/ai_governance/tasks/task_loop_001.yaml:78:      - factory/hallazgos/done
+factory/ai_governance/tasks/task_loop_001.yaml:79:      - factory/hallazgos/blocked
+factory/ai_governance/tasks/task_loop_001.yaml:82:      presentado como cola activa de scripts/hermes_factory_runner.py.
+factory/ai_governance/tasks/task_loop_001.yaml:91:  - factory/ai_governance/tasks/task_loop_001.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:96:  - scripts/hermes_factory_runner.py
+factory/ai_governance/tasks/task_loop_001.yaml:112:  - mover hallazgos reales
+factory/ai_governance/tasks/task_loop_001.yaml:116:  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+factory/ai_governance/tasks/task_loop_001.yaml:117:  - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+factory/ai_governance/tasks/task_loop_001.yaml:123:  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+factory/ai_governance/tasks/task_loop_001.yaml:124:  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+factory/ai_governance/tasks/task_loop_001.yaml:125:  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+factory/ai_governance/tasks/task_loop_001.yaml:137:  obsolete_hallazgos_runtime:
+factory/ai_governance/tasks/task_loop_001.yaml:138:    previous_assumption: "factory/hallazgos/* era la cola activa de la factoria Hermes actual."
+factory/ai_governance/tasks/task_loop_001.yaml:139:    actual_repo_state: "scripts/hermes_factory_runner.py usa factory/ai_governance/tasks/*.yaml."
+factory/ai_governance/tasks/task_loop_001.yaml:140:    decision: "Alinear docs/specs al runner real y degradar factory/hallazgos/* a antecedente o runtime alternativo no activo."
+docs/SMARTPYME_OS_ACTUAL.md:32:| Hallazgos | implementado parcialmente | `app/core/hallazgos/service.py` | Existe dominio, pero no gobierna aun el runtime MCP. |
+docs/HERMES_MCP_RUNTIME.md:79:- inventar jobs, hallazgos, evidencias o estados no devueltos por SmartPyme;
+docs/ROADMAP_IMPLEMENTACION.md:74:   - Consolidar termino de negocio "hallazgos".
+docs/ROADMAP_IMPLEMENTACION.md:79:   - Acciones despues de hallazgos validados.
+scripts/hermes_factory_runner.py:12:TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+scripts/hermes_factory_runner.py:17:GATE = CONTROL / "AUDIT_GATE.md"
+scripts/hermes_factory_runner.py:18:STATUS = CONTROL / "FACTORY_STATUS.md"
+scripts/hermes_factory_runner.py:90:    if TASKS_DIR.exists():
+scripts/hermes_factory_runner.py:91:        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+scripts/hermes_factory_runner.py:142:        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+scripts/hermes_factory_runner.py:143:        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+scripts/hermes_factory_runner.py:147:    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+scripts/hermes_factory_runner.py:148:    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+scripts/hermes_factory_runner.py:149:    notify("AUDIT_GATE_UNKNOWN", current_gate)
+
+exec
+/bin/bash -lc 'grep -R "factory/hallazgos" -n docs factory/ai_governance/tasks/task_loop_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs/factory_runtime_real.md:12:factory/hallazgos/pending
+docs/factory_runtime_real.md:13:factory/hallazgos/in_progress
+docs/factory_runtime_real.md:14:factory/hallazgos/done
+docs/factory_runtime_real.md:15:factory/hallazgos/blocked
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md:13:No debe tratarse `factory/hallazgos/*` como cola activa de este runner. Esa estructura queda como antecedente historico o runtime alternativo no activo hasta nueva decision explicita.
+docs/ARCHIVO_LEGACY.md:16:| `docs/archive/factory_hallazgos_cierre_2026-04-23.md` | Cierre puntual de factory/hallazgos; no gobierna runtime SmartPyme OS. | Archivado como evidencia historica. |
+docs/multiagente_roles_operativos.md:6:Diseña hallazgos y los deja en `factory/hallazgos/pending`.
+factory/ai_governance/tasks/task_loop_001.yaml:7:  scripts/hermes_factory_runner.py. La cola activa actual no es factory/hallazgos/*;
+factory/ai_governance/tasks/task_loop_001.yaml:76:      - factory/hallazgos/pending
+factory/ai_governance/tasks/task_loop_001.yaml:77:      - factory/hallazgos/in_progress
+factory/ai_governance/tasks/task_loop_001.yaml:78:      - factory/hallazgos/done
+factory/ai_governance/tasks/task_loop_001.yaml:79:      - factory/hallazgos/blocked
+factory/ai_governance/tasks/task_loop_001.yaml:117:  - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+factory/ai_governance/tasks/task_loop_001.yaml:138:    previous_assumption: "factory/hallazgos/* era la cola activa de la factoria Hermes actual."
+factory/ai_governance/tasks/task_loop_001.yaml:140:    decision: "Alinear docs/specs al runner real y degradar factory/hallazgos/* a antecedente o runtime alternativo no activo."
+
+codex
+Voy a hacer un cambio documental pequeño: añadir el contrato de cola activa en las tres docs permitidas y actualizar `task_loop_001.yaml` para que sus archivos/validaciones apunten a esta alineación real, sin cambiar estado ni tocar Python.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/docs/HERMES_MCP_RUNTIME.md
+/opt/smartpyme-factory/repos/SmartPyme/docs/ROADMAP_IMPLEMENTACION.md
+/opt/smartpyme-factory/repos/SmartPyme/docs/SMARTPYME_OS_ACTUAL.md
+/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/tasks/task_loop_001.yaml
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..8aad5933917ef824cab3212d2c1bf9c4f9a67e7a
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,9 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..8aad5933917ef824cab3212d2c1bf9c4f9a67e7a
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,9 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+codex
+Edición aplicada en los cuatro archivos permitidos. Paso a verificación física, lectura de fragmentos relevantes y validación exacta solicitada.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M docs/HERMES_MCP_RUNTIME.md
+ M docs/ROADMAP_IMPLEMENTACION.md
+ M docs/SMARTPYME_OS_ACTUAL.md
+ M factory/ai_governance/tasks/task_loop_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc 'test -f factory/ai_governance/tasks/task_loop_001.yaml && test -f docs/SMARTPYME_OS_ACTUAL.md && test -f docs/HERMES_MCP_RUNTIME.md && test -f docs/ROADMAP_IMPLEMENTACION.md && ls -la factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 3215 Apr 28 01:54 docs/HERMES_MCP_RUNTIME.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3951 Apr 28 01:54 docs/ROADMAP_IMPLEMENTACION.md
+-rw-r--r-- 1 neoalmasana neoalmasana 5483 Apr 28 01:54 docs/SMARTPYME_OS_ACTUAL.md
+-rw-r--r-- 1 neoalmasana neoalmasana 4706 Apr 28 01:54 factory/ai_governance/tasks/task_loop_001.yaml
+
+exec
+/bin/bash -lc "grep -R \"TASKS_DIR\\|factory/ai_governance/tasks\" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scripts/hermes_factory_runner.py:12:TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+scripts/hermes_factory_runner.py:90:    if TASKS_DIR.exists():
+scripts/hermes_factory_runner.py:91:        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+factory/ai_governance/tasks/task_loop_001.yaml:8:  es factory/ai_governance/tasks/*.yaml.
+factory/ai_governance/tasks/task_loop_001.yaml:13:  task_dir: factory/ai_governance/tasks
+factory/ai_governance/tasks/task_loop_001.yaml:23:  ubicacion: factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:59:  - select_task desde factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:91:  - factory/ai_governance/tasks/task_loop_001.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:117:  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+factory/ai_governance/tasks/task_loop_001.yaml:119:  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:120:  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:121:  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:126:  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+factory/ai_governance/tasks/task_loop_001.yaml:127:  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+factory/ai_governance/tasks/task_loop_001.yaml:140:    actual_repo_state: "scripts/hermes_factory_runner.py usa factory/ai_governance/tasks/*.yaml."
+docs/SMARTPYME_OS_ACTUAL.md:15:Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
+docs/HERMES_MCP_RUNTIME.md:26:Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+docs/ROADMAP_IMPLEMENTACION.md:18:12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
+
+exec
+/bin/bash -lc 'git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a..9c0448c 100644
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@ mcp_servers:
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f4..8aad593 100644
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,9 @@ Este roadmap congela el orden recomendado despues de la normalizacion documental
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4..a16d061 100644
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@ Hermes Agent es el operador conversacional. Recibe la conversacion con el usuari
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526..e7b6383 100644
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@ scope:
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@ forbidden_actions:
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..8aad5933917ef824cab3212d2c1bf9c4f9a67e7a
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,9 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+exec
+/bin/bash -lc "sed -n '1,40p' docs/SMARTPYME_OS_ACTUAL.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# SmartPyme OS actual
+
+## Verdad operativa
+
+SmartPyme es el sistema de verdad del dominio operativo. Guarda estado, evidencias, clarificaciones y ejecuciones. No es el operador conversacional.
+
+Hermes Agent es el operador conversacional. Recibe la conversacion con el usuario y llama tools MCP cuando necesita leer o modificar estado de SmartPyme.
+
+MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+
+## Factory Hermes real
+
+El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
+
+Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
+
+El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
+
+`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
+
+## Roles
+
+| componente | rol actual | no gobierna |
+|---|---|---|
+| Hermes Agent | Operador conversacional y cliente MCP | Persistencia, reglas de negocio, verdad de jobs |
+| MCP | Contrato de tools entre Hermes y SmartPyme | Arquitectura conceptual del core |
+| SmartPyme | Sistema de verdad, persistencia y servicios | Interfaz conversacional principal |
+| Factory | Herramientas de crecimiento, skills y orquestacion interna minima | Runtime conversacional de usuario |
+
+## Capas reales evidenciadas
+
+| capa | estado | archivo principal | observacion |
+|---|---|---|---|
+| Bridge MCP | implementado y validado | `mcp_smartpyme_bridge.py` | Expone tools reales por stdio para Hermes. |
+| Jobs | implementado minimo | `app/factory/orchestrator/persistence.py` | SQLite real en `data/jobs.db`; persiste estado, `skill_id` y `payload_json`. |
+| Orquestacion de jobs | implementado minimo | `app/factory/orchestrator/service.py` | Persiste transiciones `CREATED -> RUNNING -> COMPLETED/BLOCKED`. |
+| Clarifications | implementado y validado | `app/core/clarification/persistence.py` | CRUD minimo real en SQLite. |
+| EvidenceStore | implementado minimo | `services/document_ingestion_service.py` | JSONL local para documentos y chunks. |
+| Ingesta documental | implementado y validado por bridge | `services/document_ingestion_service.py` | `ingest_document` usa el servicio y devuelve evidencias. |
+| Consulta de evidencia | implementado y validado por bridge | `mcp_smartpyme_bridge.py` | Lee `evidence_store/document_chunks/chunks.jsonl`. |
+
+exec
+/bin/bash -lc "sed -n '1,42p' docs/HERMES_MCP_RUNTIME.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Hermes MCP runtime
+
+## Config real de Hermes
+
+Hermes carga SmartPyme desde:
+
+`C:\Users\PC\.hermes\config.yaml`
+
+Configuracion observada:
+
+```yaml
+mcp_servers:
+  smartpyme:
+    enabled: true
+    command: "C:/Python314/python.exe"
+    args:
+      - "E:/BuenosPasos/smartbridge/SmartPyme/mcp_smartpyme_bridge.py"
+```
+
+Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+
+## Factory Hermes en VM
+
+El runner real de factoria es `scripts/hermes_factory_runner.py`.
+
+Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+
+El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
+
+## Bridge MCP
+
+El bridge activo es:
+
+`mcp_smartpyme_bridge.py`
+
+Corre como servidor MCP por stdio:
+
+```python
+mcp = FastMCP("SmartPyme-Bridge")
+...
+mcp.run()
+```
+
+exec
+/bin/bash -lc "sed -n '1,34p' docs/ROADMAP_IMPLEMENTACION.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# Roadmap de implementacion
+
+Este roadmap congela el orden recomendado despues de la normalizacion documental. No habilita nuevas features por si mismo.
+
+## Cerrado / evidenciado
+
+1. Bridge MCP real entre Hermes y SmartPyme.
+2. Config de Hermes apuntando a `mcp_smartpyme_bridge.py`.
+3. `get_job_status` leyendo SQLite real.
+4. Persistencia minima de jobs en `data/jobs.db`.
+5. `orchestrate_job` persistiendo transiciones.
+6. Clarifications CRUD minimo en SQLite.
+7. `ingest_document` usando `DocumentIngestionService`.
+8. `get_evidence` leyendo EvidenceStore JSONL.
+9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+10. RawDocument registry local en SQLite.
+11. Hash SHA-256 de archivo original antes de ingesta.
+12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
+
+Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+## Siguiente inmediato
+
+1. Limpieza repo sin borrar todavia.
+   - Marcar documentos y scripts por categoria.
+   - Proponer archivo controlado en `docs/archive/`.
+   - Separar runtime MCP de factory/skeletons.
+   - Actualizar README para no afirmar que no hay codigo funcional.
+
+2. OperationalPlanContract.
+   - Definido como contrato minimo declarativo en `app/contracts/operational_plan_contract.py`.
+
+3. `create_job` via MCP.
+   - Tool MCP minima implementada.
+   - Persiste job en `CREATED`, `skill_id` y payload del plan.
+
+exec
+/bin/bash -lc "sed -n '84,132p' factory/ai_governance/tasks/task_loop_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scope:
+  tipo: documentacion_gobernanza
+  descripcion: >
+    Esta tarea fija el contrato operativo real para que Hermes, Codex, Gemini y ChatGPT
+    fabriquen specs, skills y tareas en la ubicacion correcta, con evidencia y gate humano.
+
+allowed_files:
+  - factory/ai_governance/tasks/task_loop_001.yaml
+  - docs/SMARTPYME_OS_ACTUAL.md
+  - docs/HERMES_MCP_RUNTIME.md
+  - docs/ROADMAP_IMPLEMENTACION.md
+
+forbidden_files:
+  - scripts/hermes_factory_runner.py
+  - scripts/codex_builder_runner.py
+  - scripts/factory_post_cycle_control.py
+  - factory/control/**
+  - factory/evidence/**
+  - app/**
+  - core/**
+  - services/**
+  - tests/**
+
+forbidden_actions:
+  - modificar codigo Python
+  - cambiar gate
+  - disparar Codex desde esta tarea documental
+  - cambiar systemd
+  - cambiar Telegram
+  - mover hallazgos reales
+  - crear runtime paralelo
+
+acceptance_criteria:
+  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+  - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+  - no se modifica codigo Python
+
+validation_commands:
+  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git status --short
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_MODIFICADOS
+
+exec
+/bin/bash -lc 'git diff --name-only' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs/HERMES_MCP_RUNTIME.md
+docs/ROADMAP_IMPLEMENTACION.md
+docs/SMARTPYME_OS_ACTUAL.md
+factory/ai_governance/tasks/task_loop_001.yaml
+factory/control/.telegram_control_offset
+factory/control/AUDIT_GATE.md
+factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc "git diff --name-only -- '*.py' 'tests/**'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git rev-parse --short HEAD' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+36ce661
+
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..8aad5933917ef824cab3212d2c1bf9c4f9a67e7a
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,9 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+codex
+La inspección confirma el contrato real y que no hay diff en Python ni tests. Haré un ajuste menor de formato Markdown en el roadmap y repetiré las validaciones finales.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/docs/ROADMAP_IMPLEMENTACION.md
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..404441a0c77afa3e880cf365ef52f87374bd3220
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,10 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
++
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..404441a0c77afa3e880cf365ef52f87374bd3220
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,10 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
++
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+exec
+/bin/bash -lc "grep -R \"TASKS_DIR\\|factory/ai_governance/tasks\" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scripts/hermes_factory_runner.py:12:TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+scripts/hermes_factory_runner.py:90:    if TASKS_DIR.exists():
+scripts/hermes_factory_runner.py:91:        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+factory/ai_governance/tasks/task_loop_001.yaml:8:  es factory/ai_governance/tasks/*.yaml.
+factory/ai_governance/tasks/task_loop_001.yaml:13:  task_dir: factory/ai_governance/tasks
+factory/ai_governance/tasks/task_loop_001.yaml:23:  ubicacion: factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:59:  - select_task desde factory/ai_governance/tasks/*.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:91:  - factory/ai_governance/tasks/task_loop_001.yaml
+factory/ai_governance/tasks/task_loop_001.yaml:117:  - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+factory/ai_governance/tasks/task_loop_001.yaml:119:  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:120:  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:121:  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+factory/ai_governance/tasks/task_loop_001.yaml:126:  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+factory/ai_governance/tasks/task_loop_001.yaml:127:  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+factory/ai_governance/tasks/task_loop_001.yaml:140:    actual_repo_state: "scripts/hermes_factory_runner.py usa factory/ai_governance/tasks/*.yaml."
+docs/SMARTPYME_OS_ACTUAL.md:15:Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
+docs/HERMES_MCP_RUNTIME.md:26:Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+docs/ROADMAP_IMPLEMENTACION.md:18:12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
+
+exec
+/bin/bash -lc 'git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a..9c0448c 100644
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@ mcp_servers:
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f4..404441a 100644
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,10 @@ Este roadmap congela el orden recomendado despues de la normalizacion documental
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
++
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4..a16d061 100644
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@ Hermes Agent es el operador conversacional. Recibe la conversacion con el usuari
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526..e7b6383 100644
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@ scope:
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@ forbidden_actions:
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M docs/HERMES_MCP_RUNTIME.md
+ M docs/ROADMAP_IMPLEMENTACION.md
+ M docs/SMARTPYME_OS_ACTUAL.md
+ M factory/ai_governance/tasks/task_loop_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc "git diff --name-only -- '*.py' 'tests/**'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git rev-parse --short HEAD' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+36ce661
+
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..404441a0c77afa3e880cf365ef52f87374bd3220
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,10 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
++
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+codex
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- `docs/SMARTPYME_OS_ACTUAL.md`
+- `docs/HERMES_MCP_RUNTIME.md`
+- `docs/ROADMAP_IMPLEMENTACION.md`
+- `factory/ai_governance/tasks/task_loop_001.yaml`
+
+VERIFICACION_FISICA  
+Ejecutado:
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f ... && ls -la ...` sobre los 4 archivos modificados: OK
+- SHA actual: `36ce661`
+
+TESTS  
+No se ejecutó `pytest` ni `ruff`: cambio estrictamente documental, sin Python ni tests modificados.  
+Validación documental ejecutada según la tarea.
+
+EVIDENCIA  
+Ejecutado:
+- `grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md`
+- `git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md`
+- `git status --short`
+- `git diff --name-only -- '*.py' 'tests/**'` -> sin salida, no hay cambios Python/tests.
+
+RUNTIME_REAL_ALINEADO  
+Sí. Las docs declaran `scripts/hermes_factory_runner.py` con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.  
+`factory/hallazgos/*` queda declarado como no activo para ese runner.
+
+DIFF  
+El diff queda limitado a los 4 archivos permitidos. No hay cambios en Python ni tests.  
+`git status --short` también muestra cambios preexistentes fuera de alcance en:
+- `factory/control/.telegram_control_offset`
+- `factory/control/AUDIT_GATE.md`
+- `factory/control/FACTORY_STATUS.md`
+
+BLOQUEOS  
+Ninguno.
+
+RIESGOS  
+El worktree conserva cambios ajenos en `factory/control/*`, archivos prohibidos para esta tarea. No fueron modificados por esta unidad.
+diff --git a/docs/HERMES_MCP_RUNTIME.md b/docs/HERMES_MCP_RUNTIME.md
+index b2e694a6fb7f7df3736b16bfd796ab9db821474b..9c0448cae6488e52a9c31477cb4b4334539d670b
+--- a/docs/HERMES_MCP_RUNTIME.md
++++ b/docs/HERMES_MCP_RUNTIME.md
+@@ -19,6 +19,14 @@
+ 
+ Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+ 
++## Factory Hermes en VM
++
++El runner real de factoria es `scripts/hermes_factory_runner.py`.
++
++Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
++
++El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
++
+ ## Bridge MCP
+ 
+ El bridge activo es:
+diff --git a/docs/ROADMAP_IMPLEMENTACION.md b/docs/ROADMAP_IMPLEMENTACION.md
+index d2ce0f45de9760ad097a4e31456ba34bcb4b0e6c..404441a0c77afa3e880cf365ef52f87374bd3220
+--- a/docs/ROADMAP_IMPLEMENTACION.md
++++ b/docs/ROADMAP_IMPLEMENTACION.md
+@@ -15,6 +15,10 @@
+ 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+ 10. RawDocument registry local en SQLite.
+ 11. Hash SHA-256 de archivo original antes de ingesta.
++12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
++
++Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
++
+ ## Siguiente inmediato
+ 
+ 1. Limpieza repo sin borrar todavia.
+diff --git a/docs/SMARTPYME_OS_ACTUAL.md b/docs/SMARTPYME_OS_ACTUAL.md
+index dcc07d4350b8e2f9e2365ed1eed685d55e19c073..a16d061f8da0ab34a210cadb54ab75c98f2addb1
+--- a/docs/SMARTPYME_OS_ACTUAL.md
++++ b/docs/SMARTPYME_OS_ACTUAL.md
+@@ -8,6 +8,16 @@
+ 
+ MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+ 
++## Factory Hermes real
++
++El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
++
++Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
++
++El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
++
++`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
++
+ ## Roles
+ 
+ | componente | rol actual | no gobierna |
+diff --git a/factory/ai_governance/tasks/task_loop_001.yaml b/factory/ai_governance/tasks/task_loop_001.yaml
+index 6976526cbb607f95fd53243d90b8120c8be0c956..e7b63834e3b3c32dd9e1170a2e706303ba520773
+--- a/factory/ai_governance/tasks/task_loop_001.yaml
++++ b/factory/ai_governance/tasks/task_loop_001.yaml
+@@ -89,8 +89,9 @@
+ 
+ allowed_files:
+   - factory/ai_governance/tasks/task_loop_001.yaml
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - docs/SMARTPYME_OS_ACTUAL.md
++  - docs/HERMES_MCP_RUNTIME.md
++  - docs/ROADMAP_IMPLEMENTACION.md
+ 
+ forbidden_files:
+   - scripts/hermes_factory_runner.py
+@@ -115,21 +116,21 @@
+ acceptance_criteria:
+   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
+   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
+-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
+-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
++  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
++  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
+   - no se modifica codigo Python
+ 
+ validation_commands:
+-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
++  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
++  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+   - git status --short
+ 
+ report_required:
+   - VEREDICTO
+   - ARCHIVOS_MODIFICADOS
+-  - CONTRATO_REAL_ALINEADO
+-  - LOOP_DOCUMENTAL_CREADO
++  - RUNTIME_REAL_ALINEADO
+   - VALIDACION_EJECUTADA
+   - SHA
+ 
+
+2026-04-28T01:55:14.972661Z ERROR codex_core::session: failed to record rollout items: thread 019dd1ca-33b6-7ee3-b4d7-3d5683d7102c not found
+tokens used
+67,611
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- `docs/SMARTPYME_OS_ACTUAL.md`
+- `docs/HERMES_MCP_RUNTIME.md`
+- `docs/ROADMAP_IMPLEMENTACION.md`
+- `factory/ai_governance/tasks/task_loop_001.yaml`
+
+VERIFICACION_FISICA  
+Ejecutado:
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f ... && ls -la ...` sobre los 4 archivos modificados: OK
+- SHA actual: `36ce661`
+
+TESTS  
+No se ejecutó `pytest` ni `ruff`: cambio estrictamente documental, sin Python ni tests modificados.  
+Validación documental ejecutada según la tarea.
+
+EVIDENCIA  
+Ejecutado:
+- `grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md`
+- `git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md`
+- `git status --short`
+- `git diff --name-only -- '*.py' 'tests/**'` -> sin salida, no hay cambios Python/tests.
+
+RUNTIME_REAL_ALINEADO  
+Sí. Las docs declaran `scripts/hermes_factory_runner.py` con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.  
+`factory/hallazgos/*` queda declarado como no activo para ese runner.
+
+DIFF  
+El diff queda limitado a los 4 archivos permitidos. No hay cambios en Python ni tests.  
+`git status --short` también muestra cambios preexistentes fuera de alcance en:
+- `factory/control/.telegram_control_offset`
+- `factory/control/AUDIT_GATE.md`
+- `factory/control/FACTORY_STATUS.md`
+
+BLOQUEOS  
+Ninguno.
+
+RIESGOS  
+El worktree conserva cambios ajenos en `factory/control/*`, archivos prohibidos para esta tarea. No fueron modificados por esta unidad.

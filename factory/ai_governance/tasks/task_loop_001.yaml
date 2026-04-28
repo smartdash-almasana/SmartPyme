@@ -89,8 +89,9 @@ scope:
 
 allowed_files:
   - factory/ai_governance/tasks/task_loop_001.yaml
-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+  - docs/SMARTPYME_OS_ACTUAL.md
+  - docs/HERMES_MCP_RUNTIME.md
+  - docs/ROADMAP_IMPLEMENTACION.md
 
 forbidden_files:
   - scripts/hermes_factory_runner.py
@@ -115,21 +116,21 @@ forbidden_actions:
 acceptance_criteria:
   - task_loop_001.yaml declara factory/ai_governance/tasks/*.yaml como cola activa
   - task_loop_001.yaml no presenta factory/hallazgos/* como runtime activo del runner Hermes
-  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md existe
-  - docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md existe
+  - docs/SMARTPYME_OS_ACTUAL.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - docs/HERMES_MCP_RUNTIME.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - docs/ROADMAP_IMPLEMENTACION.md declara factory/ai_governance/tasks/*.yaml como cola activa del runner actual
+  - las docs no presentan factory/hallazgos/* como cola activa de scripts/hermes_factory_runner.py
   - no se modifica codigo Python
 
 validation_commands:
-  - grep -R "factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md
-  - grep -R "WAITING_AUDIT\|TASK_DISPATCH\|AUTO_PUSH_OK" -n scripts/hermes_factory_runner.py docs/factory/FACTORY_CONTRATO_OPERATIVO.md
-  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/factory/FACTORY_CONTRATO_OPERATIVO.md docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+  - grep -R "TASKS_DIR\|factory/ai_governance/tasks" -n scripts/hermes_factory_runner.py factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
+  - git diff -- factory/ai_governance/tasks/task_loop_001.yaml docs/SMARTPYME_OS_ACTUAL.md docs/HERMES_MCP_RUNTIME.md docs/ROADMAP_IMPLEMENTACION.md
   - git status --short
 
 report_required:
   - VEREDICTO
   - ARCHIVOS_MODIFICADOS
-  - CONTRATO_REAL_ALINEADO
-  - LOOP_DOCUMENTAL_CREADO
+  - RUNTIME_REAL_ALINEADO
   - VALIDACION_EJECUTADA
   - SHA
 

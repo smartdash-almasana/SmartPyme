@@ -8,6 +8,16 @@ Hermes Agent es el operador conversacional. Recibe la conversacion con el usuari
 
 MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
 
+## Factory Hermes real
+
+El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
+
+Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
+
+El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
+
+`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
+
 ## Roles
 
 | componente | rol actual | no gobierna |

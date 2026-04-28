@@ -19,6 +19,14 @@ mcp_servers:
 
 Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
 
+## Factory Hermes en VM
+
+El runner real de factoria es `scripts/hermes_factory_runner.py`.
+
+Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+
+El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
+
 ## Bridge MCP
 
 El bridge activo es:

@@ -1,6 +1,6 @@
 task_id: factory_contract_alignment_001
 mode: governance_doc_update
-status: pending
+status: done
 human_required: false
 objective: >
   Alinear la documentacion y las specs de la factoria con el runner real

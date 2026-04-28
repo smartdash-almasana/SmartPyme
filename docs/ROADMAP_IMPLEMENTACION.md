@@ -15,6 +15,10 @@ Este roadmap congela el orden recomendado despues de la normalizacion documental
 9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
 10. RawDocument registry local en SQLite.
 11. Hash SHA-256 de archivo original antes de ingesta.
+12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
+
+Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+
 ## Siguiente inmediato
 
 1. Limpieza repo sin borrar todavia.
