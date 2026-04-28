@@ -1,12 +1,7 @@
-"""Configuracion oficial de quick commands Hermes para SmartPyme Factory.
-
-Fuente oficial Hermes:
-- ~/.hermes/config.yaml acepta `quick_commands`.
-- Cada quick command puede ser `type: exec` con `command`.
-- Funciona desde Telegram y otras plataformas del Gateway.
+"""Configuracion de quick commands Hermes para SmartPyme Factory.
 
 Este modulo no ejecuta la factoria. Solo construye la configuracion local
-que Hermes Gateway debe leer.
+que Hermes Gateway debe leer en /home/neoalmasana/.hermes/config.yaml.
 """
 
 from __future__ import annotations
@@ -16,42 +11,25 @@ from typing import Any
 
 
 REPO_SMARTPYME = Path("/opt/smartpyme-factory/repos/SmartPyme")
-PYTHON = "python3"
-CONTROL_CLI = "factory/hermes_control_cli.py"
+PYTHON = "/usr/bin/python3"
+CONTROL_CLI = REPO_SMARTPYME / "factory/hermes_control_cli.py"
+COMANDOS = ("estado", "actualizar", "pausar", "reanudar", "avanzar", "auditar")
 
 
 def comando_control(nombre: str, repo: Path = REPO_SMARTPYME) -> str:
-    """Devuelve el comando shell absoluto para un control de SmartPyme."""
-    return f"cd {repo} && {PYTHON} {CONTROL_CLI} {nombre}"
+    """Devuelve el comando absoluto para un control de SmartPyme."""
+    control_cli = repo / "factory/hermes_control_cli.py"
+    return f"{PYTHON} {control_cli} {nombre}"
 
 
 def quick_commands(repo: Path = REPO_SMARTPYME) -> dict[str, dict[str, str]]:
     """Mapa de quick commands que Hermes debe inyectar en config.yaml."""
     return {
-        "estado": {
+        nombre: {
             "type": "exec",
-            "command": comando_control("estado", repo),
-        },
-        "actualizar": {
-            "type": "exec",
-            "command": comando_control("actualizar", repo),
-        },
-        "pausar": {
-            "type": "exec",
-            "command": comando_control("pausar", repo),
-        },
-        "reanudar": {
-            "type": "exec",
-            "command": comando_control("reanudar", repo),
-        },
-        "avanzar": {
-            "type": "exec",
-            "command": comando_control("avanzar", repo),
-        },
-        "auditar": {
-            "type": "exec",
-            "command": comando_control("auditar", repo),
-        },
+            "command": comando_control(nombre, repo),
+        }
+        for nombre in COMANDOS
     }
 
 
