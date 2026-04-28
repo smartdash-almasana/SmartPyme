@@ -1,0 +1,40 @@
+task_id: TASK-HERMES-SKILLS-VERIFY-001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Verificar en la VM que Hermes Gateway carga o puede descubrir la skill
+  versionada hermes_smartpyme_factory desde SmartPyme, sin activar ciclos reales
+  ni tocar core de producto.
+allowed_files:
+  - docs/factory/HERMES_SKILLS_INTEGRATION.md
+  - factory/ai_governance/tasks/TASK-HERMES-SKILLS-VERIFY-001.yaml
+  - factory/evidence/TASK-HERMES-SKILLS-VERIFY-001/**
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - mcp_smartpyme_bridge.py
+  - factory/config/telegram.local.env
+  - .env
+  - scripts/hermes_factory_runner.py
+  - scripts/telegram_factory_control.py
+required_tests:
+  - test -f factory/ai_governance/skills/hermes_smartpyme_factory/SKILL.md
+  - grep -n "hermes_smartpyme_factory\|external_dirs\|quick_commands" /home/neoalmasana/.hermes/config.yaml || true
+  - ps -ef | grep -E "hermes_factory_runner|telegram_factory_control" | grep -v grep || true
+acceptance_criteria:
+  - docs/factory/HERMES_SKILLS_INTEGRATION.md existe y documenta Opcion A y Opcion B.
+  - La ruta factory/ai_governance/skills/hermes_smartpyme_factory/SKILL.md existe en la VM.
+  - La configuracion real de Hermes fue inspeccionada sin exponer secretos.
+  - Queda identificado si Hermes usa instalacion local de skills o external_dirs.
+  - No hay procesos legacy activos de hermes_factory_runner.py ni telegram_factory_control.py.
+  - La evidencia queda guardada en factory/evidence/TASK-HERMES-SKILLS-VERIFY-001/.
+preflight_commands:
+  - cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
+  - cd /opt/smartpyme-factory/repos/SmartPyme && git status --short
+post_commands:
+  - cd /opt/smartpyme-factory/repos/SmartPyme && mkdir -p factory/evidence/TASK-HERMES-SKILLS-VERIFY-001
+  - cd /opt/smartpyme-factory/repos/SmartPyme && test -f factory/ai_governance/skills/hermes_smartpyme_factory/SKILL.md | tee factory/evidence/TASK-HERMES-SKILLS-VERIFY-001/skill_exists.txt
+  - cd /opt/smartpyme-factory/repos/SmartPyme && grep -n "hermes_smartpyme_factory\|external_dirs\|quick_commands" /home/neoalmasana/.hermes/config.yaml > factory/evidence/TASK-HERMES-SKILLS-VERIFY-001/hermes_config_skill_refs.txt || true
+  - cd /opt/smartpyme-factory/repos/SmartPyme && ps -ef | grep -E "hermes_factory_runner|telegram_factory_control" | grep -v grep > factory/evidence/TASK-HERMES-SKILLS-VERIFY-001/legacy_processes.txt || true
