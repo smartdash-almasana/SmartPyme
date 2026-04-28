@@ -109,6 +109,14 @@ def mark_task_done(rel_task):
         notify("TASK_DONE_ERROR", str(e))
 
 
+def mark_task_blocked(rel_task, code):
+    try:
+        replace_task_status(rel_task, "blocked")
+        notify("TASK_BLOCKED", f"{rel_task}; exit_code={code}")
+    except Exception as e:
+        notify("TASK_BLOCKED_ERROR", str(e))
+
+
 def reopen_last_task():
     last_task = gate_field("last_task", "").strip()
     if not last_task or last_task == "none":
@@ -198,6 +206,8 @@ def main():
         code = post_cycle(r.returncode)
         if code == 0:
             mark_task_done(rel_task)
+        else:
+            mark_task_blocked(rel_task, code)
     else:
         print("[Hermes] No task, post-cycle only.")
         notify("NO_TASK", "Sin tareas pending")
