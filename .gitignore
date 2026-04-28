@@ -13,7 +13,10 @@ tests/tmp/
 tests/fixtures/tmp*/
 evidence_store/
 factory/logs/
+factory/runner_logs/
 factory/state/
+factory/control/.telegram_cycle_lock
+factory/control/.telegram_control_offset
 .venv/
 __pycache__/
 *.pyc
