@@ -1,0 +1,37 @@
+task_id: repo_clean_contract_001
+mode: governance
+status: pending
+human_required: false
+objective: >
+  Implementar el contrato maestro de repo limpio. SmartPyme Factory debe arrancar
+  cada ciclo con git status limpio y cerrar cada ciclo con git status limpio.
+allowed_files:
+  - docs/factory/FACTORY_REPO_CLEAN_CONTRACT.md
+  - factory/ai_governance/tasks/000_repo_clean_contract_001.yaml
+  - scripts/hermes_factory_runner.py
+  - scripts/telegram_trigger_cycle.py
+  - scripts/factory_repo_clean.py
+  - tests/factory/test_factory_repo_clean.py
+  - .gitignore
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/telegram_notify.py
+  - factory/control/**
+  - factory/runner_logs/**
+  - factory/evidence/**
+required_tests:
+  - python3 -m py_compile scripts/hermes_factory_runner.py
+  - python3 -m py_compile scripts/telegram_trigger_cycle.py
+  - python3 -m py_compile scripts/factory_repo_clean.py
+acceptance_criteria:
+  - Si el repo esta sucio antes del ciclo, Hermes bloquea con BLOCKED_REPO_DIRTY.
+  - Si hay conflictos Git, Hermes bloquea con BLOCKED_REPO_CONFLICT.
+  - Si hay runtime trackeado, Hermes bloquea con BLOCKED_REPO_RUNTIME_TRACKED.
+  - Hermes no llama a Codex con repo sucio.
+  - El cierre del ciclo verifica git status limpio.
+  - No se toca core de negocio.
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
