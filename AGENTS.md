@@ -6,6 +6,10 @@ Este archivo es el contrato raíz para cualquier agente que opere sobre SmartPym
 
 SmartPyme es un sistema operativo para PyMEs. El repositorio es la fuente de verdad. Ningún agente puede usar memoria conversacional, supuestos o texto generado como sustituto de archivos, comandos, tests o evidencia real.
 
+## Entrada obligatoria para GPT
+
+Todo chat nuevo de GPT debe leer primero `GPT.md` antes de responder, auditar, escribir roadmap o proponer tareas. `GPT.md` es el punto de arranque operativo para evitar depender de memoria conversacional.
+
 ## Jerarquía de control
 
 1. **Owner humano**: define intención de negocio y prioridades.
@@ -21,14 +25,18 @@ Ningún agente valida su propio trabajo.
 
 Orden de autoridad:
 
-1. Código y archivos actuales del repositorio.
-2. `factory/control/NEXT_CYCLE.md`, si existe.
-3. `docs/SMARTPYME_OS_ACTUAL.md`.
-4. `docs/HERMES_MCP_RUNTIME.md`.
-5. `docs/ROADMAP_IMPLEMENTACION.md`.
-6. `GEMINI.md`.
-7. `CODEX.md`.
-8. Evidencia en `factory/evidence/` y logs en `factory/runner_logs/`.
+1. `GPT.md` para arranque de chats GPT.
+2. Código y archivos actuales del repositorio.
+3. `factory/control/NEXT_CYCLE.md`, si existe.
+4. `docs/SMARTPYME_OS_ACTUAL.md`.
+5. `docs/HERMES_MCP_RUNTIME.md`.
+6. `docs/ROADMAP_IMPLEMENTACION.md`.
+7. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+8. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`.
+9. `factory/ai_governance/skills/gpt_director_auditor.yaml`.
+10. `GEMINI.md`.
+11. `CODEX.md`.
+12. Evidencia en `factory/evidence/` y logs en `factory/runner_logs/`.
 
 Queda prohibido usar memoria conversacional como estado operativo.
 
