@@ -1,0 +1,88 @@
+skill_id: hermes_control_telegram
+name: Control Telegram de Hermes
+version: 1
+status: draft
+owner: Hermes
+purpose: >
+  Definir el contrato operativo en castellano para controlar SmartPyme Factory
+  desde Telegram mediante Hermes Gateway. Esta skill no reemplaza Hermes y no
+  crea procesos paralelos.
+
+runtime:
+  canal: Telegram
+  entrada: Hermes Gateway
+  repo_principal: /opt/smartpyme-factory/repos/SmartPyme
+  hermes_home: /home/neoalmasana/.hermes
+  hermes_cli: /home/neoalmasana/.hermes/venv/bin/hermes
+
+comandos:
+  estado:
+    aliases:
+      - /estado
+      - estado
+    objetivo: Informar estado de Hermes, repo, gate, tarea activa y evidencia reciente.
+    modifica_estado: false
+
+  actualizar:
+    aliases:
+      - /actualizar
+      - actualizar
+    objetivo: Actualizar el repo principal desde GitHub antes de cualquier ciclo.
+    primer_paso: cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
+    si_falla: BLOCKED
+
+  pausar:
+    aliases:
+      - /pausar
+      - pausar
+    objetivo: Pausar la factoria sin detener Hermes Gateway ni apagar la VM.
+    efecto: Registrar estado PAUSED o HOLD en factory/control.
+
+  reanudar:
+    aliases:
+      - /reanudar
+      - reanudar
+    objetivo: Reabrir el gate si no hay auditoria pendiente ni bloqueo activo.
+    si_hay_auditoria_pendiente: BLOCKED
+
+  avanzar:
+    aliases:
+      - /avanzar
+      - avanzar
+      - siguiente tarea
+    objetivo: Ejecutar un unico ciclo gobernado de factoria.
+    primer_paso: cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
+    lectura_obligatoria:
+      - ChatGPT.md
+      - GPT.md
+      - AGENTS.md
+      - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+      - factory/ai_governance/taskspec.schema.json
+      - factory/control
+      - factory/evidence
+    cierre: WAITING_AUDIT
+
+  auditar:
+    aliases:
+      - /auditar
+      - auditar
+    objetivo: Revisar evidencia reciente y emitir APPROVED, REJECTED, BLOCKED o NO_VALIDADO.
+
+reglas:
+  - Responder al owner siempre en castellano.
+  - Todo comando informado debe incluir ruta absoluta.
+  - No crear procesos paralelos.
+  - No avanzar si el gate esta en WAITING_AUDIT, BLOCKED, HOLD o PAUSED.
+  - No ejecutar mas de una TaskSpec por ciclo.
+  - No declarar exito sin evidencia.
+  - Si falta contexto verificable, responder BLOCKED con motivo exacto.
+
+salida_obligatoria:
+  - comando_recibido
+  - decision
+  - estado_repo
+  - estado_gate
+  - tarea_seleccionada
+  - evidencia_generada
+  - errores
+  - proximo_paso
