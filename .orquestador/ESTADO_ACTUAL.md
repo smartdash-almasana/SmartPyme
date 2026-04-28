@@ -26,6 +26,15 @@
 - No se tocó `mcp_smartpyme_bridge.py`.
 - Fase 0A fue ejecutada localmente y produjo `fase0a_report.md`.
 - El migrador TaskSpec validó `21 valid, 0 errors` en dry-run local.
+- Gemini produjo `factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md`.
+- Gemini bloqueó por dos contradicciones críticas: vocabulario de veredictos y `tenant_id` vs `cliente_id`.
+- Copilot queda fuera del circuito por decisión humana.
+
+## Circuito de agentes vigente
+
+- GPT Orquestador: remedia bajo jaula operativa.
+- Gemini Auditor: audita y reaudita con independencia.
+- Copilot: excluido del circuito.
 
 ## Archivos locales sensibles detectados
 
@@ -33,13 +42,6 @@ No borrar ni pisar:
 
 - `factory/config/telegram.local.env`
 - `factory/install_hermes_telegram_control.py`
-
-## Commits remotos agregados por bootstrap v2.1
-
-- `a43e852` — `factory: add bootstrap requirements`
-- `f33faad` — `factory: add canonical verdict enum`
-- `75c3a3d` — `factory: add v2.1 schemas and telegram escape`
-- `57e0d77` — `orquestador: add operational cage`
 
 ## Estado de seguridad
 
@@ -52,13 +54,17 @@ No se debe activar ningún servicio hasta validar:
 - `/estado` funcionando;
 - `dry_run` completo.
 
-## Próxima decisión operativa
+## Próxima acción permitida
 
-La acción siguiente debe ser una sola de estas:
+GPT puede remediar únicamente los dos bloqueos Gemini P0/P1:
 
-A. Conservar `main` remoto y alinear la VM con cuidado.
-B. Revertir los commits de bootstrap remoto y rehacer por branch/PR.
+1. vocabulario de veredictos;
+2. `tenant_id` activo vs `cliente_id` canónico.
+
+La remediación debe generar:
+
+`factory/ai_governance/evidence/documental_cross_audit_20260428/gpt_remediation_report.md`
 
 ## Regla inmediata
 
-No avanzar a activación ni migración real hasta que el estado local de la VM esté reconciliado.
+No avanzar a activación, migración real ni systemd hasta reauditoría Gemini posterior.
