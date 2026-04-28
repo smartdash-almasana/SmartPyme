@@ -1,0 +1,714 @@
+$ sed core reconciliation service relevant
+import csv
+from collections.abc import Callable
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+from math import isfinite
+from pathlib import Path
+from typing import Any
+
+from app.core.hallazgos.models import Hallazgo
+from app.core.hallazgos.service import HallazgoEngine
+from app.core.reconciliation.models import (
+    AmountDifferenceAssessment,
+    AmountReconciliationFinding,
+    AmountReconciliationResult,
+    ClarificationQuestion,
+    ClarificationState,
+    ComparableRecord,
+    DeterministicDiscrepancySnapshot,
+    DeterministicHitlEvaluation,
+    DifferenceRecord,
+    EconomicImpact,
+    FailClosedStateEvaluation,
+    HumanReviewDecision,
+    MeliSuggestedAction,
+    OperationalDifferenceEngineResult,
+    QuantifiedDiscrepancy,
+    ReconciledMatch,
+    ReconciliationJob,
+    ReconciliationJobScope,
+    ReconciliationJobStatus,
+    ReconciliationRow,
+    ReconciliationResult,
+    ReconciliationStateMachineResult,
+    SimpleReconciliationFinding,
+    SimpleReconciliationResult,
+    UncertaintyRecord,
+    UncertaintyLevel,
+    WarningItem,
+    WorkflowDecision,
+)
+
+BLOCKING_FIELDS = {"cuit", "cuil", "sku", "entity_id"}
+LOCKED_RECONCILIATION_STATUS = "handoff_confirmed"
+LOCKED_RECONCILIATION_CANCELLED_STATUS = "handoff_cancelled"
+PENDING_VALIDATION_STATUS = "pending_validation"
+RECOGNIZED_RECONCILIATION_STATUSES = {
+    PENDING_VALIDATION_STATUS,
+    LOCKED_RECONCILIATION_STATUS,
+    LOCKED_RECONCILIATION_CANCELLED_STATUS,
+}
+HUMAN_REVIEW_ISSUE_CODES = {
+    "missing_core_fields",
+    "too_few_columns",
+    "empty_dataset",
+}
+GUIDED_CURATION_ISSUE_CODES = {
+    "alias_headers_used",
+    "currency_noise",
+    "fecha_needs_normalization",
+    "fecha_vencimiento_needs_normalization",
+    "unknown_headers",
+    "mostly_empty_columns",
+    "duplicate_rows",
+}
+CRITICAL_WARNING_CODES = {"color_semantics_out_of_scope"}
+EXPECTED_AMOUNT_FIELD_ALIASES = ("amount_expected", "expected_amount")
+ACTUAL_AMOUNT_FIELD_ALIASES = ("paid_amount", "amount_paid", "actual_amount")
+RECONCILIATION_JOB_STATUSES: set[ReconciliationJobStatus] = {
+    "pending",
+    "running",
+    "failed",
+    "done",
+    "dead_letter",
+}
+RECONCILIATION_JOB_SCOPES: set[ReconciliationJobScope] = {"orders"}
+RECONCILIATION_JOB_RETRY_BASE_SECONDS = 60
+RECONCILIATION_JOB_RETRY_CAP_SECONDS = 1800
+RECONCILIATION_JOB_MAX_ATTEMPTS = 10
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _is_present(value: str | int | float | bool | None) -> bool:
+    return value is not None
+
+
+def _to_float_or_zero(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _validate_aware_datetime(value: datetime, field_name: str) -> None:
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} debe tener timezone.")
+
+
+def _normalize_job_text(value: str, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} debe ser texto.")
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name}_INVALIDO: {field_name} no puede ser vacio.")
+    return normalized
+
+
+def _validate_reconciliation_job(job: ReconciliationJob) -> None:
+    _normalize_job_text(job.job_id, "JOB_ID")
+    _normalize_job_text(job.store_id, "STORE_ID")
+    if job.scope not in RECONCILIATION_JOB_SCOPES:
+        raise ValueError("RECONCILIATION_SCOPE_INVALIDO: scope no reconocido.")
+    if job.status not in RECONCILIATION_JOB_STATUSES:
+        raise ValueError("RECONCILIATION_JOB_STATUS_INVALIDO: status no reconocido.")
+    if job.cursor is not None and not isinstance(job.cursor, dict):
+        raise ValueError("RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.")
+    if job.attempts < 0:
+        raise ValueError("RECONCILIATION_ATTEMPTS_INVALIDO: attempts no puede ser negativo.")
+    _validate_aware_datetime(job.next_eligible_at, "NEXT_ELIGIBLE_AT")
+    _validate_aware_datetime(job.created_at, "CREATED_AT")
+    _validate_aware_datetime(job.updated_at, "UPDATED_AT")
+    if job.locked_at is not None:
+        _validate_aware_datetime(job.locked_at, "LOCKED_AT")
+    if job.dead_letter_at is not None:
+        _validate_aware_datetime(job.dead_letter_at, "DEAD_LETTER_AT")
+    if job.locked_at is not None and not job.locked_by:
+        raise ValueError(
+            "RECONCILIATION_LOCK_INVALIDO: locked_by es obligatorio cuando locked_at existe."
+        )
+    if job.status == "running" and (job.locked_at is None or not job.locked_by):
+        raise ValueError(
+            "RECONCILIATION_LOCK_INVALIDO: jobs running requieren lock activo."
+        )
+    if job.status == "dead_letter" and job.dead_letter_at is None:
+        raise ValueError(
+            "RECONCILIATION_DEAD_LETTER_INVALIDO: dead_letter_at es obligatorio."
+        )
+
+
+def create_reconciliation_job(
+    *,
+    job_id: str,
+    store_id: str,
+    scope: ReconciliationJobScope = "orders",
+    cursor: dict[str, Any] | None = None,
+    now: datetime | None = None,
+) -> ReconciliationJob:
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+    if cursor is not None and not isinstance(cursor, dict):
+        raise ValueError("RECONCILIATION_CURSOR_INVALIDO: cursor debe ser dict o None.")
+
+    job = ReconciliationJob(
+        job_id=_normalize_job_text(job_id, "JOB_ID"),
+        store_id=_normalize_job_text(store_id, "STORE_ID"),
+        scope=scope,
+        cursor=dict(cursor) if cursor is not None else None,
+        status="pending",
+        attempts=0,
+        next_eligible_at=timestamp,
+        created_at=timestamp,
+        updated_at=timestamp,
+    )
+    _validate_reconciliation_job(job)
+    return job
+
+
+def claim_reconciliation_jobs(
+    jobs: list[ReconciliationJob],
+    *,
+    worker: str,
+    limit: int = 1,
+    scope: ReconciliationJobScope = "orders",
+    now: datetime | None = None,
+) -> list[ReconciliationJob]:
+    if limit <= 0:
+        raise ValueError("RECONCILIATION_CLAIM_LIMIT_INVALIDO: limit debe ser positivo.")
+    if scope not in RECONCILIATION_JOB_SCOPES:
+        raise ValueError("RECONCILIATION_SCOPE_INVALIDO: scope no reconocido.")
+
+    worker_id = _normalize_job_text(worker, "WORKER")
+    timestamp = now or _utc_now()
+    _validate_aware_datetime(timestamp, "NOW")
+    for job in jobs:
+        _validate_reconciliation_job(job)
+
+    eligible_jobs = [
+        job
+        for job in jobs
+        if job.scope == scope
+        and job.status in {"pending", "failed"}
+        and job.locked_at is None
+        and job.next_eligible_at <= timestamp
+    ]
+    eligible_jobs.sort(key=lambda job: (job.next_eligible_at, job.created_at, job.job_id))
+
+    return [
+        replace(
+            job,
+            status="running",
+            attempts=job.attempts + 1,
+            locked_at=timestamp,
+            locked_by=worker_id,
+            updated_at=timestamp,
+        )
+        for job in eligible_jobs[:limit]
+    ]
+
+
+def complete_reconciliation_job(
+    job: ReconciliationJob,
+    *,
+    cursor: dict[str, Any] | None = None,
+
+--- 388-560 ---
+def reconcile_records(
+    source_a: list[dict[str, Any]], source_b: list[dict[str, Any]], key_field: str
+) -> ReconciliationResult:
+    _validate_key_field(key_field)
+
+    indexed_a = _index_records(source_a, key_field, "source_a")
+    indexed_b = _index_records(source_b, key_field, "source_b")
+
+    keys_a = set(indexed_a.keys())
+    keys_b = set(indexed_b.keys())
+
+    common_keys = sorted(keys_a & keys_b)
+    missing_in_a_keys = sorted(keys_b - keys_a)
+    missing_in_b_keys = sorted(keys_a - keys_b)
+
+    matches: list[ReconciledMatch] = []
+    mismatches: list[QuantifiedDiscrepancy] = []
+
+    for key in common_keys:
+        record_a = indexed_a[key]
+        record_b = indexed_b[key]
+        common_fields = sorted((set(record_a.keys()) & set(record_b.keys())) - {key_field})
+
+        key_has_mismatch = False
+        for field_name in common_fields:
+            value_a = record_a[field_name]
+            value_b = record_b[field_name]
+            if value_a == value_b:
+                continue
+
+            key_has_mismatch = True
+            if _is_number(value_a) and _is_number(value_b):
+                delta = float(value_b) - float(value_a)
+                detail = "mismatch_numerico"
+            else:
+                delta = None
+                detail = "mismatch_no_numerico"
+
+            mismatches.append(
+                QuantifiedDiscrepancy(
+                    key=key,
+                    field_name=field_name,
+                    value_a=value_a,
+                    value_b=value_b,
+                    delta=delta,
+                    detail=detail,
+                )
+            )
+
+        if not key_has_mismatch:
+            matches.append(
+                ReconciledMatch(
+                    key=key,
+                    record_a=ReconciliationRow.model_validate(record_a),
+                    record_b=ReconciliationRow.model_validate(record_b),
+                )
+            )
+
+    missing_in_a = [ReconciliationRow.model_validate(indexed_b[key]) for key in missing_in_a_keys]
+    missing_in_b = [ReconciliationRow.model_validate(indexed_a[key]) for key in missing_in_b_keys]
+
+    return ReconciliationResult(
+        matches=matches,
+        mismatches=mismatches,
+        missing_in_a=missing_in_a,
+        missing_in_b=missing_in_b,
+    )
+
+
+def _read_csv_records(path: str | Path) -> list[dict[str, Any]]:
+    csv_path = Path(path)
+    if not csv_path.is_file():
+        raise ValueError(f"CSV_NO_EXISTE: no existe el archivo CSV: {csv_path}.")
+
+    with csv_path.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        if not reader.fieldnames:
+            raise ValueError(f"CSV_SIN_HEADERS: el CSV no tiene headers: {csv_path}.")
+        return [dict(row) for row in reader]
+
+
+def _coerce_csv_number(value: Any) -> int | float | None:
+    parsed, reason = _parse_amount_with_reason(value)
+    if reason is not None or parsed is None:
+        return None
+
+    decimal_value = Decimal(str(parsed))
+    if decimal_value == decimal_value.to_integral_value():
+        return int(decimal_value)
+    return float(decimal_value)
+
+
+def _resolve_numeric_fields(
+    source_a: list[dict[str, Any]],
+    source_b: list[dict[str, Any]],
+    key_field: str,
+    numeric_fields: tuple[str, ...] | None,
+) -> set[str]:
+    if numeric_fields is not None:
+        return set(numeric_fields)
+
+    field_names = set[str]()
+    for record in [*source_a, *source_b]:
+        field_names.update(record.keys())
+
+    resolved_fields: set[str] = set()
+    for field_name in sorted(field_names - {key_field}):
+        values = [
+            record[field_name]
+            for record in [*source_a, *source_b]
+            if field_name in record and record[field_name] not in {"", None}
+        ]
+        if values and all(_coerce_csv_number(value) is not None for value in values):
+            resolved_fields.add(field_name)
+    return resolved_fields
+
+
+def _normalize_csv_numeric_fields(
+    records: list[dict[str, Any]], numeric_fields: set[str]
+) -> list[dict[str, Any]]:
+    normalized_records: list[dict[str, Any]] = []
+    for record in records:
+        normalized = dict(record)
+        for field_name in numeric_fields:
+            if field_name not in normalized or normalized[field_name] in {"", None}:
+                continue
+            parsed_value = _coerce_csv_number(normalized[field_name])
+            if parsed_value is None:
+                raise ValueError(
+                    f"CSV_NUMERIC_FIELD_INVALIDO: '{field_name}' contiene valor no numerico."
+                )
+            normalized[field_name] = parsed_value
+        normalized_records.append(normalized)
+    return normalized_records
+
+
+def reconcile_csv_sources(
+    source_a_path: str | Path,
+    source_b_path: str | Path,
+    *,
+    key_field: str,
+    entity_type: str = "record",
+    numeric_fields: tuple[str, ...] | None = None,
+) -> list[Hallazgo]:
+    _validate_key_field(key_field)
+
+    raw_source_a = _read_csv_records(source_a_path)
+    raw_source_b = _read_csv_records(source_b_path)
+    resolved_numeric_fields = _resolve_numeric_fields(
+        raw_source_a,
+        raw_source_b,
+        key_field,
+        numeric_fields,
+    )
+
+    source_a = _normalize_csv_numeric_fields(raw_source_a, resolved_numeric_fields)
+    source_b = _normalize_csv_numeric_fields(raw_source_b, resolved_numeric_fields)
+    result = reconcile_records(source_a, source_b, key_field)
+    return HallazgoEngine().transform(result, entidad_tipo=entity_type)
+
+
+def _read_numeric_field(record: dict[str, Any], field_name: str, key: str) -> float:
+    if field_name not in record:
+        raise ValueError(f"CAMPO_FALTANTE: falta '{field_name}' en registro key={key}.")
+    value = record[field_name]
+    if value is None:
+        raise ValueError(f"CAMPO_NULO: '{field_name}' es nulo en registro key={key}.")
+    if not _is_number(value):
+        raise ValueError(
+            f"CAMPO_NO_NUMERICO: '{field_name}' debe ser numerico en registro key={key}."
+        )
+    return float(value)
+
+
+--- 1290-1605 ---
+        decision,
+        persist_decision=persist_decision,
+    )
+
+
+def analyze_amount_reconciliation(
+    records: list[dict[str, Any]],
+    *,
+    key_field: str = "order_id",
+    expected_amount_field: str = "expected_amount",
+    actual_amount_field: str = "actual_amount",
+    tolerance: float = 0.0,
+    uncertainty_threshold: float | None = None,
+) -> AmountReconciliationResult:
+    _validate_key_field(key_field)
+    if tolerance < 0:
+        raise ValueError("TOLERANCE_INVALIDA: tolerance no puede ser negativa.")
+    if uncertainty_threshold is not None and uncertainty_threshold < tolerance:
+        raise ValueError(
+            "UNCERTAINTY_THRESHOLD_INVALIDO: uncertainty_threshold no puede ser menor a tolerance."
+        )
+
+    findings: list[AmountReconciliationFinding] = []
+    uncertainty_records: list[UncertaintyRecord] = []
+    suggested_actions: list[str] = []
+    uncertainty_levels: list[UncertaintyLevel] = []
+    human_review_questions: list[str] = []
+    clarification_questions: list[ClarificationQuestion] = []
+    ok_records = 0
+    seen_keys: set[str] = set()
+
+    for raw_record in records:
+        try:
+            record = ReconciliationRow.model_validate(raw_record).root
+        except Exception as exc:
+            raise ValueError("ROW_INVALIDA: registro invalido en records. Ejecucion bloqueada.") from exc
+        if key_field not in record:
+            raise ValueError(f"KEY_FIELD_FALTANTE: falta '{key_field}' en un registro.")
+        key_value = record[key_field]
+        if key_value is None:
+            raise ValueError(f"KEY_FIELD_NULO: '{key_field}' es nulo en un registro.")
+        key = str(key_value)
+        if key in seen_keys:
+            raise ValueError(f"KEY_DUPLICADA: '{key}' duplicada en records. Ejecucion bloqueada.")
+        seen_keys.add(key)
+
+        expected_raw, resolved_expected_field = _resolve_amount_field(
+            record, expected_amount_field, EXPECTED_AMOUNT_FIELD_ALIASES
+        )
+        actual_raw, resolved_actual_field = _resolve_amount_field(
+            record, actual_amount_field, ACTUAL_AMOUNT_FIELD_ALIASES
+        )
+        expected_field_for_uncertainty = resolved_expected_field or expected_amount_field
+        actual_field_for_uncertainty = resolved_actual_field or actual_amount_field
+
+        if resolved_expected_field is None or resolved_actual_field is None:
+            question = _build_human_question(
+                key=key,
+                expected_amount=expected_raw if _is_number(expected_raw) else None,
+                actual_amount=actual_raw if _is_number(actual_raw) else None,
+                reason="monto_incierto",
+            )
+            _append_uncertainty_blocking_findings(
+                key=key,
+                expected_amount_field=expected_field_for_uncertainty,
+                actual_amount_field=actual_field_for_uncertainty,
+                expected_raw=expected_raw,
+                actual_raw=actual_raw,
+                reason="monto_incierto",
+                findings=findings,
+                uncertainty_records=uncertainty_records,
+                suggested_actions=suggested_actions,
+            )
+            uncertainty_levels.append("high")
+            human_review_questions.append(question)
+            clarification_questions.append(
+                _build_clarification_question(
+                    key=key,
+                    reason="monto_incierto",
+                    question=question,
+                    expected_amount=expected_raw if _is_number(expected_raw) else None,
+                    actual_amount=actual_raw if _is_number(actual_raw) else None,
+                    delta=None,
+                )
+            )
+            continue
+
+        if expected_raw is None or actual_raw is None:
+            question = _build_human_question(
+                key=key,
+                expected_amount=expected_raw if _is_number(expected_raw) else None,
+                actual_amount=actual_raw if _is_number(actual_raw) else None,
+                reason="monto_incierto",
+            )
+            _append_uncertainty_blocking_findings(
+                key=key,
+                expected_amount_field=expected_field_for_uncertainty,
+                actual_amount_field=actual_field_for_uncertainty,
+                expected_raw=expected_raw,
+                actual_raw=actual_raw,
+                reason="monto_incierto",
+                findings=findings,
+                uncertainty_records=uncertainty_records,
+                suggested_actions=suggested_actions,
+            )
+            uncertainty_levels.append("high")
+            human_review_questions.append(question)
+            clarification_questions.append(
+                _build_clarification_question(
+                    key=key,
+                    reason="monto_incierto",
+                    question=question,
+                    expected_amount=expected_raw if _is_number(expected_raw) else None,
+                    actual_amount=actual_raw if _is_number(actual_raw) else None,
+                    delta=None,
+                )
+            )
+            continue
+
+        expected_amount, expected_reason = detect_deterministic_ambiguity(expected_raw)
+        actual_amount, actual_reason = detect_deterministic_ambiguity(actual_raw)
+
+        if expected_reason is not None:
+            uncertainty_records.append(
+                UncertaintyRecord(
+                    key=key,
+                    field_name=expected_field_for_uncertainty,
+                    raw_value=expected_raw,
+                    reason=expected_reason,
+                    uncertainty_level=_uncertainty_level_for_reason(expected_reason),
+                    blocking=True,
+                    clarification_state="pending_validation",
+                    pending_validation=True,
+                )
+            )
+            uncertainty_finding = _build_uncertainty_finding(
+                key=key,
+                expected_amount=expected_amount,
+                actual_amount=actual_amount,
+                reason=expected_reason,
+            )
+            findings.append(uncertainty_finding)
+            uncertainty_levels.append(uncertainty_finding.uncertainty_level)
+            if uncertainty_finding.human_question is not None:
+                human_review_questions.append(uncertainty_finding.human_question)
+                clarification_questions.append(
+                    _build_clarification_question(
+                        key=key,
+                        reason=uncertainty_finding.reason,
+                        question=uncertainty_finding.human_question,
+                        expected_amount=uncertainty_finding.expected_amount,
+                        actual_amount=uncertainty_finding.actual_amount,
+                        delta=None,
+                    )
+                )
+            suggested_actions.append("solicitar_revision_humana")
+            continue
+
+        if actual_reason is not None:
+            uncertainty_records.append(
+                UncertaintyRecord(
+                    key=key,
+                    field_name=actual_field_for_uncertainty,
+                    raw_value=actual_raw,
+                    reason=actual_reason,
+                    uncertainty_level=_uncertainty_level_for_reason(actual_reason),
+                    blocking=True,
+                    clarification_state="pending_validation",
+                    pending_validation=True,
+                )
+            )
+            uncertainty_finding = _build_uncertainty_finding(
+                key=key,
+                expected_amount=expected_amount,
+                actual_amount=actual_amount,
+                reason=actual_reason,
+            )
+            findings.append(uncertainty_finding)
+            uncertainty_levels.append(uncertainty_finding.uncertainty_level)
+            if uncertainty_finding.human_question is not None:
+                human_review_questions.append(uncertainty_finding.human_question)
+                clarification_questions.append(
+                    _build_clarification_question(
+                        key=key,
+                        reason=uncertainty_finding.reason,
+                        question=uncertainty_finding.human_question,
+                        expected_amount=uncertainty_finding.expected_amount,
+                        actual_amount=uncertainty_finding.actual_amount,
+                        delta=None,
+                    )
+                )
+            suggested_actions.append("solicitar_revision_humana")
+            continue
+
+        if expected_amount is None or actual_amount is None:
+            raise ValueError(
+                f"CAMPO_NO_NUMERICO: no se pudo parsear monto en registro key={key}."
+            )
+
+        finding = resolve_deterministic_amount_finding(
+            key=key,
+            expected_amount=expected_amount,
+            actual_amount=actual_amount,
+            tolerance=tolerance,
+            uncertainty_threshold=uncertainty_threshold,
+        )
+        if finding is None:
+            ok_records += 1
+            continue
+
+        findings.append(finding)
+        uncertainty_levels.append(finding.uncertainty_level)
+        if finding.human_question is not None:
+            human_review_questions.append(finding.human_question)
+            clarification_questions.append(
+                _build_clarification_question(
+                    key=key,
+                    reason=finding.reason,
+                    question=finding.human_question,
+                    expected_amount=finding.expected_amount,
+                    actual_amount=finding.actual_amount,
+                    delta=finding.delta,
+                )
+            )
+        suggested_actions.append(finding.suggested_action)
+
+    state_machine, max_uncertainty_level, resolved_actions = (
+        route_amount_reconciliation_for_human_review(
+            findings=findings,
+            uncertainty_levels=uncertainty_levels,
+            suggested_actions=suggested_actions,
+        )
+    )
+    return AmountReconciliationResult(
+        total_records=len(records),
+        ok_records=ok_records,
+        findings=findings,
+        uncertainty_records=uncertainty_records,
+        suggested_actions=resolved_actions,
+        workflow_decision=state_machine.workflow_decision,
+        clarification_state=state_machine.clarification_state,
+        max_uncertainty_level=max_uncertainty_level,
+        has_blocking_pending=state_machine.has_blocking_pending,
+        human_review_questions=human_review_questions,
+        clarification_questions=clarification_questions,
+        warnings=[],
+    )
+
+
+def run_reconciliation_engine(
+    records: list[dict[str, Any]],
+    *,
+    job_state: dict[str, Any] | None = None,
+    issues: list[dict[str, Any]] | None = None,
+    warnings: list[WarningItem] | None = None,
+    key_field: str = "order_id",
+    expected_amount_field: str = "expected_amount",
+    actual_amount_field: str = "actual_amount",
+    tolerance: float = 0.0,
+    uncertainty_threshold: float | None = None,
+) -> AmountReconciliationResult:
+    if job_state is not None:
+        raise_if_job_confirmed(job_state)
+
+    accumulated_warnings = _accumulate_warnings(warnings)
+    result = analyze_amount_reconciliation(
+        records,
+        key_field=key_field,
+        expected_amount_field=expected_amount_field,
+        actual_amount_field=actual_amount_field,
+        tolerance=tolerance,
+        uncertainty_threshold=uncertainty_threshold,
+    )
+    hitl_state = evaluate_deterministic_hitl_state(
+        amount_workflow_decision=result.workflow_decision,
+        issues=issues,
+        warnings=accumulated_warnings,
+        uncertainty_records=result.uncertainty_records,
+        findings=result.findings,
+    )
+
+    suggested_actions = list(result.suggested_actions)
+    if hitl_state.has_blocking_pending:
+        suggested_actions.append("solicitar_revision_humana")
+
+    return AmountReconciliationResult(
+        total_records=result.total_records,
+        ok_records=result.ok_records,
+        findings=result.findings,
+        uncertainty_records=result.uncertainty_records,
+        suggested_actions=sorted(set(suggested_actions)),
+        workflow_decision=hitl_state.workflow_decision,
+        clarification_state=hitl_state.clarification_state,
+        max_uncertainty_level=result.max_uncertainty_level,
+        has_blocking_pending=hitl_state.has_blocking_pending,
+        human_review_questions=result.human_review_questions,
+        clarification_questions=result.clarification_questions,
+        warnings=accumulated_warnings,
+    )
+
+
+def run_meli_reconciliation(
+    rows: list[dict[str, Any]] | Any,
+    *,
+    job_state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if job_state is not None:
+        raise_if_job_confirmed(job_state)
+    return analyze_meli_reconciliation(rows)
+
+
+def resolve_reconciliation_state_machine(
+    *,
+    amount_workflow_decision: WorkflowDecision,
+) -> ReconciliationStateMachineResult:
+    has_blocking_pending = amount_workflow_decision != "direct_parse"

@@ -1,6 +1,6 @@
 task_id: product_final_concept_audit_001
 mode: product_architecture_audit
-status: pending
+status: blocked
 human_required: false
 product_frame: >
   SmartPyme es un sistema operativo de interpretacion, calculo y toma de decisiones para PyMEs.

@@ -1,0 +1,15 @@
+factory/ai_governance/tasks/000_environment_contract_python_001.yaml
+factory/ai_governance/tasks/000_repo_clean_contract_001.yaml
+factory/ai_governance/tasks/audit_context_bundle_001.yaml
+factory/ai_governance/tasks/core_reconciliacion_v1.yaml
+factory/ai_governance/tasks/factory_contract_alignment_001.yaml
+factory/ai_governance/tasks/factory_observability_status_v1.yaml
+factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+factory/ai_governance/tasks/kernel_total_audit_001.yaml
+factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+factory/ai_governance/tasks/source_of_truth_001.yaml
+factory/ai_governance/tasks/task_loop_001.yaml
+factory/ai_governance/tasks/task_priority_hardening_001.yaml
+factory/ai_governance/tasks/telegram_cycle_closed_notify_v1.yaml
+factory/ai_governance/tasks/telegram_delivery_setup_v1.yaml
+factory/ai_governance/tasks/telegram_human_notifications_001.yaml

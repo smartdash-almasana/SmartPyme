@@ -1,0 +1,2240 @@
+$ sed app/core/pipeline and services
+from __future__ import annotations
+
+from app.services.fact_extraction_service import FactExtractionService
+from app.services.canonicalization_service import CanonicalizationService
+from app.services.entity_resolution_service import EntityResolutionService
+from app.services.comparison_service import ComparisonService
+from app.services.findings_service import FindingsService
+from app.repositories.fact_repository import FactRepository
+from app.repositories.canonical_repository import CanonicalRepository
+from app.repositories.entity_repository import EntityRepository
+from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
+
+# Optional deps — imported only when type-checking to avoid hard runtime dependency.
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.repositories.finding_repository import FindingRepository
+    from app.services.finding_communication_service import FindingCommunicationService
+    from app.services.clarification_service import ClarificationService
+    from app.services.action_proposal_service import ActionProposalService
+
+_BLOCKED_COUNTS = PipelineCounts(
+    facts=0, canonical=0, entities=0, validated_entities=0,
+    comparison=0, findings=0, messages=0, action_proposals=0,
+)
+
+
+class Pipeline:
+    def __init__(
+        self,
+        fact_repo: FactRepository,
+        canonical_repo: CanonicalRepository,
+        entity_repo: EntityRepository,
+        finding_repo: "FindingRepository | None" = None,
+        communication_service: "FindingCommunicationService | None" = None,
+        clarification_service: "ClarificationService | None" = None,
+        action_proposal_service: "ActionProposalService | None" = None,
+    ) -> None:
+        self.fact_extraction_service = FactExtractionService(fact_repo)
+        self.canonicalization_service = CanonicalizationService(canonical_repo)
+        self.entity_resolution_service = EntityResolutionService(entity_repo)
+        self.comparison_service = ComparisonService()
+        self.findings_service = FindingsService()
+        self.fact_repo = fact_repo
+        self.canonical_repo = canonical_repo
+        self.entity_repo = entity_repo
+        self.finding_repo = finding_repo
+        self.communication_service = communication_service
+        self.clarification_service = clarification_service
+        self.action_proposal_service = action_proposal_service
+
+    def _process_one_text(
+        self,
+        evidence_id: str,
+        text: str,
+        job_id: str | None = None,
+        plan_id: str | None = None,
+    ) -> None:
+        self.fact_extraction_service.extract_from_evidence(
+            evidence_id=evidence_id, text=text, job_id=job_id, plan_id=plan_id
+        )
+        facts = self.fact_repo.list_facts(evidence_id=evidence_id)
+        self.canonicalization_service.canonicalize_facts(facts=facts, job_id=job_id, plan_id=plan_id)
+        canonical_rows = self.canonical_repo.list_canonical_rows(evidence_id=evidence_id)
+        self.entity_resolution_service.resolve_entities(
+            canonical_rows=canonical_rows, job_id=job_id, plan_id=plan_id
+        )
+
+    def process_texts(
+        self,
+        evidence_id_a: str,
+        text_a: str,
+        evidence_id_b: str,
+        text_b: str,
+        job_id: str | None = None,
+        plan_id: str | None = None,
+    ) -> PipelineResult:
+        errors: list[str] = []
+
+        # --- Clarification gate: block if there are pending blockers for this job ---
+        if (
+            self.clarification_service is not None
+            and self.clarification_service.has_pending_blockers(job_id=job_id)
+        ):
+            blocking_reason = (
+                f"Pipeline bloqueado: hay clarificaciones pendientes para job_id={job_id!r}. "
+                "Responder las clarificaciones antes de continuar."
+            )
+            return PipelineResult(
+                status="BLOCKED",
+                job_id=job_id,
+                plan_id=plan_id,
+                facts=[],
+                canonical=[],
+                entities=[],
+                comparison=[],
+                findings=[],
+                messages=[],
+                action_proposals=[],
+                counts=_BLOCKED_COUNTS,
+                errors=[blocking_reason],
+                blocking_reason=blocking_reason,
+            )
+
+        self._process_one_text(evidence_id_a, text_a, job_id, plan_id)
+        self._process_one_text(evidence_id_b, text_b, job_id, plan_id)
+
+        facts = (
+            self.fact_repo.list_facts(evidence_id=evidence_id_a)
+            + self.fact_repo.list_facts(evidence_id=evidence_id_b)
+        )
+        canonical = (
+            self.canonical_repo.list_canonical_rows(evidence_id=evidence_id_a)
+            + self.canonical_repo.list_canonical_rows(evidence_id=evidence_id_b)
+        )
+        entities = self.entity_repo.list_entities()
+        validated_entities = [e for e in entities if e.validation_status == "validated"]
+
+        comparison_results = self.comparison_service.compare_entities(validated_entities)
+        findings = self.findings_service.generate_findings(comparison_results)
+
+        if self.finding_repo is not None and findings:
+            self.finding_repo.save_batch(findings)
+
+        messages = (
+            self.communication_service.build_messages(findings)
+            if self.communication_service is not None
+            else []
+        )
+
+        action_proposals = (
+            self.action_proposal_service.propose_batch_from_messages(messages)
+            if self.action_proposal_service is not None and messages
+            else []
+        )
+
+        counts = PipelineCounts(
+            facts=len(facts),
+            canonical=len(canonical),
+            entities=len(entities),
+            validated_entities=len(validated_entities),
+            comparison=len(comparison_results),
+            findings=len(findings),
+            messages=len(messages),
+            action_proposals=len(action_proposals),
+        )
+
+        return PipelineResult(
+            status="OK" if not errors else "ERROR",
+            job_id=job_id,
+            plan_id=plan_id,
+            facts=facts,
+            canonical=canonical,
+            entities=entities,
+            comparison=comparison_results,
+            findings=findings,
+            messages=messages,
+            action_proposals=action_proposals,
+            counts=counts,
+            errors=errors,
+            blocking_reason=None,
+        )
+
+### app/services/action_decision_service.py
+from __future__ import annotations
+
+from dataclasses import replace
+from typing import Any
+
+from app.contracts.action_contract import ActionProposal
+
+
+class InvalidDecisionError(Exception):
+    """Raised when an approve/reject is attempted on an already-executed proposal."""
+
+
+class ActionDecisionService:
+    """
+    Approves or rejects ActionProposal objects.
+    Returns a NEW ActionProposal with the updated status.
+    Does NOT execute any action. Does NOT call external services.
+    """
+
+    def approve(self, proposal: ActionProposal) -> ActionProposal:
+        """
+        Returns a new ActionProposal with status='approved'.
+        Raises InvalidDecisionError if the proposal is already executed.
+        """
+        if proposal.status == "executed":
+            raise InvalidDecisionError(
+                f"Cannot approve proposal '{proposal.action_id}': already executed."
+            )
+        return replace(proposal, status="approved")
+
+    def reject(
+        self,
+        proposal: ActionProposal,
+        reason: str | None = None,
+    ) -> ActionProposal:
+        """
+        Returns a new ActionProposal with status='rejected'.
+        If reason is provided it is appended to traceable_origin under 'rejection_reason'.
+        Raises InvalidDecisionError if the proposal is already executed.
+        """
+        if proposal.status == "executed":
+            raise InvalidDecisionError(
+                f"Cannot reject proposal '{proposal.action_id}': already executed."
+            )
+        updated_origin: dict[str, Any] = dict(proposal.traceable_origin)
+        if reason is not None:
+            updated_origin["rejection_reason"] = reason
+        return replace(proposal, status="rejected", traceable_origin=updated_origin)
+
+### app/services/action_execution_service.py
+from __future__ import annotations
+
+from dataclasses import replace
+from typing import TYPE_CHECKING
+
+from app.contracts.action_contract import ActionProposal
+
+if TYPE_CHECKING:
+    from app.contracts.execution_adapter_contract import ExecutionAdapter
+    from app.repositories.action_execution_repository import ActionExecutionRepository
+
+
+class NotApprovedError(Exception):
+    """Raised when execute() is called on a proposal that is not approved."""
+
+
+class AdapterExecutionError(Exception):
+    """Raised when the adapter returns status != 'executed'."""
+
+
+class ActionExecutionService:
+    """
+    Marks an approved ActionProposal as executed.
+    Returns a NEW ActionProposal with status='executed'.
+    Does NOT mutate the original instance.
+
+    Without adapter: marks executed internally (no external call).
+    With adapter:    delegates to adapter.execute(proposal).
+                     Persists adapter result if execution_repository is set.
+                     Only marks executed if adapter_result.status == 'executed'.
+                     If adapter returns 'blocked' or 'failed', persists result
+                     and raises AdapterExecutionError (proposal NOT marked executed).
+
+    Guard fires before adapter: NotApprovedError is raised before any adapter
+    call or persistence occurs.
+    """
+
+    def __init__(
+        self,
+        adapter: "ExecutionAdapter | None" = None,
+        execution_repository: "ActionExecutionRepository | None" = None,
+    ) -> None:
+        self.adapter = adapter
+        self.execution_repository = execution_repository
+
+    def execute(self, proposal: ActionProposal) -> ActionProposal:
+        """
+        Returns a new ActionProposal with status='executed'.
+        Raises NotApprovedError if proposal.status != 'approved'.
+        Raises AdapterExecutionError if adapter returns blocked/failed.
+        """
+        if proposal.status != "approved":
+            raise NotApprovedError(
+                f"Cannot execute proposal '{proposal.action_id}': "
+                f"status is '{proposal.status}', expected 'approved'."
+            )
+
+        if self.adapter is not None:
+            result = self.adapter.execute(proposal)
+
+            if self.execution_repository is not None:
+                self.execution_repository.save(result)
+
+            if result.status != "executed":
+                raise AdapterExecutionError(
+                    f"Adapter '{result.adapter_id}' returned status='{result.status}' "
+                    f"for proposal '{proposal.action_id}': {result.message}"
+                )
+
+        return replace(proposal, status="executed")
+
+### app/services/action_proposal_service.py
+from __future__ import annotations
+
+import hashlib
+from typing import Any
+
+from app.contracts.action_contract import ActionProposal
+from app.contracts.communication_contract import FindingMessage
+from app.services.findings_service import Finding
+
+# Severity → whether the proposal requires human confirmation before execution.
+_REQUIRES_CONFIRMATION: dict[str, bool] = {
+    "CRITICO": True,
+    "ALTO":    True,
+    "MEDIO":   True,
+    "BAJO":    False,
+    "INFO":    False,
+}
+
+
+class ActionProposalService:
+    """
+    Generates ActionProposal objects from findings or messages.
+    Does NOT execute any action. Does NOT call external services.
+    All proposals start with status='proposed'.
+    """
+
+    def propose_from_finding(self, finding: Finding) -> ActionProposal:
+        action_id = _build_action_id(finding.finding_id, "finding")
+        requires_confirmation = _REQUIRES_CONFIRMATION.get(finding.severity, True)
+
+        title = (
+            f"Acción propuesta: {finding.suggested_action} "
+            f"[{finding.severity}] en {finding.entity_type}/{finding.metric}"
+        )
+        description = (
+            f"Diferencia detectada en '{finding.metric}' entre "
+            f"'{finding.entity_id_a}' y '{finding.entity_id_b}': "
+            f"{finding.source_a_value} vs {finding.source_b_value} "
+            f"(Δ {finding.difference:+.2f}, {finding.difference_pct:+.1f}%)."
+        )
+
+        return ActionProposal(
+            action_id=action_id,
+            source_id=finding.finding_id,
+            source_type="finding",
+            title=title,
+            description=description,
+            recommended_action=finding.suggested_action,
+            status="proposed",
+            requires_confirmation=requires_confirmation,
+            traceable_origin=finding.traceable_origin,
+        )
+
+    def propose_from_message(self, message: FindingMessage) -> ActionProposal:
+        action_id = _build_action_id(message.message_id, "message")
+        requires_confirmation = _REQUIRES_CONFIRMATION.get(message.severity, True)
+
+        return ActionProposal(
+            action_id=action_id,
+            source_id=message.message_id,
+            source_type="message",
+            title=message.title,
+            description=message.body,
+            recommended_action=message.action_text,
+            status="proposed",
+            requires_confirmation=requires_confirmation,
+            traceable_origin=message.traceable_origin,
+        )
+
+    def propose_batch_from_messages(
+        self, messages: list[FindingMessage]
+    ) -> list[ActionProposal]:
+        return [self.propose_from_message(m) for m in messages]
+
+
+def _build_action_id(source_id: str, source_type: str) -> str:
+    digest = hashlib.sha256(f"{source_type}:{source_id}".encode()).hexdigest()
+    return f"action_{digest[:16]}"
+
+### app/services/canonicalization_service.py
+from __future__ import annotations
+
+import hashlib
+from typing import Any
+
+from app.contracts.evidence_contract import ExtractedFactCandidate, CanonicalRowCandidate
+from app.repositories.canonical_repository import CanonicalRepository
+
+
+class CanonicalizationService:
+    def __init__(self, repository: CanonicalRepository) -> None:
+        self.repository = repository
+
+    def canonicalize_facts(
+        self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+    ) -> dict[str, Any]:
+        canonical_rows = self._create_canonical_rows(facts, job_id=job_id, plan_id=plan_id)
+        self.repository.save_batch(canonical_rows)
+        return {
+            "status": "CANONICALIZED",
+            "job_id": job_id,
+            "plan_id": plan_id,
+            "canonical_rows_count": len(canonical_rows),
+            "canonical_row_ids": [row.canonical_row_id for row in canonical_rows],
+        }
+
+    def _create_canonical_rows(
+        self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+    ) -> list[CanonicalRowCandidate]:
+        return [
+            self._create_canonical_row(fact, job_id=job_id, plan_id=plan_id) for fact in facts
+        ]
+
+    def _create_canonical_row(
+        self, fact: ExtractedFactCandidate, job_id: str | None = None, plan_id: str | None = None
+    ) -> CanonicalRowCandidate:
+        entity_type = fact.schema_name.replace("simple_", "")
+        canonical_row_id = _build_canonical_id(fact.fact_candidate_id, entity_type)
+        return CanonicalRowCandidate(
+            canonical_row_id=canonical_row_id,
+            fact_candidate_id=fact.fact_candidate_id,
+            evidence_id=fact.evidence_id,
+            job_id=job_id or fact.job_id,
+            plan_id=plan_id or fact.plan_id,
+            entity_type=entity_type,
+            row=fact.data,
+            validation_status="pending_validation",
+            errors=[]
+        )
+
+def _build_canonical_id(fact_candidate_id: str, entity_type: str) -> str:
+    digest = hashlib.sha256(f"{fact_candidate_id}:{entity_type}".encode()).hexdigest()
+    return f"canonical_{digest[:16]}"
+
+### app/services/clarification_service.py
+from __future__ import annotations
+
+import hashlib
+from typing import Any
+
+from app.contracts.clarification_contract import Clarification
+from app.repositories.clarification_repository import ClarificationRepository
+
+
+class ClarificationService:
+    def __init__(self, repository: ClarificationRepository) -> None:
+        self.repository = repository
+
+    def create_blocking_clarification(
+        self,
+        question: str,
+        reason: str,
+        job_id: str | None = None,
+        traceable_origin: dict[str, Any] | None = None,
+    ) -> Clarification:
+        clarification_id = _build_clarification_id(question, job_id)
+        clarification = Clarification(
+            clarification_id=clarification_id,
+            job_id=job_id,
+            question=question,
+            reason=reason,
+            status="pending",
+            blocking=True,
+            answer=None,
+            traceable_origin=traceable_origin or {},
+        )
+        self.repository.save(clarification)
+        return clarification
+
+    def answer_clarification(
+        self, clarification_id: str, answer: str
+    ) -> None:
+        self.repository.mark_answered(clarification_id, answer)
+
+    def has_pending_blockers(self, job_id: str | None = None) -> bool:
+        return self.repository.has_pending(job_id=job_id)
+
+
+def _build_clarification_id(question: str, job_id: str | None) -> str:
+    digest = hashlib.sha256(
+        f"{job_id or ''}:{question}".encode()
+    ).hexdigest()
+    return f"clarif_{digest[:16]}"
+
+### app/services/comparison_service.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+from itertools import combinations
+
+from app.contracts.entity_contract import Entity
+
+@dataclass(frozen=True, slots=True)
+class ComparisonResult:
+    entity_id_a: str
+    entity_id_b: str
+    entity_type: str
+    attribute: str
+    value_a: Any
+    value_b: Any
+    difference: float
+    difference_pct: float
+
+class ComparisonService:
+    def compare_entities(self, entities: list[Entity]) -> list[ComparisonResult]:
+        results = []
+        for entity_a, entity_b in combinations(entities, 2):
+            if entity_a.entity_type != entity_b.entity_type:
+                continue
+
+            if entity_a.validation_status != "validated" or entity_b.validation_status != "validated":
+                continue
+
+            for attr, value_a in entity_a.attributes.items():
+                if attr in entity_b.attributes:
+                    value_b = entity_b.attributes[attr]
+                    if isinstance(value_a, (int, float)) and isinstance(value_b, (int, float)):
+                        if value_a != value_b:
+                            diff = float(value_b - value_a)
+                            diff_pct = (diff / value_a) * 100 if value_a != 0 else 0
+                            results.append(
+                                ComparisonResult(
+                                    entity_id_a=entity_a.entity_id,
+                                    entity_id_b=entity_b.entity_id,
+                                    entity_type=entity_a.entity_type,
+                                    attribute=attr,
+                                    value_a=value_a,
+                                    value_b=value_b,
+                                    difference=diff,
+                                    difference_pct=diff_pct,
+                                )
+                            )
+        return results
+
+### app/services/entity_resolution_service.py
+from __future__ import annotations
+
+import hashlib
+from typing import Any
+
+from app.contracts.evidence_contract import CanonicalRowCandidate
+from app.contracts.entity_contract import Entity
+from app.repositories.entity_repository import EntityRepository
+
+
+class EntityResolutionService:
+    def __init__(self, repository: EntityRepository) -> None:
+        self.repository = repository
+
+    def resolve_entities(
+        self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+    ) -> dict[str, Any]:
+        
+        entities = self._resolve_rows(canonical_rows, job_id=job_id, plan_id=plan_id)
+        self.repository.save_batch(entities)
+        return {
+            "status": "RESOLVED",
+            "job_id": job_id,
+            "plan_id": plan_id,
+            "entities_count": len(entities),
+            "entity_ids": [entity.entity_id for entity in entities],
+        }
+
+    def _resolve_rows(
+        self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+    ) -> list[Entity]:
+        entities = []
+        for row in canonical_rows:
+            # This is a very basic resolution logic. It will create a new entity for each canonical row.
+            # A more advanced implementation would try to find existing entities and merge them.
+            
+            entity_type = row.entity_type
+            attributes = row.row
+            
+            # Try to find an existing entity with the same attributes.
+            # This is a simplification. A real implementation would have more complex matching logic.
+            existing_entity = self.repository.find_by_attribute(entity_type, 'value', attributes.get('value'))
+            
+            if existing_entity:
+                # If an entity with the same attribute value exists, we link the new canonical row to it.
+                # This is a very basic form of entity resolution.
+                updated_attributes = existing_entity.attributes.copy()
+                updated_attributes.update(attributes)
+
+                # Preserve "validated" status — a human decision must not be degraded.
+                preserved_status = (
+                    existing_entity.validation_status
+                    if existing_entity.validation_status == "validated"
+                    else "pending_validation"
+                )
+
+                # Deduplicate linked canonical rows.
+                existing_rows = list(existing_entity.linked_canonical_rows)
+                if row.canonical_row_id not in existing_rows:
+                    existing_rows.append(row.canonical_row_id)
+
+                updated_entity = Entity(
+                    entity_id=existing_entity.entity_id,
+                    entity_type=existing_entity.entity_type,
+                    attributes=updated_attributes,
+                    linked_canonical_rows=existing_rows,
+                    validation_status=preserved_status,
+                )
+                entities.append(updated_entity)
+            else:
+                # If no existing entity is found, create a new one.
+                entity_id = _build_entity_id(row.canonical_row_id, entity_type)
+                new_entity = Entity(
+                    entity_id=entity_id,
+                    entity_type=entity_type,
+                    attributes=attributes,
+                    linked_canonical_rows=[row.canonical_row_id],
+                    validation_status='pending_validation'
+                )
+                entities.append(new_entity)
+
+        return entities
+
+
+def _build_entity_id(canonical_row_id: str, entity_type: str) -> str:
+    digest = hashlib.sha256(f"{canonical_row_id}:{entity_type}".encode()).hexdigest()
+    return f"entity_{digest[:16]}"
+
+### app/services/fact_extraction_service.py
+from __future__ import annotations
+
+import hashlib
+import re
+from typing import Any
+
+from app.contracts.evidence_contract import ExtractedFactCandidate
+from app.repositories.fact_repository import FactRepository
+
+
+class FactExtractionService:
+    AMOUNT_PATTERN = re.compile(r"(?<!\w)(?:\$\s*\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{2}))(?!\w)")
+    DATE_PATTERN = re.compile(r"\b\d{2}/\d{2}/\d{4}\b")
+    CUIT_PATTERN = re.compile(r"\b\d{2}-\d{8}-\d\b")
+
+    def __init__(self, repository: FactRepository) -> None:
+        self.repository = repository
+
+    def extract_from_evidence(
+        self,
+        evidence_id: str,
+        text: str,
+        *,
+        job_id: str | None = None,
+        plan_id: str | None = None,
+    ) -> dict[str, Any]:
+        facts = self._extract_facts(
+            evidence_id=evidence_id,
+            text=text,
+            job_id=job_id,
+            plan_id=plan_id,
+        )
+        self.repository.save_batch(facts)
+        return {
+            "status": "EXTRACTED",
+            "evidence_id": evidence_id,
+            "facts_count": len(facts),
+            "fact_ids": [fact.fact_candidate_id for fact in facts],
+        }
+
+    def _extract_facts(
+        self,
+        *,
+        evidence_id: str,
+        text: str,
+        job_id: str | None,
+        plan_id: str | None,
+    ) -> list[ExtractedFactCandidate]:
+        facts: list[ExtractedFactCandidate] = []
+        blocked_spans = [
+            match.span()
+            for pattern in (self.DATE_PATTERN, self.CUIT_PATTERN)
+            for match in pattern.finditer(text)
+        ]
+        facts.extend(
+            self._build_facts(
+                evidence_id=evidence_id,
+                job_id=job_id,
+                plan_id=plan_id,
+                fact_type="amount",
+                values=[
+                    match.group().strip().replace("$", "").strip()
+                    for match in self.AMOUNT_PATTERN.finditer(text)
+                    if not _overlaps_any(match.span(), blocked_spans)
+                ],
+            )
+        )
+        facts.extend(
+            self._build_facts(
+                evidence_id=evidence_id,
+                job_id=job_id,
+                plan_id=plan_id,
+                fact_type="date",
+                values=[match.group() for match in self.DATE_PATTERN.finditer(text)],
+            )
+        )
+        facts.extend(
+            self._build_facts(
+                evidence_id=evidence_id,
+                job_id=job_id,
+                plan_id=plan_id,
+                fact_type="cuit",
+                values=[match.group() for match in self.CUIT_PATTERN.finditer(text)],
+            )
+        )
+        return facts
+
+    def _build_facts(
+        self,
+        *,
+        evidence_id: str,
+        job_id: str | None,
+        plan_id: str | None,
+        fact_type: str,
+        values: list[str],
+    ) -> list[ExtractedFactCandidate]:
+        facts: list[ExtractedFactCandidate] = []
+        for index, value in enumerate(values):
+            data = {"fact_type": fact_type, "value": value}
+            facts.append(
+                ExtractedFactCandidate(
+                    fact_candidate_id=_build_fact_id(evidence_id, fact_type, value, index),
+                    evidence_id=evidence_id,
+                    job_id=job_id,
+                    plan_id=plan_id,
+                    schema_name=f"simple_{fact_type}",
+                    data=data,
+                    confidence=1.0,
+                    extraction_method="deterministic_regex",
+                    validation_status="pending_validation",
+                    errors=[],
+                )
+            )
+        return facts
+
+
+def _build_fact_id(evidence_id: str, fact_type: str, value: str, index: int) -> str:
+    digest = hashlib.sha256(f"{evidence_id}:{fact_type}:{value}:{index}".encode()).hexdigest()
+    return f"fact_{digest[:16]}"
+
+
+def _overlaps_any(span: tuple[int, int], blocked_spans: list[tuple[int, int]]) -> bool:
+    start, end = span
+    return any(start < blocked_end and end > blocked_start for blocked_start, blocked_end in blocked_spans)
+
+### app/services/finding_communication_service.py
+from __future__ import annotations
+
+from app.services.findings_service import Finding
+from app.contracts.communication_contract import FindingMessage, build_message_id
+
+# Severity labels in Spanish for human-facing messages.
+_SEVERITY_LABEL: dict[str, str] = {
+    "CRITICO": "⚠️ CRÍTICO",
+    "ALTO":    "🔴 ALTO",
+    "MEDIO":   "🟡 MEDIO",
+    "BAJO":    "🟢 BAJO",
+    "INFO":    "ℹ️ INFO",
+}
+
+
+class FindingCommunicationService:
+    """
+    Converts Finding objects into human-readable FindingMessage objects.
+    Does NOT send messages. Does NOT call external services.
+    """
+
+    def build_message(self, finding: Finding, channel: str = "internal") -> FindingMessage:
+        severity_label = _SEVERITY_LABEL.get(finding.severity, finding.severity)
+
+        title = (
+            f"[{severity_label}] Diferencia en {finding.entity_type.upper()} "
+            f"— métrica: {finding.metric}"
+        )
+
+        diff_sign = "+" if finding.difference > 0 else ""
+        body = (
+            f"Se detectó una diferencia en la métrica '{finding.metric}' "
+            f"entre las entidades '{finding.entity_id_a}' y '{finding.entity_id_b}' "
+            f"(tipo: {finding.entity_type}).\n"
+            f"\n"
+            f"  • Valor A: {finding.source_a_value}\n"
+            f"  • Valor B: {finding.source_b_value}\n"
+            f"  • Diferencia: {diff_sign}{finding.difference:.2f} "
+            f"({diff_sign}{finding.difference_pct:.1f}%)\n"
+            f"\n"
+            f"Severidad: {severity_label}"
+        )
+
+        return FindingMessage(
+            message_id=build_message_id(finding.finding_id, channel),
+            finding_id=finding.finding_id,
+            channel=channel,
+            title=title,
+            body=body,
+            action_text=finding.suggested_action,
+            severity=finding.severity,
+            traceable_origin=finding.traceable_origin,
+        )
+
+    def build_messages(
+        self, findings: list[Finding], channel: str = "internal"
+    ) -> list[FindingMessage]:
+        return [self.build_message(f, channel) for f in findings]
+
+### app/services/findings_service.py
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass, field, asdict
+from typing import Any
+
+from app.services.comparison_service import ComparisonResult
+
+@dataclass(frozen=True, slots=True)
+class Finding:
+    finding_id: str
+    entity_id_a: str
+    entity_id_b: str
+    entity_type: str
+    metric: str
+    source_a_value: Any
+    source_b_value: Any
+    difference: float
+    difference_pct: float
+    severity: str
+    suggested_action: str
+    traceable_origin: dict[str, Any] = field(default_factory=dict)
+
+
+class FindingsService:
+    def generate_findings(self, comparison_results: list[ComparisonResult]) -> list[Finding]:
+        findings = []
+        for result in comparison_results:
+            if result.difference == 0:
+                continue
+
+            severity = self._calculate_severity(result.difference_pct)
+            suggested_action = self._suggest_action(severity)
+            finding_id = self._build_finding_id(result)
+
+            findings.append(
+                Finding(
+                    finding_id=finding_id,
+                    entity_id_a=result.entity_id_a,
+                    entity_id_b=result.entity_id_b,
+                    entity_type=result.entity_type,
+                    metric=result.attribute,
+                    source_a_value=result.value_a,
+                    source_b_value=result.value_b,
+                    difference=result.difference,
+                    difference_pct=result.difference_pct,
+                    severity=severity,
+                    suggested_action=suggested_action,
+                    traceable_origin={"comparison_result": asdict(result)}
+                )
+            )
+        return findings
+
+    def _calculate_severity(self, difference_pct: float) -> str:
+        abs_diff_pct = abs(difference_pct)
+        if abs_diff_pct >= 20:
+            return "CRITICO"
+        if 10 <= abs_diff_pct < 20:
+            return "ALTO"
+        if 5 <= abs_diff_pct < 10:
+            return "MEDIO"
+        if 0 < abs_diff_pct < 5:
+            return "BAJO"
+        return "INFO"
+
+    def _suggest_action(self, severity: str) -> str:
+        if severity == "CRITICO":
+            return "Revisión inmediata requerida"
+        if severity == "ALTO":
+            return "Revisión recomendada"
+        if severity == "MEDIO":
+            return "Monitorear"
+        return "N/A"
+
+    def _build_finding_id(self, result: ComparisonResult) -> str:
+        digest = hashlib.sha256(
+            f"{result.entity_id_a}:{result.entity_id_b}:{result.attribute}".encode()
+        ).hexdigest()
+        return f"finding_{digest[:16]}"
+
+### app/repositories/__init__.py
+"""Local repository adapters for SmartPyme."""
+
+### app/repositories/canonical_repository.py
+from __future__ import annotations
+
+import json
+import os
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+from app.contracts.evidence_contract import CanonicalRowCandidate
+
+
+def _default_db_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "canonical.db"
+
+
+def _get_db_path() -> Path:
+    raw_path = os.getenv("SMARTPYME_CANONICAL_DB")
+    return Path(raw_path) if raw_path else _default_db_path()
+
+
+def _connect() -> sqlite3.Connection:
+    db_path = _get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(db_path)
+
+
+def init_canonical_db() -> None:
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS canonical_rows (
+                canonical_row_id TEXT PRIMARY KEY,
+                fact_candidate_id TEXT NOT NULL,
+                evidence_id TEXT NOT NULL,
+                job_id TEXT,
+                plan_id TEXT,
+                entity_type TEXT NOT NULL,
+                row_json TEXT NOT NULL,
+                validation_status TEXT NOT NULL,
+                errors_json TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_canonical_rows_fact_candidate_id
+            ON canonical_rows(fact_candidate_id)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_canonical_rows_entity_type
+            ON canonical_rows(entity_type)
+            """
+        )
+
+
+class CanonicalRepository:
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        self.db_path = Path(db_path) if db_path is not None else _get_db_path()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.init_db()
+
+    def init_db(self) -> None:
+        previous_env = os.environ.get("SMARTPYME_CANONICAL_DB")
+        os.environ["SMARTPYME_CANONICAL_DB"] = str(self.db_path)
+        try:
+            init_canonical_db()
+        finally:
+            if previous_env is None:
+                os.environ.pop("SMARTPYME_CANONICAL_DB", None)
+            else:
+                os.environ["SMARTPYME_CANONICAL_DB"] = previous_env
+
+    def save(self, canonical_row: CanonicalRowCandidate) -> None:
+        row_json = json.dumps(canonical_row.row, ensure_ascii=False, sort_keys=True)
+        errors_json = json.dumps(canonical_row.errors, ensure_ascii=False)
+
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO canonical_rows (
+                    canonical_row_id,
+                    fact_candidate_id,
+                    evidence_id,
+                    job_id,
+                    plan_id,
+                    entity_type,
+                    row_json,
+                    validation_status,
+                    errors_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(canonical_row_id) DO UPDATE SET
+                    fact_candidate_id = excluded.fact_candidate_id,
+                    evidence_id = excluded.evidence_id,
+                    job_id = excluded.job_id,
+                    plan_id = excluded.plan_id,
+                    entity_type = excluded.entity_type,
+                    row_json = excluded.row_json,
+                    validation_status = excluded.validation_status,
+                    errors_json = excluded.errors_json
+                """,
+                (
+                    canonical_row.canonical_row_id,
+                    canonical_row.fact_candidate_id,
+                    canonical_row.evidence_id,
+                    canonical_row.job_id,
+                    canonical_row.plan_id,
+                    canonical_row.entity_type,
+                    row_json,
+                    canonical_row.validation_status,
+                    errors_json,
+                ),
+            )
+
+    def save_batch(self, canonical_rows: list[CanonicalRowCandidate]) -> None:
+        for row in canonical_rows:
+            self.save(row)
+
+    def list_canonical_rows(
+        self,
+        *,
+        evidence_id: str | None = None,
+        entity_type: str | None = None,
+    ) -> list[CanonicalRowCandidate]:
+        query = """
+            SELECT
+                canonical_row_id,
+                fact_candidate_id,
+                evidence_id,
+                job_id,
+                plan_id,
+                entity_type,
+                row_json,
+                validation_status,
+                errors_json
+            FROM canonical_rows
+            WHERE (? IS NULL OR evidence_id = ?)
+              AND (? IS NULL OR entity_type = ?)
+            ORDER BY canonical_row_id
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                query,
+                (evidence_id, evidence_id, entity_type, entity_type),
+            ).fetchall()
+        return [_row_to_canonical_row(row) for row in rows]
+
+    def _connect(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.db_path)
+
+
+def _row_to_canonical_row(row: sqlite3.Row) -> CanonicalRowCandidate:
+    return CanonicalRowCandidate(
+        canonical_row_id=row["canonical_row_id"],
+        fact_candidate_id=row["fact_candidate_id"],
+        evidence_id=row["evidence_id"],
+        job_id=row["job_id"],
+        plan_id=row["plan_id"],
+        entity_type=row["entity_type"],
+        row=json.loads(row["row_json"]),
+        validation_status=row["validation_status"],
+        errors=json.loads(row["errors_json"]),
+    )
+
+### app/repositories/clarification_repository.py
+from __future__ import annotations
+
+import json
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+from app.contracts.clarification_contract import Clarification
+
+
+class ClarificationRepository:
+    def __init__(self, db_path: str | Path) -> None:
+        self.db_path = Path(db_path)
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._init_db()
+
+    def _init_db(self) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS clarifications (
+                    clarification_id      TEXT PRIMARY KEY,
+                    job_id                TEXT,
+                    question              TEXT NOT NULL,
+                    reason                TEXT NOT NULL,
+                    status                TEXT NOT NULL DEFAULT 'pending',
+                    blocking              INTEGER NOT NULL DEFAULT 1,
+                    answer                TEXT,
+                    traceable_origin_json TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_clarifications_job_id
+                ON clarifications(job_id)
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_clarifications_status
+                ON clarifications(status)
+                """
+            )
+
+    def save(self, clarification: Clarification) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO clarifications (
+                    clarification_id, job_id, question, reason,
+                    status, blocking, answer, traceable_origin_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(clarification_id) DO UPDATE SET
+                    job_id                = excluded.job_id,
+                    question              = excluded.question,
+                    reason                = excluded.reason,
+                    status                = excluded.status,
+                    blocking              = excluded.blocking,
+                    answer                = excluded.answer,
+                    traceable_origin_json = excluded.traceable_origin_json
+                """,
+                (
+                    clarification.clarification_id,
+                    clarification.job_id,
+                    clarification.question,
+                    clarification.reason,
+                    clarification.status,
+                    int(clarification.blocking),
+                    clarification.answer,
+                    json.dumps(clarification.traceable_origin, ensure_ascii=False),
+                ),
+            )
+
+    def save_batch(self, clarifications: list[Clarification]) -> None:
+        for c in clarifications:
+            self.save(c)
+
+    def list_pending(self, job_id: str | None = None) -> list[Clarification]:
+        query = """
+            SELECT clarification_id, job_id, question, reason,
+                   status, blocking, answer, traceable_origin_json
+            FROM clarifications
+            WHERE status = 'pending'
+              AND (? IS NULL OR job_id = ?)
+            ORDER BY clarification_id
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, (job_id, job_id)).fetchall()
+        return [_row_to_clarification(row) for row in rows]
+
+    def mark_answered(self, clarification_id: str, answer: str) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE clarifications
+                SET status = 'answered', answer = ?
+                WHERE clarification_id = ?
+                """,
+                (answer, clarification_id),
+            )
+
+    def has_pending(self, job_id: str | None = None) -> bool:
+        query = """
+            SELECT COUNT(*) FROM clarifications
+            WHERE status = 'pending'
+              AND blocking = 1
+              AND (? IS NULL OR job_id = ?)
+        """
+        with self._connect() as conn:
+            count = conn.execute(query, (job_id, job_id)).fetchone()[0]
+        return count > 0
+
+    def _connect(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.db_path)
+
+
+def _row_to_clarification(row: sqlite3.Row) -> Clarification:
+    return Clarification(
+        clarification_id=row["clarification_id"],
+        job_id=row["job_id"],
+        question=row["question"],
+        reason=row["reason"],
+        status=row["status"],
+        blocking=bool(row["blocking"]),
+        answer=row["answer"],
+        traceable_origin=json.loads(row["traceable_origin_json"]),
+    )
+
+### app/repositories/entity_repository.py
+from __future__ import annotations
+
+import json
+import os
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+from app.contracts.entity_contract import Entity
+
+
+def _default_db_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "entities.db"
+
+
+def _get_db_path() -> Path:
+    raw_path = os.getenv("SMARTPYME_ENTITIES_DB")
+    return Path(raw_path) if raw_path else _default_db_path()
+
+
+def _connect() -> sqlite3.Connection:
+    db_path = _get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(db_path)
+
+
+def init_entities_db() -> None:
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS entities (
+                entity_id TEXT PRIMARY KEY,
+                entity_type TEXT NOT NULL,
+                attributes_json TEXT NOT NULL,
+                linked_canonical_rows_json TEXT NOT NULL,
+                validation_status TEXT NOT NULL,
+                errors_json TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_entities_entity_type
+            ON entities(entity_type)
+            """
+        )
+
+
+class EntityRepository:
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        self.db_path = Path(db_path) if db_path is not None else _get_db_path()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.init_db()
+
+    def init_db(self) -> None:
+        previous_env = os.environ.get("SMARTPYME_ENTITIES_DB")
+        os.environ["SMARTPYME_ENTITIES_DB"] = str(self.db_path)
+        try:
+            init_entities_db()
+        finally:
+            if previous_env is None:
+                os.environ.pop("SMARTPYME_ENTITIES_DB", None)
+            else:
+                os.environ["SMARTPYME_ENTITIES_DB"] = previous_env
+
+    def save(self, entity: Entity) -> None:
+        attributes_json = json.dumps(entity.attributes, ensure_ascii=False, sort_keys=True)
+        linked_canonical_rows_json = json.dumps(entity.linked_canonical_rows, ensure_ascii=False)
+        errors_json = json.dumps(entity.errors, ensure_ascii=False)
+
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO entities (
+                    entity_id,
+                    entity_type,
+                    attributes_json,
+                    linked_canonical_rows_json,
+                    validation_status,
+                    errors_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(entity_id) DO UPDATE SET
+                    entity_type = excluded.entity_type,
+                    attributes_json = excluded.attributes_json,
+                    linked_canonical_rows_json = excluded.linked_canonical_rows_json,
+                    validation_status = excluded.validation_status,
+                    errors_json = excluded.errors_json
+                """,
+                (
+                    entity.entity_id,
+                    entity.entity_type,
+                    attributes_json,
+                    linked_canonical_rows_json,
+                    entity.validation_status,
+                    errors_json,
+                ),
+            )
+
+    def save_batch(self, entities: list[Entity]) -> None:
+        for entity in entities:
+            self.save(entity)
+
+    def find_by_attribute(self, entity_type: str, attribute: str, value: Any) -> Entity | None:
+        # This is a simplified search and might need to be more robust
+        # depending on the actual attributes and their structure.
+        query = f"""
+            SELECT
+                entity_id,
+                entity_type,
+                attributes_json,
+                linked_canonical_rows_json,
+                validation_status,
+                errors_json
+            FROM entities
+            WHERE entity_type = ? AND json_extract(attributes_json, '$.{attribute}') = ?
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(query, (entity_type, value)).fetchone()
+
+        return _row_to_entity(row) if row else None
+
+    def list_entities(self, entity_type: str | None = None) -> list[Entity]:
+        query = """
+            SELECT
+                entity_id,
+                entity_type,
+                attributes_json,
+                linked_canonical_rows_json,
+                validation_status,
+                errors_json
+            FROM entities
+            WHERE (? IS NULL OR entity_type = ?)
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+        return [_row_to_entity(row) for row in rows]
+
+    def _connect(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.db_path)
+
+
+def _row_to_entity(row: sqlite3.Row) -> Entity:
+    return Entity(
+        entity_id=row["entity_id"],
+        entity_type=row["entity_type"],
+        attributes=json.loads(row["attributes_json"]),
+        linked_canonical_rows=json.loads(row["linked_canonical_rows_json"]),
+        validation_status=row["validation_status"],
+        errors=json.loads(row["errors_json"]),
+    )
+
+### app/repositories/fact_repository.py
+from __future__ import annotations
+
+import json
+import os
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+from app.contracts.evidence_contract import ExtractedFactCandidate
+
+
+def _default_db_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "facts.db"
+
+
+def _get_db_path() -> Path:
+    raw_path = os.getenv("SMARTPYME_FACTS_DB")
+    return Path(raw_path) if raw_path else _default_db_path()
+
+
+def _connect() -> sqlite3.Connection:
+    db_path = _get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(db_path)
+
+
+def init_facts_db() -> None:
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS extracted_facts (
+                fact_candidate_id TEXT PRIMARY KEY,
+                evidence_id TEXT NOT NULL,
+                job_id TEXT,
+                plan_id TEXT,
+                schema_name TEXT NOT NULL,
+                fact_type TEXT,
+                data_json TEXT NOT NULL,
+                confidence REAL NOT NULL,
+                extraction_method TEXT NOT NULL,
+                validation_status TEXT NOT NULL,
+                errors_json TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_extracted_facts_evidence_id
+            ON extracted_facts(evidence_id)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_extracted_facts_fact_type
+            ON extracted_facts(fact_type)
+            """
+        )
+
+
+class FactRepository:
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        self.db_path = Path(db_path) if db_path is not None else _get_db_path()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.init_db()
+
+    def init_db(self) -> None:
+        previous_env = os.environ.get("SMARTPYME_FACTS_DB")
+        os.environ["SMARTPYME_FACTS_DB"] = str(self.db_path)
+        try:
+            init_facts_db()
+        finally:
+            if previous_env is None:
+                os.environ.pop("SMARTPYME_FACTS_DB", None)
+            else:
+                os.environ["SMARTPYME_FACTS_DB"] = previous_env
+
+    def save(self, fact: ExtractedFactCandidate) -> None:
+        data_json = json.dumps(fact.data, ensure_ascii=False, sort_keys=True)
+        errors_json = json.dumps(fact.errors, ensure_ascii=False)
+        fact_type = fact.data.get("fact_type")
+
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO extracted_facts (
+                    fact_candidate_id,
+                    evidence_id,
+                    job_id,
+                    plan_id,
+                    schema_name,
+                    fact_type,
+                    data_json,
+                    confidence,
+                    extraction_method,
+                    validation_status,
+                    errors_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(fact_candidate_id) DO UPDATE SET
+                    evidence_id = excluded.evidence_id,
+                    job_id = excluded.job_id,
+                    plan_id = excluded.plan_id,
+                    schema_name = excluded.schema_name,
+                    fact_type = excluded.fact_type,
+                    data_json = excluded.data_json,
+                    confidence = excluded.confidence,
+                    extraction_method = excluded.extraction_method,
+                    validation_status = excluded.validation_status,
+                    errors_json = excluded.errors_json
+                """,
+                (
+                    fact.fact_candidate_id,
+                    fact.evidence_id,
+                    fact.job_id,
+                    fact.plan_id,
+                    fact.schema_name,
+                    fact_type,
+                    data_json,
+                    fact.confidence,
+                    fact.extraction_method,
+                    fact.validation_status,
+                    errors_json,
+                ),
+            )
+
+    def save_batch(self, facts: list[ExtractedFactCandidate]) -> None:
+        for fact in facts:
+            self.save(fact)
+
+    def list_facts(
+        self,
+        *,
+        evidence_id: str | None = None,
+        fact_type: str | None = None,
+    ) -> list[ExtractedFactCandidate]:
+        query = """
+            SELECT
+                fact_candidate_id,
+                evidence_id,
+                job_id,
+                plan_id,
+                schema_name,
+                data_json,
+                confidence,
+                extraction_method,
+                validation_status,
+                errors_json
+            FROM extracted_facts
+            WHERE (? IS NULL OR evidence_id = ?)
+              AND (? IS NULL OR fact_type = ?)
+            ORDER BY fact_candidate_id
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                query,
+                (evidence_id, evidence_id, fact_type, fact_type),
+            ).fetchall()
+        return [_row_to_fact(row) for row in rows]
+
+    def _connect(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.db_path)
+
+
+def _row_to_fact(row: sqlite3.Row) -> ExtractedFactCandidate:
+    return ExtractedFactCandidate(
+        fact_candidate_id=row["fact_candidate_id"],
+        evidence_id=row["evidence_id"],
+        job_id=row["job_id"],
+        plan_id=row["plan_id"],
+        schema_name=row["schema_name"],
+        data=json.loads(row["data_json"]),
+        confidence=float(row["confidence"]),
+        extraction_method=row["extraction_method"],
+        validation_status=row["validation_status"],
+        errors=json.loads(row["errors_json"]),
+    )
+
+### app/repositories/finding_repository.py
+from __future__ import annotations
+
+import json
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+from app.services.findings_service import Finding
+
+
+class FindingRepository:
+    def __init__(self, db_path: str | Path) -> None:
+        self.db_path = Path(db_path)
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._init_db()
+
+    def _init_db(self) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS findings (
+                    finding_id          TEXT PRIMARY KEY,
+                    entity_id_a         TEXT NOT NULL,
+                    entity_id_b         TEXT NOT NULL,
+                    entity_type         TEXT NOT NULL,
+                    metric              TEXT NOT NULL,
+                    source_a_value      TEXT NOT NULL,
+                    source_b_value      TEXT NOT NULL,
+                    difference          REAL NOT NULL,
+                    difference_pct      REAL NOT NULL,
+                    severity            TEXT NOT NULL,
+                    suggested_action    TEXT NOT NULL,
+                    traceable_origin_json TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_findings_entity_type
+                ON findings(entity_type)
+                """
+            )
+
+    def save(self, finding: Finding) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO findings (
+                    finding_id, entity_id_a, entity_id_b, entity_type,
+                    metric, source_a_value, source_b_value,
+                    difference, difference_pct, severity,
+                    suggested_action, traceable_origin_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(finding_id) DO UPDATE SET
+                    entity_id_a         = excluded.entity_id_a,
+                    entity_id_b         = excluded.entity_id_b,
+                    entity_type         = excluded.entity_type,
+                    metric              = excluded.metric,
+                    source_a_value      = excluded.source_a_value,
+                    source_b_value      = excluded.source_b_value,
+                    difference          = excluded.difference,
+                    difference_pct      = excluded.difference_pct,
+                    severity            = excluded.severity,
+                    suggested_action    = excluded.suggested_action,
+                    traceable_origin_json = excluded.traceable_origin_json
+                """,
+                (
+                    finding.finding_id,
+                    finding.entity_id_a,
+                    finding.entity_id_b,
+                    finding.entity_type,
+                    finding.metric,
+                    json.dumps(finding.source_a_value),
+                    json.dumps(finding.source_b_value),
+                    finding.difference,
+                    finding.difference_pct,
+                    finding.severity,
+                    finding.suggested_action,
+                    json.dumps(finding.traceable_origin, ensure_ascii=False),
+                ),
+            )
+
+    def save_batch(self, findings: list[Finding]) -> None:
+        for finding in findings:
+            self.save(finding)
+
+    def list_findings(self, entity_type: str | None = None) -> list[Finding]:
+        query = """
+            SELECT
+                finding_id, entity_id_a, entity_id_b, entity_type,
+                metric, source_a_value, source_b_value,
+                difference, difference_pct, severity,
+                suggested_action, traceable_origin_json
+            FROM findings
+            WHERE (? IS NULL OR entity_type = ?)
+            ORDER BY finding_id
+        """
+        with self._connect() as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+        return [_row_to_finding(row) for row in rows]
+
+    def _connect(self) -> sqlite3.Connection:
+        return sqlite3.connect(self.db_path)
+
+
+def _row_to_finding(row: sqlite3.Row) -> Finding:
+    return Finding(
+        finding_id=row["finding_id"],
+        entity_id_a=row["entity_id_a"],
+        entity_id_b=row["entity_id_b"],
+        entity_type=row["entity_type"],
+        metric=row["metric"],
+        source_a_value=json.loads(row["source_a_value"]),
+        source_b_value=json.loads(row["source_b_value"]),
+        difference=row["difference"],
+        difference_pct=row["difference_pct"],
+        severity=row["severity"],
+        suggested_action=row["suggested_action"],
+        traceable_origin=json.loads(row["traceable_origin_json"]),
+    )
+
+### app/repositories/raw_document_registry.py
+from __future__ import annotations
+
+import hashlib
+import json
+import mimetypes
+import os
+import sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+def _default_db_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "raw_documents.db"
+
+
+def _get_db_path() -> Path:
+    raw_path = os.getenv("SMARTPYME_RAW_DOCUMENTS_DB")
+    return Path(raw_path) if raw_path else _default_db_path()
+
+
+def _connect() -> sqlite3.Connection:
+    db_path = _get_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(db_path)
+
+
+def init_raw_documents_db() -> None:
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS raw_documents (
+                raw_document_id TEXT PRIMARY KEY,
+                file_path TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                file_hash_sha256 TEXT NOT NULL,
+                size_bytes INTEGER NOT NULL,
+                mime_type TEXT,
+                job_id TEXT,
+                plan_id TEXT,
+                source_id TEXT,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_raw_documents_file_hash_sha256
+            ON raw_documents(file_hash_sha256)
+            """
+        )
+
+
+def compute_file_sha256(file_path: str) -> str:
+    path = Path(file_path)
+    if not path.exists() or not path.is_file():
+        raise FileNotFoundError(f"raw_document_file_not_found: {file_path}")
+
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def register_raw_document(
+    file_path: str,
+    job_id: str | None = None,
+    plan_id: str | None = None,
+    source_id: str | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    init_raw_documents_db()
+
+    path = Path(file_path).resolve()
+    if not path.exists() or not path.is_file():
+        raise FileNotFoundError(f"raw_document_file_not_found: {file_path}")
+
+    file_hash = compute_file_sha256(str(path))
+    existing = get_raw_document_by_hash(file_hash)
+    if existing is not None:
+        return existing
+
+    raw_document_id = f"raw_{file_hash[:16]}"
+    metadata_json = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
+    created_at = datetime.now(timezone.utc).isoformat()
+    mime_type = mimetypes.guess_type(path.name)[0]
+
+    try:
+        with _connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO raw_documents (
+                    raw_document_id,
+                    file_path,
+                    filename,
+                    file_hash_sha256,
+                    size_bytes,
+                    mime_type,
+                    job_id,
+                    plan_id,
+                    source_id,
+                    metadata_json,
+                    created_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    raw_document_id,
+                    str(path),
+                    path.name,
+                    file_hash,
+                    path.stat().st_size,
+                    mime_type,
+                    job_id,
+                    plan_id,
+                    source_id,
+                    metadata_json,
+                    created_at,
+                ),
+            )
+    except sqlite3.IntegrityError:
+        existing_after_race = get_raw_document_by_hash(file_hash)
+        if existing_after_race is not None:
+            return existing_after_race
+        raise
+
+    stored = get_raw_document(raw_document_id)
+    if stored is None:
+        raise RuntimeError(f"raw_document_not_persisted: {raw_document_id}")
+    return stored
+
+
+def get_raw_document(raw_document_id: str) -> dict[str, Any] | None:
+    init_raw_documents_db()
+    with _connect() as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT
+                raw_document_id,
+                file_path,
+                filename,
+                file_hash_sha256,
+                size_bytes,
+                mime_type,
+                job_id,
+                plan_id,
+                source_id,
+                metadata_json,
+                created_at
+            FROM raw_documents
+            WHERE raw_document_id = ?
+            """,
+            (raw_document_id,),
+        ).fetchone()
+    return _row_to_dict(row)
+
+
+def get_raw_document_by_hash(file_hash_sha256: str) -> dict[str, Any] | None:
+    init_raw_documents_db()
+    with _connect() as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT
+                raw_document_id,
+                file_path,
+                filename,
+                file_hash_sha256,
+                size_bytes,
+                mime_type,
+                job_id,
+                plan_id,
+                source_id,
+                metadata_json,
+                created_at
+            FROM raw_documents
+            WHERE file_hash_sha256 = ?
+            """,
+            (file_hash_sha256,),
+        ).fetchone()
+    return _row_to_dict(row)
+
+
+def _row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+
+    data = dict(row)
+    metadata_json = data.pop("metadata_json", None)
+    try:
+        data["metadata"] = json.loads(metadata_json) if metadata_json else {}
+    except json.JSONDecodeError:
+        data["metadata"] = {}
+    return data
+
+### app/contracts/__init__.py
+from app.contracts.skill_contract import (
+    SkillContract,
+    SkillContractCatalog,
+    SkillFamily,
+    SkillImplementationStatus,
+)
+from app.contracts.operational_plan_contract import (
+    OperationalPlanContract,
+    create_operational_plan,
+)
+from app.contracts.evidence_contract import (
+    CanonicalRowCandidate,
+    DocumentRecord,
+    EvidenceChunk,
+    ExtractedFactCandidate,
+    RawDocument,
+    RetrievalResult,
+)
+
+__all__ = [
+    "CanonicalRowCandidate",
+    "DocumentRecord",
+    "EvidenceChunk",
+    "ExtractedFactCandidate",
+    "OperationalPlanContract",
+    "RawDocument",
+    "RetrievalResult",
+    "SkillContract",
+    "SkillContractCatalog",
+    "SkillFamily",
+    "SkillImplementationStatus",
+    "create_operational_plan",
+]
+
+### app/contracts/action_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+ActionStatus = Literal["proposed", "approved", "rejected", "executed"]
+
+
+@dataclass(frozen=True, slots=True)
+class ActionProposal:
+    action_id: str
+    source_id: str                      # finding_id or message_id
+    source_type: str                    # "finding" | "message"
+    title: str
+    description: str
+    recommended_action: str
+    status: ActionStatus = "proposed"
+    requires_confirmation: bool = True
+    traceable_origin: dict[str, Any] = field(default_factory=dict)
+
+### app/contracts/clarification_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+ClarificationStatus = Literal["pending", "answered"]
+
+
+@dataclass(frozen=True, slots=True)
+class Clarification:
+    clarification_id: str
+    job_id: str | None
+    question: str
+    reason: str
+    status: ClarificationStatus = "pending"
+    blocking: bool = True
+    answer: str | None = None
+    traceable_origin: dict[str, Any] = field(default_factory=dict)
+
+### app/contracts/communication_contract.py
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True)
+class FindingMessage:
+    message_id: str
+    finding_id: str
+    channel: str                        # e.g. "internal", "telegram", "whatsapp"
+    title: str                          # one-line summary: what happened
+    body: str                           # full human-readable explanation
+    action_text: str                    # what to do next
+    severity: str                       # mirrors Finding.severity
+    traceable_origin: dict[str, Any] = field(default_factory=dict)
+
+
+def build_message_id(finding_id: str, channel: str) -> str:
+    digest = hashlib.sha256(f"{finding_id}:{channel}".encode()).hexdigest()
+    return f"msg_{digest[:16]}"
+
+### app/contracts/entity_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True)
+class Entity:
+    entity_id: str
+    entity_type: str
+    attributes: dict[str, Any] = field(default_factory=dict)
+    linked_canonical_rows: list[str] = field(default_factory=list)
+    validation_status: str = "pending_validation"
+    errors: list[str] = field(default_factory=list)
+
+### app/contracts/evidence_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+EvidenceContractStatus = Literal["implemented", "partial", "pending"]
+
+
+@dataclass(frozen=True, slots=True)
+class RawDocument:
+    raw_document_id: str
+    job_id: str | None
+    plan_id: str | None
+    file_path: str
+    filename: str
+    file_hash_sha256: str
+    size_bytes: int | None = None
+    mime_type: str | None = None
+    source_id: str | None = None
+    created_at: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class DocumentRecord:
+    document_id: str
+    raw_document_id: str
+    job_id: str | None
+    plan_id: str | None
+    filename: str
+    parser: str
+    text_hash: str
+    page_count: int | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceChunk:
+    evidence_id: str
+    document_id: str
+    raw_document_id: str | None
+    job_id: str | None
+    plan_id: str | None
+    filename: str
+    page: int
+    text: str
+    chunk_order: int
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class RetrievalResult:
+    query_id: str
+    evidence_id: str
+    document_id: str | None
+    job_id: str | None
+    plan_id: str | None
+    score: float
+    text: str
+    citation: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class ExtractedFactCandidate:
+    fact_candidate_id: str
+    evidence_id: str
+    job_id: str | None
+    plan_id: str | None
+    schema_name: str
+    data: dict[str, Any]
+    confidence: float
+    extraction_method: str
+    validation_status: str = "pending_validation"
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class CanonicalRowCandidate:
+    canonical_row_id: str
+    fact_candidate_id: str
+    evidence_id: str
+    job_id: str | None
+    plan_id: str | None
+    entity_type: str
+    row: dict[str, Any]
+    validation_status: str = "pending_validation"
+    errors: list[str] = field(default_factory=list)
+
+### app/contracts/execution_adapter_contract.py
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+AdapterResultStatus = Literal["executed", "blocked", "failed"]
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionAdapterResult:
+    adapter_id: str
+    action_id: str
+    status: AdapterResultStatus         # "executed" | "blocked" | "failed"
+    message: str
+    traceable_origin: dict[str, Any] = field(default_factory=dict)
+
+
+class ExecutionAdapter(ABC):
+    """
+    Abstract base for execution adapters.
+    Concrete implementations (e.g. HermesAdapter) live outside SmartPyme core.
+    SmartPyme decides; the adapter executes.
+    """
+
+    @property
+    @abstractmethod
+    def adapter_id(self) -> str:
+        """Unique identifier for this adapter (e.g. 'hermes', 'mock')."""
+
+    @abstractmethod
+    def execute(self, proposal: Any) -> ExecutionAdapterResult:
+        """
+        Attempt to execute the given ActionProposal.
+        Must return an ExecutionAdapterResult.
+        Must NOT raise — failures must be expressed via status='failed'.
+        """
+
+### app/contracts/operational_plan_contract.py
+from __future__ import annotations
+
+import uuid
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True)
+class OperationalPlanContract:
+    plan_id: str
+    cliente_id: str
+    owner_request: str
+    objective: str
+    period: dict[str, Any] | None
+    operational_vectors: list[str] = field(default_factory=list)
+    required_sources: list[str] = field(default_factory=list)
+    acceptance_criteria: list[str] = field(default_factory=list)
+    status: str = "draft"
+
+
+def _require_non_empty_text(value: str, field_name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name.upper()}_INVALIDO: debe ser texto no vacio.")
+    return value.strip()
+
+
+def _validate_text_list(values: list[str], field_name: str) -> list[str]:
+    if not isinstance(values, list):
+        raise ValueError(f"{field_name.upper()}_INVALIDO: debe ser una lista.")
+
+    cleaned: list[str] = []
+    for index, value in enumerate(values):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(
+                f"{field_name.upper()}_INVALIDO: item {index} debe ser texto no vacio."
+            )
+        cleaned.append(value.strip())
+
+    return cleaned
+
+
+def create_operational_plan(
+    *,
+    cliente_id: str,
+    owner_request: str,
+    objective: str,
+    period: dict[str, Any] | None = None,
+    operational_vectors: list[str] | None = None,
+    required_sources: list[str] | None = None,
+    acceptance_criteria: list[str] | None = None,
+    plan_id: str | None = None,
+    status: str = "draft",
+) -> OperationalPlanContract:
+    if period is not None and not isinstance(period, dict):
+        raise ValueError("PERIOD_INVALIDO: debe ser object o null.")
+
+    return OperationalPlanContract(
+        plan_id=_require_non_empty_text(plan_id, "plan_id")
+        if plan_id is not None
+        else f"plan-{uuid.uuid4().hex[:12]}",
+        cliente_id=_require_non_empty_text(cliente_id, "cliente_id"),
+        owner_request=_require_non_empty_text(owner_request, "owner_request"),
+        objective=_require_non_empty_text(objective, "objective"),
+        period=period,
+        operational_vectors=_validate_text_list(
+            operational_vectors or [], "operational_vectors"
+        ),
+        required_sources=_validate_text_list(required_sources or [], "required_sources"),
+        acceptance_criteria=_validate_text_list(
+            acceptance_criteria or [], "acceptance_criteria"
+        ),
+        status=_require_non_empty_text(status, "status"),
+    )
+
+### app/contracts/pipeline_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True)
+class PipelineStageResult:
+    stage: str
+    count: int
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class PipelineCounts:
+    facts: int
+    canonical: int
+    entities: int
+    validated_entities: int
+    comparison: int
+    findings: int
+    messages: int = 0
+    action_proposals: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class PipelineResult:
+    status: str                          # "OK" | "ERROR" | "BLOCKED"
+    job_id: str | None
+    plan_id: str | None
+    facts: list[Any]
+    canonical: list[Any]
+    entities: list[Any]
+    comparison: list[Any]
+    findings: list[Any]
+    messages: list[Any]
+    action_proposals: list[Any]
+    counts: PipelineCounts
+    errors: list[str] = field(default_factory=list)
+    blocking_reason: str | None = None   # set when status == "BLOCKED"
+
+### app/contracts/skill_contract.py
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+SkillFamily = Literal["development", "project", "business"]
+SkillImplementationStatus = Literal["implemented", "partial", "pending", "conceptual"]
+
+
+@dataclass(frozen=True, slots=True)
+class SkillContract:
+    """Declarative contract for a SmartPyme skill.
+
+    This contract is not a runtime registry entry. The current executable
+    factory model remains app.factory.skills.models.SkillSpec.
+    """
+
+    skill_id: str
+    family: SkillFamily
+    purpose: str
+    input_schema: dict[str, Any]
+    output_schema: dict[str, Any]
+    required_evidence: list[str] = field(default_factory=list)
+    allowed_tools: list[str] = field(default_factory=list)
+    forbidden_actions: list[str] = field(default_factory=list)
+    blocking_conditions: list[str] = field(default_factory=list)
+    acceptance_criteria: list[str] = field(default_factory=list)
+    implementation_status: SkillImplementationStatus = "conceptual"
+    source_files: list[str] = field(default_factory=list)
+    next_action: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class SkillContractCatalog:
+    """Versioned list of declarative skill contracts."""
+
+    version: str
+    contracts: list[SkillContract]

@@ -1,0 +1,2 @@
+$ python3 -m ruff check app core services scripts factory tests
+/usr/bin/python3: No module named ruff

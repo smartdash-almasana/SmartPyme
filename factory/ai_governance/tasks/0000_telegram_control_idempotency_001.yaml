@@ -1,6 +1,6 @@
 task_id: telegram_control_idempotency_001
 mode: governance
-status: pending
+status: blocked
 human_required: false
 priority: 0
 objective: >

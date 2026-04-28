@@ -1,0 +1,4588 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd38f-c5ee-7a41-ad6c-2dcd9429b251
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: hermes_professional_reset_001
+mode: governance
+status: pending
+priority: 0
+objective: >
+  Reorganizar la factoria SmartPyme para operar bajo modelo Hermes profesional.
+  Deprecar control por scripts caseros y establecer capas REPO_CLEAN, ENVIRONMENT,
+  TELEGRAM idempotente, SKILLS y pipeline de auditoria.
+allowed_files:
+  - docs/factory/HERMES_PROFESSIONAL_RESET_PLAN.md
+  - scripts/hermes_factory_runner.py
+  - scripts/telegram_factory_control.py
+  - scripts/telegram_trigger_cycle.py
+  - factory/telegram_notify.py
+  - factory/ai_governance/tasks/*.yaml
+  - tests/factory/**
+  - .gitignore
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+acceptance_criteria:
+  - REPO_CLEAN bloquea ciclos si repo no esta limpio
+  - Botones Telegram no generan loops
+  - Cola no ejecuta tareas si guard falla
+  - No se rompe evidencia existente
+  - No se modifica core de negocio
+required_tests:
+  - python3 -m py_compile scripts/hermes_factory_runner.py
+  - python3 -m py_compile scripts/telegram_factory_control.py
+  - python3 -m py_compile scripts/telegram_trigger_cycle.py
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Voy a leer primero `GPT.md` y `CODEX.md`, y luego inspeccionaré solo los archivos permitidos y el estado del repo. Con eso defino una unidad pequeña que pueda cerrarse con verificación real.
+exec
+/bin/bash -lc pwd in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+
+exec
+/bin/bash -lc "sed -n '1,220p' GPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT — ENTRADA OBLIGATORIA SMARTPYME
+
+Estado: CANONICO v1
+
+Todo chat nuevo de GPT que participe en SmartPyme debe empezar por este archivo.
+
+## Rol activo
+
+GPT actua como Director-Auditor externo de SmartPyme Factory.
+
+## Orden obligatorio de lectura
+
+1. `GPT.md`
+2. `AGENTS.md`
+3. `docs/factory/GPT_DIRECTOR_AUDITOR.md`
+4. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`
+5. `factory/ai_governance/skills/gpt_director_auditor.yaml`
+6. `factory/ai_governance/taskspec.schema.json`
+7. `factory/control/AUDIT_GATE.md`, si existe
+8. `factory/control/FACTORY_STATUS.md`, si existe
+9. `factory/control/NEXT_CYCLE.md`, si existe
+10. evidencia reciente en `factory/evidence/`
+
+## Conducta esperada
+
+- No responder desde memoria conversacional.
+- Leer estado real del repo antes de decidir.
+- Auditar evidencia antes de aprobar.
+- Proponer una sola siguiente tarea.
+- Escribir specs concretas y ejecutables.
+- Mantener foco en SmartPyme Factory.
+
+## Prohibiciones
+
+- No inventar estado del repo.
+- No aprobar sin evidencia.
+- No mezclar frentes.
+- No tocar core sin task spec explicita.
+- No entregar placeholders cuando se puede leer el repo.
+
+## Prompt minimo para chat nuevo
+
+Lee `GPT.md` del repo SmartPyme y opera como GPT Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml
+ M factory/ai_governance/tasks/kernel_total_audit_001.yaml
+ M factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_0000_telegram_control_idempotency_001_20260428T035303Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T032927Z/
+?? factory/evidence/codex_product_final_concept_audit_001_20260428T034235Z/
+?? factory/evidence/kernel_total_audit_001/
+?? factory/evidence/product_final_concept_audit_001/
+?? factory/reports/
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+codex
+El preflight muestra el repo sucio con cambios previos, sobre todo en `factory/control` y evidencia, que no voy a tocar. Voy a limitar la unidad a los guards de ejecución en scripts permitidos y a verificar que el comportamiento quede fail-closed cuando el repo no está limpio.
+exec
+/bin/bash -lc "sed -n '1,260p' scripts/hermes_factory_runner.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from datetime import datetime, timezone
+from pathlib import Path
+import subprocess
+import sys
+import re
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from factory.telegram_notify import notify_cycle_result
+
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
+CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
+POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+STATUS = CONTROL / "FACTORY_STATUS.md"
+
+GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_IN_PROGRESS = {"RUNNING"}
+GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+
+
+def notify(status, detail=""):
+    try:
+        notify_cycle_result(status, detail)
+    except Exception as exc:
+        print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+
+
+def run_git(args, check=False):
+    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
+
+
+def ts():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_gate_text():
+    if not GATE.exists():
+        return ""
+    return GATE.read_text(encoding="utf-8", errors="replace")
+
+
+def gate_field(name, default=""):
+    prefix = f"{name}:"
+    for line in read_gate_text().splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return default
+
+
+def gate_status():
+    return gate_field("status", "APPROVED").upper()
+
+
+def write_status(result, detail=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(
+        f"# FACTORY STATUS\n\nupdated_at: {ts()}\nlast_cycle_result: {result}\naudit_gate: {gate_status()}\nlast_error: {detail or 'none'}\n",
+        encoding="utf-8",
+    )
+
+
+def set_gate(status, code=0, task=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
+        encoding="utf-8",
+    )
+
+
+def post_cycle(code):
+    if not POST_CYCLE.exists():
+        print("POST_CYCLE_MISSING")
+        notify("POST_CYCLE_MISSING", str(POST_CYCLE))
+        return code
+    r = subprocess.run(["python3", str(POST_CYCLE), "--repo", str(REPO), "--codex-returncode", str(code)])
+    if r.returncode:
+        notify("INCONSISTENCY_DETECTED", f"post_cycle_returncode={r.returncode}; codex_returncode={code}")
+    return r.returncode if r.returncode else code
+
+
+def task_is_pending(path):
+    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "task_id:" in text and "status: pending" in text
+
+
+def select_task():
+    if TASKS_DIR.exists():
+        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+        if pending:
+            return pending[0]
+    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+
+
+def replace_task_status(rel_task, new_status):
+    tp = (REPO / rel_task).resolve()
+    txt = tp.read_text(encoding="utf-8", errors="replace")
+    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+    tp.write_text(txt, encoding="utf-8")
+
+
+def mark_task_done(rel_task):
+    try:
+        replace_task_status(rel_task, "done")
+        notify("TASK_DONE", str(rel_task))
+    except Exception as e:
+        notify("TASK_DONE_ERROR", str(e))
+
+
+def mark_task_blocked(rel_task, code):
+    try:
+        replace_task_status(rel_task, "blocked")
+        notify("TASK_BLOCKED", f"{rel_task}; exit_code={code}")
+    except Exception as e:
+        notify("TASK_BLOCKED_ERROR", str(e))
+
+
+def reopen_last_task():
+    last_task = gate_field("last_task", "").strip()
+    if not last_task or last_task == "none":
+        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+        set_gate("BLOCKED", 1, "none")
+        return 1
+    try:
+        replace_task_status(last_task, "pending")
+        notify("AUDIT_REJECTED_REOPENED", last_task)
+        set_gate("APPROVED", 0, last_task)
+        return 0
+    except Exception as exc:
+        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+        set_gate("BLOCKED", 1, last_task)
+        return 1
+
+
+def enforce_gate_before_dispatch():
+    current_gate = gate_status()
+
+    if current_gate in GATE_ALLOWED_TO_RUN:
+        return 0
+
+    if current_gate == "REJECTED":
+        return reopen_last_task()
+
+    if current_gate in GATE_IN_PROGRESS:
+        print(f"CYCLE_ALREADY_RUNNING status={current_gate}")
+        write_status("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        notify("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        return 2
+
+    if current_gate in GATE_BLOCKING:
+        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+        return 2
+
+    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+    notify("AUDIT_GATE_UNKNOWN", current_gate)
+    return 2
+
+
+def git_has_changes():
+    r = run_git(["status", "--porcelain"])
+    return bool(r.stdout.strip())
+
+
+def auto_commit_and_push(rel_task, code):
+    if code != 0:
+        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+        return
+    if not git_has_changes():
+        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+        return
+
+    task_label = str(rel_task) if rel_task else "no-task"
+    run_git(["add", "-A"], check=True)
+    commit_msg = f"Factory cycle: {task_label}"
+    commit = run_git(["commit", "-m", commit_msg])
+    if commit.returncode != 0:
+        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+        return
+
+    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+    push = run_git(["push", "origin", "main"])
+    if push.returncode != 0:
+        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+        return
+
+    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+
+
+def main():
+    gate_code = enforce_gate_before_dispatch()
+    if gate_code:
+        return 0
+
+    notify("CYCLE_START", f"repo={REPO}")
+
+    task = select_task()
+    rel_task = task.relative_to(REPO) if task else None
+    task_label = str(rel_task) if rel_task else "none"
+
+    set_gate("RUNNING", 0, task_label)
+    write_status("RUNNING", f"task={task_label}")
+
+    if task:
+        print(f"[Hermes->Codex] Dispatching task: {rel_task}")
+        notify("TASK_DISPATCH", str(rel_task))
+        r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
+        code = post_cycle(r.returncode)
+        if code == 0:
+            mark_task_done(rel_task)
+        else:
+            mark_task_blocked(rel_task, code)
+    else:
+        print("[Hermes] No task, post-cycle only.")
+        notify("NO_TASK", "Sin tareas pending")
+        code = post_cycle(0)
+
+    set_gate("WAITING_AUDIT", code, task_label)
+    write_status("WAITING_AUDIT", f"task={task_label}; cycle closed")
+    print("CYCLE_CLOSED_WAITING_AUDIT")
+
+    if code == 0:
+        notify("CYCLE_OK", f"cycle closed; gate=WAITING_AUDIT; task={task_label}")
+        auto_commit_and_push(rel_task, code)
+    else:
+        notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT; task={task_label}")
+
+    return code
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        notify("CYCLE_INTERRUPTED", "KeyboardInterrupt")
+        raise
+    except Exception as exc:
+        notify("CYCLE_CRASH", f"{type(exc).__name__}: {exc}")
+        raise
+
+exec
+/bin/bash -lc "sed -n '1,260p' scripts/telegram_factory_control.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+GATE = REPO / "factory" / "control" / "AUDIT_GATE.md"
+STATUS = REPO / "factory" / "control" / "FACTORY_STATUS.md"
+OFFSET_FILE = REPO / "factory" / "control" / ".telegram_control_offset"
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
+
+BUTTONS = {
+    "SEGUIR": "/seguir",
+    "PAUSAR": "/pausar",
+    "CORREGIR": "/corregir",
+    "ESTADO": "/estado",
+    "TAREAS": "/tareas",
+}
+
+
+def env(name: str) -> str:
+    return os.getenv(name, "").strip()
+
+
+def token() -> str:
+    value = env("TELEGRAM_BOT_TOKEN")
+    if not value:
+        raise RuntimeError("missing TELEGRAM_BOT_TOKEN")
+    return value
+
+
+def allowed_chat_id() -> str:
+    value = env("TELEGRAM_CHAT_ID")
+    if not value:
+        raise RuntimeError("missing TELEGRAM_CHAT_ID")
+    return value
+
+
+def api(method: str, payload: dict | None = None) -> dict:
+    data = None
+    if payload is not None:
+        data = urllib.parse.urlencode(payload).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.telegram.org/bot" + token() + "/" + method,
+        data=data,
+        method="POST" if data else "GET",
+    )
+    with urllib.request.urlopen(req, timeout=35) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def control_keyboard() -> str:
+    return json.dumps({"inline_keyboard": [
+        [{"text": "▶ Seguir", "callback_data": "SEGUIR"}, {"text": "⏸️ Pausar", "callback_data": "PAUSAR"}],
+        [{"text": "🔁 Corregir", "callback_data": "CORREGIR"}, {"text": "📊 Estado", "callback_data": "ESTADO"}],
+        [{"text": "🧭 Tareas", "callback_data": "TAREAS"}],
+    ]}, ensure_ascii=False)
+
+
+def send(text: str, buttons: bool = True) -> None:
+    payload = {"chat_id": allowed_chat_id(), "text": text[:3900]}
+    if buttons:
+        payload["reply_markup"] = control_keyboard()
+    api("sendMessage", payload)
+
+
+def answer_callback(callback_id: str) -> None:
+    api("answerCallbackQuery", {"callback_query_id": callback_id})
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_offset() -> int:
+    try:
+        return int(OFFSET_FILE.read_text().strip())
+    except Exception:
+        return 0
+
+
+def write_offset(value: int) -> None:
+    OFFSET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OFFSET_FILE.write_text(str(value), encoding="utf-8")
+
+
+def _read_status_file() -> dict[str, str]:
+    data: dict[str, str] = {}
+    if not STATUS.exists():
+        return data
+    for line in STATUS.read_text(encoding="utf-8", errors="replace").splitlines():
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def _read_gate_file() -> dict[str, str]:
+    data: dict[str, str] = {}
+    if not GATE.exists():
+        return data
+    for line in GATE.read_text(encoding="utf-8", errors="replace").splitlines():
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def gate_status() -> str:
+    return _read_gate_file().get("status", "APPROVED").upper()
+
+
+def last_task() -> str:
+    return _read_gate_file().get("last_task", "").strip()
+
+
+def write_gate(status: str, reason: str) -> None:
+    GATE.parent.mkdir(parents=True, exist_ok=True)
+    previous = gate_status()
+    GATE.write_text(
+        "# AUDIT GATE\n\n"
+        f"status: {status}\n"
+        f"updated_at: {now()}\n"
+        f"updated_by: telegram_control\n"
+        f"previous_status: {previous}\n"
+        f"reason: {reason}\n",
+        encoding="utf-8",
+    )
+
+
+def cycle_running_message() -> str:
+    return (
+        "Ya hay un ciclo en ejecución.\n\n"
+        "No disparo otro ciclo para evitar duplicados. "
+        "Apenas termine, te vas a enterar por acá."
+    )
+
+
+def trigger_cycle() -> str:
+    if gate_status() == "RUNNING":
+        return cycle_running_message()
+    if LOCK.exists():
+        return cycle_running_message()
+    if not TRIGGER.exists():
+        return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+    subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return "OK: ciclo solicitado. Hará pull de GitHub y ejecutará una sola vuelta de Hermes."
+
+
+def correction_not_available_message() -> str:
+    gate = gate_status()
+    if gate == "RUNNING":
+        return "No puedo corregir ahora: hay un ciclo en ejecución. Apenas termine, te aviso por acá."
+    if gate != "WAITING_AUDIT":
+        return "Corregir solo está disponible cuando un ciclo cerró y espera auditoría."
+    task = last_task()
+    if not task or task == "none":
+        return "No puedo corregir: no hay última tarea trazable para reabrir."
+    return ""
+
+
+def reject_for_correction() -> str:
+    blocked_reason = correction_not_available_message()
+    if blocked_reason:
+        return blocked_reason
+    write_gate("REJECTED", "/corregir")
+    return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
+
+
+def status_text() -> str:
+    data = _read_status_file()
+    gate = gate_status()
+    return "\n".join([
+        "📊 Estado de la Factoría SmartPyme", "",
+        f"Decisión actual: {gate}",
+        f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
+        f"Última actualización: {data.get('updated_at', 'no informada')}",
+        f"Detalle para GPT: {data.get('last_error', 'sin detalle')}", "",
+        "Botones:",
+        "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta si no hay ciclo corriendo.",
+        "- ⏸️ Pausar: mantener detenido.",
+        "- 🔁 Corregir: activo solo cuando un ciclo cerró y espera auditoría.",
+        "- 🧭 Tareas: ver tareas activas.",
+    ])
+
+
+def _read_simple_yaml(path: Path) -> dict[str, str]:
+    data: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip().strip('"').strip("'")
+    return data
+
+
+def tasks_text() -> str:
+    if not TASKS_DIR.exists():
+        return "No encuentro la carpeta de tareas de la factoría."
+    tasks = []
+    for path in sorted(TASKS_DIR.glob("*.yaml")):
+        data = _read_simple_yaml(path)
+        if data.get("status", "").lower() in {"pending", "in_progress"}:
+            tasks.append((path, data))
+    if not tasks:
+        return "No hay tareas pendientes o en ejecución."
+    lines = ["🧭 Tareas preparadas o en curso", ""]
+    for idx, (path, data) in enumerate(tasks[:5], start=1):
+        lines.extend([
+            f"{idx}. {data.get('task_id', path.stem)}",
+            f"Estado: {data.get('status', 'no informado')}",
+            f"Trazabilidad: {path.relative_to(REPO)}", "",
+        ])
+    return "\n".join(lines).strip()
+
+
+def handle_command(text: str) -> str:
+    cmd = text.strip().split()[0].lower() if text.strip() else ""
+    if cmd == "/seguir":
+        return trigger_cycle()
+    if cmd == "/pausar":
+        write_gate("BLOCKED", cmd)
+        return "OK: pausado. La factoría queda frenada."
+    if cmd == "/corregir":
+        return reject_for_correction()
+    if cmd == "/estado":
+        return status_text()
+    if cmd == "/tareas":
+        return tasks_text()
+    if cmd == "/panel":
+        return "Panel de control de la Factoría SmartPyme. Usá los botones en castellano."
+    return "Comando no reconocido. Usá /panel."
+
+
+def handle_callback(data: str) -> str:
+    command = BUTTONS.get(data, "")
+    if not command:
+        return "Botón viejo o no reconocido. Usá /panel para abrir el panel nuevo."
+    return handle_command(command)
+
+
+def poll_once() -> None:
+    offset = read_offset()
+    payload = {"timeout": 25, "allowed_updates": json.dumps(["message", "callback_query"])}
+    if offset:
+        payload["offset"] = offset
+    result = api("getUpdates", payload)
+    for update in result.get("result", []):
+        write_offset(int(update["update_id"]) + 1)
+
+exec
+/bin/bash -lc "sed -n '1,240p' scripts/telegram_trigger_cycle.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+LOCK = CONTROL / ".telegram_cycle_lock"
+RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def write_log(message: str) -> None:
+    LOG.parent.mkdir(parents=True, exist_ok=True)
+    with LOG.open("a", encoding="utf-8") as fh:
+        fh.write(f"{now()} {message}\n")
+
+
+def run(command: list[str]) -> int:
+    write_log("RUN " + " ".join(command))
+    result = subprocess.run(
+        command,
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.stdout.strip():
+        write_log("STDOUT " + result.stdout.strip()[-3000:])
+    if result.stderr.strip():
+        write_log("STDERR " + result.stderr.strip()[-3000:])
+    write_log(f"RETURNCODE {result.returncode}")
+    return result.returncode
+
+
+def write_gate(status: str, reason: str) -> None:
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        "# AUDIT GATE\n\n"
+        f"status: {status}\n"
+        f"updated_at: {now()}\n"
+        "updated_by: telegram_trigger_cycle\n"
+        f"reason: {reason}\n",
+        encoding="utf-8",
+    )
+
+
+def main() -> int:
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    if LOCK.exists():
+        write_log("SKIP lock exists")
+        return 0
+
+    LOCK.write_text(now(), encoding="utf-8")
+    try:
+        write_log("START telegram cycle trigger")
+
+        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
+        if pull_code != 0:
+            write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+            return pull_code
+
+        write_gate("APPROVED", "telegram_seguir_after_pull")
+
+        if not RUNNER.exists():
+            write_gate("BLOCKED", "missing_hermes_factory_runner")
+            write_log(f"MISSING {RUNNER}")
+            return 1
+
+        return run([sys.executable, str(RUNNER)])
+    finally:
+        try:
+            LOCK.unlink(missing_ok=True)
+        except Exception as exc:
+            write_log(f"LOCK_CLEANUP_ERROR {type(exc).__name__}: {exc}")
+        write_log("END telegram cycle trigger")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+exec
+/bin/bash -lc 'test -f docs/factory/HERMES_PROFESSIONAL_RESET_PLAN.md; echo $?' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+0
+
+codex
+Encontré que `telegram_trigger_cycle.py` hace `git pull --autostash` antes de ejecutar Hermes, lo que puede ocultar un repo sucio y seguir igualmente. La unidad pequeña será añadir un guard REPO_CLEAN compartido en el runner y el trigger, y ajustar el botón `/seguir` para no lanzar procesos cuando ese guard falla.
+exec
+/bin/bash -lc "sed -n '240,520p' scripts/telegram_factory_control.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+        return tasks_text()
+    if cmd == "/panel":
+        return "Panel de control de la Factoría SmartPyme. Usá los botones en castellano."
+    return "Comando no reconocido. Usá /panel."
+
+
+def handle_callback(data: str) -> str:
+    command = BUTTONS.get(data, "")
+    if not command:
+        return "Botón viejo o no reconocido. Usá /panel para abrir el panel nuevo."
+    return handle_command(command)
+
+
+def poll_once() -> None:
+    offset = read_offset()
+    payload = {"timeout": 25, "allowed_updates": json.dumps(["message", "callback_query"])}
+    if offset:
+        payload["offset"] = offset
+    result = api("getUpdates", payload)
+    for update in result.get("result", []):
+        write_offset(int(update["update_id"]) + 1)
+        callback = update.get("callback_query")
+        if callback:
+            message = callback.get("message") or {}
+            chat_id = str((message.get("chat") or {}).get("id", ""))
+            if chat_id != allowed_chat_id():
+                continue
+            answer_callback(callback.get("id", ""))
+            send(handle_callback(callback.get("data", "")))
+            continue
+        message = update.get("message") or {}
+        chat_id = str((message.get("chat") or {}).get("id", ""))
+        if chat_id != allowed_chat_id():
+            continue
+        send(handle_command(message.get("text", "")))
+
+
+def main() -> None:
+    send("Panel de control de la Factoría SmartPyme. Usá los botones en castellano.")
+    while True:
+        try:
+            poll_once()
+        except Exception as exc:
+            print(f"TELEGRAM_CONTROL_ERROR {type(exc).__name__}: {exc}", flush=True)
+            time.sleep(10)
+
+
+if __name__ == "__main__":
+    main()
+
+exec
+/bin/bash -lc "sed -n '1,220p' docs/factory/HERMES_PROFESSIONAL_RESET_PLAN.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# HERMES PROFESSIONAL RESET PLAN — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## Decision
+
+Se declara obsoleta la gobernanza basada en parches sobre scripts aislados.
+
+El sistema actual sirve como evidencia historica, pero no como arquitectura final de la factoria.
+
+## Problema
+
+La factoria actual mezcla responsabilidades:
+
+- Telegram controla estado operativo con scripts caseros.
+- Hermes real no esta expresado como capa profesional completa.
+- Codex ejecuta, pero la decision de ciclo no esta suficientemente gobernada.
+- Gemini esta mencionado, pero no integrado como auditor runtime verificable.
+- REPO_CLEAN existe como contrato, pero no como politica transversal plenamente aplicada.
+- Los botones Telegram no son un protocolo robusto de gates.
+
+## Principio de reset
+
+No se borra evidencia ni historia.
+
+Se depreca lo viejo, se aisla lo parcheado y se construye una gobernanza profesional por capas.
+
+## Arquitectura objetivo
+
+```text
+Owner Telegram
+  -> Hermes Gateway
+  -> SmartPyme Factory Skill
+  -> REPO_CLEAN Guard
+  -> Environment Guard
+  -> Task Queue Controller
+  -> Codex Builder
+  -> Gemini Auditor
+  -> Evidence Gate
+  -> Human Audit Gate
+```
+
+## Capas obligatorias
+
+### 1. REPO_CLEAN Guard
+
+Debe correr antes y despues de cada ciclo. Si falla, no hay dispatch.
+
+### 2. Environment Guard
+
+Valida Python, pytest, Ruff, Polars y contrato de entorno. Si falta algo, bloquea con causa exacta.
+
+### 3. Telegram Gate
+
+Los botones son idempotentes. Ningun boton puede crear loops.
+
+### 4. Hermes Skill Layer
+
+Las acciones recurrentes se modelan como skills/procedimientos, no como parches sueltos.
+
+### 5. MCP Layer
+
+Las operaciones sobre SmartPyme deben exponerse por tools verificables cuando correspondan.
+
+### 6. Builder Layer
+
+Codex solo construye bajo task spec acotada.
+
+### 7. Auditor Layer
+
+Gemini debe integrarse como auditor verificable o declararse no integrado.
+
+## Estado de componentes actuales
+
+```text
+scripts/hermes_factory_runner.py         LEGACY_ORCHESTRATOR
+scripts/telegram_factory_control.py      LEGACY_TELEGRAM_CONTROL
+scripts/telegram_trigger_cycle.py        LEGACY_TRIGGER
+factory/telegram_notify.py               LEGACY_NOTIFY
+factory/ai_governance/tasks/*.yaml       ACTIVE_QUEUE_LEGACY
+factory/evidence/**                      EVIDENCE_KEEP
+```
+
+## Politica
+
+No se elimina nada sin task explicita. Lo viejo se marca legacy y se reemplaza por capas nuevas verificables.
+
+## Orden de implementacion
+
+1. Congelar cola de producto.
+2. Implementar REPO_CLEAN como guard transversal real.
+3. Implementar Environment Guard.
+4. Hacer Telegram idempotente y seguro.
+5. Definir skill SmartPyme Factory.
+6. Definir skill Repo Clean.
+7. Definir skill Environment Setup.
+8. Integrar Gemini Auditor como paso verificable.
+9. Recien despues reactivar tareas de producto.
+
+## Regla final
+
+No mas parches sin diseño. Toda nueva unidad debe tener task spec, evidencia y criterio de cierre.
+
+exec
+/bin/bash -lc 'rg -n "REPO_CLEAN|git_has_changes|trigger_cycle|telegram_cycle_lock|git pull|autostash" scripts factory tests docs/factory/HERMES_PROFESSIONAL_RESET_PLAN.md' in /opt/smartpyme-factory/repos/SmartPyme
+ exited 127 in 0ms:
+/bin/bash: line 1: rg: command not found
+
+codex
+PLAN: objetivo: aplicar REPO_CLEAN antes del dispatch local y remoto. Archivos permitidos a tocar: `scripts/hermes_factory_runner.py`, `scripts/telegram_factory_control.py`, `scripts/telegram_trigger_cycle.py`. Archivos prohibidos: core de negocio, `factory/evidence/**`, `factory/runner_logs/**` y cualquier ruta fuera de la lista. Cierre: py_compile de los tres scripts y verificación física; la evidencia en archivo queda bloqueada porque la propia tarea prohíbe escribir `factory/evidence/**`.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/scripts/hermes_factory_runner.py
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+
+codex
+Ahora estoy haciendo que el trigger falle antes de `git pull` si hay cambios locales no permitidos, y quitando `--autostash` para que el guard no quede neutralizado. El botón `/seguir` consultará el mismo estado antes de lanzar el proceso en background.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_trigger_cycle.py
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_factory_control.py
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+codex
+Cambios escritos. Paso a verificar existencia física, contenido relevante y compilación de los tres scripts requeridos; no voy a crear evidencia bajo `factory/evidence` porque está explícitamente prohibido en esta tarea.
+exec
+/bin/bash -lc 'test -f scripts/hermes_factory_runner.py; echo hermes_factory_runner=$?' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+hermes_factory_runner=0
+
+exec
+/bin/bash -lc 'test -f scripts/telegram_factory_control.py; echo telegram_factory_control=$?' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+telegram_factory_control=0
+
+exec
+/bin/bash -lc 'test -f scripts/telegram_trigger_cycle.py; echo telegram_trigger_cycle=$?' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+telegram_trigger_cycle=0
+
+exec
+/bin/bash -lc 'ls -la scripts/hermes_factory_runner.py scripts/telegram_factory_control.py scripts/telegram_trigger_cycle.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana  8608 Apr 28 10:09 scripts/hermes_factory_runner.py
+-rw-r--r-- 1 neoalmasana neoalmasana 10572 Apr 28 10:09 scripts/telegram_factory_control.py
+-rw-r--r-- 1 neoalmasana neoalmasana  3525 Apr 28 10:09 scripts/telegram_trigger_cycle.py
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc "sed -n '1,230p' scripts/hermes_factory_runner.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from datetime import datetime, timezone
+from pathlib import Path
+import subprocess
+import sys
+import re
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from factory.telegram_notify import notify_cycle_result
+
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TEMPLATE_TASK = REPO / "factory/tasks/template_codex_task.yaml"
+CODEX_RUNNER = REPO / "scripts/codex_builder_runner.py"
+POST_CYCLE = REPO / "scripts/factory_post_cycle_control.py"
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+STATUS = CONTROL / "FACTORY_STATUS.md"
+
+GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+GATE_IN_PROGRESS = {"RUNNING"}
+GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+
+
+def notify(status, detail=""):
+    try:
+        notify_cycle_result(status, detail)
+    except Exception as exc:
+        print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+
+
+def run_git(args, check=False):
+    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
+
+
+def ts():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_gate_text():
+    if not GATE.exists():
+        return ""
+    return GATE.read_text(encoding="utf-8", errors="replace")
+
+
+def gate_field(name, default=""):
+    prefix = f"{name}:"
+    for line in read_gate_text().splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return default
+
+
+def gate_status():
+    return gate_field("status", "APPROVED").upper()
+
+
+def write_status(result, detail=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    STATUS.write_text(
+        f"# FACTORY STATUS\n\nupdated_at: {ts()}\nlast_cycle_result: {result}\naudit_gate: {gate_status()}\nlast_error: {detail or 'none'}\n",
+        encoding="utf-8",
+    )
+
+
+def set_gate(status, code=0, task=""):
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
+        encoding="utf-8",
+    )
+
+
+def post_cycle(code):
+    if not POST_CYCLE.exists():
+        print("POST_CYCLE_MISSING")
+        notify("POST_CYCLE_MISSING", str(POST_CYCLE))
+        return code
+    r = subprocess.run(["python3", str(POST_CYCLE), "--repo", str(REPO), "--codex-returncode", str(code)])
+    if r.returncode:
+        notify("INCONSISTENCY_DETECTED", f"post_cycle_returncode={r.returncode}; codex_returncode={code}")
+    return r.returncode if r.returncode else code
+
+
+def task_is_pending(path):
+    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    return "task_id:" in text and "status: pending" in text
+
+
+def select_task():
+    if TASKS_DIR.exists():
+        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+        if pending:
+            return pending[0]
+    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+
+
+def replace_task_status(rel_task, new_status):
+    tp = (REPO / rel_task).resolve()
+    txt = tp.read_text(encoding="utf-8", errors="replace")
+    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+    tp.write_text(txt, encoding="utf-8")
+
+
+def mark_task_done(rel_task):
+    try:
+        replace_task_status(rel_task, "done")
+        notify("TASK_DONE", str(rel_task))
+    except Exception as e:
+        notify("TASK_DONE_ERROR", str(e))
+
+
+def mark_task_blocked(rel_task, code):
+    try:
+        replace_task_status(rel_task, "blocked")
+        notify("TASK_BLOCKED", f"{rel_task}; exit_code={code}")
+    except Exception as e:
+        notify("TASK_BLOCKED_ERROR", str(e))
+
+
+def reopen_last_task():
+    last_task = gate_field("last_task", "").strip()
+    if not last_task or last_task == "none":
+        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+        set_gate("BLOCKED", 1, "none")
+        return 1
+    try:
+        replace_task_status(last_task, "pending")
+        notify("AUDIT_REJECTED_REOPENED", last_task)
+        set_gate("APPROVED", 0, last_task)
+        return 0
+    except Exception as exc:
+        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+        set_gate("BLOCKED", 1, last_task)
+        return 1
+
+
+def enforce_gate_before_dispatch():
+    current_gate = gate_status()
+
+    if current_gate in GATE_ALLOWED_TO_RUN:
+        return 0
+
+    if current_gate == "REJECTED":
+        return reopen_last_task()
+
+    if current_gate in GATE_IN_PROGRESS:
+        print(f"CYCLE_ALREADY_RUNNING status={current_gate}")
+        write_status("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        notify("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+        return 2
+
+    if current_gate in GATE_BLOCKING:
+        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+        return 2
+
+    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+    notify("AUDIT_GATE_UNKNOWN", current_gate)
+    return 2
+
+
+def git_has_changes():
+    r = run_git(["status", "--porcelain"])
+    return bool(r.stdout.strip())
+
+
+def repo_dirty_entries():
+    r = run_git(["status", "--porcelain"])
+    entries = []
+    for line in r.stdout.splitlines():
+        path = line[3:].strip()
+        if not path:
+            continue
+        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+            continue
+        entries.append(line)
+    return entries
+
+
+def enforce_repo_clean():
+    entries = repo_dirty_entries()
+    if not entries:
+        return 0
+    detail = "repo_dirty=" + "; ".join(entries[:20])
+    print(f"REPO_CLEAN_BLOCKED {detail}")
+    write_status("REPO_CLEAN_BLOCKED", detail)
+    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
+    notify("REPO_CLEAN_BLOCKED", detail[:3500])
+    return 2
+
+
+def auto_commit_and_push(rel_task, code):
+    if code != 0:
+        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+        return
+    if not git_has_changes():
+        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+        return
+
+    task_label = str(rel_task) if rel_task else "no-task"
+    run_git(["add", "-A"], check=True)
+    commit_msg = f"Factory cycle: {task_label}"
+    commit = run_git(["commit", "-m", commit_msg])
+    if commit.returncode != 0:
+        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+        return
+
+    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+    push = run_git(["push", "origin", "main"])
+    if push.returncode != 0:
+        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+        return
+
+    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+
+
+def main():
+    gate_code = enforce_gate_before_dispatch()
+    if gate_code:
+        return 0
+
+    clean_code = enforce_repo_clean()
+    if clean_code:
+        return 0
+
+    notify("CYCLE_START", f"repo={REPO}")
+
+exec
+/bin/bash -lc "sed -n '1,230p' scripts/telegram_factory_control.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+GATE = REPO / "factory" / "control" / "AUDIT_GATE.md"
+STATUS = REPO / "factory" / "control" / "FACTORY_STATUS.md"
+OFFSET_FILE = REPO / "factory" / "control" / ".telegram_control_offset"
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
+REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+
+BUTTONS = {
+    "SEGUIR": "/seguir",
+    "PAUSAR": "/pausar",
+    "CORREGIR": "/corregir",
+    "ESTADO": "/estado",
+    "TAREAS": "/tareas",
+}
+
+
+def env(name: str) -> str:
+    return os.getenv(name, "").strip()
+
+
+def token() -> str:
+    value = env("TELEGRAM_BOT_TOKEN")
+    if not value:
+        raise RuntimeError("missing TELEGRAM_BOT_TOKEN")
+    return value
+
+
+def allowed_chat_id() -> str:
+    value = env("TELEGRAM_CHAT_ID")
+    if not value:
+        raise RuntimeError("missing TELEGRAM_CHAT_ID")
+    return value
+
+
+def api(method: str, payload: dict | None = None) -> dict:
+    data = None
+    if payload is not None:
+        data = urllib.parse.urlencode(payload).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.telegram.org/bot" + token() + "/" + method,
+        data=data,
+        method="POST" if data else "GET",
+    )
+    with urllib.request.urlopen(req, timeout=35) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def control_keyboard() -> str:
+    return json.dumps({"inline_keyboard": [
+        [{"text": "▶ Seguir", "callback_data": "SEGUIR"}, {"text": "⏸️ Pausar", "callback_data": "PAUSAR"}],
+        [{"text": "🔁 Corregir", "callback_data": "CORREGIR"}, {"text": "📊 Estado", "callback_data": "ESTADO"}],
+        [{"text": "🧭 Tareas", "callback_data": "TAREAS"}],
+    ]}, ensure_ascii=False)
+
+
+def send(text: str, buttons: bool = True) -> None:
+    payload = {"chat_id": allowed_chat_id(), "text": text[:3900]}
+    if buttons:
+        payload["reply_markup"] = control_keyboard()
+    api("sendMessage", payload)
+
+
+def answer_callback(callback_id: str) -> None:
+    api("answerCallbackQuery", {"callback_query_id": callback_id})
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_offset() -> int:
+    try:
+        return int(OFFSET_FILE.read_text().strip())
+    except Exception:
+        return 0
+
+
+def write_offset(value: int) -> None:
+    OFFSET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    OFFSET_FILE.write_text(str(value), encoding="utf-8")
+
+
+def _read_status_file() -> dict[str, str]:
+    data: dict[str, str] = {}
+    if not STATUS.exists():
+        return data
+    for line in STATUS.read_text(encoding="utf-8", errors="replace").splitlines():
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def _read_gate_file() -> dict[str, str]:
+    data: dict[str, str] = {}
+    if not GATE.exists():
+        return data
+    for line in GATE.read_text(encoding="utf-8", errors="replace").splitlines():
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def gate_status() -> str:
+    return _read_gate_file().get("status", "APPROVED").upper()
+
+
+def last_task() -> str:
+    return _read_gate_file().get("last_task", "").strip()
+
+
+def write_gate(status: str, reason: str) -> None:
+    GATE.parent.mkdir(parents=True, exist_ok=True)
+    previous = gate_status()
+    GATE.write_text(
+        "# AUDIT GATE\n\n"
+        f"status: {status}\n"
+        f"updated_at: {now()}\n"
+        f"updated_by: telegram_control\n"
+        f"previous_status: {previous}\n"
+        f"reason: {reason}\n",
+        encoding="utf-8",
+    )
+
+
+def cycle_running_message() -> str:
+    return (
+        "Ya hay un ciclo en ejecución.\n\n"
+        "No disparo otro ciclo para evitar duplicados. "
+        "Apenas termine, te vas a enterar por acá."
+    )
+
+
+def repo_dirty_entries() -> list[str]:
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
+    entries: list[str] = []
+    for line in result.stdout.splitlines():
+        path = line[3:].strip()
+        if not path:
+            continue
+        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+            continue
+        entries.append(line)
+    return entries
+
+
+def repo_dirty_message(entries: list[str]) -> str:
+    shown = "\n".join(entries[:12])
+    return (
+        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
+        f"{shown}\n\n"
+        "No disparo Hermes hasta que el repo quede limpio."
+    )
+
+
+def trigger_cycle() -> str:
+    if gate_status() == "RUNNING":
+        return cycle_running_message()
+    if LOCK.exists():
+        return cycle_running_message()
+    dirty_entries = repo_dirty_entries()
+    if dirty_entries:
+        return repo_dirty_message(dirty_entries)
+    if not TRIGGER.exists():
+        return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+    subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return "OK: ciclo solicitado. Hará pull de GitHub y ejecutará una sola vuelta de Hermes."
+
+
+def correction_not_available_message() -> str:
+    gate = gate_status()
+    if gate == "RUNNING":
+        return "No puedo corregir ahora: hay un ciclo en ejecución. Apenas termine, te aviso por acá."
+    if gate != "WAITING_AUDIT":
+        return "Corregir solo está disponible cuando un ciclo cerró y espera auditoría."
+    task = last_task()
+    if not task or task == "none":
+        return "No puedo corregir: no hay última tarea trazable para reabrir."
+    return ""
+
+
+def reject_for_correction() -> str:
+    blocked_reason = correction_not_available_message()
+    if blocked_reason:
+        return blocked_reason
+    write_gate("REJECTED", "/corregir")
+    return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
+
+
+def status_text() -> str:
+    data = _read_status_file()
+    gate = gate_status()
+    return "\n".join([
+        "📊 Estado de la Factoría SmartPyme", "",
+        f"Decisión actual: {gate}",
+        f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
+        f"Última actualización: {data.get('updated_at', 'no informada')}",
+        f"Detalle para GPT: {data.get('last_error', 'sin detalle')}", "",
+        "Botones:",
+        "- ▶ Seguir: traer cambios de GitHub y ejecutar una vuelta si no hay ciclo corriendo.",
+        "- ⏸️ Pausar: mantener detenido.",
+        "- 🔁 Corregir: activo solo cuando un ciclo cerró y espera auditoría.",
+        "- 🧭 Tareas: ver tareas activas.",
+    ])
+
+
+exec
+/bin/bash -lc "sed -n '1,220p' scripts/telegram_trigger_cycle.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+from __future__ import annotations
+
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+CONTROL = REPO / "factory" / "control"
+GATE = CONTROL / "AUDIT_GATE.md"
+LOCK = CONTROL / ".telegram_cycle_lock"
+RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
+REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def write_log(message: str) -> None:
+    LOG.parent.mkdir(parents=True, exist_ok=True)
+    with LOG.open("a", encoding="utf-8") as fh:
+        fh.write(f"{now()} {message}\n")
+
+
+def run(command: list[str]) -> int:
+    write_log("RUN " + " ".join(command))
+    result = subprocess.run(
+        command,
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.stdout.strip():
+        write_log("STDOUT " + result.stdout.strip()[-3000:])
+    if result.stderr.strip():
+        write_log("STDERR " + result.stderr.strip()[-3000:])
+    write_log(f"RETURNCODE {result.returncode}")
+    return result.returncode
+
+
+def repo_dirty_entries() -> list[str]:
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
+    entries: list[str] = []
+    for line in result.stdout.splitlines():
+        path = line[3:].strip()
+        if not path:
+            continue
+        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+            continue
+        entries.append(line)
+    return entries
+
+
+def enforce_repo_clean() -> int:
+    entries = repo_dirty_entries()
+    if not entries:
+        return 0
+    detail = "repo_dirty=" + "; ".join(entries[:20])
+    write_log("REPO_CLEAN_BLOCKED " + detail)
+    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
+    return 2
+
+
+def write_gate(status: str, reason: str) -> None:
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    GATE.write_text(
+        "# AUDIT GATE\n\n"
+        f"status: {status}\n"
+        f"updated_at: {now()}\n"
+        "updated_by: telegram_trigger_cycle\n"
+        f"reason: {reason}\n",
+        encoding="utf-8",
+    )
+
+
+def main() -> int:
+    CONTROL.mkdir(parents=True, exist_ok=True)
+    if LOCK.exists():
+        write_log("SKIP lock exists")
+        return 0
+
+    LOCK.write_text(now(), encoding="utf-8")
+    try:
+        write_log("START telegram cycle trigger")
+
+        clean_code = enforce_repo_clean()
+        if clean_code:
+            return clean_code
+
+        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+        if pull_code != 0:
+            write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+            return pull_code
+
+        write_gate("APPROVED", "telegram_seguir_after_pull")
+
+        if not RUNNER.exists():
+            write_gate("BLOCKED", "missing_hermes_factory_runner")
+            write_log(f"MISSING {RUNNER}")
+            return 1
+
+        return run([sys.executable, str(RUNNER)])
+    finally:
+        try:
+            LOCK.unlink(missing_ok=True)
+        except Exception as exc:
+            write_log(f"LOCK_CLEANUP_ERROR {type(exc).__name__}: {exc}")
+        write_log("END telegram cycle trigger")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+exec
+/bin/bash -lc "grep -R \"REPO_CLEAN\\|repo_dirty_entries\\|--autostash\" -n scripts/hermes_factory_runner.py scripts/telegram_factory_control.py scripts/telegram_trigger_cycle.py" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scripts/hermes_factory_runner.py:23:REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+scripts/hermes_factory_runner.py:171:def repo_dirty_entries():
+scripts/hermes_factory_runner.py:178:        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+scripts/hermes_factory_runner.py:185:    entries = repo_dirty_entries()
+scripts/hermes_factory_runner.py:189:    print(f"REPO_CLEAN_BLOCKED {detail}")
+scripts/hermes_factory_runner.py:190:    write_status("REPO_CLEAN_BLOCKED", detail)
+scripts/hermes_factory_runner.py:192:    notify("REPO_CLEAN_BLOCKED", detail[:3500])
+scripts/telegram_factory_control.py:20:REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+scripts/telegram_factory_control.py:151:def repo_dirty_entries() -> list[str]:
+scripts/telegram_factory_control.py:166:        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+scripts/telegram_factory_control.py:175:        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
+scripts/telegram_factory_control.py:186:    dirty_entries = repo_dirty_entries()
+scripts/telegram_trigger_cycle.py:14:REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+scripts/telegram_trigger_cycle.py:44:def repo_dirty_entries() -> list[str]:
+scripts/telegram_trigger_cycle.py:59:        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+scripts/telegram_trigger_cycle.py:66:    entries = repo_dirty_entries()
+scripts/telegram_trigger_cycle.py:70:    write_log("REPO_CLEAN_BLOCKED " + detail)
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc 'python3 -m py_compile scripts/hermes_factory_runner.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'python3 -m py_compile scripts/telegram_factory_control.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'python3 -m py_compile scripts/telegram_trigger_cycle.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+codex
+La compilación requerida pasó en los tres scripts. Hago el cierre con `git status --short` y `git diff` para separar mis cambios de la suciedad preexistente.
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml
+ M factory/ai_governance/tasks/kernel_total_audit_001.yaml
+ M factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/PRIORITY_BOARD.md
+ M scripts/hermes_factory_runner.py
+ M scripts/telegram_factory_control.py
+ M scripts/telegram_trigger_cycle.py
+?? factory/evidence/codex_0000_telegram_control_idempotency_001_20260428T035303Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T032927Z/
+?? factory/evidence/codex_product_final_concept_audit_001_20260428T034235Z/
+?? factory/evidence/kernel_total_audit_001/
+?? factory/evidence/product_final_concept_audit_001/
+?? factory/reports/
+
+exec
+/bin/bash -lc 'git diff -- scripts/hermes_factory_runner.py scripts/telegram_factory_control.py scripts/telegram_trigger_cycle.py' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b62..5962d35 100644
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@ STATUS = CONTROL / "FACTORY_STATUS.md"
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@ def git_has_changes():
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@ def main():
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe56..9064cba 100644
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@ OFFSET_FILE = REPO / "factory" / "control" / ".telegram_control_offset"
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@ def cycle_running_message() -> str:
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcf..82fd71d 100644
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@ GATE = CONTROL / "AUDIT_GATE.md"
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@ def run(command: list[str]) -> int:
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@ def main() -> int:
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc "find scripts -path '*/__pycache__/*' -type f -mmin -5 -print" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+scripts/__pycache__/hermes_factory_runner.cpython-311.pyc
+scripts/__pycache__/telegram_trigger_cycle.cpython-311.pyc
+scripts/__pycache__/telegram_factory_control.cpython-311.pyc
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc "nl -ba scripts/hermes_factory_runner.py | sed -n '18,235p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    18	STATUS = CONTROL / "FACTORY_STATUS.md"
+    19	
+    20	GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+    21	GATE_IN_PROGRESS = {"RUNNING"}
+    22	GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
+    23	REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+    24	
+    25	
+    26	def notify(status, detail=""):
+    27	    try:
+    28	        notify_cycle_result(status, detail)
+    29	    except Exception as exc:
+    30	        print(f"NOTIFY_ERROR {type(exc).__name__}: {exc}")
+    31	
+    32	
+    33	def run_git(args, check=False):
+    34	    return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
+    35	
+    36	
+    37	def ts():
+    38	    return datetime.now(timezone.utc).isoformat()
+    39	
+    40	
+    41	def read_gate_text():
+    42	    if not GATE.exists():
+    43	        return ""
+    44	    return GATE.read_text(encoding="utf-8", errors="replace")
+    45	
+    46	
+    47	def gate_field(name, default=""):
+    48	    prefix = f"{name}:"
+    49	    for line in read_gate_text().splitlines():
+    50	        if line.startswith(prefix):
+    51	            return line.split(":", 1)[1].strip()
+    52	    return default
+    53	
+    54	
+    55	def gate_status():
+    56	    return gate_field("status", "APPROVED").upper()
+    57	
+    58	
+    59	def write_status(result, detail=""):
+    60	    CONTROL.mkdir(parents=True, exist_ok=True)
+    61	    STATUS.write_text(
+    62	        f"# FACTORY STATUS\n\nupdated_at: {ts()}\nlast_cycle_result: {result}\naudit_gate: {gate_status()}\nlast_error: {detail or 'none'}\n",
+    63	        encoding="utf-8",
+    64	    )
+    65	
+    66	
+    67	def set_gate(status, code=0, task=""):
+    68	    CONTROL.mkdir(parents=True, exist_ok=True)
+    69	    GATE.write_text(
+    70	        f"# AUDIT GATE\n\nstatus: {status}\nupdated_at: {ts()}\nlast_returncode: {code}\nlast_task: {task or gate_field('last_task', 'none')}\n",
+    71	        encoding="utf-8",
+    72	    )
+    73	
+    74	
+    75	def post_cycle(code):
+    76	    if not POST_CYCLE.exists():
+    77	        print("POST_CYCLE_MISSING")
+    78	        notify("POST_CYCLE_MISSING", str(POST_CYCLE))
+    79	        return code
+    80	    r = subprocess.run(["python3", str(POST_CYCLE), "--repo", str(REPO), "--codex-returncode", str(code)])
+    81	    if r.returncode:
+    82	        notify("INCONSISTENCY_DETECTED", f"post_cycle_returncode={r.returncode}; codex_returncode={code}")
+    83	    return r.returncode if r.returncode else code
+    84	
+    85	
+    86	def task_is_pending(path):
+    87	    text = path.read_text(encoding="utf-8", errors="replace").lower()
+    88	    return "task_id:" in text and "status: pending" in text
+    89	
+    90	
+    91	def select_task():
+    92	    if TASKS_DIR.exists():
+    93	        pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
+    94	        if pending:
+    95	            return pending[0]
+    96	    return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
+    97	
+    98	
+    99	def replace_task_status(rel_task, new_status):
+   100	    tp = (REPO / rel_task).resolve()
+   101	    txt = tp.read_text(encoding="utf-8", errors="replace")
+   102	    txt = re.sub(r"status:\s*(pending|done|rejected|blocked|in_progress)", f"status: {new_status}", txt, count=1, flags=re.IGNORECASE)
+   103	    tp.write_text(txt, encoding="utf-8")
+   104	
+   105	
+   106	def mark_task_done(rel_task):
+   107	    try:
+   108	        replace_task_status(rel_task, "done")
+   109	        notify("TASK_DONE", str(rel_task))
+   110	    except Exception as e:
+   111	        notify("TASK_DONE_ERROR", str(e))
+   112	
+   113	
+   114	def mark_task_blocked(rel_task, code):
+   115	    try:
+   116	        replace_task_status(rel_task, "blocked")
+   117	        notify("TASK_BLOCKED", f"{rel_task}; exit_code={code}")
+   118	    except Exception as e:
+   119	        notify("TASK_BLOCKED_ERROR", str(e))
+   120	
+   121	
+   122	def reopen_last_task():
+   123	    last_task = gate_field("last_task", "").strip()
+   124	    if not last_task or last_task == "none":
+   125	        notify("AUDIT_REJECTED_NO_TASK", "last_task missing")
+   126	        set_gate("BLOCKED", 1, "none")
+   127	        return 1
+   128	    try:
+   129	        replace_task_status(last_task, "pending")
+   130	        notify("AUDIT_REJECTED_REOPENED", last_task)
+   131	        set_gate("APPROVED", 0, last_task)
+   132	        return 0
+   133	    except Exception as exc:
+   134	        notify("AUDIT_REJECTED_ERROR", f"{last_task}: {exc}")
+   135	        set_gate("BLOCKED", 1, last_task)
+   136	        return 1
+   137	
+   138	
+   139	def enforce_gate_before_dispatch():
+   140	    current_gate = gate_status()
+   141	
+   142	    if current_gate in GATE_ALLOWED_TO_RUN:
+   143	        return 0
+   144	
+   145	    if current_gate == "REJECTED":
+   146	        return reopen_last_task()
+   147	
+   148	    if current_gate in GATE_IN_PROGRESS:
+   149	        print(f"CYCLE_ALREADY_RUNNING status={current_gate}")
+   150	        write_status("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+   151	        notify("CYCLE_ALREADY_RUNNING", f"gate={current_gate}; no dispatch")
+   152	        return 2
+   153	
+   154	    if current_gate in GATE_BLOCKING:
+   155	        print(f"AUDIT_GATE_BLOCKING status={current_gate}")
+   156	        write_status("AUDIT_GATE_BLOCKING", f"gate={current_gate}")
+   157	        notify("AUDIT_BLOCKED", f"gate={current_gate}; no dispatch")
+   158	        return 2
+   159	
+   160	    print(f"AUDIT_GATE_UNKNOWN status={current_gate}")
+   161	    write_status("AUDIT_GATE_UNKNOWN", f"gate={current_gate}")
+   162	    notify("AUDIT_GATE_UNKNOWN", current_gate)
+   163	    return 2
+   164	
+   165	
+   166	def git_has_changes():
+   167	    r = run_git(["status", "--porcelain"])
+   168	    return bool(r.stdout.strip())
+   169	
+   170	
+   171	def repo_dirty_entries():
+   172	    r = run_git(["status", "--porcelain"])
+   173	    entries = []
+   174	    for line in r.stdout.splitlines():
+   175	        path = line[3:].strip()
+   176	        if not path:
+   177	            continue
+   178	        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+   179	            continue
+   180	        entries.append(line)
+   181	    return entries
+   182	
+   183	
+   184	def enforce_repo_clean():
+   185	    entries = repo_dirty_entries()
+   186	    if not entries:
+   187	        return 0
+   188	    detail = "repo_dirty=" + "; ".join(entries[:20])
+   189	    print(f"REPO_CLEAN_BLOCKED {detail}")
+   190	    write_status("REPO_CLEAN_BLOCKED", detail)
+   191	    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
+   192	    notify("REPO_CLEAN_BLOCKED", detail[:3500])
+   193	    return 2
+   194	
+   195	
+   196	def auto_commit_and_push(rel_task, code):
+   197	    if code != 0:
+   198	        notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+   199	        return
+   200	    if not git_has_changes():
+   201	        notify("AUTO_COMMIT_SKIPPED", "no worktree changes")
+   202	        return
+   203	
+   204	    task_label = str(rel_task) if rel_task else "no-task"
+   205	    run_git(["add", "-A"], check=True)
+   206	    commit_msg = f"Factory cycle: {task_label}"
+   207	    commit = run_git(["commit", "-m", commit_msg])
+   208	    if commit.returncode != 0:
+   209	        notify("AUTO_COMMIT_FAILED", commit.stderr[-1200:] or commit.stdout[-1200:])
+   210	        return
+   211	
+   212	    sha = run_git(["rev-parse", "--short", "HEAD"], check=True).stdout.strip()
+   213	    push = run_git(["push", "origin", "main"])
+   214	    if push.returncode != 0:
+   215	        notify("AUTO_PUSH_FAILED", f"sha={sha}\n{push.stderr[-1200:]}")
+   216	        return
+   217	
+   218	    notify("AUTO_PUSH_OK", f"sha={sha}\ntask={task_label}")
+   219	
+   220	
+   221	def main():
+   222	    gate_code = enforce_gate_before_dispatch()
+   223	    if gate_code:
+   224	        return 0
+   225	
+   226	    clean_code = enforce_repo_clean()
+   227	    if clean_code:
+   228	        return 0
+   229	
+   230	    notify("CYCLE_START", f"repo={REPO}")
+   231	
+   232	    task = select_task()
+   233	    rel_task = task.relative_to(REPO) if task else None
+   234	    task_label = str(rel_task) if rel_task else "none"
+   235	
+
+exec
+/bin/bash -lc "nl -ba scripts/telegram_factory_control.py | sed -n '17,195p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    17	TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+    18	TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+    19	LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
+    20	REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+    21	
+    22	BUTTONS = {
+    23	    "SEGUIR": "/seguir",
+    24	    "PAUSAR": "/pausar",
+    25	    "CORREGIR": "/corregir",
+    26	    "ESTADO": "/estado",
+    27	    "TAREAS": "/tareas",
+    28	}
+    29	
+    30	
+    31	def env(name: str) -> str:
+    32	    return os.getenv(name, "").strip()
+    33	
+    34	
+    35	def token() -> str:
+    36	    value = env("TELEGRAM_BOT_TOKEN")
+    37	    if not value:
+    38	        raise RuntimeError("missing TELEGRAM_BOT_TOKEN")
+    39	    return value
+    40	
+    41	
+    42	def allowed_chat_id() -> str:
+    43	    value = env("TELEGRAM_CHAT_ID")
+    44	    if not value:
+    45	        raise RuntimeError("missing TELEGRAM_CHAT_ID")
+    46	    return value
+    47	
+    48	
+    49	def api(method: str, payload: dict | None = None) -> dict:
+    50	    data = None
+    51	    if payload is not None:
+    52	        data = urllib.parse.urlencode(payload).encode("utf-8")
+    53	    req = urllib.request.Request(
+    54	        "https://api.telegram.org/bot" + token() + "/" + method,
+    55	        data=data,
+    56	        method="POST" if data else "GET",
+    57	    )
+    58	    with urllib.request.urlopen(req, timeout=35) as resp:
+    59	        return json.loads(resp.read().decode("utf-8"))
+    60	
+    61	
+    62	def control_keyboard() -> str:
+    63	    return json.dumps({"inline_keyboard": [
+    64	        [{"text": "▶ Seguir", "callback_data": "SEGUIR"}, {"text": "⏸️ Pausar", "callback_data": "PAUSAR"}],
+    65	        [{"text": "🔁 Corregir", "callback_data": "CORREGIR"}, {"text": "📊 Estado", "callback_data": "ESTADO"}],
+    66	        [{"text": "🧭 Tareas", "callback_data": "TAREAS"}],
+    67	    ]}, ensure_ascii=False)
+    68	
+    69	
+    70	def send(text: str, buttons: bool = True) -> None:
+    71	    payload = {"chat_id": allowed_chat_id(), "text": text[:3900]}
+    72	    if buttons:
+    73	        payload["reply_markup"] = control_keyboard()
+    74	    api("sendMessage", payload)
+    75	
+    76	
+    77	def answer_callback(callback_id: str) -> None:
+    78	    api("answerCallbackQuery", {"callback_query_id": callback_id})
+    79	
+    80	
+    81	def now() -> str:
+    82	    return datetime.now(timezone.utc).isoformat()
+    83	
+    84	
+    85	def read_offset() -> int:
+    86	    try:
+    87	        return int(OFFSET_FILE.read_text().strip())
+    88	    except Exception:
+    89	        return 0
+    90	
+    91	
+    92	def write_offset(value: int) -> None:
+    93	    OFFSET_FILE.parent.mkdir(parents=True, exist_ok=True)
+    94	    OFFSET_FILE.write_text(str(value), encoding="utf-8")
+    95	
+    96	
+    97	def _read_status_file() -> dict[str, str]:
+    98	    data: dict[str, str] = {}
+    99	    if not STATUS.exists():
+   100	        return data
+   101	    for line in STATUS.read_text(encoding="utf-8", errors="replace").splitlines():
+   102	        if ":" not in line or line.lstrip().startswith("#"):
+   103	            continue
+   104	        key, value = line.split(":", 1)
+   105	        data[key.strip()] = value.strip()
+   106	    return data
+   107	
+   108	
+   109	def _read_gate_file() -> dict[str, str]:
+   110	    data: dict[str, str] = {}
+   111	    if not GATE.exists():
+   112	        return data
+   113	    for line in GATE.read_text(encoding="utf-8", errors="replace").splitlines():
+   114	        if ":" not in line or line.lstrip().startswith("#"):
+   115	            continue
+   116	        key, value = line.split(":", 1)
+   117	        data[key.strip()] = value.strip()
+   118	    return data
+   119	
+   120	
+   121	def gate_status() -> str:
+   122	    return _read_gate_file().get("status", "APPROVED").upper()
+   123	
+   124	
+   125	def last_task() -> str:
+   126	    return _read_gate_file().get("last_task", "").strip()
+   127	
+   128	
+   129	def write_gate(status: str, reason: str) -> None:
+   130	    GATE.parent.mkdir(parents=True, exist_ok=True)
+   131	    previous = gate_status()
+   132	    GATE.write_text(
+   133	        "# AUDIT GATE\n\n"
+   134	        f"status: {status}\n"
+   135	        f"updated_at: {now()}\n"
+   136	        f"updated_by: telegram_control\n"
+   137	        f"previous_status: {previous}\n"
+   138	        f"reason: {reason}\n",
+   139	        encoding="utf-8",
+   140	    )
+   141	
+   142	
+   143	def cycle_running_message() -> str:
+   144	    return (
+   145	        "Ya hay un ciclo en ejecución.\n\n"
+   146	        "No disparo otro ciclo para evitar duplicados. "
+   147	        "Apenas termine, te vas a enterar por acá."
+   148	    )
+   149	
+   150	
+   151	def repo_dirty_entries() -> list[str]:
+   152	    result = subprocess.run(
+   153	        ["git", "status", "--porcelain"],
+   154	        cwd=REPO,
+   155	        text=True,
+   156	        capture_output=True,
+   157	        check=False,
+   158	    )
+   159	    if result.returncode != 0:
+   160	        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
+   161	    entries: list[str] = []
+   162	    for line in result.stdout.splitlines():
+   163	        path = line[3:].strip()
+   164	        if not path:
+   165	            continue
+   166	        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+   167	            continue
+   168	        entries.append(line)
+   169	    return entries
+   170	
+   171	
+   172	def repo_dirty_message(entries: list[str]) -> str:
+   173	    shown = "\n".join(entries[:12])
+   174	    return (
+   175	        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
+   176	        f"{shown}\n\n"
+   177	        "No disparo Hermes hasta que el repo quede limpio."
+   178	    )
+   179	
+   180	
+   181	def trigger_cycle() -> str:
+   182	    if gate_status() == "RUNNING":
+   183	        return cycle_running_message()
+   184	    if LOCK.exists():
+   185	        return cycle_running_message()
+   186	    dirty_entries = repo_dirty_entries()
+   187	    if dirty_entries:
+   188	        return repo_dirty_message(dirty_entries)
+   189	    if not TRIGGER.exists():
+   190	        return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+   191	    subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+   192	    return "OK: ciclo solicitado. Hará pull de GitHub y ejecutará una sola vuelta de Hermes."
+   193	
+   194	
+   195	def correction_not_available_message() -> str:
+
+exec
+/bin/bash -lc "nl -ba scripts/telegram_trigger_cycle.py | sed -n '11,112p'" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+    11	LOCK = CONTROL / ".telegram_cycle_lock"
+    12	RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+    13	LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
+    14	REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+    15	
+    16	
+    17	def now() -> str:
+    18	    return datetime.now(timezone.utc).isoformat()
+    19	
+    20	
+    21	def write_log(message: str) -> None:
+    22	    LOG.parent.mkdir(parents=True, exist_ok=True)
+    23	    with LOG.open("a", encoding="utf-8") as fh:
+    24	        fh.write(f"{now()} {message}\n")
+    25	
+    26	
+    27	def run(command: list[str]) -> int:
+    28	    write_log("RUN " + " ".join(command))
+    29	    result = subprocess.run(
+    30	        command,
+    31	        cwd=REPO,
+    32	        text=True,
+    33	        capture_output=True,
+    34	        check=False,
+    35	    )
+    36	    if result.stdout.strip():
+    37	        write_log("STDOUT " + result.stdout.strip()[-3000:])
+    38	    if result.stderr.strip():
+    39	        write_log("STDERR " + result.stderr.strip()[-3000:])
+    40	    write_log(f"RETURNCODE {result.returncode}")
+    41	    return result.returncode
+    42	
+    43	
+    44	def repo_dirty_entries() -> list[str]:
+    45	    result = subprocess.run(
+    46	        ["git", "status", "--porcelain"],
+    47	        cwd=REPO,
+    48	        text=True,
+    49	        capture_output=True,
+    50	        check=False,
+    51	    )
+    52	    if result.returncode != 0:
+    53	        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
+    54	    entries: list[str] = []
+    55	    for line in result.stdout.splitlines():
+    56	        path = line[3:].strip()
+    57	        if not path:
+    58	            continue
+    59	        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
+    60	            continue
+    61	        entries.append(line)
+    62	    return entries
+    63	
+    64	
+    65	def enforce_repo_clean() -> int:
+    66	    entries = repo_dirty_entries()
+    67	    if not entries:
+    68	        return 0
+    69	    detail = "repo_dirty=" + "; ".join(entries[:20])
+    70	    write_log("REPO_CLEAN_BLOCKED " + detail)
+    71	    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
+    72	    return 2
+    73	
+    74	
+    75	def write_gate(status: str, reason: str) -> None:
+    76	    CONTROL.mkdir(parents=True, exist_ok=True)
+    77	    GATE.write_text(
+    78	        "# AUDIT GATE\n\n"
+    79	        f"status: {status}\n"
+    80	        f"updated_at: {now()}\n"
+    81	        "updated_by: telegram_trigger_cycle\n"
+    82	        f"reason: {reason}\n",
+    83	        encoding="utf-8",
+    84	    )
+    85	
+    86	
+    87	def main() -> int:
+    88	    CONTROL.mkdir(parents=True, exist_ok=True)
+    89	    if LOCK.exists():
+    90	        write_log("SKIP lock exists")
+    91	        return 0
+    92	
+    93	    LOCK.write_text(now(), encoding="utf-8")
+    94	    try:
+    95	        write_log("START telegram cycle trigger")
+    96	
+    97	        clean_code = enforce_repo_clean()
+    98	        if clean_code:
+    99	            return clean_code
+   100	
+   101	        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+   102	        if pull_code != 0:
+   103	            write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+   104	            return pull_code
+   105	
+   106	        write_gate("APPROVED", "telegram_seguir_after_pull")
+   107	
+   108	        if not RUNNER.exists():
+   109	            write_gate("BLOCKED", "missing_hermes_factory_runner")
+   110	            write_log(f"MISSING {RUNNER}")
+   111	            return 1
+   112	
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc "python3 -c \"import importlib.util; p='scripts/telegram_factory_control.py'; s=importlib.util.spec_from_file_location('telegram_factory_control', p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); entries=m.repo_dirty_entries(); print(len(entries)); print(entries[0] if entries else 'CLEAN')\"" in /opt/smartpyme-factory/repos/SmartPyme
+exec
+/bin/bash -lc "python3 -c \"import importlib.util; p='scripts/telegram_trigger_cycle.py'; s=importlib.util.spec_from_file_location('telegram_trigger_cycle', p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); entries=m.repo_dirty_entries(); print(len(entries)); print(entries[0] if entries else 'CLEAN')\"" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+13
+ M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml
+
+ succeeded in 0ms:
+13
+ M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml
+
+exec
+/bin/bash -lc "python3 -c \"import importlib.util; p='scripts/hermes_factory_runner.py'; s=importlib.util.spec_from_file_location('hermes_factory_runner', p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); entries=m.repo_dirty_entries(); print(len(entries)); print(entries[0] if entries else 'CLEAN')\"" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+13
+ M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+exec
+/bin/bash -lc 'git diff -- app smartcounter_core' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git diff -- factory/evidence factory/runner_logs' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+exec
+/bin/bash -lc 'git status --short scripts/hermes_factory_runner.py scripts/telegram_factory_control.py scripts/telegram_trigger_cycle.py app smartcounter_core factory/evidence factory/runner_logs' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M scripts/hermes_factory_runner.py
+ M scripts/telegram_factory_control.py
+ M scripts/telegram_trigger_cycle.py
+?? factory/evidence/codex_0000_telegram_control_idempotency_001_20260428T035303Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T032927Z/
+?? factory/evidence/codex_product_final_concept_audit_001_20260428T034235Z/
+?? factory/evidence/kernel_total_audit_001/
+?? factory/evidence/product_final_concept_audit_001/
+
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+codex
+VEREDICTO  
+NO_VALIDADO como ciclo completo: código escrito y tests requeridos OK, pero no dejé evidencia persistente en `factory/evidence/**` porque la tarea lo marca como `forbidden_files`.
+
+ARCHIVOS_MODIFICADOS  
+- [scripts/hermes_factory_runner.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/hermes_factory_runner.py:23)
+- [scripts/telegram_factory_control.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_factory_control.py:20)
+- [scripts/telegram_trigger_cycle.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_trigger_cycle.py:14)
+
+VERIFICACION_FISICA  
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` OK para los 3 scripts.
+- `ls -la` confirmó existencia física:
+  - `scripts/hermes_factory_runner.py`
+  - `scripts/telegram_factory_control.py`
+  - `scripts/telegram_trigger_cycle.py`
+- `git diff -- app smartcounter_core` -> sin cambios.
+- `git diff -- factory/evidence factory/runner_logs` -> sin cambios tracked.
+
+TESTS  
+- `python3 -m py_compile scripts/hermes_factory_runner.py` -> OK
+- `python3 -m py_compile scripts/telegram_factory_control.py` -> OK
+- `python3 -m py_compile scripts/telegram_trigger_cycle.py` -> OK
+
+EVIDENCIA  
+- `git status --short` muestra mis 3 scripts modificados y suciedad preexistente en tareas/control/evidencia.
+- Check funcional sin ejecutar ciclos:
+  - `hermes_factory_runner.repo_dirty_entries()` detectó `13` entradas dirty.
+  - `telegram_factory_control.repo_dirty_entries()` detectó `13` entradas dirty.
+  - `telegram_trigger_cycle.repo_dirty_entries()` detectó `13` entradas dirty.
+- Primera entrada detectada: `M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml`.
+
+DIFF  
+- `hermes_factory_runner.py`: añade `REPO_CLEAN` antes de `CYCLE_START`; si hay cambios fuera de `factory/control/` y `factory/runner_logs/`, marca gate/status `BLOCKED` y no despacha tarea.
+- `telegram_factory_control.py`: `/seguir` ahora revisa `REPO_CLEAN` antes de lanzar `telegram_trigger_cycle.py`; si falla, responde mensaje de bloqueo y no crea proceso.
+- `telegram_trigger_cycle.py`: añade guard `REPO_CLEAN` antes de `git pull`; elimina `--autostash` para no ocultar dirty worktree.
+
+BLOQUEOS  
+- No escribí `factory/evidence/<task_id>/...` porque `factory/evidence/**` está prohibido por la tarea.
+- El repo ya estaba sucio antes de mis cambios; con este guard, un ciclo real queda bloqueado hasta limpiar o cerrar esos cambios.
+
+RIESGOS  
+- El guard está duplicado en tres scripts porque no había archivo compartido permitido para extraer helper común.
+- `hermes_factory_runner.py` mantiene el patrón existente de devolver `0` cuando bloquea dispatch por gate/guard; bloquea la cola, pero no propaga error de proceso.
+diff --git a/scripts/hermes_factory_runner.py b/scripts/hermes_factory_runner.py
+index 6db4b626160d34a277a53a814f7b9218f25010ed..5962d35e79f8d983e885189b16410855e1261af0
+--- a/scripts/hermes_factory_runner.py
++++ b/scripts/hermes_factory_runner.py
+@@ -20,6 +20,7 @@
+ GATE_ALLOWED_TO_RUN = {"APPROVED", "OPEN", "RUN"}
+ GATE_IN_PROGRESS = {"RUNNING"}
+ GATE_BLOCKING = {"WAITING_AUDIT", "BLOCKED", "HOLD"}
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def notify(status, detail=""):
+@@ -167,6 +168,31 @@
+     return bool(r.stdout.strip())
+ 
+ 
++def repo_dirty_entries():
++    r = run_git(["status", "--porcelain"])
++    entries = []
++    for line in r.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean():
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    print(f"REPO_CLEAN_BLOCKED {detail}")
++    write_status("REPO_CLEAN_BLOCKED", detail)
++    set_gate("BLOCKED", 2, gate_field("last_task", "none"))
++    notify("REPO_CLEAN_BLOCKED", detail[:3500])
++    return 2
++
++
+ def auto_commit_and_push(rel_task, code):
+     if code != 0:
+         notify("AUTO_COMMIT_SKIPPED", f"cycle failed; exit_code={code}")
+@@ -197,6 +223,10 @@
+     if gate_code:
+         return 0
+ 
++    clean_code = enforce_repo_clean()
++    if clean_code:
++        return 0
++
+     notify("CYCLE_START", f"repo={REPO}")
+ 
+     task = select_task()
+diff --git a/scripts/telegram_factory_control.py b/scripts/telegram_factory_control.py
+index 15abe566d1c6993b8de19984760d12a86fd47590..9064cba8ff95798c17966662e4817fb856d1a0c0
+--- a/scripts/telegram_factory_control.py
++++ b/scripts/telegram_factory_control.py
+@@ -17,6 +17,7 @@
+ TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+ TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+ LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ BUTTONS = {
+     "SEGUIR": "/seguir",
+@@ -147,11 +148,44 @@
+     )
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def repo_dirty_message(entries: list[str]) -> str:
++    shown = "\n".join(entries[:12])
++    return (
++        "REPO_CLEAN bloquea el ciclo: hay cambios locales fuera de control.\n\n"
++        f"{shown}\n\n"
++        "No disparo Hermes hasta que el repo quede limpio."
++    )
++
++
+ def trigger_cycle() -> str:
+     if gate_status() == "RUNNING":
+         return cycle_running_message()
+     if LOCK.exists():
+         return cycle_running_message()
++    dirty_entries = repo_dirty_entries()
++    if dirty_entries:
++        return repo_dirty_message(dirty_entries)
+     if not TRIGGER.exists():
+         return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+     subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+diff --git a/scripts/telegram_trigger_cycle.py b/scripts/telegram_trigger_cycle.py
+index 87f1dcfa93118b780c34ea52500cc4ef8330d527..82fd71d7e8fdae8800bea2ca5c09b47e1fb60989
+--- a/scripts/telegram_trigger_cycle.py
++++ b/scripts/telegram_trigger_cycle.py
+@@ -11,6 +11,7 @@
+ LOCK = CONTROL / ".telegram_cycle_lock"
+ RUNNER = REPO / "scripts" / "hermes_factory_runner.py"
+ LOG = REPO / "factory" / "runner_logs" / "telegram_trigger_cycle.log"
++REPO_CLEAN_ALLOWED_PREFIXES = ("factory/control/", "factory/runner_logs/")
+ 
+ 
+ def now() -> str:
+@@ -40,6 +41,37 @@
+     return result.returncode
+ 
+ 
++def repo_dirty_entries() -> list[str]:
++    result = subprocess.run(
++        ["git", "status", "--porcelain"],
++        cwd=REPO,
++        text=True,
++        capture_output=True,
++        check=False,
++    )
++    if result.returncode != 0:
++        return [f"git_status_failed: {result.stderr.strip() or result.stdout.strip()}"]
++    entries: list[str] = []
++    for line in result.stdout.splitlines():
++        path = line[3:].strip()
++        if not path:
++            continue
++        if path.startswith(REPO_CLEAN_ALLOWED_PREFIXES):
++            continue
++        entries.append(line)
++    return entries
++
++
++def enforce_repo_clean() -> int:
++    entries = repo_dirty_entries()
++    if not entries:
++        return 0
++    detail = "repo_dirty=" + "; ".join(entries[:20])
++    write_log("REPO_CLEAN_BLOCKED " + detail)
++    write_gate("BLOCKED", "repo_clean_failed_before_telegram_trigger")
++    return 2
++
++
+ def write_gate(status: str, reason: str) -> None:
+     CONTROL.mkdir(parents=True, exist_ok=True)
+     GATE.write_text(
+@@ -62,7 +94,11 @@
+     try:
+         write_log("START telegram cycle trigger")
+ 
+-        pull_code = run(["git", "pull", "--ff-only", "--autostash", "origin", "main"])
++        clean_code = enforce_repo_clean()
++        if clean_code:
++            return clean_code
++
++        pull_code = run(["git", "pull", "--ff-only", "origin", "main"])
+         if pull_code != 0:
+             write_gate("BLOCKED", "git_pull_failed_from_telegram_trigger")
+             return pull_code
+
+2026-04-28T10:11:07.535997Z ERROR codex_core::session: failed to record rollout items: thread 019dd38f-c5ee-7a41-ad6c-2dcd9429b251 not found
+tokens used
+48,016
+VEREDICTO  
+NO_VALIDADO como ciclo completo: código escrito y tests requeridos OK, pero no dejé evidencia persistente en `factory/evidence/**` porque la tarea lo marca como `forbidden_files`.
+
+ARCHIVOS_MODIFICADOS  
+- [scripts/hermes_factory_runner.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/hermes_factory_runner.py:23)
+- [scripts/telegram_factory_control.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_factory_control.py:20)
+- [scripts/telegram_trigger_cycle.py](/opt/smartpyme-factory/repos/SmartPyme/scripts/telegram_trigger_cycle.py:14)
+
+VERIFICACION_FISICA  
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` OK para los 3 scripts.
+- `ls -la` confirmó existencia física:
+  - `scripts/hermes_factory_runner.py`
+  - `scripts/telegram_factory_control.py`
+  - `scripts/telegram_trigger_cycle.py`
+- `git diff -- app smartcounter_core` -> sin cambios.
+- `git diff -- factory/evidence factory/runner_logs` -> sin cambios tracked.
+
+TESTS  
+- `python3 -m py_compile scripts/hermes_factory_runner.py` -> OK
+- `python3 -m py_compile scripts/telegram_factory_control.py` -> OK
+- `python3 -m py_compile scripts/telegram_trigger_cycle.py` -> OK
+
+EVIDENCIA  
+- `git status --short` muestra mis 3 scripts modificados y suciedad preexistente en tareas/control/evidencia.
+- Check funcional sin ejecutar ciclos:
+  - `hermes_factory_runner.repo_dirty_entries()` detectó `13` entradas dirty.
+  - `telegram_factory_control.repo_dirty_entries()` detectó `13` entradas dirty.
+  - `telegram_trigger_cycle.repo_dirty_entries()` detectó `13` entradas dirty.
+- Primera entrada detectada: `M factory/ai_governance/tasks/0000_telegram_control_idempotency_001.yaml`.
+
+DIFF  
+- `hermes_factory_runner.py`: añade `REPO_CLEAN` antes de `CYCLE_START`; si hay cambios fuera de `factory/control/` y `factory/runner_logs/`, marca gate/status `BLOCKED` y no despacha tarea.
+- `telegram_factory_control.py`: `/seguir` ahora revisa `REPO_CLEAN` antes de lanzar `telegram_trigger_cycle.py`; si falla, responde mensaje de bloqueo y no crea proceso.
+- `telegram_trigger_cycle.py`: añade guard `REPO_CLEAN` antes de `git pull`; elimina `--autostash` para no ocultar dirty worktree.
+
+BLOQUEOS  
+- No escribí `factory/evidence/<task_id>/...` porque `factory/evidence/**` está prohibido por la tarea.
+- El repo ya estaba sucio antes de mis cambios; con este guard, un ciclo real queda bloqueado hasta limpiar o cerrar esos cambios.
+
+RIESGOS  
+- El guard está duplicado en tres scripts porque no había archivo compartido permitido para extraer helper común.
+- `hermes_factory_runner.py` mantiene el patrón existente de devolver `0` cuando bloquea dispatch por gate/guard; bloquea la cola, pero no propaga error de proceso.

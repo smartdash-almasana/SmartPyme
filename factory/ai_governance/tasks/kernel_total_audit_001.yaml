@@ -1,6 +1,6 @@
 task_id: kernel_total_audit_001
 mode: architecture_engineering_audit
-status: pending
+status: blocked
 human_required: false
 product_frame: >
   SmartPyme es el sistema operativo de interpretacion, calculo y toma de decisiones

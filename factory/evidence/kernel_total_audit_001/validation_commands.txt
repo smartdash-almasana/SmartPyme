@@ -1,0 +1,684 @@
+$ git status --short
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+?? factory/evidence/kernel_total_audit_001/
+
+$ find . -maxdepth 3 -type f | sort | sed 's#^./##' | head -300
+.agent/memory/catalog_patologias.json
+.agent/memory/decision_log.md
+.agent/rules/determinismo.md
+.agent/rules/sacred-modernism.md
+.agents/plugins/marketplace.json
+.gemini/skills/write_verify_protocol.md
+.git/COMMIT_EDITMSG
+.git/FETCH_HEAD
+.git/HEAD
+.git/ORIG_HEAD
+.git/REBASE_HEAD
+.git/config
+.git/description
+.git/hooks/applypatch-msg.sample
+.git/hooks/commit-msg.sample
+.git/hooks/fsmonitor-watchman.sample
+.git/hooks/post-update.sample
+.git/hooks/pre-applypatch.sample
+.git/hooks/pre-commit.sample
+.git/hooks/pre-merge-commit.sample
+.git/hooks/pre-push.sample
+.git/hooks/pre-rebase.sample
+.git/hooks/pre-receive.sample
+.git/hooks/prepare-commit-msg.sample
+.git/hooks/push-to-checkout.sample
+.git/hooks/update.sample
+.git/index
+.git/info/exclude
+.git/logs/HEAD
+.git/packed-refs
+.git/refs/stash
+.github/workflows/hermes-factory-cycle.yml
+.github/workflows/vm-maintenance.yml
+.gitignore
+.pytest_cache/.gitignore
+.pytest_cache/CACHEDIR.TAG
+.pytest_cache/README.md
+.venv/bin/Activate.ps1
+.venv/bin/activate
+.venv/bin/activate.csh
+.venv/bin/activate.fish
+.venv/bin/pip
+.venv/bin/pip3
+.venv/bin/pip3.11
+.venv/bin/py.test
+.venv/bin/pygmentize
+.venv/bin/pytest
+.venv/pyvenv.cfg
+AGENTS.md
+CODEX.md
+GEMINI.md
+GPT.md
+README.md
+SMARTPYME_AI_OPERATING_SYSTEM.md
+agent.py
+app/__init__.py
+app/__pycache__/__init__.cpython-311.pyc
+app/catalog/__init__.py
+app/catalog/patologias.py
+app/contracts/__init__.py
+app/contracts/action_contract.py
+app/contracts/clarification_contract.py
+app/contracts/communication_contract.py
+app/contracts/entity_contract.py
+app/contracts/evidence_contract.py
+app/contracts/execution_adapter_contract.py
+app/contracts/operational_plan_contract.py
+app/contracts/pipeline_contract.py
+app/contracts/skill_contract.py
+app/core/__init__.py
+app/core/calculators.py
+app/core/entities.py
+app/core/pipeline.py
+app/core/test_calculators.py
+app/core/test_entities.py
+app/extraction/__init__.py
+app/knowledge/__init__.py
+app/main.py
+app/mcp/__init__.py
+app/memory/__init__.py
+app/modules/__init__.py
+app/modules/findings_engine.py
+app/modules/test_findings_engine.py
+app/orchestration/__init__.py
+app/orchestration/pipeline.py
+app/orchestration/test_pipeline.py
+app/repositories/__init__.py
+app/repositories/canonical_repository.py
+app/repositories/clarification_repository.py
+app/repositories/entity_repository.py
+app/repositories/fact_repository.py
+app/repositories/finding_repository.py
+app/repositories/raw_document_registry.py
+app/runtime/__init__.py
+app/runtime/hermes_smartpyme_runtime.py
+app/services/action_decision_service.py
+app/services/action_execution_service.py
+app/services/action_proposal_service.py
+app/services/canonicalization_service.py
+app/services/clarification_service.py
+app/services/comparison_service.py
+app/services/entity_resolution_service.py
+app/services/fact_extraction_service.py
+app/services/finding_communication_service.py
+app/services/findings_service.py
+app/source_connectors/__init__.py
+app/system_growth/__init__.py
+app/user_layer/__init__.py
+core/adapters/meli_oauth_client.py
+core/job.py
+core/models/meli_oauth_token.py
+core/orchestrator.py
+core/repositories/meli_oauth_token_repository.py
+core/services/meli_token_manager.py
+docs/ARCHIVO_LEGACY.md
+docs/ARQUITECTURA_NORMALIZADA.md
+docs/CORE_PIPELINE_STATUS.md
+docs/DAILY_PROGRESS_2026-04-25.md
+docs/EVIDENCE_CONTRACT.md
+docs/FUENTES_Y_JERARQUIA.md
+docs/HERMES_AGENT_CAPABILITIES_AUDIT.md
+docs/HERMES_MCP_RUNTIME.md
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md
+docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md
+docs/HERMES_VM_SETUP.md
+docs/RAG_RETRIEVAL_PLAN.md
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md
+docs/ROADMAP_IMPLEMENTACION.md
+docs/SKILLS_CATALOGO_SMARTPYME.md
+docs/SMARTPYME_OS_ACTUAL.md
+docs/archive/80.000pdf.md
+docs/archive/FUENTES_DEPRECABLES.md
+docs/archive/factory_hallazgos_cierre_2026-04-23.md
+docs/archive/smarttimes_full_architecture.md
+docs/factory/ANTI_DERIVA_PRIORITY_QA_LOOP.md
+docs/factory/AUDIT_CONTEXT_BUNDLE.md
+docs/factory/CODEX_BUILDER_INTEGRATION.md
+docs/factory/DAILY_FACTORY_CLOSURE_REPORT.md
+docs/factory/DISK_RETENTION_AND_EVIDENCE_POLICY.md
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+docs/factory/FACTORY_OBSERVABILITY_STATUS.md
+docs/factory/FACTORY_REPO_CLEAN_CONTRACT.md
+docs/factory/GPT_DIRECTOR_AUDITOR.md
+docs/factory/HERMES_CODEX_GEMINI_GOVERNANCE.md
+docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md
+docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+docs/factory/TECH_SPEC_QUEUE.md
+docs/factory/TELEGRAM_DAILY_REPORT_DELIVERY.md
+docs/factory_runtime_real.md
+docs/multiagente_roles_operativos.md
+docs/topologia.txt
+evidence_store/citation_index/.gitkeep
+evidence_store/document_chunks/.gitkeep
+evidence_store/raw_documents/.gitkeep
+evidence_store/vector_index/.gitkeep
+extraction/chunker.py
+extraction/docling_parser.py
+extraction/metadata_extractor.py
+extraction/ocr_fallback.py
+factory/README_CODEX_WORKER.md
+factory/README_CONTINUOUS_FACTORY.md
+factory/README_FACTORY.md
+factory/__init__.py
+factory/__pycache__/__init__.cpython-311.pyc
+factory/__pycache__/telegram_notify.cpython-311.pyc
+factory/ai_governance/HERMES_FACTORY_LOOP.md
+factory/ai_governance/agent_roles.yaml
+factory/ai_governance/auditor_rules.yaml
+factory/ai_governance/gemini_execution_contract.md
+factory/ai_governance/hermes_memory_model.md
+factory/ai_governance/hermes_orchestrator_contract.md
+factory/ai_governance/mcp_surfaces.md
+factory/ai_governance/queue_notes.md
+factory/ai_governance/skill_lifecycle_policy.md
+factory/ai_governance/taskspec.schema.json
+factory/atoms_catalog.py
+factory/atoms_planner.py
+factory/canteras_manifest.json
+factory/config/telegram.local.env
+factory/config/telegram_delivery.yaml
+factory/continuous_factory.py
+factory/control/.telegram_control_offset
+factory/control/.telegram_cycle_lock
+factory/control/AUDIT_GATE.md
+factory/control/FACTORY_STATUS.md
+factory/control/NEXT_CYCLE.md
+factory/control/PRIORITY_BOARD.md
+factory/gemini_slice_auditor.py
+factory/hallazgos/BLOCKING_RULE.md
+factory/hallazgos/HALLAZGO_TEMPLATE.md
+factory/local_mcp_server.py
+factory/mcp_bridge/__init__.py
+factory/mcp_bridge/server.py
+factory/mcp_bridge/tools.py
+factory/multiagent_runner.py
+factory/orchestrator/__init__.py
+factory/orchestrator/agent_runner.py
+factory/orchestrator/evidence_store.py
+factory/orchestrator/hallazgo_store.py
+factory/orchestrator/hermes_loop.py
+factory/roadmaps/active.yaml
+factory/run_codex_worker.py
+factory/run_factory.py
+factory/runner_logs/telegram_trigger_cycle.log
+factory/sandbox/test_codex.txt
+factory/tasks/template_codex_task.yaml
+factory/telegram_notify.py
+factory/test_multiagent.py
+factory/topology_catalog.json
+factory/topology_catalog.py
+infra/systemd/hermes-factory-pool.service
+mcp_smartpyme_bridge.py
+models/document_models.py
+prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+pyproject.toml
+requirements-dev.txt
+scripts/__pycache__/build_audit_context.cpython-311.pyc
+scripts/__pycache__/hermes_factory_runner.cpython-311.pyc
+scripts/build_audit_context.py
+scripts/check_python_environment.sh
+scripts/codex_builder_runner.py
+scripts/configure_hermes_smartpyme.py
+scripts/dev/seed_clarifications_db.py
+scripts/dev/seed_evidence_store.py
+scripts/dev/seed_jobs_db.py
+scripts/dev/validate_orchestration.py
+scripts/factory_disk_guard.py
+scripts/factory_post_cycle_control.py
+scripts/hermes_factory_runner.py
+scripts/install_python_environment.sh
+scripts/install_telegram_control_service.sh
+scripts/telegram_factory_control.py
+scripts/telegram_trigger_cycle.py
+services/document_ingestion_service.py
+services/document_query_service.py
+services/retrieval_service.py
+tests/core/test_action_contract.py
+tests/core/test_action_decision_service.py
+tests/core/test_action_execution_service.py
+tests/core/test_action_proposal_service.py
+tests/core/test_canonicalization_service.py
+tests/core/test_clarification.py
+tests/core/test_clarification_service.py
+tests/core/test_communication_contract.py
+tests/core/test_comparison_service.py
+tests/core/test_entity_resolution_service.py
+tests/core/test_execution_adapter_contract.py
+tests/core/test_fact_extraction_service.py
+tests/core/test_finding_communication_service.py
+tests/core/test_findings.py
+tests/core/test_findings_service.py
+tests/core/test_hallazgos_service.py
+tests/core/test_orchestrator.py
+tests/core/test_pipeline.py
+tests/core/test_pipeline_contract.py
+tests/core/test_reconciliation.py
+tests/core/test_reconciliation_csv.py
+tests/core/test_reconciliation_service.py
+tests/core/test_validation_service.py
+tests/e2e/test_create_job_mcp.py
+tests/e2e/test_hermes_import_smoke_vm.py
+tests/e2e/test_hermes_runtime_import_path.py
+tests/e2e/test_raw_document_registry.py
+tests/e2e/validate_bridge_e2e.py
+tests/factory/test_agent_loop.py
+tests/factory/test_agent_min.py
+tests/factory/test_agent_min_runtime.py
+tests/factory/test_build_audit_context.py
+tests/factory/test_continuous_factory.py
+tests/factory/test_gemini_slice_auditor.py
+tests/factory/test_hermes_loop.py
+tests/factory/test_multiagent_min.py
+tests/factory/test_orchestrator.py
+tests/factory/test_run_codex_worker.py
+tests/factory/test_run_factory.py
+tests/factory/test_skill_chain.py
+tests/factory/test_skill_registry.py
+tests/factory/test_skill_router.py
+tests/factory/test_topology_catalog.py
+tests/fixtures/test_document.txt
+tests/test_document_ingestion_service.py
+tests/test_document_models.py
+tests/test_document_query_service.py
+tests/test_main_smoke.py
+
+$ python -m compileall app core services scripts factory || true
+/bin/bash: line 4: python: command not found
+
+$ pytest -q || true
+/bin/bash: line 5: pytest: command not found
+
+$ grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+app/orchestration/pipeline.py:5:def ejecutar_pipeline_extraccion(datos_entrada: List[Dict[str, Any]]) -> Dict[str, Any]:
+app/orchestration/test_pipeline.py:4:def test_pipeline_flujo_feliz():
+app/orchestration/test_pipeline.py:18:def test_pipeline_input_invalido_con_float_falla_explicito():
+app/orchestration/test_pipeline.py:33:def test_pipeline_input_incompleto_bloqueo_explicito():
+app/orchestration/test_pipeline.py:42:def test_pipeline_input_estructura_mal_formada():
+app/factory/multiagent/executor.py:7:def execute_plan(
+app/factory/multiagent/models.py:6:class DirectorRequest:
+app/factory/multiagent/models.py:13:class DirectorPlan:
+app/factory/multiagent/director.py:4:def create_plan(request: DirectorRequest) -> DirectorPlan:
+app/factory/multiagent/service.py:9:def run_multiagent_flow(
+app/factory/orchestrator/transitions.py:9:class InvalidTransitionError(ValueError):
+app/factory/orchestrator/transitions.py:20:def ensure_transition_allowed(from_state: str, to_state: str) -> None:
+app/factory/orchestrator/persistence.py:12:def _get_db_path() -> Path:
+app/factory/orchestrator/persistence.py:18:def _get_connection() -> sqlite3.Connection:
+app/factory/orchestrator/persistence.py:25:def init_jobs_db() -> None:
+app/factory/orchestrator/persistence.py:46:def _ensure_column(connection: sqlite3.Connection, column_name: str, column_type: str) -> None:
+app/factory/orchestrator/persistence.py:55:def _serialize_payload(payload: dict) -> str:
+app/factory/orchestrator/persistence.py:59:def _parse_payload(payload_json: str | None) -> dict:
+app/factory/orchestrator/persistence.py:68:def save_job(job: Job) -> None:
+app/factory/orchestrator/persistence.py:128:def get_job(job_id: str) -> dict | None:
+app/factory/orchestrator/models.py:11:class Job:
+app/factory/orchestrator/service.py:14:class OrchestrationStateError(ValueError):
+app/factory/orchestrator/service.py:18:def _transition(job: Job, to_state: str) -> None:
+app/factory/orchestrator/service.py:23:def _block_job(job: Job, reason: str, error_code: str) -> Job:
+app/factory/orchestrator/service.py:33:def orchestrate_job(job: Job, registry: SkillRegistry | None = None) -> Job:
+app/factory/chain/models.py:6:class ChainStep:
+app/factory/chain/models.py:12:class ChainExecutionResult:
+app/factory/chain/service.py:8:def run_skill_chain(
+app/factory/agent_loop/models.py:6:class AgentLoopContext:
+app/factory/agent_loop/models.py:15:class AgentLoopResult:
+app/factory/agent_loop/service.py:15:def _blocked(
+app/factory/agent_loop/service.py:32:def run_agent_loop(
+app/factory/router/models.py:6:class RouterContext:
+app/factory/router/models.py:13:class RoutingDecision:
+app/factory/router/service.py:4:def _blocked(reason: str) -> RoutingDecision:
+app/factory/router/service.py:13:def decide_next_skill(context: RouterContext) -> RoutingDecision:
+app/factory/skills/models.py:6:class SkillSpec:
+app/factory/skills/executors.py:7:def execute_echo(payload: dict[str, Any]) -> dict[str, Any]:
+app/factory/skills/executors.py:11:def execute_wrap_echo(payload: dict[str, Any]) -> dict[str, Any]:
+app/factory/skills/executors.py:15:def execute_invalid_output(_: dict[str, Any]) -> dict[str, Any]:
+app/factory/skills/executors.py:26:def get_executor(executor_ref: str) -> Executor:
+app/factory/skills/registry.py:5:class SkillNotFoundError(ValueError):
+app/factory/skills/registry.py:9:class SkillDisabledError(ValueError):
+app/factory/skills/registry.py:13:class SkillRegistry:
+app/factory/skills/registry.py:14:    def __init__(self) -> None:
+app/factory/skills/registry.py:18:    def load_builtin(cls) -> "SkillRegistry":
+app/factory/skills/registry.py:24:    def get_skill(self, skill_id: str) -> SkillSpec:
+app/factory/skills/registry.py:32:    def list_skills(self) -> list[SkillSpec]:
+app/factory/skills/registry.py:35:    def set_skill(self, skill: SkillSpec) -> None:
+app/factory/skills/builtin/echo_skill.py:4:def get_builtin_skills() -> list[SkillSpec]:
+app/factory/skills/validators.py:13:def _is_number(value: Any) -> bool:
+app/factory/skills/validators.py:17:def _matches_type(value: Any, type_name: str) -> bool:
+app/factory/skills/validators.py:26:def _validate_object(value: Any, schema: dict[str, Any], path: str) -> tuple[bool, str | None]:
+app/factory/skills/validators.py:51:def _validate_array(value: Any, schema: dict[str, Any], path: str) -> tuple[bool, str | None]:
+app/factory/skills/validators.py:67:def validate_schema(value: Any, schema: dict[str, Any], path: str = "payload") -> tuple[bool, str | None]:
+app/factory/skills/runner.py:8:def _error_result(skill_id: str, error_code: str, error_message: str) -> dict[str, Any]:
+app/factory/skills/runner.py:18:def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry | None = None) -> dict[str, Any]:
+app/runtime/hermes_smartpyme_runtime.py:8:class HermesSmartPymeRuntime:
+app/runtime/hermes_smartpyme_runtime.py:11:    def __init__(self, hermes_repo_path: str | Path) -> None:
+app/runtime/hermes_smartpyme_runtime.py:15:    def from_env(cls) -> "HermesSmartPymeRuntime":
+app/runtime/hermes_smartpyme_runtime.py:19:    def load_ai_agent_class(self) -> type:
+app/main.py:5:def main() -> None:
+app/contracts/evidence_contract.py:11:class RawDocument:
+app/contracts/evidence_contract.py:26:class DocumentRecord:
+app/contracts/evidence_contract.py:39:class EvidenceChunk:
+app/contracts/evidence_contract.py:53:class RetrievalResult:
+app/contracts/evidence_contract.py:66:class ExtractedFactCandidate:
+app/contracts/evidence_contract.py:80:class CanonicalRowCandidate:
+app/contracts/clarification_contract.py:10:class Clarification:
+app/contracts/action_contract.py:10:class ActionProposal:
+app/contracts/entity_contract.py:8:class Entity:
+app/contracts/pipeline_contract.py:8:class PipelineStageResult:
+app/contracts/pipeline_contract.py:15:class PipelineCounts:
+app/contracts/pipeline_contract.py:27:class PipelineResult:
+app/contracts/communication_contract.py:9:class FindingMessage:
+app/contracts/communication_contract.py:20:def build_message_id(finding_id: str, channel: str) -> str:
+app/contracts/operational_plan_contract.py:9:class OperationalPlanContract:
+app/contracts/operational_plan_contract.py:21:def _require_non_empty_text(value: str, field_name: str) -> str:
+app/contracts/operational_plan_contract.py:27:def _validate_text_list(values: list[str], field_name: str) -> list[str]:
+app/contracts/operational_plan_contract.py:42:def create_operational_plan(
+app/contracts/execution_adapter_contract.py:11:class ExecutionAdapterResult:
+app/contracts/execution_adapter_contract.py:19:class ExecutionAdapter(ABC):
+app/contracts/execution_adapter_contract.py:28:    def adapter_id(self) -> str:
+app/contracts/execution_adapter_contract.py:32:    def execute(self, proposal: Any) -> ExecutionAdapterResult:
+app/contracts/skill_contract.py:12:class SkillContract:
+app/contracts/skill_contract.py:35:class SkillContractCatalog:
+app/repositories/clarification_repository.py:11:class ClarificationRepository:
+app/repositories/clarification_repository.py:12:    def __init__(self, db_path: str | Path) -> None:
+app/repositories/clarification_repository.py:17:    def _init_db(self) -> None:
+app/repositories/clarification_repository.py:46:    def save(self, clarification: Clarification) -> None:
+app/repositories/clarification_repository.py:76:    def save_batch(self, clarifications: list[Clarification]) -> None:
+app/repositories/clarification_repository.py:80:    def list_pending(self, job_id: str | None = None) -> list[Clarification]:
+app/repositories/clarification_repository.py:94:    def mark_answered(self, clarification_id: str, answer: str) -> None:
+app/repositories/clarification_repository.py:105:    def has_pending(self, job_id: str | None = None) -> bool:
+app/repositories/clarification_repository.py:116:    def _connect(self) -> sqlite3.Connection:
+app/repositories/clarification_repository.py:120:def _row_to_clarification(row: sqlite3.Row) -> Clarification:
+app/repositories/entity_repository.py:12:def _default_db_path() -> Path:
+app/repositories/entity_repository.py:16:def _get_db_path() -> Path:
+app/repositories/entity_repository.py:21:def _connect() -> sqlite3.Connection:
+app/repositories/entity_repository.py:27:def init_entities_db() -> None:
+app/repositories/entity_repository.py:49:class EntityRepository:
+app/repositories/entity_repository.py:50:    def __init__(self, db_path: str | Path | None = None) -> None:
+app/repositories/entity_repository.py:55:    def init_db(self) -> None:
+app/repositories/entity_repository.py:66:    def save(self, entity: Entity) -> None:
+app/repositories/entity_repository.py:100:    def save_batch(self, entities: list[Entity]) -> None:
+app/repositories/entity_repository.py:104:    def find_by_attribute(self, entity_type: str, attribute: str, value: Any) -> Entity | None:
+app/repositories/entity_repository.py:124:    def list_entities(self, entity_type: str | None = None) -> list[Entity]:
+app/repositories/entity_repository.py:141:    def _connect(self) -> sqlite3.Connection:
+app/repositories/entity_repository.py:145:def _row_to_entity(row: sqlite3.Row) -> Entity:
+app/repositories/raw_document_registry.py:13:def _default_db_path() -> Path:
+app/repositories/raw_document_registry.py:17:def _get_db_path() -> Path:
+app/repositories/raw_document_registry.py:22:def _connect() -> sqlite3.Connection:
+app/repositories/raw_document_registry.py:28:def init_raw_documents_db() -> None:
+app/repositories/raw_document_registry.py:55:def compute_file_sha256(file_path: str) -> str:
+app/repositories/raw_document_registry.py:67:def register_raw_document(
+app/repositories/raw_document_registry.py:135:def get_raw_document(raw_document_id: str) -> dict[str, Any] | None:
+app/repositories/raw_document_registry.py:161:def get_raw_document_by_hash(file_hash_sha256: str) -> dict[str, Any] | None:
+app/repositories/raw_document_registry.py:187:def _row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
+app/repositories/canonical_repository.py:12:def _default_db_path() -> Path:
+app/repositories/canonical_repository.py:16:def _get_db_path() -> Path:
+app/repositories/canonical_repository.py:21:def _connect() -> sqlite3.Connection:
+app/repositories/canonical_repository.py:27:def init_canonical_db() -> None:
+app/repositories/canonical_repository.py:58:class CanonicalRepository:
+app/repositories/canonical_repository.py:59:    def __init__(self, db_path: str | Path | None = None) -> None:
+app/repositories/canonical_repository.py:64:    def init_db(self) -> None:
+app/repositories/canonical_repository.py:75:    def save(self, canonical_row: CanonicalRowCandidate) -> None:
+app/repositories/canonical_repository.py:117:    def save_batch(self, canonical_rows: list[CanonicalRowCandidate]) -> None:
+app/repositories/canonical_repository.py:121:    def list_canonical_rows(
+app/repositories/canonical_repository.py:151:    def _connect(self) -> sqlite3.Connection:
+app/repositories/canonical_repository.py:155:def _row_to_canonical_row(row: sqlite3.Row) -> CanonicalRowCandidate:
+app/repositories/fact_repository.py:12:def _default_db_path() -> Path:
+app/repositories/fact_repository.py:16:def _get_db_path() -> Path:
+app/repositories/fact_repository.py:21:def _connect() -> sqlite3.Connection:
+app/repositories/fact_repository.py:27:def init_facts_db() -> None:
+app/repositories/fact_repository.py:60:class FactRepository:
+app/repositories/fact_repository.py:61:    def __init__(self, db_path: str | Path | None = None) -> None:
+app/repositories/fact_repository.py:66:    def init_db(self) -> None:
+app/repositories/fact_repository.py:77:    def save(self, fact: ExtractedFactCandidate) -> None:
+app/repositories/fact_repository.py:126:    def save_batch(self, facts: list[ExtractedFactCandidate]) -> None:
+app/repositories/fact_repository.py:130:    def list_facts(
+app/repositories/fact_repository.py:161:    def _connect(self) -> sqlite3.Connection:
+app/repositories/fact_repository.py:165:def _row_to_fact(row: sqlite3.Row) -> ExtractedFactCandidate:
+app/repositories/finding_repository.py:11:class FindingRepository:
+app/repositories/finding_repository.py:12:    def __init__(self, db_path: str | Path) -> None:
+app/repositories/finding_repository.py:17:    def _init_db(self) -> None:
+app/repositories/finding_repository.py:44:    def save(self, finding: Finding) -> None:
+app/repositories/finding_repository.py:84:    def save_batch(self, findings: list[Finding]) -> None:
+app/repositories/finding_repository.py:88:    def list_findings(self, entity_type: str | None = None) -> list[Finding]:
+app/repositories/finding_repository.py:104:    def _connect(self) -> sqlite3.Connection:
+app/repositories/finding_repository.py:108:def _row_to_finding(row: sqlite3.Row) -> Finding:
+app/services/canonicalization_service.py:10:class CanonicalizationService:
+app/services/canonicalization_service.py:11:    def __init__(self, repository: CanonicalRepository) -> None:
+app/services/canonicalization_service.py:14:    def canonicalize_facts(
+app/services/canonicalization_service.py:27:    def _create_canonical_rows(
+app/services/canonicalization_service.py:34:    def _create_canonical_row(
+app/services/canonicalization_service.py:51:def _build_canonical_id(fact_candidate_id: str, entity_type: str) -> str:
+app/services/findings_service.py:10:class Finding:
+app/services/findings_service.py:25:class FindingsService:
+app/services/findings_service.py:26:    def generate_findings(self, comparison_results: list[ComparisonResult]) -> list[Finding]:
+app/services/findings_service.py:54:    def _calculate_severity(self, difference_pct: float) -> str:
+app/services/findings_service.py:66:    def _suggest_action(self, severity: str) -> str:
+app/services/findings_service.py:75:    def _build_finding_id(self, result: ComparisonResult) -> str:
+app/services/action_proposal_service.py:20:class ActionProposalService:
+app/services/action_proposal_service.py:27:    def propose_from_finding(self, finding: Finding) -> ActionProposal:
+app/services/action_proposal_service.py:54:    def propose_from_message(self, message: FindingMessage) -> ActionProposal:
+app/services/action_proposal_service.py:70:    def propose_batch_from_messages(
+app/services/action_proposal_service.py:76:def _build_action_id(source_id: str, source_type: str) -> str:
+app/services/entity_resolution_service.py:11:class EntityResolutionService:
+app/services/entity_resolution_service.py:12:    def __init__(self, repository: EntityRepository) -> None:
+app/services/entity_resolution_service.py:15:    def resolve_entities(
+app/services/entity_resolution_service.py:29:    def _resolve_rows(
+app/services/entity_resolution_service.py:85:def _build_entity_id(canonical_row_id: str, entity_type: str) -> str:
+app/services/clarification_service.py:10:class ClarificationService:
+app/services/clarification_service.py:11:    def __init__(self, repository: ClarificationRepository) -> None:
+app/services/clarification_service.py:14:    def create_blocking_clarification(
+app/services/clarification_service.py:35:    def answer_clarification(
+app/services/clarification_service.py:40:    def has_pending_blockers(self, job_id: str | None = None) -> bool:
+app/services/clarification_service.py:44:def _build_clarification_id(question: str, job_id: str | None) -> str:
+app/services/fact_extraction_service.py:11:class FactExtractionService:
+app/services/fact_extraction_service.py:16:    def __init__(self, repository: FactRepository) -> None:
+app/services/fact_extraction_service.py:19:    def extract_from_evidence(
+app/services/fact_extraction_service.py:41:    def _extract_facts(
+app/services/fact_extraction_service.py:88:    def _build_facts(
+app/services/fact_extraction_service.py:117:def _build_fact_id(evidence_id: str, fact_type: str, value: str, index: int) -> str:
+app/services/fact_extraction_service.py:122:def _overlaps_any(span: tuple[int, int], blocked_spans: list[tuple[int, int]]) -> bool:
+app/services/action_decision_service.py:9:class InvalidDecisionError(Exception):
+app/services/action_decision_service.py:13:class ActionDecisionService:
+app/services/action_decision_service.py:20:    def approve(self, proposal: ActionProposal) -> ActionProposal:
+app/services/action_decision_service.py:31:    def reject(
+app/services/finding_communication_service.py:16:class FindingCommunicationService:
+app/services/finding_communication_service.py:22:    def build_message(self, finding: Finding, channel: str = "internal") -> FindingMessage:
+app/services/finding_communication_service.py:55:    def build_messages(
+app/services/comparison_service.py:10:class ComparisonResult:
+app/services/comparison_service.py:20:class ComparisonService:
+app/services/comparison_service.py:21:    def compare_entities(self, entities: list[Entity]) -> list[ComparisonResult]:
+app/services/action_execution_service.py:13:class NotApprovedError(Exception):
+app/services/action_execution_service.py:17:class AdapterExecutionError(Exception):
+app/services/action_execution_service.py:21:class ActionExecutionService:
+app/services/action_execution_service.py:38:    def __init__(
+app/services/action_execution_service.py:46:    def execute(self, proposal: ActionProposal) -> ActionProposal:
+app/modules/test_findings_engine.py:5:def test_engine_construye_instancias_reales_serializadas():
+app/modules/test_findings_engine.py:22:def test_engine_deriva_diferencia_matematicamente():
+app/modules/test_findings_engine.py:37:def test_engine_asume_severidad_por_defecto_desde_catalogo():
+app/modules/test_findings_engine.py:52:def test_engine_bloquea_patologia_id_invalido_o_inexistente():
+app/modules/test_findings_engine.py:64:def test_engine_explota_antes_de_salir_con_float():
+app/modules/findings_engine.py:6:def procesar_extraccion_bruta(datos_crudos: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+app/core/clarification/persistence.py:10:def _get_db_path() -> Path:
+app/core/clarification/persistence.py:17:def _get_connection() -> sqlite3.Connection:
+app/core/clarification/persistence.py:23:def init_clarifications_db() -> None:
+app/core/clarification/persistence.py:41:def save_clarification(request: ClarificationRequest) -> None:
+app/core/clarification/persistence.py:75:def list_pending_clarifications() -> list[ClarificationRecord]:
+app/core/clarification/persistence.py:102:def resolve_clarification(clarification_id: str, resolution: str) -> bool:
+app/core/clarification/persistence.py:119:def has_blocking_pending_clarifications() -> bool:
+app/core/clarification/models.py:8:class ClarificationRequest:
+app/core/clarification/models.py:18:class ClarificationRecord(ClarificationRequest):
+app/core/clarification/service.py:10:def create_clarification(
+app/core/clarification/service.py:52:def get_pending_clarifications() -> list[ClarificationRecord]:
+app/core/clarification/service.py:56:def list_pending() -> list[ClarificationRecord]:
+app/core/clarification/service.py:60:def resolve_existing_clarification(clarification_id: str, resolution: str) -> bool:
+app/core/clarification/service.py:64:def resolve_clarification(clarification_id: str, resolution: str) -> bool:
+app/core/clarification/service.py:68:def has_blocking_pending() -> bool:
+app/core/orchestrator/pipeline.py:6:def run_pipeline_flow(
+app/core/orchestrator/models.py:7:class OrchestrationResult:
+app/core/orchestrator/service.py:7:class Orchestrator:
+app/core/orchestrator/service.py:10:    def __init__(self, repository: Optional[HallazgoRepository] = None):
+app/core/orchestrator/service.py:14:    def run_reconciliation_flow(
+app/core/calculators.py:4:def calcular_diferencia_absoluta(monto_detectado: Any, monto_esperado: Any) -> decimal.Decimal:
+app/core/pipeline.py:27:class Pipeline:
+app/core/pipeline.py:28:    def __init__(
+app/core/pipeline.py:51:    def _process_one_text(
+app/core/pipeline.py:68:    def process_texts(
+app/core/findings/models.py:5:class FindingRecord:
+app/core/findings/service.py:5:def _build_finding_id(difference: DifferenceRecord) -> str:
+app/core/findings/service.py:9:def _resolve_severity(difference: DifferenceRecord) -> str:
+app/core/findings/service.py:21:def _build_title(difference: DifferenceRecord) -> str:
+app/core/findings/service.py:31:def _build_suggested_action(difference: DifferenceRecord) -> str:
+app/core/findings/service.py:45:def _build_detail(difference: DifferenceRecord) -> str:
+app/core/findings/service.py:54:def build_findings(differences: list[DifferenceRecord]) -> list[FindingRecord]:
+app/core/test_calculators.py:5:def test_calculadora_diferencia_positiva():
+app/core/test_calculators.py:10:def test_calculadora_flujo_cero():
+app/core/test_calculators.py:14:def test_calculadora_prohibe_float():
+app/core/test_calculators.py:21:def test_calculadora_prohibe_ruido_logico():
+app/core/hallazgos/models.py:8:class MismatchEvidence(TypedDict):
+app/core/hallazgos/models.py:14:class MissingEvidence(TypedDict):
+app/core/hallazgos/models.py:18:class UncertaintyEvidence(TypedDict):
+app/core/hallazgos/models.py:23:class Hallazgo:
+app/core/hallazgos/service.py:15:class HallazgoEngine:
+app/core/hallazgos/service.py:21:    def generate_dedupe_key(tipo: str, entidad_id: str, field_name: str = "") -> str:
+app/core/hallazgos/service.py:25:    def generate_id(dedupe_key: str) -> str:
+app/core/hallazgos/service.py:28:    def get_mismatch_severity(self, delta: float | None) -> FindingSeverity:
+app/core/hallazgos/service.py:33:    def transform(self, result: ReconciliationResult, entidad_tipo: str = "order") -> list[Hallazgo]:
+app/core/hallazgos/service.py:87:    def deduplicate(self, hallazgos: list[Hallazgo]) -> list[Hallazgo]:
+app/core/hallazgos/service.py:93:class HallazgoService:
+app/core/hallazgos/service.py:96:    def __init__(self, repository: HallazgoRepository):
+app/core/hallazgos/service.py:99:    def get_findings(
+app/core/hallazgos/service.py:108:    def get_summary(self) -> Dict[str, Any]:
+app/core/hallazgos/service.py:127:    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Optional[Hallazgo]:
+app/core/repositories/hallazgo_repository.py:5:class HallazgoRepository(Protocol):
+app/core/repositories/hallazgo_repository.py:8:    def save(self, hallazgo: Hallazgo) -> None:
+app/core/repositories/hallazgo_repository.py:12:    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
+app/core/repositories/hallazgo_repository.py:16:    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
+app/core/repositories/hallazgo_repository.py:20:    def list_all(
+app/core/repositories/hallazgo_repository.py:29:class MemoryHallazgoRepository:
+app/core/repositories/hallazgo_repository.py:32:    def __init__(self):
+app/core/repositories/hallazgo_repository.py:36:    def save(self, hallazgo: Hallazgo) -> None:
+app/core/repositories/hallazgo_repository.py:40:    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
+app/core/repositories/hallazgo_repository.py:43:    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
+app/core/repositories/hallazgo_repository.py:49:    def list_all(
+app/core/test_entities.py:5:def test_hallazgo_operativo_valido_con_strings_decimales():
+app/core/test_entities.py:21:def test_hallazgo_operativo_rechaza_float_en_campos_monetarios():
+app/core/test_entities.py:42:def test_hallazgo_operativo_preserva_precision_decimal():
+app/core/test_entities.py:54:def test_hallazgo_operativo_rechaza_strings_invalidos():
+app/core/test_entities.py:67:def test_hallazgo_operativo_normaliza_severidad():
+app/core/entities.py:5:def _validate_decimal(v: Any) -> decimal.Decimal:
+app/core/entities.py:24:class HallazgoOperativo(BaseModel):
+app/core/entities.py:41:    def _validate_not_empty(cls, v: Any) -> str:
+app/core/entities.py:48:    def _validate_severidad(cls, v: Any) -> str:
+app/core/entities.py:59:    def _validate_money_fields(cls, v: Any) -> decimal.Decimal:
+app/core/validation/models.py:4:class ValidationResult:
+app/core/validation/service.py:3:def validate_data(data: dict) -> ValidationResult:
+app/core/reconciliation/models.py:60:def _utc_now() -> datetime:
+app/core/reconciliation/models.py:65:class ReconciliationRow:
+app/core/reconciliation/models.py:69:    def model_validate(cls, value: Any) -> "ReconciliationRow":
+app/core/reconciliation/models.py:84:class ComparableRecord:
+app/core/reconciliation/models.py:92:class DifferenceRecord:
+app/core/reconciliation/models.py:105:class ReconciledMatch:
+app/core/reconciliation/models.py:112:class QuantifiedDiscrepancy:
+app/core/reconciliation/models.py:122:class ReconciliationResult:
+app/core/reconciliation/models.py:130:class UncertaintyRecord:
+app/core/reconciliation/models.py:142:class AmountReconciliationFinding:
+app/core/reconciliation/models.py:157:class ClarificationQuestion:
+app/core/reconciliation/models.py:169:class AmountReconciliationResult:
+app/core/reconciliation/models.py:185:class AmountDifferenceAssessment:
+app/core/reconciliation/models.py:193:class OperationalDifferenceEngineResult:
+app/core/reconciliation/models.py:202:class EconomicImpact:
+app/core/reconciliation/models.py:209:class HumanReviewDecision:
+app/core/reconciliation/models.py:216:class WarningItem:
+app/core/reconciliation/models.py:227:class ReconciliationStateMachineResult:
+app/core/reconciliation/models.py:234:class FailClosedStateEvaluation:
+app/core/reconciliation/models.py:242:class ReconciliationJob:
+grep: write error: Broken pipe
+
+$ find factory/evidence -maxdepth 2 -type f | sort | tail -80 || true
+factory/evidence/codex_template_codex_task_20260427T145837Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T145837Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T145837Z/qa_report.md
+factory/evidence/codex_template_codex_task_20260427T150515Z/anti_deriva_check.md
+factory/evidence/codex_template_codex_task_20260427T150515Z/codex_output.txt
+factory/evidence/codex_template_codex_task_20260427T150515Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T150515Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T150515Z/qa_report.md
+factory/evidence/codex_template_codex_task_20260427T151217Z/anti_deriva_check.md
+factory/evidence/codex_template_codex_task_20260427T151217Z/codex_output.txt
+factory/evidence/codex_template_codex_task_20260427T151217Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T151217Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T151217Z/qa_report.md
+factory/evidence/codex_template_codex_task_20260427T151910Z/anti_deriva_check.md
+factory/evidence/codex_template_codex_task_20260427T151910Z/codex_output.txt
+factory/evidence/codex_template_codex_task_20260427T151910Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T151910Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T151910Z/qa_report.md
+factory/evidence/codex_template_codex_task_20260427T152554Z/anti_deriva_check.md
+factory/evidence/codex_template_codex_task_20260427T152554Z/codex_output.txt
+factory/evidence/codex_template_codex_task_20260427T152554Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T152554Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T152554Z/qa_report.md
+factory/evidence/codex_template_codex_task_20260427T183512Z/anti_deriva_check.md
+factory/evidence/codex_template_codex_task_20260427T183512Z/codex_output.txt
+factory/evidence/codex_template_codex_task_20260427T183512Z/codex_runner.json
+factory/evidence/codex_template_codex_task_20260427T183512Z/priority_update.md
+factory/evidence/codex_template_codex_task_20260427T183512Z/qa_report.md
+factory/evidence/core-reconciliacion-v1/codex_builder_current_20260427.md
+factory/evidence/core-reconciliacion-v1/codex_builder_final_20260427T220000Z.md
+factory/evidence/core-reconciliacion-v1/codex_builder_validation_20260427.md
+factory/evidence/core-reconciliacion-v1/codex_builder_verification_20260427T215040Z.md
+factory/evidence/core-reconciliacion-v1/codex_validation_20260427T212729Z.md
+factory/evidence/core-reconciliacion-v1/commands.txt
+factory/evidence/core-reconciliacion-v1/compileall.txt
+factory/evidence/core-reconciliacion-v1/cycle.md
+factory/evidence/core-reconciliacion-v1/decision.txt
+factory/evidence/core-reconciliacion-v1/dependencies_current.txt
+factory/evidence/core-reconciliacion-v1/git_diff.patch
+factory/evidence/core-reconciliacion-v1/git_diff_core_current.patch
+factory/evidence/core-reconciliacion-v1/git_diff_stat.txt
+factory/evidence/core-reconciliacion-v1/git_diff_stat_current.txt
+factory/evidence/core-reconciliacion-v1/git_status.txt
+factory/evidence/core-reconciliacion-v1/git_status_current.txt
+factory/evidence/core-reconciliacion-v1/git_status_final.txt
+factory/evidence/core-reconciliacion-v1/git_status_final_current.txt
+factory/evidence/core-reconciliacion-v1/grep_symbols_current.txt
+factory/evidence/core-reconciliacion-v1/inspect_models.txt
+factory/evidence/core-reconciliacion-v1/inspect_models_current.txt
+factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources.txt
+factory/evidence/core-reconciliacion-v1/inspect_reconcile_csv_sources_current.txt
+factory/evidence/core-reconciliacion-v1/inspect_test.txt
+factory/evidence/core-reconciliacion-v1/inspect_test_current.txt
+factory/evidence/core-reconciliacion-v1/ls_files.txt
+factory/evidence/core-reconciliacion-v1/ls_files_current.txt
+factory/evidence/core-reconciliacion-v1/manual_reconciliation.txt
+factory/evidence/core-reconciliacion-v1/manual_reconciliation_current.txt
+factory/evidence/core-reconciliacion-v1/polars.txt
+factory/evidence/core-reconciliacion-v1/pwd.txt
+factory/evidence/core-reconciliacion-v1/pwd_current.txt
+factory/evidence/core-reconciliacion-v1/py_compile.txt
+factory/evidence/core-reconciliacion-v1/py_compile_current.txt
+factory/evidence/core-reconciliacion-v1/ruff.txt
+factory/evidence/core-reconciliacion-v1/ruff_current.txt
+factory/evidence/core-reconciliacion-v1/test_file_csv_test.txt
+factory/evidence/core-reconciliacion-v1/test_file_models.txt
+factory/evidence/core-reconciliacion-v1/test_file_service.txt
+factory/evidence/core-reconciliacion-v1/tests.txt
+factory/evidence/core-reconciliacion-v1/tests_current.txt
+factory/evidence/core-reconciliacion-v1/tests_related.txt
+factory/evidence/core-reconciliacion-v1/tests_related_current.txt
+factory/evidence/core-reconciliacion-v1/verification.txt
+factory/evidence/factory-observability-status-v1/commands.txt
+factory/evidence/factory-observability-status-v1/cycle.md
+factory/evidence/factory-observability-status-v1/decision.txt
+factory/evidence/factory-observability-status-v1/git_diff.patch
+factory/evidence/factory-observability-status-v1/git_status.txt
+factory/evidence/factory-observability-status-v1/tests.txt
+factory/evidence/factory-observability-status-v1/verification.txt
+factory/evidence/kernel_total_audit_001/validation_commands.txt
+
+$ find factory/bugs -maxdepth 2 -type f | sort | tail -80 || true
+find: ‘factory/bugs’: No such file or directory

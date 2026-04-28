@@ -1,0 +1,14 @@
+test -d docs: 0
+test -d factory: 0
+test -f report.md: 0
+test -f report.json: 0
+-rw-r--r-- 1 neoalmasana neoalmasana  4746 Apr 28 03:41 factory/reports/product_final_concept_audit_001.json
+-rw-r--r-- 1 neoalmasana neoalmasana 13260 Apr 28 03:41 factory/reports/product_final_concept_audit_001.md
+total 28
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 28 03:41 .
+drwxr-xr-x 52 neoalmasana neoalmasana 4096 Apr 28 03:39 ..
+-rw-r--r--  1 neoalmasana neoalmasana  562 Apr 28 03:41 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana  994 Apr 28 03:41 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana  295 Apr 28 03:41 file_checks.txt
+-rw-r--r--  1 neoalmasana neoalmasana  424 Apr 28 03:41 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana   39 Apr 28 03:41 pwd.txt

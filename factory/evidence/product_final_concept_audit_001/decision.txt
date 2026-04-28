@@ -1,0 +1,4 @@
+VEREDICTO=NO_VALIDADO_PRODUCTO_FINAL_IMPLEMENTADO__CORRECTO_MAQUETA_CONCEPTUAL
+DECISION=NO_VALIDADO
+BLOCKED_ENVIRONMENT=python command not found; python3 alternative executed for compileall/json validation.
+TESTS=pytest command not found; no pytest validation available in this environment.

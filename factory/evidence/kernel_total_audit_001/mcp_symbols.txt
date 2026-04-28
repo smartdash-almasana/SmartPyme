@@ -1,0 +1,99 @@
+mcp_smartpyme_bridge.py:7:from mcp.server.fastmcp import FastMCP
+mcp_smartpyme_bridge.py:10:mcp = FastMCP("SmartPyme-Bridge")
+mcp_smartpyme_bridge.py:19:@mcp.tool()
+mcp_smartpyme_bridge.py:75:@mcp.tool()
+mcp_smartpyme_bridge.py:108:@mcp.tool()
+mcp_smartpyme_bridge.py:133:@mcp.tool()
+mcp_smartpyme_bridge.py:156:@mcp.tool()
+mcp_smartpyme_bridge.py:191:@mcp.tool()
+mcp_smartpyme_bridge.py:226:@mcp.tool()
+factory/mcp_bridge/server.py:7:from mcp.server.fastmcp import FastMCP
+factory/mcp_bridge/server.py:18:mcp = FastMCP("SmartPyme-Bridge")
+factory/mcp_bridge/tools.py:26:    """Register SmartPyme local tools in a FastMCP server."""
+factory/mcp_bridge/tools.py:115:    @mcp.tool()
+factory/mcp_bridge/tools.py:124:    @mcp.tool()
+factory/mcp_bridge/tools.py:133:    @mcp.tool()
+factory/mcp_bridge/tools.py:140:    @mcp.tool()
+factory/mcp_bridge/tools.py:153:    @mcp.tool()
+grep: factory/mcp_bridge/__pycache__/tools.cpython-311.pyc: binary file matches
+grep: factory/mcp_bridge/__pycache__/server.cpython-311.pyc: binary file matches
+factory/ai_governance/tasks/kernel_total_audit_001.yaml:101:  - grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+grep: factory/__pycache__/local_mcp_server.cpython-311.pyc: binary file matches
+factory/local_mcp_server.py:3:from mcp.server.fastmcp import FastMCP
+factory/local_mcp_server.py:7:mcp = FastMCP("SmartPyme-Local")
+factory/local_mcp_server.py:9:@mcp.tool()
+factory/local_mcp_server.py:14:@mcp.tool()
+factory/reports/kernel_total_audit_001.md:27:- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_factory_contract_alignment_001_20260428T015515Z/codex_output.txt:972:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/codex_factory_contract_alignment_001_20260428T015515Z/codex_output.txt:1766:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:126:  - grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:511:  printf '"'$ grep -R "def '"\\\\|class \\\\|@mcp.tool\\\\|FastMCP\\\\|APIRouter\" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300\\n'; grep -R \"def \\|class \\|@mcp.tool\\|FastMCP\\|APIRouter\" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300; printf '\\n';
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:813:$ grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:1596:/bin/bash -lc "rg -n \"FastMCP|@mcp\\.tool|APIRouter|sqlite|pandas|polars|openpyxl|OCR|ocr|RAG|retriev|clarification|hallazgo|finding|reconcil|MCP|mcp\" app core services factory scripts mcp_smartpyme_bridge.py docs tests | head -500 > factory/evidence/kernel_total_audit_001/rg_kernel_signals.txt && sed -n '1,240p' factory/evidence/kernel_total_audit_001/rg_kernel_signals.txt" in /opt/smartpyme-factory/repos/SmartPyme
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:1603:/bin/bash -lc "{ printf '"'$ grep kernel signals'"\\n'; grep -R \"FastMCP\\|@mcp\\.tool\\|APIRouter\\|sqlite\\|pandas\\|polars\\|openpyxl\\|OCR\\|ocr\\|RAG\\|retriev\\|clarification\\|hallazgo\\|finding\\|reconcil\\|MCP\\|mcp\" -n app core services factory scripts mcp_smartpyme_bridge.py docs tests | head -500; } 2>&1 | tee factory/evidence/kernel_total_audit_001/grep_kernel_signals.txt" in /opt/smartpyme-factory/repos/SmartPyme
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2534:from mcp.server.fastmcp import FastMCP
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2537:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2546:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2602:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2635:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2660:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2683:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2718:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2753:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2815:    """Register SmartPyme local tools in a FastMCP server."""
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2904:    @mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2913:    @mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2922:    @mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2929:    @mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2942:    @mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2971:from mcp.server.fastmcp import FastMCP
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2982:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:2998:from mcp.server.fastmcp import FastMCP
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:3002:mcp = FastMCP("SmartPyme-Local")
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:3004:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:3009:@mcp.tool()
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:7212:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:8199:    from mcp.server.fastmcp import FastMCP
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:8305:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:8516:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:8753:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:8964:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:9300:- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:9412:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:9623:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:9908:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:9967:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:10178:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:10448:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:10659:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:10931:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/codex_output.txt:11142:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/kernel_total_audit_001/venv_pytest.txt:49:    from mcp.server.fastmcp import FastMCP
+factory/evidence/kernel_total_audit_001/git_diff.patch:40:+- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+factory/evidence/kernel_total_audit_001/git_diff.patch:386:+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/kernel_total_audit_001/validation_commands.txt:298:$ grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/kernel_total_audit_001/docs_control_inspect.txt:133:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/kernel_total_audit_001/verification.txt:95:- `mcp_smartpyme_bridge.py`: bridge MCP principal con `FastMCP("SmartPyme-Bridge")` y tools reales: `create_job`, `get_job_status`, `list_pending_validations`, `resolve_clarification`, `save_clarification`, `get_evidence`, `ingest_document`.
+grep: factory/evidence/kernel_total_audit_001/mcp_symbols.txt: input file is also the output
+factory/evidence/kernel_total_audit_001/commands.txt:12:grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:8:from mcp.server.fastmcp import FastMCP
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:11:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:20:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:76:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:109:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:134:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:157:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:192:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:227:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:289:    """Register SmartPyme local tools in a FastMCP server."""
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:378:    @mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:387:    @mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:396:    @mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:403:    @mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:416:    @mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:445:from mcp.server.fastmcp import FastMCP
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:456:mcp = FastMCP("SmartPyme-Bridge")
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:472:from mcp.server.fastmcp import FastMCP
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:476:mcp = FastMCP("SmartPyme-Local")
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:478:@mcp.tool()
+factory/evidence/kernel_total_audit_001/mcp_inspect.txt:483:@mcp.tool()

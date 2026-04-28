@@ -1,0 +1,26 @@
+VERIFICACION_FISICA
+
+pwd:
+/opt/smartpyme-factory/repos/SmartPyme
+
+Archivos verificados:
+- test -f factory/reports/kernel_total_audit_001.md: OK
+- test -f factory/reports/kernel_total_audit_001.json: OK
+- ls -la factory/reports/kernel_total_audit_001.md factory/reports/kernel_total_audit_001.json: OK
+
+JSON:
+- python3 -m json.tool factory/reports/kernel_total_audit_001.json: OK
+- Evidencia: json_validation.txt
+
+Contenido inspeccionado:
+- sed -n '1,80p' factory/reports/kernel_total_audit_001.md
+- sed -n '1,120p' factory/reports/kernel_total_audit_001.json
+
+Git:
+- git status inicial: git_status.txt
+- git status final: git_status_final.txt
+- diff de reportes nuevos: git_diff.patch
+
+Restriccion de alcance:
+- No se modifico codigo fuente en app, core, services, scripts, tests ni mcp_smartpyme_bridge.py.
+- No se modifico factory/control por esta auditoria.

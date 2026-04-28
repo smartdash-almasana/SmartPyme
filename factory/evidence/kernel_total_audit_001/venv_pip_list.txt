@@ -1,0 +1,15 @@
+WARNING: The directory '/home/neoalmasana/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Package           Version
+----------------- -------
+annotated-types   0.7.0
+iniconfig         2.3.0
+packaging         26.2
+pip               26.1
+pluggy            1.6.0
+pydantic          2.13.3
+pydantic_core     2.46.3
+Pygments          2.20.0
+pytest            9.0.3
+setuptools        66.1.1
+typing_extensions 4.15.0
+typing-inspection 0.4.2

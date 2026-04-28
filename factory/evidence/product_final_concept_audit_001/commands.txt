@@ -1,0 +1,11 @@
+pwd
+git status --short
+test -d docs
+test -d factory
+find docs factory app core services scripts tests -maxdepth 3 -type f | sort | head -300
+grep -R "onboarding\|Excel\|hallazgos\|reconciliacion\|clarification\|MCP\|ingest" -n docs app core services factory scripts tests mcp_smartpyme_bridge.py | head -300 || true
+python -m compileall app core services scripts factory || true
+pytest -q || true
+python3 -m json.tool factory/reports/product_final_concept_audit_001.json
+python3 -m compileall app core services scripts factory || true
+git diff -- factory/reports/product_final_concept_audit_001.md factory/reports/product_final_concept_audit_001.json factory/evidence/product_final_concept_audit_001

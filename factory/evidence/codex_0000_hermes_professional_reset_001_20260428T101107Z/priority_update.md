@@ -1,6 +1,6 @@
-# PRIORITY BOARD
+# PRIORITY UPDATE
 
-updated_at: 2026-04-28T10:11:07.715973+00:00
+created_at: 2026-04-28T10:11:07.715973+00:00
 last_cycle_result: NO_VALIDADO
 
 1. core-reconciliacion-v1

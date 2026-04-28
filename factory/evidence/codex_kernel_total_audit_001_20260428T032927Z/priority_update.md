@@ -1,7 +1,7 @@
-# PRIORITY BOARD
+# PRIORITY UPDATE
 
-updated_at: 2026-04-28T10:11:07.715973+00:00
-last_cycle_result: NO_VALIDADO
+created_at: 2026-04-28T03:29:27.907869+00:00
+last_cycle_result: BLOCKED
 
 1. core-reconciliacion-v1
 2. anti-deriva-priority-qa-loop-v1

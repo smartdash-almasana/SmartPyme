@@ -1,0 +1,300 @@
+docs/ROADMAP_IMPLEMENTACION.md:7:1. Bridge MCP real entre Hermes y SmartPyme.
+docs/ROADMAP_IMPLEMENTACION.md:13:7. `ingest_document` usando `DocumentIngestionService`.
+docs/ROADMAP_IMPLEMENTACION.md:17:11. Hash SHA-256 de archivo original antes de ingesta.
+docs/ROADMAP_IMPLEMENTACION.md:20:Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+docs/ROADMAP_IMPLEMENTACION.md:27:   - Separar runtime MCP de factory/skeletons.
+docs/ROADMAP_IMPLEMENTACION.md:33:3. `create_job` via MCP.
+docs/ROADMAP_IMPLEMENTACION.md:34:   - Tool MCP minima implementada.
+docs/ROADMAP_IMPLEMENTACION.md:50:   - Batch ingestion.
+docs/ROADMAP_IMPLEMENTACION.md:59:   - Extender ingesta de archivo unico a lotes controlados.
+docs/ROADMAP_IMPLEMENTACION.md:69:   - Integrar con clarifications cuando haya incertidumbre.
+docs/ROADMAP_IMPLEMENTACION.md:73:   - Exponer por MCP solo cuando el flujo de datos anterior este definido.
+docs/ROADMAP_IMPLEMENTACION.md:78:   - Consolidar termino de negocio "hallazgos".
+docs/ROADMAP_IMPLEMENTACION.md:83:   - Acciones despues de hallazgos validados.
+docs/ROADMAP_IMPLEMENTACION.md:92:3. Batch ingestion.
+docs/FUENTES_Y_JERARQUIA.md:17:1. `app/core/clarification/service.py` (equivalente técnico de `clarification_service.py`)
+docs/FUENTES_Y_JERARQUIA.md:32:8. `Exceland docs` fuera del set activo SmartPyme Core (no encontrado)
+docs/FUENTES_Y_JERARQUIA.md:43:- Congelar naming oficial: SmartPyme / SmartCounter Core / hallazgos.
+docs/FUENTES_Y_JERARQUIA.md:59:  - separación onboarding comercial vs core técnico,
+docs/HERMES_AGENT_CAPABILITIES_AUDIT.md:16:| **Descubrimiento MCP** | `tools/mcp_tool.py` (`discover_mcp_tools`) | El agente descubre y registra automáticamente las tools de servidores MCP configurados en `~/.hermes/config.yaml`. |
+docs/HERMES_AGENT_CAPABILITIES_AUDIT.md:24:### Toolset MCP para SmartPyme
+docs/HERMES_AGENT_CAPABILITIES_AUDIT.md:26:La auditoría confirma que `mcp_tool.py` registra un toolset por cada servidor MCP usando el nombre del servidor como identificador.
+docs/HERMES_AGENT_CAPABILITIES_AUDIT.md:28:- **Conclusión**: Para un servidor MCP definido como `smartpyme` en la configuración de Hermes, el nombre del toolset a utilizar es `smartpyme`.
+docs/factory_runtime_real.md:3:SmartPyme Factory opera mediante hallazgos markdown persistidos en el repositorio. Cada hallazgo es una unidad de trabajo chica, auditable y trazable.
+docs/factory_runtime_real.md:9:Los hallazgos viven en estas carpetas:
+docs/factory_runtime_real.md:12:factory/hallazgos/pending
+docs/factory_runtime_real.md:13:factory/hallazgos/in_progress
+docs/factory_runtime_real.md:14:factory/hallazgos/done
+docs/factory_runtime_real.md:15:factory/hallazgos/blocked
+docs/factory_runtime_real.md:26:- Architect disena hallazgos ejecutables.
+docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md:97:| Arquitectonica | `docs/SMARTPYME_OS_ACTUAL.md`, `docs/HERMES_MCP_RUNTIME.md`, roadmap |
+docs/factory/LOOP_DOCUMENTACION_INDUSTRIAL.md:129:| Hermes | opera conversacion y tools MCP |
+docs/factory/HERMES_CODEX_GEMINI_GOVERNANCE.md:23:- leer tasks, hallazgos pending, roadmap y TECH_SPEC_QUEUE
+docs/factory/HERMES_CODEX_GEMINI_GOVERNANCE.md:141:## 7. Integracion con hallazgos
+docs/factory/DAILY_FACTORY_CLOSURE_REPORT.md:15:6. entregar por canal externo si existe MCP disponible
+docs/factory/DAILY_FACTORY_CLOSURE_REPORT.md:38:3. Notion MCP si existe conector configurado
+docs/factory/ANTI_DERIVA_PRIORITY_QA_LOOP.md:59:- leer tasks, hallazgos, roadmap y TECH_SPEC_QUEUE
+docs/factory/TECH_SPEC_QUEUE.md:26:### [2] Modelo canónico de hallazgos
+docs/factory/TECH_SPEC_QUEUE.md:59:2. Toda task debe provenir de esta cola o de hallazgos.
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md:13:No debe tratarse `factory/hallazgos/*` como cola activa de este runner. Esa estructura queda como antecedente historico o runtime alternativo no activo hasta nueva decision explicita.
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md:79:| Hermes | operador conversacional / orquestador por MCP |
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md:82:| SmartPyme kernel | verdad operativa: jobs, evidencia, clarifications, estado |
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md:121:- no generar hallazgos sin entidad, diferencia cuantificada y evidencia.
+docs/factory/CODEX_BUILDER_INTEGRATION.md:107:### Fase 2 — MCP/CLI bridge
+docs/topologia.txt:13:* ingestion
+docs/topologia.txt:16:* clarification
+docs/topologia.txt:19:* hallazgos
+docs/topologia.txt:113:Con los hallazgos `done`:
+docs/topologia.txt:140:* se archivan los hallazgos absorbidos
+docs/topologia.txt:153:* hay alta redundancia en hallazgos,
+docs/topologia.txt:175:* `clarification/models.py`
+docs/topologia.txt:181:* `clarification/service.py`  ? ya delimitado por lo hecho
+docs/topologia.txt:184:* luego `hallazgos/service.py`
+docs/topologia.txt:193:* `clarification/persistence.py`
+docs/topologia.txt:210:Con clarification ya bastante trabajado, el orden sano ahora es:
+docs/topologia.txt:214:3. **hallazgos**
+docs/topologia.txt:223:* hallazgos convierte diferencia en salida de negocio,
+docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md:13:    C -- Solo usa toolset 'smartpyme' --> D[MCP (mcp_smartpyme_bridge.py)];
+docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md:58:    # Lista blanca estricta: solo se permite el toolset del MCP de SmartPyme.
+docs/ARQUITECTURA_NORMALIZADA.md:18:- Término de negocio oficial: **hallazgos**.
+docs/ARQUITECTURA_NORMALIZADA.md:45:- Cualquier documentación nueva debe expresar contratos en términos de `hallazgos`.
+docs/ARQUITECTURA_NORMALIZADA.md:54:### 7.2 Dominio comercial (onboarding)
+docs/ARQUITECTURA_NORMALIZADA.md:65:- `clarification_service.py` (no encontrado con ese nombre exacto; referencia técnica equivalente: `app/core/clarification/service.py`)
+docs/SMARTPYME_OS_ACTUAL.md:7:Hermes Agent es el operador conversacional. Recibe la conversacion con el usuario y llama tools MCP cuando necesita leer o modificar estado de SmartPyme.
+docs/SMARTPYME_OS_ACTUAL.md:9:MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+docs/SMARTPYME_OS_ACTUAL.md:19:`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
+docs/SMARTPYME_OS_ACTUAL.md:25:| Hermes Agent | Operador conversacional y cliente MCP | Persistencia, reglas de negocio, verdad de jobs |
+docs/SMARTPYME_OS_ACTUAL.md:26:| MCP | Contrato de tools entre Hermes y SmartPyme | Arquitectura conceptual del core |
+docs/SMARTPYME_OS_ACTUAL.md:34:| Bridge MCP | implementado y validado | `mcp_smartpyme_bridge.py` | Expone tools reales por stdio para Hermes. |
+docs/SMARTPYME_OS_ACTUAL.md:37:| Clarifications | implementado y validado | `app/core/clarification/persistence.py` | CRUD minimo real en SQLite. |
+docs/SMARTPYME_OS_ACTUAL.md:38:| EvidenceStore | implementado minimo | `services/document_ingestion_service.py` | JSONL local para documentos y chunks. |
+docs/SMARTPYME_OS_ACTUAL.md:39:| Ingesta documental | implementado y validado por bridge | `services/document_ingestion_service.py` | `ingest_document` usa el servicio y devuelve evidencias. |
+docs/SMARTPYME_OS_ACTUAL.md:41:| Reconciliation | implementado parcialmente | `app/core/reconciliation/service.py` | Hay servicio y tests, pero no esta expuesto por MCP. |
+docs/SMARTPYME_OS_ACTUAL.md:42:| Hallazgos | implementado parcialmente | `app/core/hallazgos/service.py` | Existe dominio, pero no gobierna aun el runtime MCP. |
+docs/SMARTPYME_OS_ACTUAL.md:43:| Normalizacion / canonical rows | conceptual pendiente | no evidenciado como runtime cerrado | Debe separarse de ingesta y reconciliation. |
+docs/SMARTPYME_OS_ACTUAL.md:45:| Action engine | conceptual pendiente | no evidenciado | No hay contrato operativo MCP activo. |
+docs/SMARTPYME_OS_ACTUAL.md:52:| Clarifications SQLite | `data/clarifications.db` | Clarificaciones pendientes y resueltas. |
+docs/SMARTPYME_OS_ACTUAL.md:54:| Raw documents JSONL | `evidence_store/raw_documents/documents.jsonl` | Documentos ingestados. |
+docs/SMARTPYME_OS_ACTUAL.md:57:## Tools MCP activas
+docs/SMARTPYME_OS_ACTUAL.md:63:| `list_pending_validations` | implementada | `app.core.clarification.persistence.list_pending_clarifications` | `owner_id` existe en contrato, aun no filtra. |
+docs/SMARTPYME_OS_ACTUAL.md:64:| `resolve_clarification` | implementada | `app.core.clarification.persistence.resolve_clarification` | Resuelve pendientes en SQLite. |
+docs/SMARTPYME_OS_ACTUAL.md:65:| `save_clarification` | implementada | `app.core.clarification.persistence.save_clarification` | Crea clarificacion manual bloqueante. |
+docs/SMARTPYME_OS_ACTUAL.md:67:| `ingest_document` | implementada | `DocumentIngestionService` | Ingesta archivo local y devuelve `evidence_ids`. |
+docs/SMARTPYME_OS_ACTUAL.md:76:2. `save_clarification`
+docs/SMARTPYME_OS_ACTUAL.md:78:4. `resolve_clarification`
+docs/SMARTPYME_OS_ACTUAL.md:80:6. `ingest_document`
+docs/SMARTPYME_OS_ACTUAL.md:89:Advertencia operativa: el script limpia `jobs.db`, `clarifications.db`, el documento temporal E2E y `evidence_store` al finalizar. Debe correrse en entorno de validacion o con datos descartables.
+docs/CORE_PIPELINE_STATUS.md:42:- **Llamadas HTTP Reales / MCP:** Sin cambios. No hay conectividad externa.
+docs/SKILLS_CATALOGO_SMARTPYME.md:16:No existe todavia un catalogo operativo de skills de desarrollo, proyecto y negocio. Este documento crea ese catalogo como contrato declarativo. No registra nuevas skills ejecutables y no modifica runtime MCP.
+docs/SKILLS_CATALOGO_SMARTPYME.md:25:6. Toda incertidumbre bloquea o genera clarification.
+docs/SKILLS_CATALOGO_SMARTPYME.md:96:| purpose | Validar el bridge MCP completo con entorno descartable. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:103:| acceptance_criteria | tools MCP reales validadas o bloqueo explicado |
+docs/SKILLS_CATALOGO_SMARTPYME.md:122:| source_files | `docs/SMARTPYME_OS_ACTUAL.md`, `docs/HERMES_MCP_RUNTIME.md`, `docs/ROADMAP_IMPLEMENTACION.md` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:170:| allowed_tools | futura tool MCP `create_job` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:188:| forbidden_actions | generar hallazgos sin reconciliation |
+docs/SKILLS_CATALOGO_SMARTPYME.md:231:### skill_ingest_document
+docs/SKILLS_CATALOGO_SMARTPYME.md:240:| allowed_tools | `mcp_smartpyme_ingest_document` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:245:| source_files | `mcp_smartpyme_bridge.py`, `services/document_ingestion_service.py` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:246:| next_action | Mantener como tool MCP real. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:263:| next_action | Mantener integracion minima con `ingest_document`; no crear tool MCP nueva todavia. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:265:### skill_ingest_document_batch
+docs/SKILLS_CATALOGO_SMARTPYME.md:272:| output_schema | `{ "type": "object", "required": ["ingested", "errors"], "properties": { "ingested": { "type": "array", "items": { "type": "string" } }, "errors": { "type": "array", "items": { "type": "string" } } } }` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:277:| acceptance_criteria | resumen con ingestas y errores |
+docs/SKILLS_CATALOGO_SMARTPYME.md:279:| source_files | `services/document_ingestion_service.py` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:280:| next_action | Extender ingestion sin romper `ingest_document`. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:338:| purpose | Validar que facts, rows, mensajes y hallazgos tengan evidencia recuperable. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:394:| forbidden_actions | mezclar normalizacion con reconciliacion |
+docs/SKILLS_CATALOGO_SMARTPYME.md:399:| next_action | Implementar despues de ingesta batch. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:410:| allowed_tools | entity resolution futura, clarifications si hay duda |
+docs/SKILLS_CATALOGO_SMARTPYME.md:413:| acceptance_criteria | entity_id estable o clarification creada |
+docs/SKILLS_CATALOGO_SMARTPYME.md:418:### skill_request_clarification
+docs/SKILLS_CATALOGO_SMARTPYME.md:423:| purpose | Crear o gestionar una clarification bloqueante ante incertidumbre. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:425:| output_schema | `{ "type": "object", "required": ["clarification_id", "status"], "properties": { "clarification_id": { "type": "string" }, "status": { "type": "string" } } }` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:427:| allowed_tools | `mcp_smartpyme_save_clarification`, `mcp_smartpyme_list_pending_validations`, `mcp_smartpyme_resolve_clarification` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:430:| acceptance_criteria | clarification persistida o resuelta en SQLite |
+docs/SKILLS_CATALOGO_SMARTPYME.md:432:| source_files | `mcp_smartpyme_bridge.py`, `app/core/clarification/persistence.py` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:433:| next_action | Mantener como tool MCP real. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:445:| forbidden_actions | exponer por MCP antes de normalizacion/entity resolution |
+docs/SKILLS_CATALOGO_SMARTPYME.md:447:| acceptance_criteria | diferencias cuantificadas o clarification |
+docs/SKILLS_CATALOGO_SMARTPYME.md:450:| next_action | Cerrar contrato operativo antes de tool MCP. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:452:### skill_generate_hallazgos
+docs/SKILLS_CATALOGO_SMARTPYME.md:457:| purpose | Convertir diferencias cuantificadas en hallazgos trazables. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:459:| output_schema | `{ "type": "object", "required": ["hallazgos"], "properties": { "hallazgos": { "type": "array", "items": { "type": "object" } } } }` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:466:| source_files | `app/core/hallazgos/service.py`, `app/core/hallazgos/models.py` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:467:| next_action | Definir persistencia/ciclo de vida antes de MCP. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:475:| input_schema | `{ "type": "object", "required": ["hallazgos"], "properties": { "hallazgos": { "type": "array", "items": { "type": "object" } } } }` |
+docs/SKILLS_CATALOGO_SMARTPYME.md:477:| required_evidence | hallazgos trazables |
+docs/SKILLS_CATALOGO_SMARTPYME.md:484:| next_action | Diseñar despues de hallazgos. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:501:| next_action | Posponer hasta cerrar hallazgos. |
+docs/SKILLS_CATALOGO_SMARTPYME.md:522:El siguiente paso tecnico es implementar `OperationalPlanContract` y luego exponer `create_job` via MCP, usando este catalogo como frontera.
+docs/DAILY_PROGRESS_2026-04-25.md:4:Hoy se ejecutó una jornada de trabajo intensiva que transformó el repositorio de SmartPyme desde un estado desalineado y con deuda técnica documental a un core de pipeline operativo, robusto, determinístico y completamente documentado. Se implementaron y validaron todas las capas lógicas del pipeline, desde la ingesta de datos hasta la auditoría de ejecución de acciones, estableciendo un nuevo baseline de estabilidad y arquitectura.
+docs/DAILY_PROGRESS_2026-04-25.md:11:2.  **Capa de Comunicación:** Se añadió la capacidad de generar mensajes legibles por humanos a partir de los hallazgos.
+docs/DAILY_PROGRESS_2026-04-25.md:29:`facts → canonical → entity → clarification gate → comparison → hallazgos → persistencia de hallazgos → mensajes humanos → action_proposals → approve/reject → execution guard → ExecutionAdapter boundary → ExecutionAdapterResult persistido`
+docs/DAILY_PROGRESS_2026-04-25.md:52:- **Infraestructura (MCP):** No hay un entorno `Multi-Cloud Piper` para que Hermes u otros adaptadores operen.
+docs/RAG_RETRIEVAL_PLAN.md:5:SmartPyme recupera evidencia principalmente por `evidence_id` mediante `mcp_smartpyme_get_evidence`, leyendo `EvidenceStore` JSONL. La ingesta actual genera chunks y citation index local.
+docs/RAG_RETRIEVAL_PLAN.md:7:Tambien existe `RetrievalService`, con BM25 de LangChain si esta disponible y fallback por solapamiento de tokens en memoria. No esta expuesto por MCP.
+docs/RAG_RETRIEVAL_PLAN.md:14:| Citation index | partial | `services/document_ingestion_service.py` | Genera `citation_index/citations.json`. |
+docs/RAG_RETRIEVAL_PLAN.md:71:- Si la falta de evidencia bloquea una decision, crear clarification.
+docs/RAG_RETRIEVAL_PLAN.md:94:Un output sin cita o con cita no recuperable debe bloquearse o derivar a clarification.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:1:# RAW/RAG ingestion architecture para SmartPyme
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:5:El material RAG auxiliar aporta buenas reglas de ingestion, metadata, retrieval y anti-alucinacion, pero no gobierna SmartPyme. SmartPyme mantiene su arquitectura:
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:7:`Hermes Agent -> MCP Bridge -> SmartPyme OS -> Jobs / Evidence / Clarifications -> Hallazgos`
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:44:4. Aritmetica y reconciliacion van por core deterministico.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:45:5. Si falta evidencia suficiente, se responde con fallback y se genera clarification si aplica.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:48:8. Hermes conversa y llama MCP; SmartPyme persiste y decide estados.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:54:3. Hermes llama `mcp_smartpyme_ingest_document` para documentos locales.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:59:8. SmartPyme bloqueara ante incertidumbre usando clarifications.
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:76:| Supabase | registros normalizados, jobs, documentos, hallazgos, auditoria | interfaces locales estables |
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:90:| Streamlit/FastAPI | No aplica al runtime actual Hermes/MCP. |
+docs/RAW_RAG_INGESTION_ARCHITECTURE.md:92:| Auditor financiero | Adaptar como core deterministico: reconciliation y hallazgos. |
+docs/HERMES_MCP_RUNTIME.md:1:# Hermes MCP runtime
+docs/HERMES_MCP_RUNTIME.md:26:Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+docs/HERMES_MCP_RUNTIME.md:30:## Bridge MCP
+docs/HERMES_MCP_RUNTIME.md:36:Corre como servidor MCP por stdio:
+docs/HERMES_MCP_RUNTIME.md:39:mcp = FastMCP("SmartPyme-Bridge")
+docs/HERMES_MCP_RUNTIME.md:44:Hermes no importa el core de SmartPyme como libreria de aplicacion. Hermes invoca tools MCP registradas por el bridge.
+docs/HERMES_MCP_RUNTIME.md:48:| tool MCP | funcion | persistencia / servicio |
+docs/HERMES_MCP_RUNTIME.md:52:| `list_pending_validations` | Lista clarificaciones pendientes | SQLite `data/clarifications.db` |
+docs/HERMES_MCP_RUNTIME.md:53:| `resolve_clarification` | Resuelve una clarificacion | SQLite `data/clarifications.db` |
+docs/HERMES_MCP_RUNTIME.md:54:| `save_clarification` | Crea una clarificacion manual | SQLite `data/clarifications.db` |
+docs/HERMES_MCP_RUNTIME.md:56:| `ingest_document` | Ingesta un archivo local | `DocumentIngestionService` + EvidenceStore |
+docs/HERMES_MCP_RUNTIME.md:75:- pedir estado real a SmartPyme por MCP;
+docs/HERMES_MCP_RUNTIME.md:78:- pedir ingesta de documentos locales;
+docs/HERMES_MCP_RUNTIME.md:85:- editar `data/jobs.db` o `data/clarifications.db`;
+docs/HERMES_MCP_RUNTIME.md:86:- saltear MCP para modificar verdad operativa;
+docs/HERMES_MCP_RUNTIME.md:87:- inventar jobs, hallazgos, evidencias o estados no devueltos por SmartPyme;
+docs/HERMES_MCP_RUNTIME.md:88:- gobernar normalizacion, entity resolution, reconciliacion o action engine si no existe tool MCP activa para eso;
+docs/ARCHIVO_LEGACY.md:9:| `README.md` | Decia "sin codigo funcional todavia", contradiciendo bridge MCP, SQLite y E2E actuales. | Actualizado. |
+docs/ARCHIVO_LEGACY.md:10:| `docs/archive/smarttimes_full_architecture.md` | Mezcla SmartTimes/SmartPyme, HermesBot, MCP conceptual por capas y n8n. | Archivado como historico. |
+docs/ARCHIVO_LEGACY.md:12:| `docs/topologia.txt` | Texto rector de factoria, util pero anterior al runtime Hermes/MCP actual. | Conservar como contexto de factory, no como contrato runtime. |
+docs/ARCHIVO_LEGACY.md:13:| `docs/ARQUITECTURA_NORMALIZADA.md` | Sigue siendo util, pero no incorpora Hermes como operador ni MCP real activo. | Actualizar o subordinar a `SMARTPYME_OS_ACTUAL.md` para runtime. |
+docs/ARCHIVO_LEGACY.md:15:| `docs/archive/FUENTES_DEPRECABLES.md` | Correcto como antecedente, incompleto para estado Hermes/MCP. | Sincronizar con este archivo. |
+docs/ARCHIVO_LEGACY.md:16:| `docs/archive/factory_hallazgos_cierre_2026-04-23.md` | Cierre puntual de factory/hallazgos; no gobierna runtime SmartPyme OS. | Archivado como evidencia historica. |
+docs/ARCHIVO_LEGACY.md:22:| `factory/mcp_bridge/server.py` | Potencial confusion con bridge MCP real de raiz. | Marcar como factory/skeleton si no participa del runtime Hermes. |
+docs/ARCHIVO_LEGACY.md:23:| `factory/mcp_bridge/tools.py` | Puede parecer registro MCP activo alternativo. | Documentar como no-runtime salvo evidencia contraria. |
+docs/ARCHIVO_LEGACY.md:24:| `factory/local_mcp_server.py` | Nombre sugiere server MCP paralelo. | Clasificar como experimento/local hasta validacion. |
+docs/ARCHIVO_LEGACY.md:28:| `app/user_layer`, `app/system_growth`, `app/source_connectors`, `app/knowledge`, `app/memory` | Directorios de capas conceptuales sin evidencia de runtime MCP activo. | No borrar; marcar como conceptual pendiente. |
+docs/ARCHIVO_LEGACY.md:36:| `scripts/dev/seed_clarifications_db.py` | Seed manual de SQLite; elimina DB antes de sembrar. | Movido a utilidades dev. |
+docs/ARCHIVO_LEGACY.md:46:| `codex_hallazgos_*` | Artefactos temporales de ejecucion. | Revisar contenido y proponer limpieza. |
+docs/ARCHIVO_LEGACY.md:47:| `codex_tmp_hallazgos_smoke_*` | Artefacto temporal de smoke. | Revisar contenido y proponer limpieza. |
+docs/ARCHIVO_LEGACY.md:57:| Bridge MCP stub | El bridge raiz tiene tools reales. | Reemplazar por "bridge MCP real con alcance minimo". |
+docs/ARCHIVO_LEGACY.md:60:| `findings` como termino de negocio | El termino rector en castellano es hallazgos. | Mantener `findings` solo como nombre tecnico legado existente. |
+docs/ARCHIVO_LEGACY.md:62:| MCP conceptual Data/Context/Action/AI | No coincide con tools registradas reales. | Separar como idea futura, no runtime. |
+docs/EVIDENCE_CONTRACT.md:16:| relacion con job_id | Opcional pero recomendada para ingestas ligadas a un job. |
+docs/EVIDENCE_CONTRACT.md:82:| proposito | Fila normalizada candidata para entity resolution y reconciliacion. |
+docs/EVIDENCE_CONTRACT.md:94:- No reconciliacion con entidades ambiguas.
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md:7:**Hermes es un operador conversacional, no una base de conocimiento.** La única fuente de verdad sobre el estado del negocio, los hallazgos y las evidencias es el **Core de SmartPyme**. Hermes no debe "recordar" hechos ni inferir estados; su función es traducir la intención del dueño en llamadas a las tools de SmartPyme y comunicar los resultados de vuelta.
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md:14:|   | Hermes solo puede ver y ejecutar las tools del MCP de SmartPyme. | `disabled_toolsets` para defensa en profundidad. | **Wrapper** | `wrapper-required` |
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md:20:|   | Se previene la carga automática de `AGENTS.md` y otros archivos del filesystem. | El contexto del job debe ser proveído explícitamente vía `ingest_document`. | **Wrapper/Core** | `wrapper-required` |
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md:34:- **RawDocument**: El material crudo (PDF, texto) que se ingiere con `ingest_document`.
+docs/HERMES_SMARTPYME_NO_ALUCINACION.md:37:- **Hallazgo (Finding)**: Una conclusión operativa generada por el **Core de SmartPyme** al comparar `Facts` o métricas. Hermes solo puede **comunicar** hallazgos, no generarlos.
+docs/multiagente_roles_operativos.md:6:Diseña hallazgos y los deja en `factory/hallazgos/pending`.
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:4:Cerrar la ejecución automática del módulo `hallazgos` en factoría, asegurando continuidad fail-closed, trazabilidad y cero bloqueos al finalizar el ciclo.
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:9:- `modulos`: `hallazgos`
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:15:`hallazgos`
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:20:- Falso bloqueo `TESTS_MINIMOS_NO_DEFINIDOS` para `hallazgos` por filtrado temprano con `Path.exists()` en detección de tests mapeados.
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:21:- Bloqueo real `TESTS_FAIL: file or directory not found: tests/core/test_hallazgos_service.py` por test mínimo faltante.
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:35:- `tests/core/test_hallazgos_service.py`
+docs/archive/factory_hallazgos_cierre_2026-04-23.md:38:Fase automática `hallazgos` cerrada en estado operativo estable, sin bloqueos pendientes y con ejecución completa en `done`.
+docs/archive/FUENTES_DEPRECABLES.md:21:| `Exceland docs` fuera del set activo SmartPyme Core | no_encontrado | registrar y bloquear uso como fuente primaria | `docs/FUENTES_Y_JERARQUIA.md` | Fuentes externas no controladas para decisiones de core. |
+docs/archive/FUENTES_DEPRECABLES.md:23:| Referencias de negocio con término findings como principal | deprecable | migrar a término hallazgos | `docs/ARQUITECTURA_NORMALIZADA.md` | Coherencia semántica negocio-core. |
+docs/archive/FUENTES_DEPRECABLES.md:26:| `clarification_service.py` (referencia documental) | no_encontrado | mapear a equivalente técnico vigente | `app/core/clarification/service.py` | Nombre solicitado no hallado con exactitud. |
+docs/archive/80.000pdf.md:7:├── /ingestion             # Parsing, OCR, chunking, metadata extraction, vector seeding
+docs/archive/80.000pdf.md:28:| **Embeddings** | `text-embedding-3-small` (cloud) o `nomic-embed-text` (local) | Costo por ingesta 8.2k docs: ~$3-5 (único). Cache de embeddings en `chroma.sqlite`. |
+docs/archive/80.000pdf.md:147:Decime por dónde querés empezar: ¿ingesta, UI, o el router agéntico?
+docs/archive/80.000pdf.md:149:Excelente brief. Voy a desarrollar la arquitectura completa: primero el diagrama del sistema, luego las especificaciones técnicas detalladas, estructura de repositorio y análisis de costos.Cada nodo del diagrama es clickeable para profundizar en cualquier componente. A continuación, la especificación técnica completa.
+docs/archive/80.000pdf.md:157:├── ingestion/
+docs/archive/80.000pdf.md:165:│   └── pipeline.py                # orquestador de ingesta completo
+docs/archive/80.000pdf.md:178:│   │   └── ingest.py              # POST /ingest (solo admins)
+docs/archive/80.000pdf.md:197:    ├── test_ingestion.py
+docs/archive/80.000pdf.md:206:**Por qué Docling sobre PyMuPDF o pdfplumber.** Los 8.200 archivos incluyen PDFs escaneados desde 2005 que contienen tablas de licitaciones, balances y contratos tabulares. PyMuPDF extrae texto plano y destruye la estructura semántica de las tablas — convierte `| Proveedor X | $45.000 | 2012 |` en `"Proveedor X 45000 2012"`, perdiendo relaciones. Docling mantiene la estructura como Markdown/HTML semántico que el embedder puede procesar con coherencia. Para Excels, el parser debe preservar el nombre de la hoja (`Ventas Q3`) y los encabezados de columna como contexto explícito del chunk.
+docs/archive/80.000pdf.md:270:El pipeline de ingesta debe ser idempotente: cada archivo tiene un hash SHA-256 como `doc_id` en ChromaDB. Si se re-ejecuta el ingester sobre el mismo archivo, detecta el ID existente y lo saltea. Esto permite agregar documentos nuevos al corpus sin re-indexar los 8.200 archivos existentes.
+docs/archive/80.000pdf.md:274:El siguiente paso de implementación recomendado es: scaffolding del repo con `cookiecutter`, configurar Docling con un lote de 50 PDFs representativos (los más "sucios" del corpus), y medir calidad de extracción antes de escalar. ¿Querés que desarrolle el código del `ingestion/pipeline.py` o del `Grounded Prompt Builder` en detalle?
+docs/archive/smarttimes_full_architecture.md:8:- Genera hallazgos accionables
+docs/archive/smarttimes_full_architecture.md:25:- Excel, PDF, WhatsApp, Email, APIs
+docs/archive/smarttimes_full_architecture.md:33:- ingestion
+docs/archive/smarttimes_full_architecture.md:37:- clarification
+docs/archive/smarttimes_full_architecture.md:40:- hallazgos
+docs/archive/smarttimes_full_architecture.md:50:### 3.5 MCP Layer
+docs/archive/smarttimes_full_architecture.md:51:- Data MCP
+docs/archive/smarttimes_full_architecture.md:52:- Context MCP
+docs/archive/smarttimes_full_architecture.md:53:- Action MCP
+docs/archive/smarttimes_full_architecture.md:54:- AI MCP
+docs/archive/smarttimes_full_architecture.md:74:- clarifications
+docs/archive/smarttimes_full_architecture.md:110:## 6. MCP + TOOL REGISTRY
+docs/archive/smarttimes_full_architecture.md:126:MCP = sistema nervioso  
+app/orchestration/pipeline.py:8:    Recibe la extracción simulada en bruto, direcciona los hallazgos al engine puro
+app/orchestration/pipeline.py:13:    - hallazgos_procesados: List[Dict] serializados sin fallos.
+app/orchestration/pipeline.py:18:        "hallazgos_procesados": [],
+app/orchestration/pipeline.py:28:        hallazgos_validos = procesar_extraccion_bruta(datos_entrada)
+app/orchestration/pipeline.py:29:        estado_pipeline["hallazgos_procesados"] = hallazgos_validos
+app/orchestration/test_pipeline.py:15:    assert len(res["hallazgos_procesados"]) == 1
+app/orchestration/test_pipeline.py:29:    assert len(res["hallazgos_procesados"]) == 0
+app/factory/orchestrator/persistence.py:9:# Consistent pattern with clarifications persistence
+app/contracts/clarification_contract.py:11:    clarification_id: str
+app/repositories/clarification_repository.py:8:from app.contracts.clarification_contract import Clarification
+app/repositories/clarification_repository.py:21:                CREATE TABLE IF NOT EXISTS clarifications (
+app/repositories/clarification_repository.py:22:                    clarification_id      TEXT PRIMARY KEY,
+app/repositories/clarification_repository.py:35:                CREATE INDEX IF NOT EXISTS idx_clarifications_job_id
+app/repositories/clarification_repository.py:36:                ON clarifications(job_id)
+app/repositories/clarification_repository.py:41:                CREATE INDEX IF NOT EXISTS idx_clarifications_status
+app/repositories/clarification_repository.py:42:                ON clarifications(status)
+app/repositories/clarification_repository.py:46:    def save(self, clarification: Clarification) -> None:
+app/repositories/clarification_repository.py:50:                INSERT INTO clarifications (
+app/repositories/clarification_repository.py:51:                    clarification_id, job_id, question, reason,
+app/repositories/clarification_repository.py:55:                ON CONFLICT(clarification_id) DO UPDATE SET
+app/repositories/clarification_repository.py:65:                    clarification.clarification_id,
+app/repositories/clarification_repository.py:66:                    clarification.job_id,
+app/repositories/clarification_repository.py:67:                    clarification.question,
+app/repositories/clarification_repository.py:68:                    clarification.reason,
+app/repositories/clarification_repository.py:69:                    clarification.status,
+app/repositories/clarification_repository.py:70:                    int(clarification.blocking),
+app/repositories/clarification_repository.py:71:                    clarification.answer,
+app/repositories/clarification_repository.py:72:                    json.dumps(clarification.traceable_origin, ensure_ascii=False),
+app/repositories/clarification_repository.py:76:    def save_batch(self, clarifications: list[Clarification]) -> None:
+app/repositories/clarification_repository.py:77:        for c in clarifications:
+app/repositories/clarification_repository.py:82:            SELECT clarification_id, job_id, question, reason,
+app/repositories/clarification_repository.py:84:            FROM clarifications
+app/repositories/clarification_repository.py:87:            ORDER BY clarification_id
+app/repositories/clarification_repository.py:92:        return [_row_to_clarification(row) for row in rows]
+app/repositories/clarification_repository.py:94:    def mark_answered(self, clarification_id: str, answer: str) -> None:
+app/repositories/clarification_repository.py:98:                UPDATE clarifications
+app/repositories/clarification_repository.py:100:                WHERE clarification_id = ?
+app/repositories/clarification_repository.py:102:                (answer, clarification_id),
+app/repositories/clarification_repository.py:107:            SELECT COUNT(*) FROM clarifications
+app/repositories/clarification_repository.py:120:def _row_to_clarification(row: sqlite3.Row) -> Clarification:
+app/repositories/clarification_repository.py:122:        clarification_id=row["clarification_id"],
+app/services/clarification_service.py:6:from app.contracts.clarification_contract import Clarification
+app/services/clarification_service.py:7:from app.repositories.clarification_repository import ClarificationRepository
+app/services/clarification_service.py:14:    def create_blocking_clarification(
+app/services/clarification_service.py:21:        clarification_id = _build_clarification_id(question, job_id)
+app/services/clarification_service.py:22:        clarification = Clarification(
+app/services/clarification_service.py:23:            clarification_id=clarification_id,
+app/services/clarification_service.py:32:        self.repository.save(clarification)
+app/services/clarification_service.py:33:        return clarification
+app/services/clarification_service.py:35:    def answer_clarification(
+app/services/clarification_service.py:36:        self, clarification_id: str, answer: str
+app/services/clarification_service.py:38:        self.repository.mark_answered(clarification_id, answer)
+app/services/clarification_service.py:44:def _build_clarification_id(question: str, job_id: str | None) -> str:
+app/modules/findings_engine.py:8:    Engine mínimo para evaluar datos crudos y emitir hallazgos validados.
+app/modules/findings_engine.py:14:    hallazgos_exportados = []
+app/modules/findings_engine.py:37:        hallazgos_exportados.append(hallazgo_obj.model_dump(mode='json'))
+app/modules/findings_engine.py:39:    return hallazgos_exportados
+app/core/clarification/persistence.py:5:from app.core.clarification.models import ClarificationRecord, ClarificationRequest
+app/core/clarification/persistence.py:7:DEFAULT_DB_PATH = Path(__file__).resolve().parents[3] / "data" / "clarifications.db"
+app/core/clarification/persistence.py:23:def init_clarifications_db() -> None:
+app/core/clarification/persistence.py:27:            CREATE TABLE IF NOT EXISTS clarifications (
+app/core/clarification/persistence.py:28:                clarification_id TEXT PRIMARY KEY,
+app/core/clarification/persistence.py:41:def save_clarification(request: ClarificationRequest) -> None:
+app/core/clarification/persistence.py:42:    init_clarifications_db()
+app/core/clarification/persistence.py:47:                INSERT INTO clarifications (
+app/core/clarification/persistence.py:48:                    clarification_id,
+app/core/clarification/persistence.py:59:                    request.clarification_id,
+app/core/clarification/persistence.py:71:            f"CLARIFICATION_ID_DUPLICADO: {request.clarification_id}"
+app/core/clarification/persistence.py:75:def list_pending_clarifications() -> list[ClarificationRecord]:
+app/core/clarification/persistence.py:76:    init_clarifications_db()
+app/core/clarification/persistence.py:80:            SELECT clarification_id, entity_type, value_a, value_b, reason, blocking, status, resolution
+app/core/clarification/persistence.py:81:            FROM clarifications
+app/core/clarification/persistence.py:89:            clarification_id=row[0],
+app/core/clarification/persistence.py:102:def resolve_clarification(clarification_id: str, resolution: str) -> bool:
+app/core/clarification/persistence.py:106:    init_clarifications_db()

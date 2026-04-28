@@ -1,0 +1,11 @@
+{
+  "task_path": "factory/ai_governance/tasks/product_final_concept_audit_001.yaml",
+  "returncode": 0,
+  "command": [
+    "/usr/bin/codex",
+    "exec",
+    "--full-auto",
+    "<prompt>"
+  ],
+  "created_at": "2026-04-28T03:42:35.772202+00:00"
+}

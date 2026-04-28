@@ -1,0 +1,220 @@
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:1585:La evidencia previa marca bloqueo por pytest/Ruff/pydantic faltantes en el Python del sistema. Antes de cerrar como `BLOCKED`, voy a comprobar si hay entorno local o dependencias versionadas alternativas que permitan ejecutar el test sin inventar instalaciones.
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:1595:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:1600:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:1711:pydantic_available=no: ModuleNotFoundError: No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2338:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2344:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2358:polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2359:pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2370:IMPORT=failed:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2626:-last_cycle_result: BLOCKED_WAITING_AUDIT
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2695:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2699:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2703:IMPORT=failed:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2708:VEREDICTO: BLOCKED
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2719:BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2744:POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2769:2026-04-27T19:48:53.907797Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /opt/smartpyme-factory/repos/SmartPyme/factory/evidence/core-reconciliacion-v1/git_diff.patch:
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2903:POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2904:VEREDICTO: BLOCKED
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2915:BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:2984: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3059: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3151:VEREDICTO: BLOCKED
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3163:BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3207: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3285: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3354: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3426: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3494:-POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3495:+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3496:+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3529: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3597:-POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3598:+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3599:+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3609:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3615:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3664: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3732:-POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3733:+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:3734:+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4180: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4248:-POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4249:+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4250:+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4254:BLOCKED / `BLOCKED_ENVIRONMENT_CONTRACT_MISSING`. La implementación está escrita y compila, pero no puedo declarar `CORRECTO` porque el entorno no tiene `pytest`, `ruff` ni `pydantic`.
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4280:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4284:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4288:IMPORT=failed:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4345: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4413:-POLARS_IMPORT=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4414:+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4415:+pydantic=unavailable:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4417:2026-04-27T19:50:09.404394Z ERROR codex_core::session: failed to record rollout items: thread 019dd07a-aa70-7b82-bc29-31d1b95f7976 not found
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4421:BLOCKED / `BLOCKED_ENVIRONMENT_CONTRACT_MISSING`. La implementación está escrita y compila, pero no puedo declarar `CORRECTO` porque el entorno no tiene `pytest`, `ruff` ni `pydantic`.
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4447:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4451:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T195009Z/codex_output.txt:4455:IMPORT=failed:ModuleNotFoundError:No module named 'pydantic'
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:21:- Si falta contexto, responde BLOCKED.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:173:/bin/bash: line 1: rg: command not found
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:174:/bin/bash: line 1: rg: command not found
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:372:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:380:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:402:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:462:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:470:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:492:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:648:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:656:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:678:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:715:decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:744:/usr/bin/python3: No module named pytest
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:804:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:812:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:834:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:837:La comprobación de entorno encontró `python3`, pero `pytest` no está instalado y `ruff` no aparece disponible. Voy a cerrar conservadoramente como `INCOMPLETO/BLOCKED_ENV` para tests, y completar la evidencia física del ciclo con status/diff acotados.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:838:2026-04-27T22:22:58.756826Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /opt/smartpyme-factory/repos/SmartPyme/factory/evidence/factory-observability-status-v1/commands.txt:
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:898:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:906:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:928:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:960:Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1020:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1028:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1050:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1121:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1129:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1197:+- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1205:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1299:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1307:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1375:+- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1383:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1440:- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1448:Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1540:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1548:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1616:+- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1624:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1658:INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1670:No ejecutados. `python3 -m pytest --version` falla con `No module named pytest`; `ruff` no está disponible. La unidad solo tocó Markdown/evidencia, pero según AGENTS.md no declaro `CORRECTO` sin test/linter.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1760:+decision: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1768:+VEREDICTO: INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1836:+- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1844:+Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1876:2026-04-27T22:23:41.435520Z ERROR codex_core::session: failed to record rollout items: thread 019dd108-4f07-7601-9955-2296d7b946f5 not found
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1880:INCOMPLETO
+factory/evidence/codex_factory_observability_status_v1_20260427T222341Z/codex_output.txt:1892:No ejecutados. `python3 -m pytest --version` falla con `No module named pytest`; `ruff` no está disponible. La unidad solo tocó Markdown/evidencia, pero según AGENTS.md no declaro `CORRECTO` sin test/linter.
+factory/evidence/codex_template_codex_task_20260427T140422Z/codex_output.txt:21:- Si falta contexto, responde BLOCKED.
+factory/evidence/codex_template_codex_task_20260427T140422Z/codex_output.txt:1087:2026-04-27T14:04:22.278501Z ERROR codex_core::session: failed to record rollout items: thread 019dcf3f-fc16-7611-a1ad-d610735d7c55 not found
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:21:- Si falta contexto, responde BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:378:Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:413:- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:449:### BLOCKED
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:456:### NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:525:  - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:544:  - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:649:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:650:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:666: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:687:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:704:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:758:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:759:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:775: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:796:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:813:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:887:- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:888:- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:904:Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:940:- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:976:### BLOCKED
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:983:### NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1059:  - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1082:  - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1184:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1185:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1201: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1222:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1239:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1301:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1302:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1318: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1339:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1356:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1430:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1431:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1447: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1468:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1485:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1549:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1550:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1566: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1587:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1604:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1675:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1676:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1692: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1713:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1730:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1810:- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1811:- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1827:Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1858:- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1915:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1916:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1932: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1953:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:1970:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2053:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2054:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2070: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2091:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2108:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2219:+- `BLOCKED`;
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2220:+- `NO_VALIDADO`.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2236: Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2257:   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2274:   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+factory/evidence/codex_gpt_director_auditor_bootstrap_001_20260428T023629Z/codex_output.txt:2301:2026-04-28T02:36:29.544355Z ERROR codex_core::session: failed to record rollout items: thread 019dd1f0-0211-7ae2-aa79-6dcf826a3fd5 not found
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:21:- Si falta contexto, responde BLOCKED.
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:219:/bin/bash: line 1: rg: command not found
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1844:POLARS_NO_DISPONIBLE: ModuleNotFoundError: No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1849:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1854:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1861:/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1874:POLARS_NO_DISPONIBLE: ModuleNotFoundError: No module named 'polars'
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:1997:  echo "INCOMPLETO";
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2032:/usr/bin/python3: No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2034:/usr/bin/python3: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2038:/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2042:/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2141:INCOMPLETO. El test mínimo de reconciliación CSV pasa y produce `Hallazgo` estructurado con diferencia numérica por entidad. No declaro `CORRECTO` porque Ruff no está disponible en `python3` ni en `.venv`, y AGENTS.md exige bloquear/incompletar si falta validación canónica.
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2181:# No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2184:# No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2187:# No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2215:2026-04-27T20:46:15.192615Z ERROR codex_core::session: failed to record rollout items: thread 019dd0af-0f52-7821-ab3e-f231e4ff3c01 not found
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2220:INCOMPLETO. El test mínimo de reconciliación CSV pasa y produce `Hallazgo` estructurado con diferencia numérica por entidad. No declaro `CORRECTO` porque Ruff no está disponible en `python3` ni en `.venv`, y AGENTS.md exige bloquear/incompletar si falta validación canónica.
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2260:# No module named pytest
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2263:# No module named ruff
+factory/evidence/codex_core_reconciliacion_v1_20260427T204615Z/codex_output.txt:2266:# No module named ruff
+factory/evidence/factory-observability-status-v1/decision.txt:1:VEREDICTO: INCOMPLETO
+factory/evidence/factory-observability-status-v1/cycle.md:20:decision: INCOMPLETO
+factory/evidence/factory-observability-status-v1/tests.txt:6:- `python3 -m pytest --version` fallo con: No module named pytest.
+factory/evidence/factory-observability-status-v1/tests.txt:14:Decision tecnica: INCOMPLETO por ausencia de test ejecutado, segun AGENTS.md.
+factory/evidence/codex_template_codex_task_20260427T183512Z/codex_output.txt:21:- Si falta contexto, responde BLOCKED.
+factory/evidence/codex_template_codex_task_20260427T183512Z/codex_output.txt:1806:2026-04-27T18:35:12.531059Z ERROR codex_core::session: failed to record rollout items: thread 019dd037-6efc-71c2-ba5e-4750b459b1cb not found
+factory/runner_logs/telegram_trigger_cycle.log:21:BLOCKED_REPO_DIRTY
+factory/runner_logs/telegram_trigger_cycle.log:54:`BLOCKED_REPO_DIRTY`: el repo no arranca limpio.  
+factory/runner_logs/telegram_trigger_cycle.log:59:2026-04-28T03:10:27.867221Z ERROR codex_core::session: failed to record rollout items: thread 019dd210-d507-7b81-a471-1a3372bf4925 not found
+factory/runner_logs/telegram_trigger_cycle.log:63:BLOCKED_REPO_DIRTY
+factory/runner_logs/telegram_trigger_cycle.log:96:`BLOCKED_REPO_DIRTY`: el repo no arranca limpio.  
+factory/runner_logs/telegram_trigger_cycle.log:104:POST_CYCLE_DECISION=BLOCKED
+factory/runner_logs/telegram_trigger_cycle.log:125:+INCOMPLETO por entorno/test/linter no cerrados. La auditoria fue generada en archivos permitidos y no modifica codigo fuente.
+factory/runner_logs/telegram_trigger_cycle.log:127:2026-04-28T03:16:07.193797Z ERROR codex_core::session: failed to record rollout items: thread 019dd211-76e4-7f71-9f26-6882c2d1a491 not found
+factory/runner_logs/telegram_trigger_cycle.log:131:INCOMPLETO. Auditoria generada y verificada, pero no declaro `CORRECTO` porque el entorno canonico no permite cerrar `pytest`/`ruff` y el suite completo no colecta en `.venv`.
+factory/runner_logs/telegram_trigger_cycle.log:145:- `python -m compileall ...`: falla, `python: command not found`.
+factory/runner_logs/telegram_trigger_cycle.log:146:- `pytest -q`: falla, `pytest: command not found`.
+factory/runner_logs/telegram_trigger_cycle.log:147:- `python3 -m pytest -q`: falla, `No module named pytest`.
+factory/runner_logs/telegram_trigger_cycle.log:167:POST_CYCLE_DECISION=BLOCKED
+factory/control/PRIORITY_BOARD.md:4:last_cycle_result: BLOCKED

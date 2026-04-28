@@ -1,0 +1,106 @@
+{
+    "task_id": "kernel_total_audit_001",
+    "mode": "architecture_engineering_audit",
+    "sha": "9027f933bdfff85280b65e35f03a4987c58dc8e8",
+    "veredicto": "INCOMPLETO",
+    "source_code_modified": false,
+    "reason": [
+        "El kernel real existe, pero no cubre aun el producto final end-to-end.",
+        "El entorno canonico no permite cerrar pytest/ruff.",
+        "El repo tenia cambios previos fuera de alcance en factory/control."
+    ],
+    "generated_files": [
+        "factory/reports/kernel_total_audit_001.md",
+        "factory/reports/kernel_total_audit_001.json"
+    ],
+    "evidence_directory": "factory/evidence/kernel_total_audit_001",
+    "kernel_map": {
+        "implemented": [
+            "MCP jobs/clarifications/evidence/ingest_document in mcp_smartpyme_bridge.py",
+            "SQLite job persistence in app/factory/orchestrator",
+            "SQLite clarifications in app/core/clarification and app/repositories",
+            "RawDocument registry with SHA-256",
+            "Document ingestion/chunking/citation index in JSONL/JSON",
+            "Deterministic CSV/amount reconciliation",
+            "HallazgoEngine for quantified entity differences",
+            "Action proposal/decision/execution contracts with confirmation guards"
+        ],
+        "partial": [
+            "Document parsing/OCR due to missing runtime dependencies",
+            "RAG/retrieval without persistent index or MCP search tool",
+            "EvidenceRepository is not unified",
+            "Facts/canonical rows/entity resolution are internal and basic",
+            "Hallazgos are not durably persisted/exposed by MCP",
+            "MercadoLibre integration is dependency-blocked"
+        ],
+        "absent": [
+            "Excel repair/analysis service",
+            "Domain-complete stock/sales/purchases/payments models",
+            "Vector DB/embeddings/reranking",
+            "End-to-end multi-source product pipeline",
+            "Canonical QA environment"
+        ]
+    },
+    "tests": {
+        "git_status": "repo dirty before audit: factory/control/.telegram_control_offset, AUDIT_GATE.md, PRIORITY_BOARD.md",
+        "python_compileall": "FAIL: python command not found",
+        "python3_compileall": "PASS",
+        "global_pytest": "FAIL: pytest command not found",
+        "python3_pytest": "FAIL: No module named pytest",
+        "python3_ruff": "FAIL: No module named ruff",
+        "venv_pytest": "FAIL: 8 collection errors",
+        "venv_ruff": "FAIL: No module named ruff"
+    },
+    "recurrent_errors": [
+        "Environment contract incomplete: python/pytest/ruff/polars not consistently available",
+        "Missing test dependencies: httpx, mcp, google",
+        "Missing modules referenced by tests: factory.agent_min, app.repositories.action_execution_repository",
+        "Pytest import mismatch for duplicate test_orchestrator basename",
+        "Repo dirty in factory/control before audit",
+        "No factory/bugs directory found"
+    ],
+    "product_traceability": {
+        "excel_repair_analysis": "absent",
+        "administrative_automation": "partial",
+        "stock_sales_purchases_payments": "partial",
+        "mass_document_reading_with_evidence": "partial",
+        "distributed_source_reconciliation": "partial",
+        "actionable_hallazgos": "partial",
+        "clarifications_on_uncertainty": "implemented_minimal",
+        "recommend_without_unconfirmed_execution": "partial_correct_guard"
+    },
+    "roadmap_12_hitos": [
+        "Cerrar entorno canonico Python",
+        "Reparar coleccion de tests sin cambiar negocio",
+        "Separar tests legacy/factory de core",
+        "Declarar bridge MCP unico",
+        "Crear EvidenceRepository local",
+        "Agregar tool MCP de busqueda documental",
+        "Implementar batch ingestion controlada",
+        "Definir contrato CSV/Excel inicial",
+        "Conectar canonical rows desde evidencia",
+        "Mejorar entity resolution con incertidumbre",
+        "Persistir hallazgos durablemente",
+        "Exponer action workflow no destructivo por MCP"
+    ],
+    "evidence_files": [
+        "git_status.txt",
+        "files_scoped.txt",
+        "compileall_python.txt",
+        "compileall_python3.txt",
+        "pytest_global.txt",
+        "pytest_python3.txt",
+        "pytest_venv.txt",
+        "ruff_python3.txt",
+        "ruff_venv.txt",
+        "grep_kernel_signals.txt",
+        "mcp_bridge_source.txt",
+        "document_ingestion_source.txt",
+        "retrieval_source.txt",
+        "reconciliation_service_source.txt",
+        "hallazgos_service_source.txt",
+        "action_proposal_source.txt",
+        "recurrent_errors_scan.txt"
+    ],
+    "decision": "INCOMPLETO"
+}

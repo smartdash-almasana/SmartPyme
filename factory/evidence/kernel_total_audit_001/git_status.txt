@@ -1,0 +1,6 @@
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/
+?? factory/evidence/kernel_total_audit_001/
+?? factory/reports/

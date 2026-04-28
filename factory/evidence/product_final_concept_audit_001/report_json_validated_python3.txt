@@ -1,0 +1,129 @@
+{
+    "task_id": "product_final_concept_audit_001",
+    "date": "2026-04-28",
+    "sha": "0152f2607d94a998f0c0f31aa2cf9c596b0b0ce9",
+    "mode": "product_architecture_audit",
+    "verdict": "NO_VALIDADO_PRODUCTO_FINAL_IMPLEMENTADO__CORRECTO_MAQUETA_CONCEPTUAL",
+    "product_final_defined": true,
+    "onboarding_defined": true,
+    "roadmap_12_hitos_defined": true,
+    "source_truth_files_read": [
+        "GPT.md",
+        "CODEX.md",
+        "docs/SMARTPYME_OS_ACTUAL.md",
+        "docs/ROADMAP_IMPLEMENTACION.md",
+        "docs/CORE_PIPELINE_STATUS.md",
+        "docs/ARQUITECTURA_NORMALIZADA.md",
+        "docs/SKILLS_CATALOGO_SMARTPYME.md",
+        "mcp_smartpyme_bridge.py",
+        "services/document_ingestion_service.py",
+        "app/core/reconciliation/service.py",
+        "app/core/hallazgos/service.py"
+    ],
+    "repo_real_capabilities": {
+        "bridge_mcp": "implemented",
+        "jobs": "implemented_minimal",
+        "clarifications": "implemented",
+        "document_ingestion": "implemented_minimal_single_file",
+        "get_evidence": "implemented_minimal",
+        "raw_document_registry": "implemented_minimal",
+        "reconciliation": "partial_not_mcp",
+        "hallazgos": "partial_not_runtime_mcp",
+        "normalization": "pending",
+        "entity_resolution": "pending",
+        "action_engine": "partial_conceptual",
+        "owner_onboarding": "not_evidenced",
+        "excel_services": "not_evidenced",
+        "stock_module": "not_evidenced",
+        "tax_module": "not_evidenced",
+        "subscription_ops": "not_evidenced"
+    },
+    "service_catalog": [
+        {
+            "service": "Excel con formulas",
+            "model": "servicio_unico",
+            "repo_status": "not_evidenced"
+        },
+        {
+            "service": "Excel con macros",
+            "model": "servicio_unico",
+            "repo_status": "not_evidenced"
+        },
+        {
+            "service": "Reparacion y limpieza de archivos Excel",
+            "model": "servicio_unico",
+            "repo_status": "not_evidenced"
+        },
+        {
+            "service": "Conversion de PDFs/documentos a Excel",
+            "model": "servicio_unico",
+            "repo_status": "document_ingestion_partial_conversion_not_evidenced"
+        },
+        {
+            "service": "Lectura masiva de PDFs, tickets, remitos y documentacion historica",
+            "model": "servicio_unico_o_suscripcion",
+            "repo_status": "single_file_ingestion_implemented_batch_pending"
+        },
+        {
+            "service": "Calculos de produccion, ventas, impuestos, costos y rentabilidad",
+            "model": "servicio_unico_o_suscripcion",
+            "repo_status": "partial_generic_domain_not_closed"
+        },
+        {
+            "service": "Conciliacion bancaria y cruce de fuentes",
+            "model": "servicio_unico_o_suscripcion",
+            "repo_status": "partial_not_mcp"
+        },
+        {
+            "service": "Control de stock y deteccion de perdida de control",
+            "model": "suscripcion",
+            "repo_status": "not_evidenced"
+        },
+        {
+            "service": "Hallazgos accionables para decisiones del owner",
+            "model": "suscripcion",
+            "repo_status": "partial_not_runtime_mcp"
+        },
+        {
+            "service": "Automatizaciones recurrentes",
+            "model": "suscripcion",
+            "repo_status": "partial_conceptual"
+        },
+        {
+            "service": "Servicios unicos por demanda",
+            "model": "servicio_unico",
+            "repo_status": "must_be_built_on_jobs_and_evidence"
+        }
+    ],
+    "roadmap_12_hitos": [
+        "Definir OwnerOnboardingSession documental",
+        "Mapear catalogo de servicios a skill_id y estado",
+        "Crear contrato de decision servicio unico vs suscripcion",
+        "Extender OperationalPlanContract con campos de servicio",
+        "Implementar clasificador minimo onboarding a plan",
+        "Crear job desde onboarding y verificar get_job_status",
+        "Cerrar ingesta batch",
+        "Crear EvidenceRepository local",
+        "Definir primer FactCandidate",
+        "Definir CanonicalRowCandidate",
+        "Conectar reconciliation a canonical rows internamente",
+        "Persistir hallazgos y mensaje owner validable"
+    ],
+    "recommended_next_cycle": {
+        "hermes": "Crear task spec para owner_onboarding_contract_001 y dejar evidencia.",
+        "gemini": "Definir arquitectura conceptual de onboarding, limites y criterios de bloqueo.",
+        "codex": "Auditar OperationalPlanContract y preparar patch minimo solo con spec aprobada."
+    },
+    "blocked_or_missing": [
+        "No existe onboarding conversacional implementado.",
+        "No hay modulo Excel/macros evidenciado.",
+        "No hay stock, impuestos ni produccion como dominios cerrados.",
+        "Reconciliation existe parcial pero no debe exponerse por MCP sin normalizacion/entity resolution.",
+        "Hallazgos existen parcial pero no gobiernan runtime MCP.",
+        "Suscripciones requieren contrato de jobs recurrentes y reporte."
+    ],
+    "generated_files": [
+        "factory/reports/product_final_concept_audit_001.md",
+        "factory/reports/product_final_concept_audit_001.json"
+    ]
+}

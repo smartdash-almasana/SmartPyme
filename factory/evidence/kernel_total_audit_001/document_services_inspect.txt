@@ -1,0 +1,697 @@
+$ sed services document services
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from extraction.chunker import split_document
+from extraction.docling_parser import parse_pdf
+from models.document_models import DocumentChunk, DocumentIngestionResult, SourceDocument
+from services.retrieval_service import RetrievalService, VectorIndex
+
+
+class DocumentIngestionService:
+    """Orchestrates parsing, chunking, persistence, and optional vector indexing."""
+
+    def __init__(
+        self,
+        *,
+        evidence_root: Path = Path("evidence_store"),
+        retrieval_service: RetrievalService | None = None,
+        vector_index: VectorIndex | None = None,
+    ) -> None:
+        """Create an ingestion service bound to a local evidence store."""
+        self._evidence_root = evidence_root
+        self._retrieval = retrieval_service or RetrievalService()
+        self._vector_index = vector_index
+
+    def ingest_pdfs(self, pdf_paths: list[Path]) -> DocumentIngestionResult:
+        """Ingest PDFs and return an operational summary with parser provenance."""
+        self._ensure_evidence_dirs()
+        documents: list[SourceDocument] = []
+        chunks: list[DocumentChunk] = []
+        errors: list[str] = []
+
+        for pdf_path in pdf_paths:
+            try:
+                document = parse_pdf(pdf_path)
+                # Preserve original path for downstream tracing and audits.
+                document.metadata["source_path"] = str(pdf_path)
+                documents.append(document)
+                chunks.extend(split_document(document))
+            except Exception as exc:
+                errors.append(f"{pdf_path}: {exc}")
+
+        self._retrieval.add_chunks(chunks)
+        self._write_jsonl(self._evidence_root / "raw_documents" / "documents.jsonl", documents)
+        self._write_jsonl(self._evidence_root / "document_chunks" / "chunks.jsonl", chunks)
+        self._write_citation_index(chunks)
+
+        indexed = 0
+        if self._vector_index is not None:
+            try:
+                indexed = int(self._vector_index.upsert(chunks))
+            except Exception as exc:
+                errors.append(f"vector_index: {exc}")
+
+        parser_names = {
+            str(document.metadata.get("parser_used", "unknown"))
+            for document in documents
+        }
+        parser_name = "mixed" if len(parser_names) > 1 else (next(iter(parser_names)) if parser_names else "unknown")
+        return DocumentIngestionResult(
+            parser=str(parser_name),
+            source_count=len(documents),
+            chunk_count=len(chunks),
+            indexed_vector_count=indexed,
+            source_ids=[document.source_id for document in documents],
+            errors=errors,
+        )
+
+    def _ensure_evidence_dirs(self) -> None:
+        """Ensure on-disk folders exist for all ingestion artifacts."""
+        for rel in ("raw_documents", "document_chunks", "citation_index", "vector_index"):
+            (self._evidence_root / rel).mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def _write_jsonl(path: Path, rows: list[SourceDocument] | list[DocumentChunk]) -> None:
+        """Write typed model rows as JSONL in UTF-8."""
+        with path.open("w", encoding="utf-8") as handle:
+            for row in rows:
+                handle.write(json.dumps(row.model_dump(mode="json"), ensure_ascii=False) + "\n")
+
+    def _write_citation_index(self, chunks: list[DocumentChunk]) -> None:
+        """Persist lightweight citation entries for quick evidence lookup."""
+        citation_rows = [
+            {
+                "source_id": chunk.source_id,
+                "filename": chunk.filename,
+                "page": chunk.page,
+                "chunk_id": chunk.chunk_id,
+                "excerpt": chunk.text[:240],
+            }
+            for chunk in chunks
+        ]
+        with (self._evidence_root / "citation_index" / "citations.json").open("w", encoding="utf-8") as handle:
+            handle.write(json.dumps(citation_rows, ensure_ascii=False, indent=2))
+
+--- query ---
+from __future__ import annotations
+
+from models.document_models import DocumentAnswer, DocumentQuery, EvidenceRef
+from services.retrieval_service import RetrievalService
+
+INSUFFICIENT_EVIDENCE_MESSAGE = "No tengo evidencia documental suficiente para responder con certeza."
+
+
+class DocumentQueryService:
+    """Builds grounded answers constrained to retrieved documentary evidence."""
+
+    def __init__(self, retrieval_service: RetrievalService) -> None:
+        """Bind the service to a retrieval backend."""
+        self._retrieval = retrieval_service
+
+    def answer(self, query: DocumentQuery) -> DocumentAnswer:
+        """Answer a query only when retrieval confidence passes the threshold."""
+        hits = self._retrieval.retrieve(query.query_text, top_k=query.top_k)
+        if not hits:
+            return DocumentAnswer(
+                query_id=query.query_id,
+                answer_text=INSUFFICIENT_EVIDENCE_MESSAGE,
+                confidence=0.0,
+                citations=[],
+                evidence_refs=[],
+                insufficient_evidence=True,
+                should_trigger_clarification=True,
+            )
+
+        confidence = sum(hit.confidence for hit in hits) / max(1, len(hits))
+        if confidence < query.min_confidence:
+            return DocumentAnswer(
+                query_id=query.query_id,
+                answer_text=INSUFFICIENT_EVIDENCE_MESSAGE,
+                confidence=confidence,
+                citations=[],
+                evidence_refs=[],
+                insufficient_evidence=True,
+                should_trigger_clarification=True,
+            )
+
+        refs: list[EvidenceRef] = [hit.evidence_ref for hit in hits]
+        lines: list[str] = []
+        for idx, hit in enumerate(hits, start=1):
+            # Keep answer text explicitly traceable to filename/page/chunk_id.
+            excerpt = " ".join(hit.text.split())[:280].strip()
+            citation = f"filename={hit.filename}; page={hit.page}; chunk_id={hit.chunk_id}"
+            lines.append(f"{idx}. {excerpt} [{citation}]")
+
+        return DocumentAnswer(
+            query_id=query.query_id,
+            answer_text="\n".join(lines),
+            confidence=confidence,
+            citations=refs,
+            evidence_refs=refs,
+            insufficient_evidence=False,
+            should_trigger_clarification=False,
+            metadata={"policy": "grounded_only"},
+        )
+
+--- retrieval ---
+from __future__ import annotations
+
+from typing import Protocol
+
+from models.document_models import DocumentChunk, EvidenceRef, RetrievalHit
+
+
+class VectorIndex(Protocol):
+    """Minimal vector index contract used by ingestion and retrieval layers."""
+
+    def upsert(self, chunks: list[DocumentChunk]) -> int:
+        ...
+
+
+class RetrievalService:
+    """Retrieves evidence chunks using LangChain BM25 or token-overlap fallback."""
+
+    def __init__(self, *, chunks: list[DocumentChunk] | None = None) -> None:
+        """Initialize retrieval state with optional preloaded chunks."""
+        self._chunks = chunks or []
+        self._chunk_by_id: dict[str, DocumentChunk] = {chunk.chunk_id: chunk for chunk in self._chunks}
+        self._langchain_docs: list[object] = []
+        self._refresh_langchain_docs()
+
+    def add_chunks(self, chunks: list[DocumentChunk]) -> None:
+        """Append chunks and refresh the LangChain document cache."""
+        self._chunks.extend(chunks)
+        for chunk in chunks:
+            self._chunk_by_id[chunk.chunk_id] = chunk
+        self._refresh_langchain_docs()
+
+    def _refresh_langchain_docs(self) -> None:
+        """Build LangChain `Document` objects if the dependency is available."""
+        self._langchain_docs = []
+        try:
+            from langchain_core.documents import Document as LangChainDocument  # type: ignore
+        except Exception:
+            return
+
+        for chunk in self._chunks:
+            self._langchain_docs.append(
+                LangChainDocument(
+                    page_content=chunk.text,
+                    metadata={
+                        "source_id": chunk.source_id,
+                        "filename": chunk.filename,
+                        "page": chunk.page,
+                        "chunk_id": chunk.chunk_id,
+                    },
+                )
+            )
+
+    def _retrieve_with_langchain(self, query_text: str, top_k: int) -> list[RetrievalHit]:
+        """Retrieve ranked hits via BM25 when LangChain components are installed."""
+        if not self._langchain_docs:
+            return []
+        try:
+            from langchain_community.retrievers import BM25Retriever  # type: ignore
+        except Exception:
+            return []
+
+        try:
+            retriever = BM25Retriever.from_documents(self._langchain_docs)
+            retriever.k = top_k
+            ranked_docs = retriever.get_relevant_documents(query_text)
+        except Exception:
+            return []
+
+        hits: list[RetrievalHit] = []
+        for rank, doc in enumerate(ranked_docs):
+            metadata = getattr(doc, "metadata", {}) or {}
+            chunk_id = str(metadata.get("chunk_id", "")).strip()
+            chunk = self._chunk_by_id.get(chunk_id)
+            if chunk is None:
+                continue
+            confidence = max(0.0, 1.0 - (rank * 0.1))
+            evidence_ref = EvidenceRef(
+                source_id=chunk.source_id,
+                filename=chunk.filename,
+                page=chunk.page,
+                chunk_id=chunk.chunk_id,
+                excerpt=chunk.text[:240],
+            )
+            hits.append(
+                RetrievalHit(
+                    source_id=chunk.source_id,
+                    filename=chunk.filename,
+                    page=chunk.page,
+                    chunk_id=chunk.chunk_id,
+                    text=chunk.text,
+                    metadata=chunk.metadata,
+                    confidence=confidence,
+                    evidence_ref=evidence_ref,
+                )
+            )
+        return hits
+
+    def retrieve(self, query_text: str, *, top_k: int = 5) -> list[RetrievalHit]:
+        """Return top-k grounded hits, preferring LangChain over lexical fallback."""
+        query_tokens = {token.lower() for token in query_text.split() if token.strip()}
+        if not query_tokens:
+            return []
+
+        langchain_hits = self._retrieve_with_langchain(query_text, top_k)
+        if langchain_hits:
+            return langchain_hits[:top_k]
+
+        scored: list[tuple[float, DocumentChunk]] = []
+        for chunk in self._chunks:
+            chunk_tokens = {token.lower() for token in chunk.text.split() if token.strip()}
+            overlap = len(query_tokens & chunk_tokens)
+            if overlap == 0:
+                continue
+            confidence = overlap / max(1, len(query_tokens))
+            scored.append((confidence, chunk))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        hits: list[RetrievalHit] = []
+        for confidence, chunk in scored[:top_k]:
+            evidence_ref = EvidenceRef(
+                source_id=chunk.source_id,
+                filename=chunk.filename,
+                page=chunk.page,
+                chunk_id=chunk.chunk_id,
+                excerpt=chunk.text[:240],
+            )
+            hits.append(
+                RetrievalHit(
+                    source_id=chunk.source_id,
+                    filename=chunk.filename,
+                    page=chunk.page,
+                    chunk_id=chunk.chunk_id,
+                    text=chunk.text,
+                    metadata=chunk.metadata,
+                    confidence=confidence,
+                    evidence_ref=evidence_ref,
+                )
+            )
+        return hits
+
+--- extraction parser files ---
+
+### extraction/chunker.py
+from __future__ import annotations
+
+from typing import Any
+
+from models.document_models import DocumentChunk, SourceDocument
+
+
+def _fallback_split_text(text: str, chunk_size: int, chunk_overlap: int) -> list[str]:
+    """Split text by fixed windows when LangChain splitter is unavailable."""
+    if not text:
+        return []
+    step = max(1, chunk_size - chunk_overlap)
+    parts: list[str] = []
+    for start in range(0, len(text), step):
+        piece = text[start : start + chunk_size].strip()
+        if piece:
+            parts.append(piece)
+    return parts
+
+
+def split_document(
+    document: SourceDocument,
+    *,
+    chunk_size: int = 800,
+    chunk_overlap: int = 120,
+) -> list[DocumentChunk]:
+    """Create retrievable chunks, preserving page-level provenance metadata."""
+
+    def _split_text(text: str) -> list[str]:
+        """Prefer LangChain recursive splitting and fallback to fixed windows."""
+        try:
+            from langchain_text_splitters import RecursiveCharacterTextSplitter  # type: ignore
+
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=["\n\n", "\n", ". ", " "],
+            )
+            return splitter.split_text(text)
+        except Exception:
+            return _fallback_split_text(text, chunk_size, chunk_overlap)
+
+    page_entries: list[dict[str, Any]] = []
+    raw_pages = document.metadata.get("pages")
+    if isinstance(raw_pages, list):
+        for page in raw_pages:
+            if not isinstance(page, dict):
+                continue
+            page_num = page.get("page")
+            page_text = page.get("text")
+            if (
+                isinstance(page_num, int)
+                and page_num > 0
+                and isinstance(page_text, str)
+                and page_text.strip()
+            ):
+                page_entries.append({"page": page_num, "text": page_text})
+
+    if not page_entries:
+        page_entries = [{"page": document.page, "text": document.text}]
+
+    chunks: list[DocumentChunk] = []
+    chunk_order = 0
+
+    for page_entry in page_entries:
+        texts = _split_text(page_entry["text"])
+        for text in texts:
+            chunk_metadata = dict(document.metadata)
+            chunk_metadata["chunk_order"] = chunk_order
+            chunk_metadata["page"] = page_entry["page"]
+            chunks.append(
+                DocumentChunk(
+                    source_id=document.source_id,
+                    filename=document.filename,
+                    page=page_entry["page"],
+                    text=text,
+                    metadata=chunk_metadata,
+                )
+            )
+            chunk_order += 1
+
+    return chunks
+
+### extraction/docling_parser.py
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from extraction.metadata_extractor import build_document_metadata
+from extraction.ocr_fallback import run_ocr_fallback
+from models.document_models import SourceDocument
+
+
+def _safe_page_number(page_obj: Any, fallback: int) -> int:
+    """Resolve a positive page number from heterogeneous Docling page objects."""
+    for attr in ("page_no", "page_number", "number", "id"):
+        value = getattr(page_obj, attr, None)
+        if isinstance(value, int) and value > 0:
+            return value
+    return fallback
+
+
+def _safe_page_text(page_obj: Any) -> str:
+    """Extract best-effort page text from Docling page representations."""
+    export_to_markdown = getattr(page_obj, "export_to_markdown", None)
+    if callable(export_to_markdown):
+        try:
+            value = export_to_markdown()
+            if value:
+                return str(value).strip()
+        except Exception:
+            pass
+
+    for attr in ("text", "content", "markdown"):
+        value = getattr(page_obj, attr, None)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    return ""
+
+
+def _docling_extract_text(pdf_path: Path) -> tuple[str, list[dict[str, Any]]]:
+    """Parse a PDF with Docling and return full text plus page-level evidence."""
+    try:
+        from docling.document_converter import DocumentConverter  # type: ignore
+    except Exception:
+        return "", []
+
+    try:
+        converter = DocumentConverter()
+        result = converter.convert(str(pdf_path))
+        doc = getattr(result, "document", None)
+        if doc is None:
+            return str(result).strip(), []
+
+        pages: list[dict[str, Any]] = []
+        page_items = getattr(doc, "pages", None)
+        if isinstance(page_items, list):
+            for idx, page_obj in enumerate(page_items, start=1):
+                page_text = _safe_page_text(page_obj)
+                if page_text:
+                    pages.append(
+                        {
+                            "page": _safe_page_number(page_obj, idx),
+                            "text": page_text,
+                        }
+                    )
+
+        export = getattr(doc, "export_to_markdown", None)
+        full_text = ""
+        if callable(export):
+            full_text = str(export()).strip()
+        if not full_text and pages:
+            full_text = "\n\n".join(page["text"] for page in pages).strip()
+
+        return full_text, pages
+    except Exception:
+        return "", []
+
+
+def _read_text_best_effort(path: Path) -> str:
+    """Fallback reader for text-like files when structured parsing fails."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except Exception:
+        try:
+            return path.read_text(encoding="latin-1", errors="ignore")
+        except Exception:
+            return ""
+
+
+def parse_pdf(pdf_path: Path) -> SourceDocument:
+    """Parse a PDF into a SourceDocument using Docling first, then fallbacks."""
+    text, pages = _docling_extract_text(pdf_path)
+    parser_used = "docling"
+    if not text.strip():
+        text = run_ocr_fallback(pdf_path)
+        parser_used = "ocr_fallback"
+        if text.strip():
+            pages = [{"page": 1, "text": text}]
+    if not text.strip():
+        text = _read_text_best_effort(pdf_path)
+        parser_used = "plain_text_fallback"
+        if text.strip():
+            pages = [{"page": 1, "text": text}]
+
+    metadata = build_document_metadata(pdf_path, text)
+    metadata["parser_used"] = parser_used
+    metadata["pages"] = pages
+    return SourceDocument(
+        filename=pdf_path.name,
+        text=text,
+        page=1,
+        metadata=metadata,
+    )
+
+### extraction/metadata_extractor.py
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+from typing import Any
+
+
+def _infer_doc_type(extension: str) -> str:
+    """Infer document type from file extension."""
+    ext = extension.lower()
+    if ext in [".csv", ".xls", ".xlsx"]:
+        return "table"
+    if ext in [".html", ".htm", ".xml"]:
+        return "markup"
+    if ext in [".txt", ".md", ".rtf"]:
+        return "text"
+    if ext in [".pdf", ".docx", ".doc"]:
+        return "document"
+    return "binary"
+
+
+def _infer_has_tables(text: str) -> bool:
+    """Infer whether text contains table-like structures."""
+    lower_text = text.lower()
+    if "<table>" in lower_text or "<tr>" in lower_text:
+        return True
+
+    lines = text.strip().split("\n")
+    if len(lines) > 2:
+        separators = [",", "\t", "|"]
+        for sep in separators:
+            lines_with_sep = [line for line in lines if sep in line]
+            if len(lines_with_sep) > 1:
+                counts = [line.count(sep) for line in lines_with_sep[:5]]
+                if len(counts) > 1 and counts[0] > 0 and all(c == counts[0] for c in counts):
+                    return True
+
+    return False
+
+
+def extract_metadata(
+    text: str,
+    filename: str,
+    base_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Extract deterministic metadata from text and filename."""
+    metadata = (base_metadata or {}).copy()
+    extension = Path(filename).suffix.lower()
+
+    metadata.update(
+        {
+            "filename": filename,
+            "extension": extension,
+            "text_length": len(text),
+            "inferred_doc_type": _infer_doc_type(extension),
+            "has_tables": _infer_has_tables(text),
+            "source_hash": hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest(),
+        }
+    )
+    return metadata
+
+
+def build_document_metadata(path: Path, text: str) -> dict[str, Any]:
+    """Backward-compatible metadata builder for legacy callers."""
+    return extract_metadata(text=text, filename=path.name)
+### extraction/ocr_fallback.py
+from __future__ import annotations
+
+from pathlib import Path
+
+
+def run_ocr_fallback(pdf_path: Path) -> str:
+    """Run a defensive OCR fallback for PDF documents when text extraction fails."""
+    try:
+        import pytesseract  # type: ignore
+        from pdf2image import convert_from_path  # type: ignore
+        from pdf2image.exceptions import PDFInfoNotInstalledError  # type: ignore
+    except ImportError:
+        return ""
+
+    try:
+        pages = convert_from_path(str(pdf_path), timeout=30)
+    except (PDFInfoNotInstalledError, FileNotFoundError, Exception):
+        return ""
+
+    if not pages:
+        return ""
+
+    extracted_texts: list[str] = []
+    for image in pages:
+        try:
+            text = pytesseract.image_to_string(
+                image,
+                lang="spa+eng",
+                timeout=20,
+            ).strip()
+            if text:
+                extracted_texts.append(text)
+        except (pytesseract.TesseractNotFoundError, FileNotFoundError, Exception):
+            continue
+
+    return "\n\n<page_break>\n\n".join(extracted_texts)
+
+### models/document_models.py
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
+
+
+def _new_id(prefix: str) -> str:
+    """Build a stable prefixed identifier for domain entities."""
+    return f"{prefix}_{uuid4().hex}"
+
+
+class SourceDocument(BaseModel):
+    """Canonical representation of a parsed source document."""
+
+    source_id: str = Field(default_factory=lambda: _new_id("src"))
+    filename: str
+    text: str
+    page: int = 1
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DocumentChunk(BaseModel):
+    """Atomic retrievable fragment derived from a source document."""
+
+    chunk_id: str = Field(default_factory=lambda: _new_id("chk"))
+    source_id: str
+    filename: str
+    page: int = 1
+    text: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class EvidenceRef(BaseModel):
+    """Citation pointer to the exact evidence used for an answer."""
+
+    source_id: str
+    filename: str
+    page: int
+    chunk_id: str
+    excerpt: str
+
+
+class RetrievalHit(BaseModel):
+    """Retrieved candidate chunk with confidence and citation metadata."""
+
+    source_id: str
+    filename: str
+    page: int
+    chunk_id: str
+    text: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    confidence: float = 0.0
+    evidence_ref: EvidenceRef
+
+
+class DocumentQuery(BaseModel):
+    """Normalized user question parameters for the retrieval layer."""
+
+    query_id: str = Field(default_factory=lambda: _new_id("qry"))
+    query_text: str
+    top_k: int = 5
+    min_confidence: float = 0.2
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class DocumentAnswer(BaseModel):
+    """Final grounded answer enriched with evidence and control flags."""
+
+    answer_id: str = Field(default_factory=lambda: _new_id("ans"))
+    query_id: str
+    answer_text: str
+    confidence: float = 0.0
+    citations: list[EvidenceRef] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    insufficient_evidence: bool = False
+    should_trigger_clarification: bool = False
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class DocumentIngestionResult(BaseModel):
+    """Operational summary produced after document ingestion and indexing."""
+
+    ingestion_id: str = Field(default_factory=lambda: _new_id("ing"))
+    parser: str
+    source_count: int = 0
+    chunk_count: int = 0
+    indexed_vector_count: int = 0
+    source_ids: list[str] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)

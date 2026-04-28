@@ -1,0 +1,17 @@
+pwd
+git status --short
+find . -maxdepth 3 -type f | sort | sed 's#^./##' | head -300
+python -m compileall app core services scripts factory || true
+pytest -q || true
+grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+find factory/evidence -maxdepth 2 -type f | sort | tail -80 || true
+find factory/bugs -maxdepth 2 -type f | sort | tail -80 || true
+find app core services scripts tests factory -maxdepth 4 -type f | sort
+python3 -m compileall app core services scripts factory || true
+python3 -m pytest -q || true
+python3 -m ruff check app core services scripts factory || true
+.venv/bin/python -m pytest -q || true
+.venv/bin/python -m ruff check app core services scripts factory || true
+.venv/bin/python -m pip list || true
+git rev-parse HEAD
+grep -R "BLOCKED\|NO_VALIDADO\|INCOMPLETO\|ERROR\|FAIL\|ModuleNotFoundError\|command not found\|rg: command not found\|No module named" -n factory/evidence factory/runner_logs factory/control 2>/dev/null | tail -220 || true

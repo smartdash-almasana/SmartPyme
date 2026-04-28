@@ -1,0 +1,13 @@
+$ .venv/bin/python -m ruff --version
+/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python: No module named ruff
+
+$ .venv/bin/python -c imports
+pydantic=available:2.13.3
+polars=unavailable:ModuleNotFoundError:No module named 'polars'
+pytest=available:9.0.3
+mcp=unavailable:ModuleNotFoundError:No module named 'mcp'
+docling=unavailable:ModuleNotFoundError:No module named 'docling'
+langchain_core=unavailable:ModuleNotFoundError:No module named 'langchain_core'
+langchain_community=unavailable:ModuleNotFoundError:No module named 'langchain_community'
+pytesseract=unavailable:ModuleNotFoundError:No module named 'pytesseract'
+pdf2image=unavailable:ModuleNotFoundError:No module named 'pdf2image'

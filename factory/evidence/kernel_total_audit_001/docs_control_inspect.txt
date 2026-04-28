@@ -1,0 +1,763 @@
+$ sed current control and roadmap docs
+
+### docs/SMARTPYME_OS_ACTUAL.md
+# SmartPyme OS actual
+
+## Verdad operativa
+
+SmartPyme es el sistema de verdad del dominio operativo. Guarda estado, evidencias, clarificaciones y ejecuciones. No es el operador conversacional.
+
+Hermes Agent es el operador conversacional. Recibe la conversacion con el usuario y llama tools MCP cuando necesita leer o modificar estado de SmartPyme.
+
+MCP es el contrato de borde entre Hermes y SmartPyme. La integracion activa esta en `mcp_smartpyme_bridge.py`.
+
+## Factory Hermes real
+
+El runner operativo actual de la factoria es `scripts/hermes_factory_runner.py`.
+
+Su cola activa de entrada es `factory/ai_governance/tasks/*.yaml`, seleccionada desde `TASKS_DIR`.
+
+El gate de ciclo es `factory/control/AUDIT_GATE.md` y el estado resumido se escribe en `factory/control/FACTORY_STATUS.md`.
+
+`factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`. Cualquier uso de esas rutas debe tratarse como antecedente, runtime alternativo historico o dominio de negocio pendiente de contrato explicito.
+
+## Roles
+
+| componente | rol actual | no gobierna |
+|---|---|---|
+| Hermes Agent | Operador conversacional y cliente MCP | Persistencia, reglas de negocio, verdad de jobs |
+| MCP | Contrato de tools entre Hermes y SmartPyme | Arquitectura conceptual del core |
+| SmartPyme | Sistema de verdad, persistencia y servicios | Interfaz conversacional principal |
+| Factory | Herramientas de crecimiento, skills y orquestacion interna minima | Runtime conversacional de usuario |
+
+## Capas reales evidenciadas
+
+| capa | estado | archivo principal | observacion |
+|---|---|---|---|
+| Bridge MCP | implementado y validado | `mcp_smartpyme_bridge.py` | Expone tools reales por stdio para Hermes. |
+| Jobs | implementado minimo | `app/factory/orchestrator/persistence.py` | SQLite real en `data/jobs.db`; persiste estado, `skill_id` y `payload_json`. |
+| Orquestacion de jobs | implementado minimo | `app/factory/orchestrator/service.py` | Persiste transiciones `CREATED -> RUNNING -> COMPLETED/BLOCKED`. |
+| Clarifications | implementado y validado | `app/core/clarification/persistence.py` | CRUD minimo real en SQLite. |
+| EvidenceStore | implementado minimo | `services/document_ingestion_service.py` | JSONL local para documentos y chunks. |
+| Ingesta documental | implementado y validado por bridge | `services/document_ingestion_service.py` | `ingest_document` usa el servicio y devuelve evidencias. |
+| Consulta de evidencia | implementado y validado por bridge | `mcp_smartpyme_bridge.py` | Lee `evidence_store/document_chunks/chunks.jsonl`. |
+| Reconciliation | implementado parcialmente | `app/core/reconciliation/service.py` | Hay servicio y tests, pero no esta expuesto por MCP. |
+| Hallazgos | implementado parcialmente | `app/core/hallazgos/service.py` | Existe dominio, pero no gobierna aun el runtime MCP. |
+| Normalizacion / canonical rows | conceptual pendiente | no evidenciado como runtime cerrado | Debe separarse de ingesta y reconciliation. |
+| Entity resolution | conceptual pendiente | no evidenciado como runtime cerrado | No debe darse por cerrado. |
+| Action engine | conceptual pendiente | no evidenciado | No hay contrato operativo MCP activo. |
+
+## Persistencias reales
+
+| persistencia | archivo / ubicacion | uso actual |
+|---|---|---|
+| Jobs SQLite | `data/jobs.db` | Estado de jobs consultado por `get_job_status`. |
+| Clarifications SQLite | `data/clarifications.db` | Clarificaciones pendientes y resueltas. |
+| EvidenceStore JSONL | `evidence_store/document_chunks/chunks.jsonl` | Chunks consultables por `get_evidence`. |
+| Raw documents JSONL | `evidence_store/raw_documents/documents.jsonl` | Documentos ingestados. |
+| Citation index JSON | `evidence_store/citation_index/citations.json` | Indice liviano de citas. |
+
+## Tools MCP activas
+
+| tool | estado | backend real | observacion |
+|---|---|---|---|
+| `get_job_status` | implementada | `app.factory.orchestrator.persistence.get_job` | Devuelve `source: real`; `NOT_FOUND` si no existe. |
+| `create_job` | implementada | `app.contracts.operational_plan_contract.create_operational_plan` + `app.factory.orchestrator.persistence.save_job` | Crea plan declarativo y job en `CREATED`; persiste `skill_id` y payload del plan. |
+| `list_pending_validations` | implementada | `app.core.clarification.persistence.list_pending_clarifications` | `owner_id` existe en contrato, aun no filtra. |
+| `resolve_clarification` | implementada | `app.core.clarification.persistence.resolve_clarification` | Resuelve pendientes en SQLite. |
+| `save_clarification` | implementada | `app.core.clarification.persistence.save_clarification` | Crea clarificacion manual bloqueante. |
+| `get_evidence` | implementada | JSONL en EvidenceStore | Si falta el store responde `stub_explicit`; con store real lee JSONL. |
+| `ingest_document` | implementada | `DocumentIngestionService` | Ingesta archivo local y devuelve `evidence_ids`. |
+
+## Validacion E2E existente
+
+La validacion E2E esta en `tests/e2e/validate_bridge_e2e.py`.
+
+Valida, en un flujo completo:
+
+1. `get_job_status`
+2. `save_clarification`
+3. `list_pending_validations`
+4. `resolve_clarification`
+5. confirmacion de resolucion
+6. `ingest_document`
+7. `get_evidence`
+
+Comando documentado:
+
+```powershell
+python tests/e2e/validate_bridge_e2e.py
+```
+
+Advertencia operativa: el script limpia `jobs.db`, `clarifications.db`, el documento temporal E2E y `evidence_store` al finalizar. Debe correrse en entorno de validacion o con datos descartables.
+
+### docs/HERMES_MCP_RUNTIME.md
+# Hermes MCP runtime
+
+## Config real de Hermes
+
+Hermes carga SmartPyme desde:
+
+`C:\Users\PC\.hermes\config.yaml`
+
+Configuracion observada:
+
+```yaml
+mcp_servers:
+  smartpyme:
+    enabled: true
+    command: "C:/Python314/python.exe"
+    args:
+      - "E:/BuenosPasos/smartbridge/SmartPyme/mcp_smartpyme_bridge.py"
+```
+
+Esta configuracion no debe modificarse desde SmartPyme sin una decision explicita de operacion.
+
+## Factory Hermes en VM
+
+El runner real de factoria es `scripts/hermes_factory_runner.py`.
+
+Ese runner no consume `factory/hallazgos/*` como cola activa. La entrada activa que selecciona tareas pendientes es `factory/ai_governance/tasks/*.yaml`, mediante `TASKS_DIR`.
+
+El control de ejecucion se gobierna con `factory/control/AUDIT_GATE.md` y `factory/control/FACTORY_STATUS.md`.
+
+## Bridge MCP
+
+El bridge activo es:
+
+`mcp_smartpyme_bridge.py`
+
+Corre como servidor MCP por stdio:
+
+```python
+mcp = FastMCP("SmartPyme-Bridge")
+...
+mcp.run()
+```
+
+Hermes no importa el core de SmartPyme como libreria de aplicacion. Hermes invoca tools MCP registradas por el bridge.
+
+## Tools registradas
+
+| tool MCP | funcion | persistencia / servicio |
+|---|---|---|
+| `create_job` | Crea un job desde un OperationalPlanContract minimo | SQLite `data/jobs.db` |
+| `get_job_status` | Consulta estado de un job | SQLite `data/jobs.db` |
+| `list_pending_validations` | Lista clarificaciones pendientes | SQLite `data/clarifications.db` |
+| `resolve_clarification` | Resuelve una clarificacion | SQLite `data/clarifications.db` |
+| `save_clarification` | Crea una clarificacion manual | SQLite `data/clarifications.db` |
+| `get_evidence` | Recupera un chunk de evidencia | `evidence_store/document_chunks/chunks.jsonl` |
+| `ingest_document` | Ingesta un archivo local | `DocumentIngestionService` + EvidenceStore |
+
+## Comando de validacion
+
+Validacion E2E del bridge:
+
+```powershell
+python tests/e2e/validate_bridge_e2e.py
+```
+
+El script importa `handle_function_call` desde `hermes-agent` y llama las tools como `mcp_smartpyme_<tool>`.
+
+Advertencia: el script borra bases y evidence store de prueba al limpiar. No ejecutarlo contra datos que deban conservarse.
+
+## Limites de Hermes
+
+Hermes puede:
+
+- conversar con el usuario;
+- pedir estado real a SmartPyme por MCP;
+- registrar clarificaciones;
+- resolver clarificaciones con respuesta humana;
+- pedir ingesta de documentos locales;
+- pedir evidencia por ID.
+
+Hermes no debe:
+
+- decidir estados de negocio por fuera de SmartPyme;
+- escribir directo en SQLite;
+- editar `data/jobs.db` o `data/clarifications.db`;
+- saltear MCP para modificar verdad operativa;
+- inventar jobs, hallazgos, evidencias o estados no devueltos por SmartPyme;
+- gobernar normalizacion, entity resolution, reconciliacion o action engine si no existe tool MCP activa para eso;
+- tratar skeletons, blueprints o documentos historicos como runtime real.
+
+## Lectura correcta del runtime
+
+La frase correcta ya no es "bridge stub". El bridge tiene tools reales.
+
+Matiz importante: algunas respuestas contemplan ausencia de datos, por ejemplo `get_evidence` devuelve `stub_explicit` si falta el evidence store. Eso no convierte al bridge completo en stub; indica una rama explicita de error/ausencia.
+
+### docs/ROADMAP_IMPLEMENTACION.md
+# Roadmap de implementacion
+
+Este roadmap congela el orden recomendado despues de la normalizacion documental. No habilita nuevas features por si mismo.
+
+## Cerrado / evidenciado
+
+1. Bridge MCP real entre Hermes y SmartPyme.
+2. Config de Hermes apuntando a `mcp_smartpyme_bridge.py`.
+3. `get_job_status` leyendo SQLite real.
+4. Persistencia minima de jobs en `data/jobs.db`.
+5. `orchestrate_job` persistiendo transiciones.
+6. Clarifications CRUD minimo en SQLite.
+7. `ingest_document` usando `DocumentIngestionService`.
+8. `get_evidence` leyendo EvidenceStore JSONL.
+9. Validacion E2E del bridge en `tests/e2e/validate_bridge_e2e.py`.
+10. RawDocument registry local en SQLite.
+11. Hash SHA-256 de archivo original antes de ingesta.
+12. Runner de factoria real en `scripts/hermes_factory_runner.py`, con cola activa `factory/ai_governance/tasks/*.yaml`, gate `factory/control/AUDIT_GATE.md` y status `factory/control/FACTORY_STATUS.md`.
+
+Nota de alineacion: `factory/hallazgos/*` no es la cola activa de `scripts/hermes_factory_runner.py`; permanece como antecedente o dominio pendiente de contrato operativo explicito.
+
+## Siguiente inmediato
+
+1. Limpieza repo sin borrar todavia.
+   - Marcar documentos y scripts por categoria.
+   - Proponer archivo controlado en `docs/archive/`.
+   - Separar runtime MCP de factory/skeletons.
+   - Actualizar README para no afirmar que no hay codigo funcional.
+
+2. OperationalPlanContract.
+   - Definido como contrato minimo declarativo en `app/contracts/operational_plan_contract.py`.
+
+3. `create_job` via MCP.
+   - Tool MCP minima implementada.
+   - Persiste job en `CREATED`, `skill_id` y payload del plan.
+
+## Wrapper de Operación Conversacional
+
+4. Implementar `HermesSmartPymeRuntime` wrapper. (Completado)
+   - Crear el wrapper siguiendo la estrategia definida en `docs/HERMES_SMARTPYME_RUNTIME_STRATEGY.md`.
+   - Utilizar la configuración segura canónica de `AIAgent`.
+   - Mapear `job_id` a `session_id`.
+   - Exponer una interfaz mínima para iniciar una conversación y recibir el resultado.
+
+## Pendiente medio plazo
+
+4. RAW/RAG local antes de Supabase.
+   - RawDocument registry local. Implementado minimo.
+   - Hash de archivo original + metadata minima. Implementado minimo.
+   - Batch ingestion.
+   - EvidenceRepository formal local.
+   - Retrieval local por texto/metadata.
+   - ExtractedFactCandidate.
+   - CanonicalRowCandidate.
+   - Repository interfaces.
+   - Supabase adapter.
+
+5. Ingesta batch.
+   - Extender ingesta de archivo unico a lotes controlados.
+   - Mantener trazabilidad de source_id, chunks y errores.
+
+6. Normalizacion / canonical rows.
+   - Separar texto/chunks de filas canonicas.
+   - Definir contratos de entrada/salida.
+   - No mezclar con reconciliation.
+
+7. Entity resolution.
+   - Resolver identidades de entidades antes de comparar.
+   - Integrar con clarifications cuando haya incertidumbre.
+
+8. Reconciliacion.
+   - Llevar el servicio existente a contrato operativo cerrado.
+   - Exponer por MCP solo cuando el flujo de datos anterior este definido.
+
+## Pendiente largo plazo
+
+9. Hallazgos.
+   - Consolidar termino de negocio "hallazgos".
+   - Definir repositorio, severidad, trazabilidad y ciclo de vida.
+   - Mantener `findings` solo donde sea nombre tecnico legado.
+
+10. Action engine.
+   - Acciones despues de hallazgos validados.
+   - No ejecutar acciones sin trazabilidad, autorizacion y estados cerrados.
+
+## RAW/RAG antes de Supabase
+
+Orden congelado:
+
+1. RawDocument registry local. Implementado minimo.
+2. Hash + metadata. Implementado minimo.
+3. Batch ingestion.
+4. EvidenceRepository formal local.
+5. Retrieval local por texto/metadata.
+6. ExtractedFactCandidate.
+7. CanonicalRowCandidate.
+8. Repository interfaces.
+9. Supabase adapter.
+
+## Regla de orden
+
+No avanzar a una capa si la anterior no tiene:
+
+- contrato minimo;
+- persistencia definida si corresponde;
+- tests de contrato;
+- documentacion operativa;
+- criterio de bloqueo ante incertidumbre.
+
+### docs/RAG_RETRIEVAL_PLAN.md
+# RAG retrieval plan SmartPyme
+
+## Estado actual
+
+SmartPyme recupera evidencia principalmente por `evidence_id` mediante `mcp_smartpyme_get_evidence`, leyendo `EvidenceStore` JSONL. La ingesta actual genera chunks y citation index local.
+
+Tambien existe `RetrievalService`, con BM25 de LangChain si esta disponible y fallback por solapamiento de tokens en memoria. No esta expuesto por MCP.
+
+## Retrieval actual
+
+| modo | estado | archivo | observacion |
+|---|---|---|---|
+| Por `evidence_id` | implemented | `mcp_smartpyme_bridge.py` | Lee `document_chunks/chunks.jsonl`. |
+| Citation index | partial | `services/document_ingestion_service.py` | Genera `citation_index/citations.json`. |
+| Texto en memoria | partial | `services/retrieval_service.py` | No persiste indice. |
+| Metadata filter | pending | no evidenciado | Requiere metadata contract. |
+| Embeddings | pending | protocolo `VectorIndex` | No hay adapter concreto. |
+| Reranking | pending | no evidenciado | Futuro. |
+
+## Busqueda futura por texto
+
+1. Cargar EvidenceChunks desde repository local.
+2. Filtrar por `job_id`, `plan_id` y metadata si existen.
+3. Buscar por texto con BM25/fallback local.
+4. Devolver `RetrievalResult` con `evidence_id`, score y cita.
+5. Si score insuficiente, devolver fallback de evidencia insuficiente.
+
+## Busqueda futura por metadata
+
+Filtros previstos:
+
+- `job_id`
+- `plan_id`
+- `cliente_id`
+- fecha o periodo
+- tipo de documento
+- filename
+- page
+- file_hash_sha256 / source_hash
+- entity_type cuando exista canonical row
+
+## Embeddings futuros
+
+No se incorporan Chroma/Qdrant ahora. Orden correcto:
+
+1. EvidenceRepository local.
+2. Metadata y hash estables.
+3. Retrieval local por texto/metadata.
+4. Metricas de recall sobre consultas reales.
+5. Adapter de embeddings.
+6. Vector DB local.
+7. Supabase/Storage/vector adapter si hace falta.
+
+## Reranking futuro
+
+Reranking solo aplica cuando:
+
+- ya existe retrieval local estable;
+- hay mas de un candidato relevante;
+- hay set de evaluacion con citas esperadas;
+- el costo/latencia esta medido.
+
+## Fallback por evidencia insuficiente
+
+Respuesta canonica:
+
+`No tengo evidencia documental suficiente para responder con certeza.`
+
+Accion:
+
+- Si la falta de evidencia bloquea una decision, crear clarification.
+- Si es consulta exploratoria, devolver vacio trazable sin inventar.
+
+## Limites anti-alucinacion
+
+- El LLM puede resumir evidencia recuperada.
+- El LLM no crea facts sin schema validable.
+- El LLM no hace aritmetica.
+- La suma, diferencia, conciliacion y severidad van por core deterministico.
+- Toda afirmacion factica debe tener cita.
+- Si no hay cita, no se acepta como output final.
+
+## Validacion de citas
+
+Cada respuesta grounded debe poder reconstruirse desde:
+
+- `evidence_id`
+- `filename`
+- `page`
+- `excerpt`
+- `source_id` o `document_id`
+- `job_id` y `plan_id` cuando existan
+
+Un output sin cita o con cita no recuperable debe bloquearse o derivar a clarification.
+
+### docs/RAW_RAG_INGESTION_ARCHITECTURE.md
+# RAW/RAG ingestion architecture para SmartPyme
+
+## Veredicto de adaptacion
+
+El material RAG auxiliar aporta buenas reglas de ingestion, metadata, retrieval y anti-alucinacion, pero no gobierna SmartPyme. SmartPyme mantiene su arquitectura:
+
+`Hermes Agent -> MCP Bridge -> SmartPyme OS -> Jobs / Evidence / Clarifications -> Hallazgos`
+
+La adaptacion correcta es local y progresiva: fortalecer EvidenceStore actual antes de pensar en Supabase, Storage externo o vector DB.
+
+## Flujo SmartPyme
+
+```text
+RAW document
+-> RawDocument
+-> DocumentRecord
+-> EvidenceChunk
+-> RetrievalResult
+-> ExtractedFactCandidate
+-> CanonicalRowCandidate
+-> Entity Resolution
+-> Reconciliacion
+-> Hallazgos
+```
+
+## Diferencias obligatorias
+
+| concepto | que es | que no es | estado actual |
+|---|---|---|---|
+| Documento original | Archivo recibido tal como llega al sistema. | No es evidencia atomica ni fact. | Pendiente como registry formal. |
+| RawDocument | Registro local del documento original con hash SHA-256 de archivo, ruta, job, plan y metadata. | No contiene interpretacion de negocio. | Implementado minimo en SQLite. |
+| DocumentRecord | Resultado parseado del documento. | No es chunk recuperable por si solo. | Parcial via `SourceDocument`. |
+| EvidenceChunk | Fragmento recuperable con texto, pagina y metadata. | No es fact de negocio validado. | Parcial via `DocumentChunk`. |
+| Evidence / evidence_id | Identificador trazable de un chunk usado como prueba. | No es conclusion ni hallazgo. | Implementado como `chunk_id`. |
+| RetrievalResult | Resultado de busqueda sobre evidencia. | No crea facts. | Parcial via `RetrievalHit`. |
+| ExtractedFactCandidate | Candidato estructurado extraido desde evidencia. | No es fila canonica ni dato final. | Pendiente. |
+| CanonicalRowCandidate | Fila normalizada candidata para comparacion. | No debe reconciliar entidades ambiguas. | Pendiente. |
+
+## Reglas
+
+1. RAG recupera evidencia, no crea facts.
+2. LLM no genera facts sin schema validable.
+3. Todo fact candidate debe apuntar a `evidence_id`.
+4. Aritmetica y reconciliacion van por core deterministico.
+5. Si falta evidencia suficiente, se responde con fallback y se genera clarification si aplica.
+6. No hay hallazgo sin diferencia cuantificada.
+7. No hay accion sin confirmacion.
+8. Hermes conversa y llama MCP; SmartPyme persiste y decide estados.
+
+## Flujo operativo con Hermes
+
+1. Hermes recibe pedido del duenio.
+2. Hermes llama `mcp_smartpyme_create_job` si hay objetivo operativo.
+3. Hermes llama `mcp_smartpyme_ingest_document` para documentos locales.
+4. SmartPyme registra `RawDocument` en SQLite antes de parsear.
+5. SmartPyme guarda `DocumentRecord` y `EvidenceChunk` en EvidenceStore local.
+6. Hermes puede pedir evidencia puntual con `mcp_smartpyme_get_evidence`.
+7. En fases futuras, SmartPyme recuperara evidencia por texto/metadata y propondra fact candidates.
+8. SmartPyme bloqueara ante incertidumbre usando clarifications.
+
+## Que queda local ahora
+
+- Jobs SQLite.
+- Clarifications SQLite.
+- RawDocument registry SQLite (`SMARTPYME_RAW_DOCUMENTS_DB`).
+- EvidenceStore JSONL.
+- Raw documents JSONL.
+- Chunks JSONL.
+- Citation index JSON.
+- Retrieval lexical/BM25 opcional en memoria.
+
+## Que queda para despues
+
+| destino futuro | que iria ahi | condicion previa |
+|---|---|---|
+| Supabase | registros normalizados, jobs, documentos, hallazgos, auditoria | interfaces locales estables |
+| Storage | documentos originales binarios | RawDocument registry local y reglas de retencion cerradas |
+| Vector DB | embeddings de EvidenceChunk | retrieval local y metadata contract cerrados |
+| Reranker | reordenamiento top-k | queries y metricas reales |
+| Embeddings | busqueda semantica | corpus limpio y hashes idempotentes |
+
+## Adaptacion del material RAG
+
+| elemento auxiliar | decision SmartPyme |
+|---|---|
+| Docling/OCR | Mantener como parser/fallback, ya existe base parcial. |
+| Metadata | Incorporar progresivamente con hash de archivo y tipo documental. |
+| Chunking | Mantener actual, formalizar EvidenceChunk. |
+| Chroma/Qdrant | No ahora; fase futura despues de EvidenceRepository local. |
+| Streamlit/FastAPI | No aplica al runtime actual Hermes/MCP. |
+| Grounded prompting | Convertir en reglas anti-alucinacion y validacion de citas. |
+| Auditor financiero | Adaptar como core deterministico: reconciliation y hallazgos. |
+| LangChain/LangGraph/CrewAI | No incorporar como dependencia obligatoria. |
+
+### docs/factory/PYTHON_ENVIRONMENT_CONTRACT.md
+# Python Environment Contract
+
+Estado: CANONICO v1
+
+Este contrato declara el entorno minimo para validar SmartPyme Factory.
+
+## Comando Python
+
+El comando canonico para automatizacion es:
+
+```bash
+python
+```
+
+El entorno debe garantizar que `python` existe y apunta a Python 3.11 o superior.
+Si el sistema solo provee `python3`, se debe activar un entorno virtual del repo o
+crear un alias/symlink operativo antes de ejecutar validaciones canonicas.
+
+## Dependencias minimas
+
+Las dependencias versionadas son:
+
+- `polars>=1.0`
+- `pytest>=8.0`
+- `ruff>=0.8`
+
+Fuente de verdad:
+
+- `pyproject.toml`
+- `requirements-dev.txt`
+
+## Instalacion canonica
+
+```bash
+scripts/install_python_environment.sh
+```
+
+El script crea o reutiliza `.venv`, instala `requirements-dev.txt` y verifica que
+`.venv/bin/python` existe como comando `python` dentro del entorno activado.
+
+Para operar manualmente:
+
+```bash
+source .venv/bin/activate
+```
+
+## Verificacion canonica
+
+```bash
+scripts/check_python_environment.sh
+python --version
+python3 --version
+python -m pytest --version
+python -m ruff --version
+python -c "import polars; print(polars.__version__)"
+python -m pytest tests/factory/test_build_audit_context.py -q
+python -m py_compile scripts/build_audit_context.py
+python scripts/build_audit_context.py --output /tmp/smartpyme_audit_context_env_test.txt
+```
+
+## Politica fail-closed
+
+Si `python`, `pytest`, `ruff` o `polars` no estan disponibles, el ciclo debe cerrar
+como `BLOCKED_ENVIRONMENT_CONTRACT` o `BLOCKED_ENVIRONMENT_INSTALL`, incluyendo el
+comando fallido y la causa exacta observada.
+
+### docs/factory/CODEX_BUILDER_INTEGRATION.md
+# Codex Builder Integration — SmartPyme Factory
+
+## Objetivo
+
+Integrar Codex como Builder formal dentro del loop de factoría SmartPyme sin convertirlo en autoridad arquitectónica.
+
+## Modelo correcto
+
+```text
+ChatGPT director técnico externo
+→ escribe/ajusta NEXT_CYCLE.md y contratos
+→ Hermes lee el repo y orquesta
+→ Codex ejecuta construcción o review acotado
+→ tests/evidencia validan
+→ Hermes registra resultado
+```
+
+## Rol de Codex
+
+Codex es un Builder / Reviewer de código.
+
+Puede:
+- modificar archivos dentro del alcance de una tarea;
+- proponer patches;
+- correr comandos de verificación;
+- ejecutar tests acotados;
+- devolver diff, evidencia y bloqueo si falta contexto.
+
+No puede:
+- decidir roadmap;
+- cambiar arquitectura canónica;
+- tocar múltiples frentes en un ciclo;
+- declarar éxito sin evidencia;
+- inventar rutas, dependencias, APIs o contratos;
+- usar memoria conversacional como estado.
+
+## Contrato de entrada para Codex
+
+Toda tarea enviada a Codex debe tener este formato mínimo:
+
+```yaml
+task_id: string
+role: codex_builder
+objective: string
+allowed_files:
+  - path
+forbidden_files:
+  - path
+acceptance_criteria:
+  - criterion
+validation_commands:
+  - command
+evidence_required:
+  - factory/evidence/<task_id>/cycle.md
+  - factory/evidence/<task_id>/commands.txt
+  - factory/evidence/<task_id>/git_diff.patch
+  - factory/evidence/<task_id>/tests.txt
+```
+
+## Contrato de salida de Codex
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+```
+
+Estados válidos:
+
+```text
+CORRECTO
+NO_VALIDADO
+BLOCKED
+INCOMPLETO
+```
+
+## Anti-alucinación
+
+Codex debe bloquear si:
+
+- no encuentra un archivo requerido;
+- no existe contrato de entorno para ejecutar comandos;
+- una dependencia no está declarada;
+- el alcance exige tocar core sin autorización;
+- no puede generar evidencia reproducible;
+- el test no se puede ejecutar.
+
+Mensaje obligatorio:
+
+```text
+BLOCKED: falta contexto verificable
+```
+
+## Modos de integración admitidos
+
+### Fase 1 — Contrato por repo
+
+Hermes crea o consume una tarea en `factory/control/NEXT_CYCLE.md` o `factory/tasks/` con formato compatible con Codex.
+
+Codex trabaja sobre el repo usando su conexión GitHub/desktop y devuelve cambios por commit/PR.
+
+### Fase 2 — MCP/CLI bridge
+
+Crear herramientas controladas:
+
+```text
+codex_create_task
+codex_run_review
+codex_check_status
+codex_fetch_result
+```
+
+Cada tool debe devolver:
+
+```json
+{
+  "task_id": "...",
+  "status": "CORRECTO|BLOCKED|NO_VALIDADO|INCOMPLETO",
+  "evidence_path": "factory/evidence/...",
+  "changed_files": [],
+  "summary": "..."
+}
+```
+
+### Fase 3 — Pool multiagente
+
+Hermes asigna tareas a:
+
+```text
+Architect → Builder(Codex) → Auditor → Tests
+```
+
+Ningún agente valida su propio trabajo.
+
+## Regla de cierre
+
+Codex solo puede cerrar como `CORRECTO` si hay:
+
+- archivos reales modificados;
+- verificación física;
+- test o bloqueo justificado;
+- evidencia en `factory/evidence/<task_id>/`;
+- diff revisable.
+
+Sin eso:
+
+```text
+NO_VALIDADO
+```
+
+## Prioridad actual
+
+Antes de usar Codex sobre features de negocio, debe cerrarse:
+
+1. contrato de tareas Codex;
+2. template de tarea;
+3. mecanismo de evidencia;
+4. integración con NEXT_CYCLE;
+5. contrato de entorno Python;
+6. Ruff/Pytest canónicos.
+
+### factory/control/NEXT_CYCLE.md
+OBJETIVO CICLO ACTUAL:
+
+Implementar core-reconciliacion-v1.
+
+TAREA:
+1. Implementar primer motor deterministico de reconciliacion entre dos fuentes CSV.
+2. Crear o modificar solo los archivos minimos necesarios para esta unidad.
+3. Agregar tests especificos para validar una diferencia numerica por entidad.
+4. Generar evidencia en factory/evidence/core-reconciliacion-v1/ o en el directorio de evidencia del runner.
+5. Cerrar con git status, git diff, tests y decision verificable.
+
+ALCANCE AUTORIZADO:
+- Se autoriza tocar codigo de core o modulo equivalente si es necesario para implementar la reconciliacion.
+- Se autoriza crear tests especificos.
+- Se autoriza definir estructuras minimas de salida tipo hallazgo.
+
+RESTRICCIONES:
+- No usar IA para logica core.
+- No hacer refactor global.
+- No tocar integraciones externas.
+- No mezclar con Telegram, reporting ni systemd.
+- Mantener salida de negocio con entidad, diferencia cuantificada y fuentes.
+
+CRITERIO DE CIERRE:
+- input: 2 CSV.
+- output: diferencias por entidad.
+- al menos un test pasa.
+- no hay cambios fuera del alcance.
+- evidencia real guardada.
+
+### factory/control/FACTORY_STATUS.md
+# FACTORY STATUS
+
+updated_at: 2026-04-28T03:10:52.267817+00:00
+last_cycle_result: RUNNING
+audit_gate: RUNNING
+last_error: task=factory/ai_governance/tasks/kernel_total_audit_001.yaml

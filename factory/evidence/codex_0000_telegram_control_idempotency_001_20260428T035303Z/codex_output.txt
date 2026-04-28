@@ -1,0 +1,299 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd237-b3bb-72a0-aca9-98e8eaa1a48e
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: telegram_control_idempotency_001
+mode: governance
+status: pending
+human_required: false
+priority: 0
+objective: >
+  Corregir la gobernanza de botones Telegram para que ningun boton pueda iterar por error.
+  El boton Corregir debe ser idempotente: si gate ya esta REJECTED, no debe volver a escribir gate
+  ni generar nuevos mensajes OK repetidos. Si gate esta RUNNING, debe ser inofensivo. Ademas, el
+  despliegue debe contemplar recarga segura del control Telegram, porque el proceso vivo puede quedar
+  ejecutando codigo anterior aunque el repo ya tenga fix.
+allowed_files:
+  - scripts/telegram_factory_control.py
+  - scripts/telegram_trigger_cycle.py
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - tests/factory/test_telegram_control_guards.py
+  - docs/factory/FACTORY_REPO_CLEAN_CONTRACT.md
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+  - factory/control/**
+acceptance_criteria:
+  - Corregir con gate RUNNING responde mensaje inofensivo y no cambia gate.
+  - Corregir con gate REJECTED responde que ya esta marcado para correccion y no cambia gate.
+  - Corregir solo escribe REJECTED si gate es WAITING_AUDIT y existe last_task valido.
+  - Seguir con gate RUNNING responde mensaje inofensivo y no despacha ciclo.
+  - El sistema documenta o implementa recarga segura del proceso telegram_factory_control despues de pull.
+  - No se toca core de negocio.
+required_tests:
+  - python3 -m py_compile scripts/telegram_factory_control.py
+  - python3 -m py_compile scripts/telegram_trigger_cycle.py
+  - python3 -m py_compile scripts/hermes_factory_runner.py
+  - python3 -m pytest tests/factory/test_telegram_control_guards.py -q
+block_policy:
+  missing_pytest: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+  dirty_repo: BLOCKED_REPO_DIRTY
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Voy a arrancar por el contrato operativo del repo (`GPT.md`, `CODEX.md`) y por el estado git. La política de esta tarea bloquea si el repo está sucio, así que eso decide si puedo escribir o no.
+exec
+/bin/bash -lc "sed -n '1,220p' GPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT — ENTRADA OBLIGATORIA SMARTPYME
+
+Estado: CANONICO v1
+
+Todo chat nuevo de GPT que participe en SmartPyme debe empezar por este archivo.
+
+## Rol activo
+
+GPT actua como Director-Auditor externo de SmartPyme Factory.
+
+## Orden obligatorio de lectura
+
+1. `GPT.md`
+2. `AGENTS.md`
+3. `docs/factory/GPT_DIRECTOR_AUDITOR.md`
+4. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`
+5. `factory/ai_governance/skills/gpt_director_auditor.yaml`
+6. `factory/ai_governance/taskspec.schema.json`
+7. `factory/control/AUDIT_GATE.md`, si existe
+8. `factory/control/FACTORY_STATUS.md`, si existe
+9. `factory/control/NEXT_CYCLE.md`, si existe
+10. evidencia reciente en `factory/evidence/`
+
+## Conducta esperada
+
+- No responder desde memoria conversacional.
+- Leer estado real del repo antes de decidir.
+- Auditar evidencia antes de aprobar.
+- Proponer una sola siguiente tarea.
+- Escribir specs concretas y ejecutables.
+- Mantener foco en SmartPyme Factory.
+
+## Prohibiciones
+
+- No inventar estado del repo.
+- No aprobar sin evidencia.
+- No mezclar frentes.
+- No tocar core sin task spec explicita.
+- No entregar placeholders cuando se puede leer el repo.
+
+## Prompt minimo para chat nuevo
+
+Lee `GPT.md` del repo SmartPyme y opera como GPT Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+
+exec
+/bin/bash -lc 'pwd && git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+ M factory/ai_governance/tasks/kernel_total_audit_001.yaml
+ M factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/PRIORITY_BOARD.md
+?? factory/evidence/codex_kernel_total_audit_001_20260428T031607Z/
+?? factory/evidence/codex_kernel_total_audit_001_20260428T032927Z/
+?? factory/evidence/codex_product_final_concept_audit_001_20260428T034235Z/
+?? factory/evidence/kernel_total_audit_001/
+?? factory/evidence/product_final_concept_audit_001/
+?? factory/reports/
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+codex
+El repo está sucio antes de tocar nada, y la propia tarea define `dirty_repo: BLOCKED_REPO_DIRTY`. No voy a modificar archivos ni crear evidencia porque eso violaría el bloqueo y además `factory/evidence/**` está prohibido para esta unidad.
+exec
+/bin/bash -lc 'test -f AGENTS.md; echo AGENTS_md_exists=$?; ls -la AGENTS.md CODEX.md GPT.md' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+AGENTS_md_exists=0
+-rw-r--r-- 1 neoalmasana neoalmasana 7727 Apr 28 01:34 AGENTS.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1377 Apr 27 13:57 CODEX.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1339 Apr 28 01:34 GPT.md
+
+exec
+/bin/bash -lc 'git diff --stat' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ factory/ai_governance/tasks/kernel_total_audit_001.yaml          | 2 +-
+ factory/ai_governance/tasks/product_final_concept_audit_001.yaml | 2 +-
+ factory/control/.telegram_control_offset                         | 2 +-
+ factory/control/AUDIT_GATE.md                                    | 6 +++---
+ factory/control/PRIORITY_BOARD.md                                | 2 +-
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+codex
+VEREDICTO  
+BLOCKED_REPO_DIRTY
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+Ejecutado en `/opt/smartpyme-factory/repos/SmartPyme`.
+
+`git status --short` muestra cambios previos en:
+```text
+M factory/ai_governance/tasks/kernel_total_audit_001.yaml
+M factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+M factory/control/.telegram_control_offset
+M factory/control/AUDIT_GATE.md
+M factory/control/PRIORITY_BOARD.md
+?? factory/evidence/...
+?? factory/reports/
+```
+
+TESTS  
+No ejecutados. La tarea exige bloquear ante repo sucio antes de modificar o validar.
+
+EVIDENCIA  
+Comandos ejecutados:
+```bash
+pwd && git status --short
+sed -n '1,220p' GPT.md
+sed -n '1,220p' CODEX.md
+test -f AGENTS.md
+ls -la AGENTS.md CODEX.md GPT.md
+git diff --stat
+```
+
+DIFF  
+No generado por mí. No hice cambios.
+
+BLOQUEOS  
+`BLOCKED_REPO_DIRTY`: el `block_policy` de la tarea exige bloquear si el repo está sucio.
+
+RIESGOS  
+Hay cambios previos en `factory/control/**` y evidencia no trackeada. Tocar los archivos permitidos ahora mezclaría frentes y rompería la trazabilidad del ciclo.
+2026-04-28T03:53:03.224454Z ERROR codex_core::session: failed to record rollout items: thread 019dd237-b3bb-72a0-aca9-98e8eaa1a48e not found
+tokens used
+5,020
+VEREDICTO  
+BLOCKED_REPO_DIRTY
+
+ARCHIVOS_MODIFICADOS  
+Ninguno.
+
+VERIFICACION_FISICA  
+Ejecutado en `/opt/smartpyme-factory/repos/SmartPyme`.
+
+`git status --short` muestra cambios previos en:
+```text
+M factory/ai_governance/tasks/kernel_total_audit_001.yaml
+M factory/ai_governance/tasks/product_final_concept_audit_001.yaml
+M factory/control/.telegram_control_offset
+M factory/control/AUDIT_GATE.md
+M factory/control/PRIORITY_BOARD.md
+?? factory/evidence/...
+?? factory/reports/
+```
+
+TESTS  
+No ejecutados. La tarea exige bloquear ante repo sucio antes de modificar o validar.
+
+EVIDENCIA  
+Comandos ejecutados:
+```bash
+pwd && git status --short
+sed -n '1,220p' GPT.md
+sed -n '1,220p' CODEX.md
+test -f AGENTS.md
+ls -la AGENTS.md CODEX.md GPT.md
+git diff --stat
+```
+
+DIFF  
+No generado por mí. No hice cambios.
+
+BLOQUEOS  
+`BLOCKED_REPO_DIRTY`: el `block_policy` de la tarea exige bloquear si el repo está sucio.
+
+RIESGOS  
+Hay cambios previos en `factory/control/**` y evidencia no trackeada. Tocar los archivos permitidos ahora mezclaría frentes y rompería la trazabilidad del ciclo.
