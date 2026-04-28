@@ -1,57 +1,26 @@
-name: Hermes Factory Cycle
+name: Hermes Factory Cycle (DEPRECATED)
+
+# DEPRECATED por auditoría P0 — no usar runner legacy.
+# Este workflow queda desactivado porque el runtime vigente es Hermes Gateway externo
+# y el repo SmartPyme no debe ejecutar scripts/hermes_factory_runner.py.
+# Ver docs/factory/RUNTIME_VIGENTE.md.
 
 on:
   workflow_dispatch:
     inputs:
-      mode:
-        description: "Runner mode"
-        required: true
-        default: "once"
-        type: choice
-        options:
-          - once
       reason:
-        description: "Why this cycle is being triggered"
+        description: "Why this deprecated workflow was inspected"
         required: false
-        default: "manual dispatch"
+        default: "deprecated workflow inspection"
 
 jobs:
-  run-hermes-factory-cycle:
-    runs-on: self-hosted
-    timeout-minutes: 90
-    concurrency:
-      group: hermes-factory-cycle
-      cancel-in-progress: false
-
+  deprecated-hermes-factory-cycle:
+    runs-on: ubuntu-latest
     steps:
-      - name: Precheck workspace
+      - name: Deprecated by P0 audit
         shell: bash
         run: |
-          set -euo pipefail
-          echo "PWD=$(pwd)"
-          command -v git
-          command -v python3
-          /opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes --help | head -5
-
-      - name: Checkout SmartPyme
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run one Hermes SmartPyme Factory cycle
-        shell: bash
-        run: |
-          set -euo pipefail
-          git status --short
-          HERMES_BIN=/opt/smartpyme-factory/repos/hermes-agent/.venv/bin/hermes python3 scripts/hermes_factory_runner.py --repo "$GITHUB_WORKSPACE" --once
-
-      - name: Upload runner logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: hermes-runner-logs
-          path: |
-            runner.log
-            factory/runner_logs/*.json
-            factory/evidence/**
-          if-no-files-found: ignore
+          echo "DEPRECATED por auditoría P0 — no usar runner legacy"
+          echo "Runtime vigente: Hermes Gateway externo + factory/hermes_control_cli.py"
+          echo "Ver docs/factory/RUNTIME_VIGENTE.md"
+          exit 1
