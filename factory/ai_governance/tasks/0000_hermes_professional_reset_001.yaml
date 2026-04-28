@@ -1,0 +1,36 @@
+task_id: hermes_professional_reset_001
+mode: governance
+status: pending
+priority: 0
+objective: >
+  Reorganizar la factoria SmartPyme para operar bajo modelo Hermes profesional.
+  Deprecar control por scripts caseros y establecer capas REPO_CLEAN, ENVIRONMENT,
+  TELEGRAM idempotente, SKILLS y pipeline de auditoria.
+allowed_files:
+  - docs/factory/HERMES_PROFESSIONAL_RESET_PLAN.md
+  - scripts/hermes_factory_runner.py
+  - scripts/telegram_factory_control.py
+  - scripts/telegram_trigger_cycle.py
+  - factory/telegram_notify.py
+  - factory/ai_governance/tasks/*.yaml
+  - tests/factory/**
+  - .gitignore
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+acceptance_criteria:
+  - REPO_CLEAN bloquea ciclos si repo no esta limpio
+  - Botones Telegram no generan loops
+  - Cola no ejecuta tareas si guard falla
+  - No se rompe evidencia existente
+  - No se modifica core de negocio
+required_tests:
+  - python3 -m py_compile scripts/hermes_factory_runner.py
+  - python3 -m py_compile scripts/telegram_factory_control.py
+  - python3 -m py_compile scripts/telegram_trigger_cycle.py
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
