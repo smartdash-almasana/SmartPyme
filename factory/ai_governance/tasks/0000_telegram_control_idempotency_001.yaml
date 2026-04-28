@@ -1,0 +1,39 @@
+task_id: telegram_control_idempotency_001
+mode: governance
+status: pending
+human_required: false
+priority: 0
+objective: >
+  Corregir la gobernanza de botones Telegram para que ningun boton pueda iterar por error.
+  El boton Corregir debe ser idempotente: si gate ya esta REJECTED, no debe volver a escribir gate
+  ni generar nuevos mensajes OK repetidos. Si gate esta RUNNING, debe ser inofensivo. Ademas, el
+  despliegue debe contemplar recarga segura del control Telegram, porque el proceso vivo puede quedar
+  ejecutando codigo anterior aunque el repo ya tenga fix.
+allowed_files:
+  - scripts/telegram_factory_control.py
+  - scripts/telegram_trigger_cycle.py
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - tests/factory/test_telegram_control_guards.py
+  - docs/factory/FACTORY_REPO_CLEAN_CONTRACT.md
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+  - factory/control/**
+acceptance_criteria:
+  - Corregir con gate RUNNING responde mensaje inofensivo y no cambia gate.
+  - Corregir con gate REJECTED responde que ya esta marcado para correccion y no cambia gate.
+  - Corregir solo escribe REJECTED si gate es WAITING_AUDIT y existe last_task valido.
+  - Seguir con gate RUNNING responde mensaje inofensivo y no despacha ciclo.
+  - El sistema documenta o implementa recarga segura del proceso telegram_factory_control despues de pull.
+  - No se toca core de negocio.
+required_tests:
+  - python3 -m py_compile scripts/telegram_factory_control.py
+  - python3 -m py_compile scripts/telegram_trigger_cycle.py
+  - python3 -m py_compile scripts/hermes_factory_runner.py
+  - python3 -m pytest tests/factory/test_telegram_control_guards.py -q
+block_policy:
+  missing_pytest: BLOCKED_ENVIRONMENT_CONTRACT_MISSING
+  dirty_repo: BLOCKED_REPO_DIRTY
