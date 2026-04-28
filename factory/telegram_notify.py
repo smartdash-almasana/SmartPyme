@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import urllib.parse
 import urllib.request
@@ -16,6 +17,27 @@ def _reserved_for_gpt(status: str, details: str = "") -> str:
     return "\n\nReservado a GPT:\n" + "\n".join(f"- {line}" for line in lines[:10])
 
 
+def _decision_keyboard() -> str:
+    return json.dumps(
+        {
+            "inline_keyboard": [
+                [
+                    {"text": "✅ Aprobar y seguir", "callback_data": "GO"},
+                    {"text": "🔁 Rechazar y corregir", "callback_data": "FIX"},
+                ],
+                [
+                    {"text": "⏸️ Pausar", "callback_data": "STOP"},
+                    {"text": "📊 Ver estado", "callback_data": "STATUS"},
+                ],
+            ]
+        }
+    )
+
+
+def _needs_decision_buttons(status_key: str) -> bool:
+    return status_key in {"AUDIT_BLOCKED", "CYCLE_OK", "CYCLE_FAIL", "AUTO_PUSH_OK"}
+
+
 def format_cycle_message(status: str, details: str = "") -> str:
     status_key = status.strip().upper()
 
@@ -30,12 +52,12 @@ def format_cycle_message(status: str, details: str = "") -> str:
             "SmartPyme Factory esta pausada y necesita una orden tuya.\n\n"
             "No tengo suficiente informacion en este aviso para decirte si conviene aprobar o rechazar. "
             "Este mensaje solo confirma que la factoria esta detenida de forma segura.\n\n"
-            "Responde una de estas opciones:\n"
-            "APROBAR: si ya revisaste el ultimo ciclo y queres que siga con la proxima tarea.\n"
-            "RECHAZAR: si el ultimo ciclo estuvo mal y queres que se corrija.\n"
-            "PAUSAR: si queres que no haga nada por ahora.\n"
-            "CONTEXTO: si queres recibir un resumen tecnico para pasarselo a GPT antes de decidir.\n\n"
-            "Recomendacion si no estas seguro: responde CONTEXTO.\n\n"
+            "Toca un boton:\n"
+            "✅ Aprobar y seguir: si ya revisaste el ultimo ciclo y queres que continue.\n"
+            "🔁 Rechazar y corregir: si el ultimo ciclo estuvo mal.\n"
+            "⏸️ Pausar: si queres que no haga nada por ahora.\n"
+            "📊 Ver estado: si queres mas informacion antes de decidir.\n\n"
+            "Recomendacion si no estas seguro: toca Ver estado.\n\n"
             "Estado seguro: no se ejecuto ninguna tarea nueva, no corrio Codex y no se tocaron archivos."
         )
     elif status_key == "TASK_DISPATCH":
@@ -51,21 +73,17 @@ def format_cycle_message(status: str, details: str = "") -> str:
     elif status_key == "CYCLE_OK":
         text = (
             "SmartPyme Factory termino el ciclo sin errores.\n\n"
-            "Ahora responde una de estas opciones:\n"
-            "APROBAR: aceptar el ciclo y permitir que siga.\n"
-            "RECHAZAR: reabrir la ultima tarea para corregirla.\n"
-            "PAUSAR: dejar la factoria detenida.\n"
-            "CONTEXTO: pedir resumen tecnico para revisar con GPT."
+            "Toca un boton para decidir si continua, corrige o queda pausada."
         )
     elif status_key == "CYCLE_FAIL":
         text = (
             "SmartPyme Factory encontro un problema durante el ciclo.\n\n"
-            "Respuesta recomendada: CONTEXTO o PAUSAR. No aprobar sin revisar evidencia."
+            "No conviene aprobar sin revisar. Recomendacion: Ver estado o Pausar."
         )
     elif status_key == "AUTO_PUSH_OK":
         text = (
             "SmartPyme Factory guardo cambios en el repo.\n\n"
-            "Hay un nuevo commit para revisar. Si no sabes si aprobar, responde CONTEXTO."
+            "Hay un nuevo commit para revisar. Usa los botones para decidir el proximo paso."
         )
     elif status_key == "NO_TASK":
         text = (
@@ -75,24 +93,28 @@ def format_cycle_message(status: str, details: str = "") -> str:
     else:
         text = (
             "SmartPyme Factory envio una actualizacion.\n\n"
-            "Si no sabes que decidir, responde CONTEXTO y pasa ese resumen a GPT."
+            "La parte reservada a GPT contiene el detalle tecnico para interpretar el evento."
         )
 
     return text + _reserved_for_gpt(status_key, details)
 
 
-def send_telegram_message(text: str) -> bool:
+def send_telegram_message(text: str, reply_markup: str | None = None) -> bool:
     token = _env("TELEGRAM_BOT_TOKEN")
     chat_id = _env("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
         print("TELEGRAM_NOTIFY_SKIPPED missing env")
         return False
 
-    data = urllib.parse.urlencode({
+    payload = {
         "chat_id": chat_id,
         "text": text[:3900],
         "disable_web_page_preview": "true",
-    }).encode("utf-8")
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+
+    data = urllib.parse.urlencode(payload).encode("utf-8")
 
     req = urllib.request.Request(
         "https://api.telegram.org/bot" + token + "/sendMessage",
@@ -109,4 +131,6 @@ def send_telegram_message(text: str) -> bool:
 
 
 def notify_cycle_result(status: str, details: str = "") -> bool:
-    return send_telegram_message(format_cycle_message(status, details))
+    status_key = status.strip().upper()
+    buttons = _decision_keyboard() if _needs_decision_buttons(status_key) else None
+    return send_telegram_message(format_cycle_message(status, details), buttons)
