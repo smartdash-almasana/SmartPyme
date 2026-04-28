@@ -1,0 +1,121 @@
+task_id: kernel_total_audit_001
+mode: architecture_engineering_audit
+status: pending
+human_required: false
+product_frame: >
+  SmartPyme es el sistema operativo de interpretacion, calculo y toma de decisiones
+  para pequeñas y medianas empresas. La factoria debe auditar el kernel actual contra
+  el producto final esperado, no contra un MVP aislado.
+
+objective: >
+  Ejecutar una auditoria total del kernel/repositorio SmartPyme para entender arquitectura,
+  pipeline, servicios existentes, huecos de producto, deuda tecnica, errores recurrentes,
+  estado de tests y distancia real contra el producto final.
+
+product_final_target:
+  - reparar y analizar Excel de clientes
+  - automatizar tareas administrativas
+  - interpretar stock, ventas, compras, pagos y documentacion
+  - leer documentacion masiva con evidencia trazable
+  - reconciliar fuentes distribuidas
+  - generar hallazgos accionables con entidad, diferencia cuantificada y fuente
+  - pedir clarificaciones ante incertidumbre
+  - recomendar acciones sin ejecutarlas sin confirmacion humana
+
+agents:
+  hermes: coordina la tarea y consolida evidencia
+  gemini: analiza arquitectura, dominio, roadmap y gaps conceptuales
+  codex: inspecciona codigo, imports, tests, linters, endpoints y contratos reales
+
+scope:
+  include:
+    - docs/**
+    - app/**
+    - core/**
+    - services/**
+    - factory/**
+    - scripts/**
+    - tests/**
+    - mcp_smartpyme_bridge.py
+  exclude:
+    - .git/**
+    - .venv/**
+    - __pycache__/**
+    - data/*.db
+    - evidence_store/**
+
+allowed_files:
+  - factory/reports/kernel_total_audit_001.md
+  - factory/reports/kernel_total_audit_001.json
+  - factory/evidence/kernel_total_audit_001/**
+
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - scripts/**
+  - tests/**
+  - mcp_smartpyme_bridge.py
+  - factory/control/**
+
+forbidden_actions:
+  - modificar codigo fuente
+  - cambiar gate
+  - ejecutar Codex builder para parchear codigo
+  - borrar evidencia
+  - modificar bases SQLite
+  - hacer migraciones
+  - crear features
+
+questions_to_answer:
+  - cual es el mapa real del kernel SmartPyme hoy
+  - que capas estan implementadas, parciales, conceptuales o ausentes
+  - que servicios existen para ingesta, evidencia, clarifications, jobs, reconciliacion y hallazgos
+  - que contratos MCP reales existen y cuales son skeletons
+  - que tests existen y que cubren realmente
+  - que errores o bloqueos se repitieron esta semana en factory/evidence y factory/bugs
+  - que parte del producto final ya funciona
+  - que parte falta para OCR, RAG documental, Excel, stock, calculos y action engine
+  - que deuda tecnica amenaza la factoria o el producto
+  - que roadmap diario deberia ejecutarse despues de esta auditoria
+
+required_sections_report:
+  - VEREDICTO_EJECUTIVO
+  - MAPA_KERNEL_REAL
+  - CAPAS_IMPLEMENTADAS
+  - CAPAS_PARCIALES
+  - CAPAS_AUSENTES
+  - MCP_Y_HERMES_REAL
+  - TESTS_LINTERS_QA
+  - ERRORES_RECURRENTES_SEMANA
+  - TRAZABILIDAD_ROADMAP_PRODUCTO_FINAL
+  - RIESGOS_DE_DERIVA
+  - ROADMAP_DIARIO_PROPUESTO_12_HITOS
+  - PREGUNTAS_PARA_GPT_DIRECTOR
+
+validation_commands:
+  - git status --short
+  - find . -maxdepth 3 -type f | sort | sed 's#^./##' | head -300
+  - python -m compileall app core services scripts factory || true
+  - pytest -q || true
+  - grep -R "def \|class \|@mcp.tool\|FastMCP\|APIRouter" -n app core services scripts factory mcp_smartpyme_bridge.py | head -300
+  - find factory/evidence -maxdepth 2 -type f | sort | tail -80 || true
+  - find factory/bugs -maxdepth 2 -type f | sort | tail -80 || true
+
+acceptance_criteria:
+  - existe factory/reports/kernel_total_audit_001.md
+  - existe factory/reports/kernel_total_audit_001.json
+  - reporte distingue codigo real de documentacion conceptual
+  - reporte no inventa features no evidenciadas
+  - roadmap diario contiene 12 hitos de 1 hora con objetivo producto, archivos probables y criterio de exito
+  - cada hallazgo tecnico incluye ruta, evidencia y recomendacion
+  - no se modifica codigo fuente
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_GENERADOS
+  - EVIDENCIA_REVISADA
+  - MAPA_KERNEL
+  - ROADMAP_12_HITOS
+  - BLOQUEOS_O_DUDAS
+  - SHA
