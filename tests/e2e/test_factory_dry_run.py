@@ -1,23 +1,9 @@
-from factory.control.circuit_breaker import CircuitBreaker
-from factory.control.heartbeat import is_stale, write_heartbeat
-from factory.control.telegram_handler import create_callback_token, mark_update_processed, resolve_callback_token
+from factory.control.dry_run_cycle import run_dry_run_cycle
 
 
 def test_factory_dry_run_cycle(tmp_path):
-    db = tmp_path / "telegram.db"
-    hb = tmp_path / "heartbeat.json"
-
-    assert mark_update_processed(1, "/estado", db_path=db) is True
-    assert mark_update_processed(1, "/estado", db_path=db) is False
-
-    token = create_callback_token("cycle-001", "APPROVE", db_path=db)
-    assert len(token.encode("utf-8")) <= 64
-    assert resolve_callback_token(token, db_path=db)["action"] == "APPROVE"
-
-    write_heartbeat(hb)
-    assert is_stale(hb, max_age_seconds=300) is False
-
-    breaker = CircuitBreaker(max_failures_per_hour=1)
-    assert breaker.record_failure() is False
-    assert breaker.record_failure() is True
-    assert breaker.is_open() is True
+    result = run_dry_run_cycle(task_id="TASK-2026-04-28-999", evidence_root=tmp_path)
+    assert result["build_status"] == "BUILD_SUCCESS"
+    assert result["audit_status"] == "AUDIT_PASSED"
+    assert result["final_state"] == "AWAITING_HUMAN_MERGE"
+    assert result["callback_data_bytes"] <= 64
