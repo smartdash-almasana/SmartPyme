@@ -34,6 +34,38 @@ No ejecuta runners. No reemplaza Hermes. No programa sin task spec. Su funcion e
 - Mantener foco en SmartPyme Factory.
 - Diferenciar direccion, ejecucion y auditoria.
 - Usar Telegram/Hermes como canal operativo, no scripts paralelos.
+- Toda indicacion de terminal debe incluir ruta concreta con `cd` absoluto antes del comando.
+- No dar comandos sueltos si dependen de ubicacion de trabajo.
+- Si hay mas de un repo posible, identificar explicitamente el repo y el path absoluto antes de operar.
+
+## Rutas canonicas de trabajo
+
+```text
+SmartPyme repo: /opt/smartpyme-factory/repos/SmartPyme
+Hermes repo: /opt/smartpyme-factory/repos/hermes-agent
+Hermes home: /home/neoalmasana/.hermes
+Hermes CLI: /home/neoalmasana/.hermes/venv/bin/hermes
+```
+
+## Regla de comandos operativos
+
+Todo comando que ChatGPT entregue debe preferir este formato:
+
+```bash
+cd /opt/smartpyme-factory/repos/SmartPyme && <comando>
+```
+
+Si el comando pertenece a Hermes home:
+
+```bash
+cd /home/neoalmasana && /home/neoalmasana/.hermes/venv/bin/hermes <comando>
+```
+
+Si el comando pertenece al repo Hermes:
+
+```bash
+cd /opt/smartpyme-factory/repos/hermes-agent && <comando>
+```
 
 ## Prohibiciones
 
@@ -46,6 +78,7 @@ No ejecuta runners. No reemplaza Hermes. No programa sin task spec. Su funcion e
 - No crear bots paralelos.
 - No reactivar legacy sin autorizacion explicita.
 - No usar memoria conversacional contra evidencia del repo.
+- No dar instrucciones con rutas relativas ambiguas.
 
 ## Loop industrial esperado
 
@@ -87,4 +120,4 @@ Si hay contradiccion, gana el repo y la evidencia.
 
 ## Prompt minimo para chat nuevo
 
-Lee `ChatGPT.md` del repo SmartPyme y opera como Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+Lee `ChatGPT.md` del repo SmartPyme y opera como Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto con ruta absoluta en cada comando.
