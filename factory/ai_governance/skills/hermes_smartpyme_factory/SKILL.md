@@ -1,38 +1,56 @@
 ---
 name: hermes_smartpyme_factory
-description: Ejecuta ciclos SmartPyme Factory con Hermes, delegation, evidencia, git y maximo tres agentes.
-version: 1.1.0
+description: Skill Hermes para operar SmartPyme Factory con TaskSpec YAML, evidencia y gate humano.
+version: 1.2.0
+status: CANONICO v1.2
+remediation: P0-2 — TaskSpec YAML reemplaza hallazgos markdown como cola operativa
 platforms: [linux]
 metadata:
   hermes:
     category: devops
-    tags: [smartpyme, factory, multiagent, governance, hallazgos, hermes]
+    tags: [smartpyme, factory, multiagent, governance, taskspec, hermes]
 ---
 
 # Hermes SmartPyme Factory
 
-## Activador
+## Estado de este skill
 
-Cuando el usuario diga:
+Este skill queda subordinado a:
 
 ```text
-Ejecuta un ciclo SmartPyme Factory
+docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+factory/ai_governance/taskspec.schema.json
 ```
 
-Hermes debe ejecutar UN ciclo completo sobre un unico hallazgo pending.
+La unidad de trabajo vigente de SmartPyme Factory es **TaskSpec YAML** en:
+
+```text
+factory/ai_governance/tasks/<task_id>.yaml
+```
+
+Los hallazgos markdown en `factory/hallazgos/**` quedan como **legacy / cantera / insumo historico**. No son cola operativa vigente.
+
+## Activador operativo
+
+El comando owner vigente es:
+
+```text
+/avanzar
+```
+
+Hermes Gateway debe intentar un solo ciclo sobre una unica TaskSpec `pending`, respetando repo, gate, alcance permitido, evidencia y auditoria.
 
 ## Modelo
 
-- Hermes = orquestador.
-- Gemini 2.5 = modelo activo de Hermes.
-- SmartPyme repo = fuente de verdad.
-- Hallazgo markdown = unidad de trabajo.
-- GitHub = persistencia.
+- Hermes Gateway = orquestador operativo externo.
+- SmartPyme repo = fuente de verdad versionada.
+- TaskSpec YAML = unidad de trabajo vigente.
 - Evidencia = condicion de cierre.
+- GPT Director-Auditor = autoridad externa ante bloqueo, auditoria o decision arquitectonica.
 
-## Workspaces validos
+## Workspace valido
 
-Hermes puede operar solo si `pwd` es uno de estos:
+Hermes solo puede operar sobre:
 
 ```text
 /home/neoalmasana/smartpyme-factory/repos/SmartPyme
@@ -48,35 +66,37 @@ git status --short
 git log --oneline -1
 ```
 
-Remote obligatorio:
+Si el workspace o el remote no coinciden con `smartdash-almasana/SmartPyme`, debe responder `BLOCKED_WRONG_WORKSPACE`.
+
+## Unidad de trabajo vigente
+
+Cada TaskSpec debe validar contra:
 
 ```text
-https://github.com/smartdash-almasana/SmartPyme.git
+factory/ai_governance/taskspec.schema.json
 ```
 
-Si falla: `BLOCKED_WRONG_WORKSPACE`.
+Campos minimos vigentes:
 
-## Toolsets requeridos
-
-Hermes debe operar con:
-
-```text
-terminal
-file
-skills
-delegation
-todo
+```yaml
+task_id: string
+mode: create_only | patch_only | governance | product
+status: pending | in_progress | submitted | blocked | validated | rejected
+human_required: boolean
+objective: string
+allowed_files: []
+forbidden_files: []
+required_tests: []
+acceptance_criteria: []
+preflight_commands: []
+post_commands: []
 ```
 
-## Maximo tres agentes
+Mientras el schema mantenga `additionalProperties: false`, no se deben introducir campos adicionales.
 
-1. Architect/Planner: convierte hallazgo en plan y alcance.
-2. Builder: ejecuta cambios permitidos.
-3. Auditor: valida evidencia sin modificar archivos.
+## Hallazgos markdown legacy / cantera
 
-Hermes no debe crear mas de tres subagentes para un ciclo.
-
-## Estados
+Directorios legacy:
 
 ```text
 factory/hallazgos/pending
@@ -85,97 +105,67 @@ factory/hallazgos/done
 factory/hallazgos/blocked
 ```
 
-Flujo:
+Uso permitido:
 
-```text
-pending -> in_progress -> done | blocked
-```
+- cantera documental;
+- insumo historico;
+- material para convertir manualmente a TaskSpec YAML;
+- referencia de auditoria legacy.
 
-## Ciclo autonomo
+Uso prohibido:
 
-1. Si el repo esta limpio: ejecutar `git pull --rebase origin main`.
-2. Leer `factory/hallazgos/pending/*.md`.
-3. Si no hay pending: responder `status=idle`.
-4. Seleccionar un solo hallazgo.
-5. Validar que tenga objetivo, rutas, restricciones, criterios y validaciones.
-6. Moverlo a `in_progress`.
-7. Delegar a Builder con toolsets `terminal,file`.
-8. Builder modifica solo rutas autorizadas y genera evidencia.
-9. Delegar a Auditor con toolsets `terminal,file`.
-10. Auditor responde `VALIDADO` o `NO_VALIDADO`.
-11. Hermes mueve a `done` o `blocked`.
-12. Hermes escribe evidencia final.
-13. Hermes hace commit y push solo si el cierre es consistente.
+- seleccionar un hallazgo markdown como unidad ejecutable;
+- mover estados de `factory/hallazgos/**` como runtime vigente;
+- declarar un ciclo cerrado sin TaskSpec YAML y evidencia asociada.
+
+## Ciclo minimo
+
+1. `git pull --ff-only origin main`.
+2. Leer canonicos: `GPT.md`, `AGENTS.md`, `docs/factory/FACTORY_CONTRATO_OPERATIVO.md`.
+3. Revisar gate en `factory/control/`.
+4. Seleccionar una sola TaskSpec `pending`.
+5. Validar schema, `allowed_files`, `forbidden_files`, tests y criterios.
+6. Delegar Builder con alcance permitido.
+7. Exigir evidencia reproducible.
+8. Delegar Auditor separado.
+9. Dejar evidencia en `factory/evidence/<task_id>/`.
+10. Pasar a gate de auditoria externa o decision humana.
 
 ## Evidencia obligatoria
 
-Para cada hallazgo:
+Minimo aceptable por TaskSpec:
 
 ```text
-factory/evidence/<hallazgo_id>/builder_report.md
-factory/evidence/<hallazgo_id>/auditor_report.md
-factory/evidence/<hallazgo_id>/git_status.txt
-factory/evidence/<hallazgo_id>/diff.patch
-factory/evidence/<hallazgo_id>/status.json
+factory/evidence/<task_id>/cycle.md
+factory/evidence/<task_id>/commands.txt
+factory/evidence/<task_id>/git_status.txt
+factory/evidence/<task_id>/git_diff.patch
+factory/evidence/<task_id>/tests.txt
+factory/evidence/<task_id>/decision.txt
 ```
 
-Sin evidencia verificable: `NO_VALIDADO` y estado `blocked`.
+Sin evidencia verificable, el ciclo queda `BLOCKED` o `NEEDS_REVIEW` segun la capa que emite el veredicto.
 
-## Reglas de desarrollo SmartPyme
-
-Antes de codigo de producto, Architect y Builder deben respetar:
-
-```text
-docs/specs/01-arquitectura.md
-docs/specs/02-data-model.md
-docs/specs/04-pipeline.md
-docs/guias/protocolo-write-verify-run.md
-docs/guias/reglas-ia.md
-```
-
-Si no existen o no pueden leerse: `NO_VALIDADO`.
-
-Capas obligatorias:
-
-```text
-contracts -> repositories -> services -> core/pipeline -> adapters
-```
-
-Prohibido saltar capas, mezclar tenants o acceder DB sin repository.
-
-## Verdad de negocio
-
-Hermes no decide la verdad. SmartPyme valida.
-
-Regla:
-
-```text
-verdad = evidencia + formula + criterio humano + contexto temporal
-```
-
-Si falta tenant_id, evidencia, formula o criterio requerido: `BLOCKED` o `CLARIFY`.
-
-## Prohibiciones
+## Reglas duras
 
 - Builder no audita.
 - Auditor no corrige.
 - Hermes no valida su propio trabajo.
-- No tocar `app/**`, `core/**`, `services/**` o tests sin hallazgo explicito.
-- No inventar datos.
-- No responder sin evidencia cuando sea dato de negocio.
+- No tocar `app/**`, `core/**`, `services/**` o tests sin TaskSpec explicita.
+- No inventar archivos, datos ni estado.
+- Usar `cliente_id`; `tenant_id` es bug documental o tecnico.
+- Bridge MCP SmartPyme: stdio, no HTTP.
+- No activar infraestructura antes de tests, dry-run y gate validos.
 
 ## Salida final de ciclo
 
-Hermes debe responder:
-
 ```text
-VEREDICTO_CICLO: done | blocked | idle
-HALLAZGO:
+VEREDICTO_CICLO: submitted | blocked | idle
+TASKSPEC:
 AGENTES_USADOS:
 ARCHIVOS_TOCADOS:
 EVIDENCIA:
 TESTS:
 COMMIT:
-PUSH:
 RIESGOS:
 ```
