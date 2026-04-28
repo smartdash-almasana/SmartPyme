@@ -15,6 +15,9 @@ evidence_store/
 factory/logs/
 factory/runner_logs/
 factory/state/
+factory/control/AUDIT_GATE.md
+factory/control/FACTORY_STATUS.md
+factory/control/PRIORITY_BOARD.md
 factory/control/.telegram_cycle_lock
 factory/control/.telegram_control_offset
 .venv/
