@@ -6,18 +6,30 @@ Modo: severo, verificable, sin complacencia, sin reescribir arquitectura.
 OBJETIVO
 Auditar el repo completo `smartdash-almasana/SmartPyme` para detectar inconsistencias documentales, contractuales y operativas que impidan operar Hermes Gateway + SmartPyme Factory con seguridad.
 
+FUENTE PREVIA OBLIGATORIA
+Leer como insumo principal de auditoría histórica:
+
+1. `docs/factory/OPUS_BLUEPRINT_V2_AUDITORIA.md`
+
+La auditoría Opus contiene hallazgos B-001…B-030. Debés construir una matriz de cobertura indicando para cada B:
+- CERRADO
+- ABIERTO
+- REABIERTO
+- NO VERIFICABLE
+
 FUENTE DE VERDAD INICIAL
-Leer primero, en este orden:
+Leer después, en este orden:
 
 1. `.orquestador/JAULA_OPERATIVA.md`
 2. `.orquestador/ESTADO_ACTUAL.md`
-3. `docs/factory/RUNTIME_VIGENTE.md`
-4. `docs/HERMES_MCP_RUNTIME.md`
-5. `docs/factory/MCP_TOOLS_CONTRACT.md`
-6. `docs/factory/TELEGRAM_WEBHOOK_CONTRACT.md`
-7. `factory/ai_governance/contracts/verdict_enum.yaml`
-8. `factory/ai_governance/schemas/taskspec.schema.json`
-9. `factory/hermes_control_cli.py`
+3. `.orquestador/AUDITORIA_DOCUMENTAL_CRUZADA.md`
+4. `docs/factory/RUNTIME_VIGENTE.md`
+5. `docs/HERMES_MCP_RUNTIME.md`
+6. `docs/factory/MCP_TOOLS_CONTRACT.md`
+7. `docs/factory/TELEGRAM_WEBHOOK_CONTRACT.md`
+8. `factory/ai_governance/contracts/verdict_enum.yaml`
+9. `factory/ai_governance/schemas/taskspec.schema.json`
+10. `factory/hermes_control_cli.py`
 
 ALCANCE
 Auditar:
@@ -53,6 +65,7 @@ PREGUNTAS QUE DEBÉS RESPONDER
 8. ¿Hay workflows que ejecuten runners legacy prohibidos?
 9. ¿Hay contradicción entre documentos de arquitectura SmartPyme y operación Hermes?
 10. ¿Qué archivos deben ser canónicos, legacy o deprecables?
+11. ¿Qué hallazgos de Opus B-001…B-030 siguen sin cerrar?
 
 FORMATO DE SALIDA OBLIGATORIO
 
@@ -75,25 +88,33 @@ Tabla con columnas:
 - impacto
 - remediación
 
-## 3. FUENTES CANÓNICAS
+## 3. COBERTURA OPUS B-001…B-030
+Tabla con columnas:
+- hallazgo_opus
+- estado
+- evidencia_repo
+- comentario
+- acción_requerida
+
+## 4. FUENTES CANÓNICAS
 Tabla:
 - área
 - archivo canónico
 - razón
 
-## 4. FUENTES LEGACY / DEPRECABLES
+## 5. FUENTES LEGACY / DEPRECABLES
 Tabla:
 - archivo
 - motivo
 - acción
 
-## 5. BLOQUEOS
+## 6. BLOQUEOS
 Separar P0, P1, P2.
 
-## 6. VALIDACIONES REQUERIDAS
+## 7. VALIDACIONES REQUERIDAS
 Comandos exactos para verificar cada bloqueo.
 
-## 7. DECISIÓN FINAL
+## 8. DECISIÓN FINAL
 Decir explícitamente si se puede hacer dry_run o no.
 
 REGLAS
