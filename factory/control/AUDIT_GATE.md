@@ -1,6 +1,6 @@
 # AUDIT GATE
 
-status: BLOCKED
-updated_at: 2026-04-28T10:42:37.815997+00:00
-updated_by: telegram_trigger_cycle
-reason: repo_clean_failed_before_telegram_trigger
+status: OPEN
+updated_at: 2026-04-28T14:20:00+00:00
+updated_by: ChatGPT_Director_Auditor
+reason: control_telegram_operativo_repo_limpio_estado_anterior_resuelto
