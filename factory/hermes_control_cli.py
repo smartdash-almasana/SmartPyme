@@ -14,8 +14,7 @@ import argparse
 import json
 import os
 import subprocess
-import sys
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
@@ -26,7 +25,6 @@ HERMES_HOME_DEFAULT = Path("/home/neoalmasana/.hermes")
 HERMES_CLI_DEFAULT = HERMES_HOME_DEFAULT / "venv/bin/hermes"
 
 BLOQUEANTES = {"WAITING_AUDIT", "BLOCKED", "HOLD", "PAUSED"}
-PERMITEN_AVANCE = {"APPROVED", "OPEN", "RUN"}
 LEGACY_PATTERNS = ("telegram_factory_control.py", "hermes_factory_runner.py")
 
 
@@ -81,6 +79,43 @@ def leer_texto(path: Path) -> str:
         return ""
 
 
+def extraer_campo_estado(texto: str, campo: str) -> str | None:
+    """Extrae un estado actual desde una línea exacta tipo `status:` o `estado:`.
+
+    Importante: no toma campos historicos como `audit_gate:` o `last_error:`.
+    Esto evita que un `FACTORY_STATUS.md` viejo bloquee cuando `AUDIT_GATE.md`
+    ya fue reabierto correctamente.
+    """
+    prefijo = f"{campo}:"
+    for linea in texto.splitlines():
+        limpia = linea.strip()
+        if limpia.lower().startswith(prefijo):
+            valor = limpia.split(":", 1)[1].strip().upper()
+            return valor or None
+    return None
+
+
+def audit_gate_status(repo: Path) -> str | None:
+    return extraer_campo_estado(leer_texto(repo / "factory/control/AUDIT_GATE.md"), "status")
+
+
+def factory_status_actual(repo: Path) -> str | None:
+    return extraer_campo_estado(leer_texto(repo / "factory/control/FACTORY_STATUS.md"), "estado")
+
+
+def estado_bloqueante_actual(repo: Path) -> str | None:
+    """Devuelve bloqueo actual, ignorando trazas historicas no normativas."""
+    audit = audit_gate_status(repo)
+    if audit in BLOQUEANTES:
+        return audit
+
+    estado = factory_status_actual(repo)
+    if estado in {"PAUSED", "HOLD", "BLOCKED"}:
+        return estado
+
+    return None
+
+
 def git_status(repo: Path) -> str:
     code, out = run_cmd(["git", "status", "--short"], cwd=repo)
     if code != 0:
@@ -129,14 +164,6 @@ def leer_gate(repo: Path) -> str:
         if texto:
             partes.append(f"{path.name}: {texto[:500]}")
     return "\n".join(partes) if partes else "sin gate visible"
-
-
-def contiene_estado_bloqueante(texto: str) -> str | None:
-    upper = texto.upper()
-    for estado in BLOQUEANTES:
-        if estado in upper:
-            return estado
-    return None
 
 
 def escribir_estado(repo: Path, estado: str, motivo: str) -> Path:
@@ -213,10 +240,11 @@ def comando_reanudar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
         return Resultado("/reanudar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar ruta absoluta")
-    gate = leer_gate(repo)
-    bloqueante = contiene_estado_bloqueante(gate.replace("PAUSED", ""))
-    if bloqueante in {"WAITING_AUDIT", "BLOCKED", "HOLD"}:
-        return Resultado("/reanudar", "BLOCKED", git_status(repo), gate, "ninguna", "ninguna", f"gate bloqueante: {bloqueante}", "auditar o desbloquear manualmente")
+
+    audit = audit_gate_status(repo)
+    if audit in {"WAITING_AUDIT", "BLOCKED", "HOLD"}:
+        return Resultado("/reanudar", "BLOCKED", git_status(repo), leer_gate(repo), "ninguna", "ninguna", f"gate bloqueante: {audit}", "auditar o desbloquear gate")
+
     path = escribir_estado(repo, "OPEN", "reanudar solicitada por owner desde Telegram/Hermes")
     return Resultado("/reanudar", "OK", git_status(repo), leer_gate(repo), "ninguna", str(path), "ninguno", "usar /avanzar para ejecutar un ciclo")
 
@@ -234,19 +262,18 @@ def comando_avanzar() -> Resultado:
     if legacy != "ninguno":
         return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), "ninguna", "ninguna", f"procesos legacy activos: {legacy}", "detener contaminacion legacy")
 
-    gate = leer_gate(repo)
-    bloqueante = contiene_estado_bloqueante(gate)
+    bloqueante = estado_bloqueante_actual(repo)
     if bloqueante:
-        return Resultado("/avanzar", "BLOCKED", pull_out, gate, "ninguna", "ninguna", f"gate bloqueante: {bloqueante}", "usar /auditar, /reanudar o resolver bloqueo")
+        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), "ninguna", "ninguna", f"gate bloqueante: {bloqueante}", "usar /auditar, /reanudar o resolver bloqueo")
 
     task = seleccionar_task_pending(repo)
     if task == "ninguna" or task.startswith("ninguna:"):
-        return Resultado("/avanzar", "BLOCKED", pull_out, gate, task, "ninguna", "no hay TaskSpec pending", "crear una TaskSpec pending")
+        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), task, "ninguna", "no hay TaskSpec pending", "crear una TaskSpec pending")
 
     evidencia_dir = repo / "factory/evidence" / Path(task).stem
     evidencia_dir.mkdir(parents=True, exist_ok=True)
     (evidencia_dir / "control_preflight.txt").write_text(
-        f"comando=/avanzar\nfecha={ahora_iso()}\nrepo={repo}\ntask={task}\ngate={gate}\npull={pull_out}\n",
+        f"comando=/avanzar\nfecha={ahora_iso()}\nrepo={repo}\ntask={task}\ngate={leer_gate(repo)}\npull={pull_out}\n",
         encoding="utf-8",
     )
     escribir_estado(repo, "WAITING_AUDIT", f"ciclo preparado para {Path(task).name}; requiere ejecucion/auditoria de Hermes")
