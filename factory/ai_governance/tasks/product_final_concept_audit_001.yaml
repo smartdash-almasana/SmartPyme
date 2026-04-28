@@ -1,0 +1,143 @@
+task_id: product_final_concept_audit_001
+mode: product_architecture_audit
+status: pending
+human_required: false
+product_frame: >
+  SmartPyme es un sistema operativo de interpretacion, calculo y toma de decisiones para PyMEs.
+  Su valor se organiza en tres pilares: ganar mas dinero, perder menos dinero y ahorrar tiempo
+  reduciendo tareas repetitivas mediante sistematizacion y automatizacion gobernada.
+
+objective: >
+  Construir una maqueta conceptual industrial del producto final SmartPyme, conectada al estado real
+  del repo. Debe definir que es, que no es, que modulos contiene, como entra un cliente por onboarding,
+  que servicios puede ofrecer y que roadmap tecnico se desprende para fabricar el producto sin deriva infinita.
+
+core_pillars:
+  dinero_ganar_mas:
+    - detectar oportunidades de venta, precios, margen, stock y proveedores
+    - mejorar decisiones con datos confiables
+  dinero_perder_menos:
+    - detectar errores, fugas, duplicados, conciliaciones pendientes, pagos mal imputados
+    - reconciliar fuentes y generar hallazgos accionables
+  tiempo_ahorrar_mas:
+    - automatizar tareas repetitivas
+    - fabricar Excel, macros, reportes y procesos simples cuando sea suficiente
+    - escalar a auditorias documentales o sistemas completos cuando el cliente lo necesite
+
+onboarding_required: >
+  El producto final debe incluir un bot conversacional para el dueño PyME. El onboarding pregunta de forma incremental:
+  que negocio tiene, que dolor principal trae, si el problema es Excel, documentacion, conciliacion bancaria,
+  stock, ventas, compras, impuestos, produccion u otro. El sistema debe proponer soluciones graduales,
+  desde lo simple y barato hasta servicios mas complejos.
+
+service_catalog_to_define:
+  - Excel con formulas como solucion rapida
+  - Excel con macros como automatizacion puntual
+  - reparacion y limpieza de archivos Excel
+  - conversion de PDFs/documentos a Excel
+  - lectura masiva de PDFs, tickets, remitos y documentacion historica
+  - calculos de produccion, ventas, impuestos, costos y rentabilidad
+  - conciliacion bancaria y cruce de fuentes
+  - control de stock y deteccion de perdida de control
+  - hallazgos accionables para decisiones del owner
+  - automatizaciones recurrentes bajo suscripcion
+  - servicios unicos por demanda
+
+agents:
+  hermes: coordina ejecucion y consolida reporte
+  gemini: define arquitectura conceptual, onboarding, limites de producto y modelo de servicios
+  codex: audita repo real para mapear que existe, que falta y que puede fabricarse primero
+
+scope:
+  include:
+    - docs/**
+    - app/**
+    - core/**
+    - services/**
+    - factory/**
+    - scripts/**
+    - tests/**
+    - mcp_smartpyme_bridge.py
+  exclude:
+    - .git/**
+    - .venv/**
+    - __pycache__/**
+    - data/*.db
+    - evidence_store/**
+
+allowed_files:
+  - factory/reports/product_final_concept_audit_001.md
+  - factory/reports/product_final_concept_audit_001.json
+  - factory/evidence/product_final_concept_audit_001/**
+
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - scripts/**
+  - tests/**
+  - mcp_smartpyme_bridge.py
+  - factory/control/**
+
+forbidden_actions:
+  - modificar codigo fuente
+  - cambiar gate
+  - ejecutar migraciones
+  - borrar evidencia
+  - crear features
+  - inventar funcionalidades como implementadas si no existen
+
+questions_to_answer:
+  - cual es la forma final del producto SmartPyme
+  - que NO debe ser SmartPyme para evitar producto infinito
+  - como funciona el onboarding incremental del owner PyME
+  - que modulos corresponden a Excel, documentacion, conciliacion, stock, calculo y automatizacion
+  - que servicios son de unica vez y cuales son de suscripcion
+  - que capacidades ya existen en el repo y cuales faltan
+  - cual es el orden tecnico correcto para fabricar el producto final
+  - que roadmap diario de 12 hitos conviene ejecutar mañana
+  - que tareas deben recibir Hermes, Gemini y Codex en el proximo ciclo
+
+required_sections_report:
+  - VEREDICTO_EJECUTIVO
+  - DEFINICION_PRODUCTO_FINAL
+  - QUE_ES_SMARTPYME
+  - QUE_NO_ES_SMARTPYME
+  - TRES_PILARES_DE_VALOR
+  - ONBOARDING_CONVERSACIONAL_INCREMENTAL
+  - CATALOGO_DE_SERVICIOS
+  - MODULOS_PRODUCTO
+  - MODELO_SUSCRIPCION_Y_SERVICIO_UNICO
+  - MAPA_REPO_REAL_VS_PRODUCTO_FINAL
+  - GAPS_CRITICOS
+  - ROADMAP_DIARIO_12_HITOS
+  - TAREAS_RECOMENDADAS_PARA_HERMES_GEMINI_CODEX
+  - PREGUNTAS_PARA_GPT_DIRECTOR
+
+validation_commands:
+  - git status --short
+  - test -d docs
+  - test -d factory
+  - find docs factory app core services scripts tests -maxdepth 3 -type f | sort | head -300
+  - grep -R "onboarding\|Excel\|hallazgos\|reconciliacion\|clarification\|MCP\|ingest" -n docs app core services factory scripts tests mcp_smartpyme_bridge.py | head -300 || true
+  - python -m compileall app core services scripts factory || true
+  - pytest -q || true
+
+acceptance_criteria:
+  - existe factory/reports/product_final_concept_audit_001.md
+  - existe factory/reports/product_final_concept_audit_001.json
+  - reporte define forma del producto final y limites claros
+  - reporte incluye onboarding incremental realista
+  - reporte separa servicios unicos de suscripciones
+  - reporte conecta producto final con repo real sin alucinar
+  - reporte propone roadmap diario de 12 hitos
+  - no se modifica codigo fuente
+
+report_required:
+  - VEREDICTO
+  - ARCHIVOS_GENERADOS
+  - PRODUCTO_FINAL_DEFINIDO
+  - ONBOARDING_DEFINIDO
+  - ROADMAP_12_HITOS
+  - BLOQUEOS_O_DUDAS
+  - SHA
