@@ -1,0 +1,40 @@
+task_id: gpt_director_auditor_bootstrap_001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Formalizar a GPT como Director-Auditor externo de SmartPyme Factory dentro del repo.
+  Debe quedar documentado el rol, el prompt canonico, el skill operativo y la forma de
+  producir auditorias, roadmap y proximo NEXT_CYCLE sin depender de memoria conversacional.
+allowed_files:
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - factory/ai_governance/skills/gpt_director_auditor.yaml
+  - factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - factory/control/**
+  - factory/evidence/**
+  - factory/bugs/**
+required_tests:
+  - test -f docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - test -f factory/ai_governance/skills/gpt_director_auditor.yaml
+  - test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+  - grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+acceptance_criteria:
+  - Existe contrato documental del rol GPT Director-Auditor.
+  - Existe prompt canonico versionado en el repo.
+  - Existe skill YAML con inputs, outputs, reglas, acciones permitidas y prohibidas.
+  - Existe esta task spec para trazabilidad de la formalizacion.
+  - No se toca core, runner, Telegram, control, evidencia ni bugs.
+preflight_commands:
+  - git status --short
+  - test -f AGENTS.md
+  - test -f factory/ai_governance/taskspec.schema.json
+post_commands:
+  - git status --short
+  - git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
