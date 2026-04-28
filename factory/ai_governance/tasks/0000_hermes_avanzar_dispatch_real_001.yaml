@@ -1,0 +1,50 @@
+task_id: hermes_avanzar_dispatch_real_001
+mode: patch_only
+status: pending
+human_required: false
+objective: >
+  Corregir el comando /avanzar para que deje de ser un preparador de preflight
+  y ejecute realmente una unica TaskSpec pending bajo el contrato Hermes Gateway:
+  pull, lectura canonica, validacion de schema, respeto de allowed_files y
+  forbidden_files, ejecucion de preflight_commands, required_tests y
+  post_commands, generacion de evidencia reproducible y cierre en WAITING_AUDIT.
+  No reactivar runners legacy ni bots paralelos.
+allowed_files:
+  - factory/hermes_control_cli.py
+  - factory/hermes_quick_commands_config.py
+  - factory/ai_governance/skills/hermes_control_telegram.yaml
+  - prompts/hermes_control_telegram_prompt.md
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - tests/factory/test_hermes_control_cli.py
+forbidden_files:
+  - app/**
+  - core/**
+  - services/**
+  - scripts/telegram_factory_control.py
+  - scripts/hermes_factory_runner.py
+  - factory/evidence/**
+  - factory/runner_logs/**
+locked_files:
+  - ChatGPT.md
+  - GPT.md
+  - AGENTS.md
+required_tests:
+  - python3 -m py_compile factory/hermes_control_cli.py factory/hermes_quick_commands_config.py
+  - python3 -m pytest tests/factory/test_hermes_control_cli.py -q
+  - grep -R "scripts/hermes_factory_runner.py\|scripts/telegram_factory_control.py" -n factory/hermes_control_cli.py factory/hermes_quick_commands_config.py prompts/hermes_control_telegram_prompt.md docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+acceptance_criteria:
+  - /avanzar no debe responder "Hermes debe ejecutar la TaskSpec seleccionada" sin haber ejecutado comandos reales.
+  - /avanzar debe seleccionar una sola TaskSpec pending y registrar task_id, comandos, salidas, git_status, git_diff y decision en factory/evidence/<task_id>/.
+  - /avanzar debe validar que no haya procesos legacy activos antes de ejecutar.
+  - /avanzar debe bloquear si el gate esta WAITING_AUDIT, BLOCKED, HOLD o PAUSED.
+  - /avanzar debe respetar allowed_files y forbidden_files antes de cerrar el ciclo.
+  - /avanzar debe cerrar en WAITING_AUDIT solo despues de ejecutar la tarea o registrar BLOCKED con causa exacta.
+  - No se debe crear ni reactivar ningun runner casero.
+preflight_commands:
+  - git status --short
+  - test -f factory/hermes_control_cli.py
+  - test -f factory/ai_governance/taskspec.schema.json
+  - test -f docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+post_commands:
+  - git status --short
+  - git diff -- factory/hermes_control_cli.py factory/hermes_quick_commands_config.py factory/ai_governance/skills/hermes_control_telegram.yaml prompts/hermes_control_telegram_prompt.md docs/factory/FACTORY_CONTRATO_OPERATIVO.md tests/factory/test_hermes_control_cli.py
