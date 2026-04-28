@@ -1,6 +1,12 @@
+---
+version: "1.1.0"
+created: "2026-04-28"
+status: "CANONICO v1.1"
+remediation: "P0-3"
+---
 verdict_enum:
-  version: "1.0.0"
-  description: "Vocabulario canónico de veredictos SmartPyme Factory"
+  version: "1.1.0"
+  description: "Vocabulario canonico de veredictos SmartPyme Factory"
   layers:
     builder:
       success: "BUILD_SUCCESS"
@@ -31,15 +37,32 @@ verdict_enum:
     AUDIT_BLOCKED:
       next_state: "ESCALATED"
       next_agent: "director"
+    NEEDS_REVIEW:
+      next_state: "ESCALATED"
+      next_agent: "director"
     APPROVED:
       next_state: "MERGED"
       next_agent: "human"
     REJECTED:
       next_state: "ABANDONED"
-  deprecated:
-    - "FALLÓ"
-    - "OK"
-    - "NO_VALIDADO"
-    - "VALIDADO"
-    - "CORRECTO"
-    - "INCOMPLETO"
+  deprecated_aliases:
+    - alias: "NO_VALIDADO"
+      maps_to: "NEEDS_REVIEW"
+      layer: "director"
+      sunset_date: "2026-05-31"
+      reason: "Alias historico del Director"
+    - alias: "VALIDADO"
+      maps_to: "AUDIT_PASSED"
+      layer: "auditor"
+    - alias: "CORRECTO"
+      maps_to: "BUILD_SUCCESS"
+      layer: "builder"
+    - alias: "INCOMPLETO"
+      maps_to: "BUILD_INCOMPLETE"
+      layer: "builder"
+    - alias: "OK"
+      maps_to: "BUILD_SUCCESS"
+      layer: "builder"
+  migration_note: >
+    Todo documento canonico nuevo del Director debe usar NEEDS_REVIEW.
+    NO_VALIDADO queda permitido solo como alias legacy hasta sunset_date.
