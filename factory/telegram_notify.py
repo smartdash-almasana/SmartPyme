@@ -9,13 +9,11 @@ def _env(name: str) -> str:
     return os.getenv(name, "").strip()
 
 
-def _compact_details(details: str) -> str:
-    if not details.strip():
-        return ""
-    lines = [line.strip() for line in details.splitlines() if line.strip()]
-    if not lines:
-        return ""
-    return "\n\nDatos tecnicos:\n" + "\n".join(f"- {line}" for line in lines[:8])
+def _reserved_for_gpt(status: str, details: str = "") -> str:
+    lines = [f"estado={status.strip().upper()}"]
+    if details.strip():
+        lines.extend(line.strip() for line in details.splitlines() if line.strip())
+    return "\n\nReservado a GPT:\n" + "\n".join(f"- {line}" for line in lines[:10])
 
 
 def format_cycle_message(status: str, details: str = "") -> str:
@@ -23,41 +21,41 @@ def format_cycle_message(status: str, details: str = "") -> str:
 
     if status_key == "CYCLE_START":
         text = (
-            "SmartPyme Factory esta despierta.\n\n"
-            "Voy a revisar si hay permiso para ejecutar una nueva tarea. "
-            "Todavia no se modifico codigo ni se envio trabajo a Codex."
+            "SmartPyme Factory esta activa.\n\n"
+            "Estoy revisando si corresponde iniciar una nueva tarea. "
+            "Por ahora no se modifico codigo ni se envio trabajo al constructor."
         )
     elif status_key == "AUDIT_BLOCKED":
         text = (
-            "SmartPyme Factory esta pausada por auditoria.\n\n"
-            "El sistema intento iniciar un ciclo, pero no ejecuto nada porque el gate sigue en WAITING_AUDIT.\n\n"
-            "Esto es una pausa de seguridad: no hubo dispatch, no corrio Codex y no se tocaron archivos.\n\n"
-            "Decision pendiente: aprobar, rechazar o mantener bloqueado el ultimo ciclo."
+            "SmartPyme Factory esta pausada esperando tu revision.\n\n"
+            "El sistema quiso iniciar un nuevo ciclo, pero se detuvo correctamente porque falta una decision humana sobre el ciclo anterior.\n\n"
+            "No se ejecuto ninguna tarea, no corrio Codex y no se tocaron archivos.\n\n"
+            "Decision pendiente: aprobar, rechazar o mantener pausado."
         )
     elif status_key == "TASK_DISPATCH":
         text = (
-            "SmartPyme Factory envio una tarea a Codex.\n\n"
-            "Ahora se esta trabajando sobre una tarea gobernada y con alcance limitado."
+            "SmartPyme Factory empezo a trabajar en una tarea aprobada.\n\n"
+            "El constructor recibio una tarea con alcance limitado."
         )
     elif status_key == "TASK_DONE":
         text = (
             "SmartPyme Factory termino una tarea.\n\n"
-            "Falta revisar la evidencia antes de permitir otro ciclo."
+            "Ahora conviene revisar la evidencia antes de permitir otro ciclo."
         )
     elif status_key == "CYCLE_OK":
         text = (
             "SmartPyme Factory cerro el ciclo correctamente.\n\n"
-            "El sistema queda en espera de auditoria humana antes de continuar."
+            "El sistema queda pausado hasta que revises y decidas el proximo paso."
         )
     elif status_key == "CYCLE_FAIL":
         text = (
-            "SmartPyme Factory fallo durante el ciclo.\n\n"
-            "No conviene aprobar nada hasta revisar evidencia y logs."
+            "SmartPyme Factory encontro un problema durante el ciclo.\n\n"
+            "No conviene aprobar nada hasta revisar la evidencia."
         )
     elif status_key == "AUTO_PUSH_OK":
         text = (
-            "SmartPyme Factory subio cambios al repo.\n\n"
-            "Hay un nuevo commit disponible para auditoria."
+            "SmartPyme Factory guardo los cambios en el repo.\n\n"
+            "Hay un nuevo commit disponible para revisar."
         )
     elif status_key == "NO_TASK":
         text = (
@@ -66,11 +64,11 @@ def format_cycle_message(status: str, details: str = "") -> str:
         )
     else:
         text = (
-            f"SmartPyme Factory reporto el evento {status_key}.\n\n"
-            "Revisar el contexto tecnico antes de decidir."
+            "SmartPyme Factory envio una actualizacion.\n\n"
+            "Conviene revisar el contexto reservado antes de decidir."
         )
 
-    return text + _compact_details(details)
+    return text + _reserved_for_gpt(status_key, details)
 
 
 def send_telegram_message(text: str) -> bool:
