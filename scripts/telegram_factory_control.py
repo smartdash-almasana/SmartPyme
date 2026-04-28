@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -13,13 +15,15 @@ GATE = REPO / "factory" / "control" / "AUDIT_GATE.md"
 STATUS = REPO / "factory" / "control" / "FACTORY_STATUS.md"
 OFFSET_FILE = REPO / "factory" / "control" / ".telegram_control_offset"
 TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
+TRIGGER = REPO / "scripts" / "telegram_trigger_cycle.py"
+LOCK = REPO / "factory" / "control" / ".telegram_cycle_lock"
 
 BUTTONS = {
-    "GO": "/run",
-    "STOP": "/stop",
-    "FIX": "/retry",
-    "STATUS": "/status",
-    "TASKS": "/tasks",
+    "SEGUIR": "/seguir",
+    "PAUSAR": "/pausar",
+    "CORREGIR": "/corregir",
+    "ESTADO": "/estado",
+    "TAREAS": "/tareas",
 }
 
 
@@ -55,23 +59,11 @@ def api(method: str, payload: dict | None = None) -> dict:
 
 
 def control_keyboard() -> str:
-    return json.dumps(
-        {
-            "inline_keyboard": [
-                [
-                    {"text": "▶ Seguir", "callback_data": "GO"},
-                    {"text": "⏸️ Pausar", "callback_data": "STOP"},
-                ],
-                [
-                    {"text": "🔁 Corregir", "callback_data": "FIX"},
-                    {"text": "📊 Estado", "callback_data": "STATUS"},
-                ],
-                [
-                    {"text": "🧭 En curso", "callback_data": "TASKS"},
-                ],
-            ]
-        }
-    )
+    return json.dumps({"inline_keyboard": [
+        [{"text": "▶ Seguir", "callback_data": "SEGUIR"}, {"text": "⏸️ Pausar", "callback_data": "PAUSAR"}],
+        [{"text": "🔁 Corregir", "callback_data": "CORREGIR"}, {"text": "📊 Estado", "callback_data": "ESTADO"}],
+        [{"text": "🧭 Tareas", "callback_data": "TAREAS"}],
+    ]})
 
 
 def send(text: str, buttons: bool = True) -> None:
@@ -129,139 +121,90 @@ def write_gate(status: str, reason: str) -> None:
         "# AUDIT GATE\n\n"
         f"status: {status}\n"
         f"updated_at: {now()}\n"
-        f"updated_by: telegram_control\n"
+        "updated_by: telegram_control\n"
         f"previous_status: {previous}\n"
         f"reason: {reason}\n",
         encoding="utf-8",
     )
 
 
+def trigger_cycle() -> str:
+    if LOCK.exists():
+        return "Ya hay un ciclo en ejecución. No disparo otro para evitar iteración repetida."
+    if not TRIGGER.exists():
+        return "No encuentro scripts/telegram_trigger_cycle.py. No puedo disparar el ciclo."
+    subprocess.Popen([sys.executable, str(TRIGGER)], cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return "OK: ciclo solicitado. Hará pull de GitHub y ejecutará una sola vuelta de Hermes."
+
+
 def status_text() -> str:
     data = _read_status_file()
     gate = gate_status()
-    if gate == "WAITING_AUDIT":
-        headline = "La factoría está pausada esperando auditoría."
-    elif gate in {"APPROVED", "OPEN", "RUN"}:
-        headline = "La factoría está habilitada para trabajar."
-    elif gate == "BLOCKED":
-        headline = "La factoría está bloqueada."
-    else:
-        headline = "La factoría reporta un estado que requiere revisión."
-
-    return "\n".join(
-        [
-            "📊 Estado de SmartPyme Factory",
-            "",
-            headline,
-            "",
-            f"Decisión actual: {gate}",
-            f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
-            f"Última actualización: {data.get('updated_at', 'no informada')}",
-            f"Detalle para GPT: {data.get('last_error', 'sin detalle')}",
-            "",
-            "Botones útiles:",
-            "- 🧭 En curso: ver tareas activas.",
-            "- ▶ Seguir: aprobar próximo ciclo.",
-            "- ⏸️ Pausar: mantener detenido.",
-            "- 🔁 Corregir: reabrir la última tarea.",
-        ]
-    )
+    return "\n".join([
+        "📊 Estado de SmartPyme Factory", "",
+        f"Decisión actual: {gate}",
+        f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
+        f"Última actualización: {data.get('updated_at', 'no informada')}",
+        f"Detalle para GPT: {data.get('last_error', 'sin detalle')}", "",
+        "Botones:",
+        "- ▶ Seguir: hacer pull y ejecutar una vuelta.",
+        "- ⏸️ Pausar: mantener detenido.",
+        "- 🔁 Corregir: reabrir la última tarea.",
+        "- 🧭 Tareas: ver tareas activas.",
+    ])
 
 
 def _read_simple_yaml(path: Path) -> dict[str, str]:
     data: dict[str, str] = {}
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    i = 0
-    while i < len(lines):
-        line = lines[i]
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
-            i += 1
             continue
         key, value = line.split(":", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if value in {">", "|", ">-", "|-"}:
-            block: list[str] = []
-            i += 1
-            while i < len(lines) and (lines[i].startswith(" ") or not lines[i].strip()):
-                if lines[i].strip():
-                    block.append(lines[i].strip())
-                i += 1
-            data[key] = " ".join(block).strip()
-            continue
-        data[key] = value
-        i += 1
+        data[key.strip()] = value.strip().strip('"').strip("'")
     return data
-
-
-def _pick(data: dict[str, str], *keys: str, default: str = "no informado") -> str:
-    for key in keys:
-        value = data.get(key, "").strip()
-        if value:
-            return value
-    return default
 
 
 def tasks_text() -> str:
     if not TASKS_DIR.exists():
         return "No encuentro la carpeta de tareas de la factoría."
-
     tasks = []
     for path in sorted(TASKS_DIR.glob("*.yaml")):
         data = _read_simple_yaml(path)
-        status = data.get("status", "").lower()
-        if status in {"pending", "in_progress"}:
+        if data.get("status", "").lower() in {"pending", "in_progress"}:
             tasks.append((path, data))
-
     if not tasks:
         return "No hay tareas pendientes o en ejecución."
-
-    lines = ["🧭 Qué está preparado o en curso", ""]
+    lines = ["🧭 Tareas preparadas o en curso", ""]
     for idx, (path, data) in enumerate(tasks[:5], start=1):
-        title = _pick(data, "title", "task_id", default=path.stem)
-        status = _pick(data, "status")
-        objective = _pick(data, "objective", "product_frame", default="sin descripción")
-        product = _pick(data, "product_frame", "product_goal", "product_final_target", default="SmartPyme Factory")
-        agents = _pick(data, "agents", default="Hermes coordina; Gemini analiza; Codex valida cuando corresponde")
-        lines.extend(
-            [
-                f"{idx}. {title}",
-                f"Estado: {status}",
-                f"Para qué sirve: {product[:280]}",
-                f"Qué se hace: {objective[:420]}",
-                f"Agentes: {agents[:220]}",
-                f"Trazabilidad: {path.relative_to(REPO)}",
-                "",
-            ]
-        )
+        lines.extend([
+            f"{idx}. {data.get('task_id', path.stem)}",
+            f"Estado: {data.get('status', 'no informado')}",
+            f"Trazabilidad: {path.relative_to(REPO)}", "",
+        ])
     return "\n".join(lines).strip()
 
 
 def handle_command(text: str) -> str:
     cmd = text.strip().split()[0].lower() if text.strip() else ""
-    if cmd in {"/run", "/start", "/approve", "/go", "/seguir"}:
-        write_gate("APPROVED", cmd)
-        return "OK: aprobado. La factoría puede ejecutar el próximo ciclo."
-    if cmd in {"/stop", "/block", "/kill", "/frenar", "/pausar"}:
+    if cmd in {"/seguir", "/run", "/go"}:
+        return trigger_cycle()
+    if cmd in {"/pausar", "/stop"}:
         write_gate("BLOCKED", cmd)
         return "OK: pausado. La factoría queda frenada."
-    if cmd in {"/retry", "/reject", "/fix", "/reprocesar", "/corregir"}:
+    if cmd in {"/corregir", "/retry"}:
         write_gate("REJECTED", cmd)
         return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
-    if cmd in {"/status", "/state", "/s", "/estado"}:
+    if cmd in {"/estado", "/status"}:
         return status_text()
-    if cmd in {"/tasks", "/tareas", "/encurso", "/en_curso"}:
+    if cmd in {"/tareas", "/tasks"}:
         return tasks_text()
     if cmd in {"/help", "help", "/panel"}:
-        return "SmartPyme Control\n\nUsá los botones o comandos: /go, /pausar, /corregir, /estado, /tareas"
-    return "Comando no reconocido. Usá los botones o /panel."
+        return "SmartPyme Control\n\nUsá: /seguir, /pausar, /corregir, /estado, /tareas"
+    return "Comando no reconocido. Usá /panel."
 
 
 def handle_callback(data: str) -> str:
-    command = BUTTONS.get(data, "")
-    if not command:
-        return "Botón no reconocido."
-    return handle_command(command)
+    return handle_command(BUTTONS.get(data, "")) if data in BUTTONS else "Botón no reconocido."
 
 
 def poll_once() -> None:
@@ -272,27 +215,20 @@ def poll_once() -> None:
     result = api("getUpdates", payload)
     for update in result.get("result", []):
         write_offset(int(update["update_id"]) + 1)
-
         callback = update.get("callback_query")
         if callback:
             message = callback.get("message") or {}
-            chat = message.get("chat") or {}
-            chat_id = str(chat.get("id", ""))
+            chat_id = str((message.get("chat") or {}).get("id", ""))
             if chat_id != allowed_chat_id():
                 continue
             answer_callback(callback.get("id", ""))
-            reply = handle_callback(callback.get("data", ""))
-            send(reply)
+            send(handle_callback(callback.get("data", "")))
             continue
-
         message = update.get("message") or {}
-        chat = message.get("chat") or {}
-        chat_id = str(chat.get("id", ""))
-        text = message.get("text", "")
+        chat_id = str((message.get("chat") or {}).get("id", ""))
         if chat_id != allowed_chat_id():
             continue
-        reply = handle_command(text)
-        send(reply)
+        send(handle_command(message.get("text", "")))
 
 
 def main() -> None:
