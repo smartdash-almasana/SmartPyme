@@ -12,12 +12,14 @@ REPO = Path(__file__).resolve().parents[1]
 GATE = REPO / "factory" / "control" / "AUDIT_GATE.md"
 STATUS = REPO / "factory" / "control" / "FACTORY_STATUS.md"
 OFFSET_FILE = REPO / "factory" / "control" / ".telegram_control_offset"
+TASKS_DIR = REPO / "factory" / "ai_governance" / "tasks"
 
 BUTTONS = {
     "GO": "/run",
     "STOP": "/stop",
     "FIX": "/retry",
     "STATUS": "/status",
+    "TASKS": "/tasks",
 }
 
 
@@ -57,12 +59,15 @@ def control_keyboard() -> str:
         {
             "inline_keyboard": [
                 [
-                    {"text": "▶ GO", "callback_data": "GO"},
-                    {"text": "⛔ STOP", "callback_data": "STOP"},
+                    {"text": "▶ Seguir", "callback_data": "GO"},
+                    {"text": "⏸️ Pausar", "callback_data": "STOP"},
                 ],
                 [
-                    {"text": "🔁 FIX", "callback_data": "FIX"},
-                    {"text": "📊 STATUS", "callback_data": "STATUS"},
+                    {"text": "🔁 Corregir", "callback_data": "FIX"},
+                    {"text": "📊 Estado", "callback_data": "STATUS"},
+                ],
+                [
+                    {"text": "🧭 En curso", "callback_data": "TASKS"},
                 ],
             ]
         }
@@ -129,21 +134,92 @@ def status_text() -> str:
     return "\n".join(lines)
 
 
+def _read_simple_yaml(path: Path) -> dict[str, str]:
+    data: dict[str, str] = {}
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip() or line.lstrip().startswith("#") or ":" not in line:
+            i += 1
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if value in {">", "|", ">-", "|-"}:
+            block: list[str] = []
+            i += 1
+            while i < len(lines) and (lines[i].startswith(" ") or not lines[i].strip()):
+                if lines[i].strip():
+                    block.append(lines[i].strip())
+                i += 1
+            data[key] = " ".join(block).strip()
+            continue
+        data[key] = value
+        i += 1
+    return data
+
+
+def _pick(data: dict[str, str], *keys: str, default: str = "no informado") -> str:
+    for key in keys:
+        value = data.get(key, "").strip()
+        if value:
+            return value
+    return default
+
+
+def tasks_text() -> str:
+    if not TASKS_DIR.exists():
+        return "No encuentro la carpeta de tareas de la factoría."
+
+    tasks = []
+    for path in sorted(TASKS_DIR.glob("*.yaml")):
+        data = _read_simple_yaml(path)
+        status = data.get("status", "").lower()
+        if status in {"pending", "in_progress"}:
+            tasks.append((path, data))
+
+    if not tasks:
+        return "No hay tareas pendientes o en ejecución."
+
+    lines = ["🧭 Qué está preparado o en curso", ""]
+    for idx, (path, data) in enumerate(tasks[:5], start=1):
+        title = _pick(data, "title", "task_id", default=path.stem)
+        status = _pick(data, "status")
+        objective = _pick(data, "objective", "product_frame", default="sin descripción")
+        product = _pick(data, "product_frame", "product_goal", "product_final_target", default="SmartPyme Factory")
+        agents = _pick(data, "agents", default="Hermes coordina; Gemini analiza; Codex valida cuando corresponde")
+        lines.extend(
+            [
+                f"{idx}. {title}",
+                f"Estado: {status}",
+                f"Para qué sirve: {product[:280]}",
+                f"Qué se hace: {objective[:420]}",
+                f"Agentes: {agents[:220]}",
+                f"Trazabilidad: {path.relative_to(REPO)}",
+                "",
+            ]
+        )
+    return "\n".join(lines).strip()
+
+
 def handle_command(text: str) -> str:
     cmd = text.strip().split()[0].lower() if text.strip() else ""
     if cmd in {"/run", "/start", "/approve", "/go", "/seguir"}:
         write_gate("APPROVED", cmd)
-        return "OK: gate=APPROVED. La factoría puede ejecutar el próximo ciclo."
-    if cmd in {"/stop", "/block", "/kill", "/frenar"}:
+        return "OK: aprobado. La factoría puede ejecutar el próximo ciclo."
+    if cmd in {"/stop", "/block", "/kill", "/frenar", "/pausar"}:
         write_gate("BLOCKED", cmd)
-        return "OK: gate=BLOCKED. La factoría queda frenada."
-    if cmd in {"/retry", "/reject", "/fix", "/reprocesar"}:
+        return "OK: pausado. La factoría queda frenada."
+    if cmd in {"/retry", "/reject", "/fix", "/reprocesar", "/corregir"}:
         write_gate("REJECTED", cmd)
-        return "OK: gate=REJECTED. El runner reabrirá la última tarea."
+        return "OK: rechazado. El runner reabrirá la última tarea para corregirla."
     if cmd in {"/status", "/state", "/s", "/estado"}:
         return status_text()
+    if cmd in {"/tasks", "/tareas", "/encurso", "/en_curso"}:
+        return tasks_text()
     if cmd in {"/help", "help", "/panel"}:
-        return "SmartPyme Control\n\nUsá los botones o comandos: /go, /kill, /fix, /s"
+        return "SmartPyme Control\n\nUsá los botones o comandos: /go, /pausar, /corregir, /estado, /tareas"
     return "Comando no reconocido. Usá los botones o /panel."
 
 
