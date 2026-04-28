@@ -169,22 +169,8 @@ def _audit_card(event_status: str) -> str:
     changed = "no" if not git_status else "si"
 
     objective = _pick(task_data, "product_goal", "business_goal", "objective", default="dato no informado en la tarea")
-    product_outcome = _pick(
-        task_data,
-        "product_outcome",
-        "expected_product_outcome",
-        "resultado_producto",
-        "impacto_producto",
-        default="dato no informado en la tarea",
-    )
-    roadmap_ref = _pick(
-        task_data,
-        "roadmap_ref",
-        "roadmap_step",
-        "roadmap",
-        "fase",
-        default="dato no informado en la tarea",
-    )
+    product_outcome = _pick(task_data, "product_outcome", "expected_product_outcome", "resultado_producto", "impacto_producto", default="dato no informado en la tarea")
+    roadmap_ref = _pick(task_data, "roadmap_ref", "roadmap_step", "roadmap", "fase", default="dato no informado en la tarea")
     progress = _progress_label(event_status, gate, task_data)
 
     if "fallido" in progress or "FAIL" in last_result or last_error not in {"none", "cycle closed", ""}:
@@ -231,12 +217,12 @@ def _decision_keyboard() -> str:
         {
             "inline_keyboard": [
                 [
-                    {"text": "✅ Aprobar y seguir", "callback_data": "GO"},
-                    {"text": "🔁 Rechazar y corregir", "callback_data": "FIX"},
+                    {"text": "✅ Seguir", "callback_data": "SEGUIR"},
+                    {"text": "🔁 Rechazar y corregir", "callback_data": "CORREGIR"},
                 ],
                 [
-                    {"text": "⏸️ Pausar", "callback_data": "STOP"},
-                    {"text": "📊 Ver estado", "callback_data": "STATUS"},
+                    {"text": "⏸️ Pausar", "callback_data": "PAUSAR"},
+                    {"text": "📊 Ver estado", "callback_data": "ESTADO"},
                 ],
             ]
         }
@@ -261,7 +247,7 @@ def format_cycle_message(status: str, details: str = "") -> str:
             "SmartPyme Factory esta pausada para auditoria del producto.\n\n"
             f"{_audit_card(status_key)}\n\n"
             "Botones:\n"
-            "✅ Aprobar y seguir: aceptar el ciclo si la evidencia coincide con el objetivo.\n"
+            "✅ Seguir: aceptar el ciclo si la evidencia coincide con el objetivo y ejecutar una sola vuelta.\n"
             "🔁 Rechazar y corregir: reabrir la tarea si el resultado no cumple.\n"
             "⏸️ Pausar: no ejecutar nada por ahora.\n"
             "📊 Ver estado: pedir mas informacion antes de decidir."
@@ -282,7 +268,7 @@ def format_cycle_message(status: str, details: str = "") -> str:
         text = (
             "SmartPyme Factory termino el ciclo sin errores reportados.\n\n"
             f"{_audit_card(status_key)}\n\n"
-            "Usa los botones para aprobar, corregir, pausar o revisar estado."
+            "Usa los botones para seguir, corregir, pausar o revisar estado."
         )
     elif status_key == "CYCLE_FAIL":
         text = (
@@ -317,21 +303,12 @@ def send_telegram_message(text: str, reply_markup: str | None = None) -> bool:
         print("TELEGRAM_NOTIFY_SKIPPED missing env")
         return False
 
-    payload = {
-        "chat_id": chat_id,
-        "text": text[:3900],
-        "disable_web_page_preview": "true",
-    }
+    payload = {"chat_id": chat_id, "text": text[:3900], "disable_web_page_preview": "true"}
     if reply_markup:
         payload["reply_markup"] = reply_markup
 
     data = urllib.parse.urlencode(payload).encode("utf-8")
-
-    req = urllib.request.Request(
-        "https://api.telegram.org/bot" + token + "/sendMessage",
-        data=data,
-        method="POST",
-    )
+    req = urllib.request.Request("https://api.telegram.org/bot" + token + "/sendMessage", data=data, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             print(f"TELEGRAM_NOTIFY_STATUS {resp.status}")
