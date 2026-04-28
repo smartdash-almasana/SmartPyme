@@ -1,6 +1,6 @@
 task_id: gpt_director_auditor_bootstrap_001
 mode: governance
-status: pending
+status: done
 human_required: true
 objective: >
   Formalizar a GPT como Director-Auditor externo de SmartPyme Factory dentro del repo.

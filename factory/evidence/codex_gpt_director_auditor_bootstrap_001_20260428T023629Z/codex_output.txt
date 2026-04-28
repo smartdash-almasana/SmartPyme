@@ -1,0 +1,2342 @@
+Reading additional input from stdin...
+OpenAI Codex v0.125.0 (research preview)
+--------
+workdir: /opt/smartpyme-factory/repos/SmartPyme
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /home/neoalmasana/.codex/memories]
+reasoning effort: none
+reasoning summaries: none
+session id: 019dd1f0-0211-7ae2-aa79-6dcf826a3fd5
+--------
+user
+Actua como Codex Builder controlado para SmartPyme.
+
+REGLAS OBLIGATORIAS:
+- Cumpli CODEX.md y AGENTS.md.
+- No inventes rutas, dependencias ni contratos.
+- Opera solo dentro del repo actual.
+- Ejecuta una unidad pequena.
+- Si falta contexto, responde BLOCKED.
+- Si modificas archivos, deja evidencia verificable.
+- No hagas refactor global.
+
+TAREA YAML:
+task_id: gpt_director_auditor_bootstrap_001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Formalizar a GPT como Director-Auditor externo de SmartPyme Factory dentro del repo.
+  Debe quedar documentado el rol, el prompt canonico, el skill operativo y la forma de
+  producir auditorias, roadmap y proximo NEXT_CYCLE sin depender de memoria conversacional.
+allowed_files:
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - factory/ai_governance/skills/gpt_director_auditor.yaml
+  - factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - factory/control/**
+  - factory/evidence/**
+  - factory/bugs/**
+required_tests:
+  - test -f docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - test -f factory/ai_governance/skills/gpt_director_auditor.yaml
+  - test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+  - grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+acceptance_criteria:
+  - Existe contrato documental del rol GPT Director-Auditor.
+  - Existe prompt canonico versionado en el repo.
+  - Existe skill YAML con inputs, outputs, reglas, acciones permitidas y prohibidas.
+  - Existe esta task spec para trazabilidad de la formalizacion.
+  - No se toca core, runner, Telegram, control, evidencia ni bugs.
+preflight_commands:
+  - git status --short
+  - test -f AGENTS.md
+  - test -f factory/ai_governance/taskspec.schema.json
+post_commands:
+  - git status --short
+  - git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+
+
+SALIDA FINAL OBLIGATORIA:
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+DIFF
+BLOQUEOS
+RIESGOS
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the vendored bubblewrap in the meantime.
+codex
+Voy a ejecutar el preflight y leer los contratos operativos (`GPT.md`, `CODEX.md`, `AGENTS.md`) antes de tocar nada. Mantendré el alcance limitado a los cuatro archivos permitidos.
+exec
+/bin/bash -lc "sed -n '1,220p' GPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT — ENTRADA OBLIGATORIA SMARTPYME
+
+Estado: CANONICO v1
+
+Todo chat nuevo de GPT que participe en SmartPyme debe empezar por este archivo.
+
+## Rol activo
+
+GPT actua como Director-Auditor externo de SmartPyme Factory.
+
+## Orden obligatorio de lectura
+
+1. `GPT.md`
+2. `AGENTS.md`
+3. `docs/factory/GPT_DIRECTOR_AUDITOR.md`
+4. `prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md`
+5. `factory/ai_governance/skills/gpt_director_auditor.yaml`
+6. `factory/ai_governance/taskspec.schema.json`
+7. `factory/control/AUDIT_GATE.md`, si existe
+8. `factory/control/FACTORY_STATUS.md`, si existe
+9. `factory/control/NEXT_CYCLE.md`, si existe
+10. evidencia reciente en `factory/evidence/`
+
+## Conducta esperada
+
+- No responder desde memoria conversacional.
+- Leer estado real del repo antes de decidir.
+- Auditar evidencia antes de aprobar.
+- Proponer una sola siguiente tarea.
+- Escribir specs concretas y ejecutables.
+- Mantener foco en SmartPyme Factory.
+
+## Prohibiciones
+
+- No inventar estado del repo.
+- No aprobar sin evidencia.
+- No mezclar frentes.
+- No tocar core sin task spec explicita.
+- No entregar placeholders cuando se puede leer el repo.
+
+## Prompt minimo para chat nuevo
+
+Lee `GPT.md` del repo SmartPyme y opera como GPT Director-Auditor. Usa archivos canonicos del repo, revisa gate/evidencia/ultima tarea y dame solo el proximo paso concreto.
+
+exec
+/bin/bash -lc 'pwd && git status --short && test -f AGENTS.md && test -f GPT.md && test -f CODEX.md && test -f factory/ai_governance/taskspec.schema.json' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+?? factory/control/.telegram_cycle_lock
+?? factory/runner_logs/
+
+exec
+/bin/bash -lc "sed -n '1,220p' CODEX.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# CODEX — Builder controlado SmartPyme
+
+## ROL
+Codex actua como Builder de codigo y revisor tecnico acotado. No decide arquitectura, no cambia roadmap y no declara cierre de ciclo sin evidencia.
+
+## FUENTE DE VERDAD
+- Repositorio GitHub actual.
+- `AGENTS.md` para reglas generales.
+- `GEMINI.md` para protocolo Write-Verify.
+- `factory/control/NEXT_CYCLE.md` cuando exista.
+- Documentos canonicos en `docs/`.
+
+## PROHIBICIONES
+- No inventar archivos, rutas, clases ni contratos.
+- No tocar core si la orden no lo habilita explicitamente.
+- No hacer refactor global.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicitamente indicada.
+- No declarar exito si no ejecuto verificacion.
+- No usar memoria conversacional como estado.
+
+## EJECUCION OBLIGATORIA
+1. Leer la orden vigente.
+2. Limitar el alcance a una unidad pequena.
+3. Modificar solo archivos necesarios.
+4. Ejecutar verificacion fisica.
+5. Ejecutar test minimo o justificar bloqueo.
+6. Reportar diff, tests y evidencia.
+
+## ANTI-ALUCINACION
+Si falta una dependencia, archivo, contrato o contexto: bloquear. No completar por intuicion.
+
+## FORMATO DE SALIDA
+
+```text
+VEREDICTO
+ARCHIVOS_MODIFICADOS
+VERIFICACION_FISICA
+TESTS
+EVIDENCIA
+RIESGOS
+BLOQUEOS
+```
+
+## CIERRE
+Un cambio solo puede considerarse listo si deja evidencia reproducible y no contradice la arquitectura canonica.
+
+exec
+/bin/bash -lc "sed -n '1,220p' factory/ai_governance/taskspec.schema.json" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SmartPyme Factory TaskSpec",
+  "type": "object",
+  "required": [
+    "task_id",
+    "objective",
+    "allowed_files",
+    "forbidden_files",
+    "required_tests",
+    "acceptance_criteria",
+    "preflight_commands",
+    "post_commands",
+    "status",
+    "mode"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "create_only",
+        "patch_only",
+        "governance",
+        "product"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10
+    },
+    "allowed_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "locked_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "preflight_commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "post_commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "submitted",
+        "blocked",
+        "validated",
+        "rejected"
+      ]
+    },
+    "human_required": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}
+codex
+Preflight básico correcto: estoy en el repo, existen `AGENTS.md`, `GPT.md`, `CODEX.md` y el schema de taskspec. Hay cambios previos en `factory/control/*` y `factory/runner_logs/`; los voy a ignorar porque están fuera de alcance y además son archivos prohibidos.
+exec
+/bin/bash -lc "test -f docs/factory/GPT_DIRECTOR_AUDITOR.md; printf 'docs_status=%s\\n' \""'$?"; ls -la docs/factory 2>/dev/null' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs_status=0
+total 68
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 28 01:46 .
+drwxr-xr-x 4 neoalmasana neoalmasana 4096 Apr 27 13:57 ..
+-rw-r--r-- 1 neoalmasana neoalmasana 4881 Apr 27 14:23 ANTI_DERIVA_PRIORITY_QA_LOOP.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1276 Apr 28 01:10 AUDIT_CONTEXT_BUNDLE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3294 Apr 27 13:57 CODEX_BUILDER_INTEGRATION.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1470 Apr 27 14:50 DAILY_FACTORY_CLOSURE_REPORT.md
+-rw-r--r-- 1 neoalmasana neoalmasana 2712 Apr 27 13:57 DISK_RETENTION_AND_EVIDENCE_POLICY.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3364 Apr 27 23:52 FACTORY_CONTRATO_OPERATIVO.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1051 Apr 27 14:56 FACTORY_OBSERVABILITY_STATUS.md
+-rw-r--r-- 1 neoalmasana neoalmasana  546 Apr 28 01:29 GPT_DIRECTOR_AUDITOR.md
+-rw-r--r-- 1 neoalmasana neoalmasana 3786 Apr 27 14:23 HERMES_CODEX_GEMINI_GOVERNANCE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 4598 Apr 27 23:52 LOOP_DOCUMENTACION_INDUSTRIAL.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1577 Apr 28 01:46 PYTHON_ENVIRONMENT_CONTRACT.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1440 Apr 27 14:15 TECH_SPEC_QUEUE.md
+-rw-r--r-- 1 neoalmasana neoalmasana 1039 Apr 27 14:56 TELEGRAM_DAILY_REPORT_DELIVERY.md
+
+exec
+/bin/bash -lc "test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md; printf 'prompt_status=%s\\n' \""'$?"; ls -la prompts 2>/dev/null' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+prompt_status=0
+total 12
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 Apr 28 01:29 .
+drwxr-xr-x 24 neoalmasana neoalmasana 4096 Apr 28 01:46 ..
+-rw-r--r--  1 neoalmasana neoalmasana 3248 Apr 28 01:29 GPT_DIRECTOR_AUDITOR_PROMPT.md
+
+exec
+/bin/bash -lc "test -f factory/ai_governance/skills/gpt_director_auditor.yaml; printf 'skill_status=%s\\n' \""'$?"; ls -la factory/ai_governance/skills 2>/dev/null' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+skill_status=0
+total 24
+drwxr-xr-x 5 neoalmasana neoalmasana 4096 Apr 28 01:34 .
+drwxr-xr-x 5 neoalmasana neoalmasana 4096 Apr 27 11:57 ..
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 27 11:57 factory_auditor
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 27 11:57 factory_bounded_builder
+-rw-r--r-- 1 neoalmasana neoalmasana 1674 Apr 28 01:34 gpt_director_auditor.yaml
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 27 11:57 hermes_smartpyme_factory
+
+exec
+/bin/bash -lc "test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml; printf 'task_status=%s\\n' \""'$?"; ls -la factory/ai_governance/tasks 2>/dev/null' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+task_status=0
+total 76
+drwxr-xr-x 2 neoalmasana neoalmasana 4096 Apr 28 01:44 .
+drwxr-xr-x 5 neoalmasana neoalmasana 4096 Apr 27 11:57 ..
+-rw-r--r-- 1 neoalmasana neoalmasana 3076 Apr 28 01:47 000_environment_contract_python_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 2287 Apr 28 01:12 audit_context_bundle_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana  393 Apr 27 22:16 core_reconciliacion_v1.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 2108 Apr 28 01:55 factory_contract_alignment_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana  178 Apr 27 22:23 factory_observability_status_v1.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 1946 Apr 28 01:34 gpt_director_auditor_bootstrap_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 4109 Apr 28 00:39 kernel_total_audit_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 5422 Apr 28 00:59 product_final_concept_audit_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 1033 Apr 27 11:57 source_of_truth_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 4706 Apr 28 01:54 task_loop_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 2364 Apr 27 23:57 task_priority_hardening_001.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana  431 Apr 27 15:30 telegram_cycle_closed_notify_v1.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana  165 Apr 27 15:03 telegram_delivery_setup_v1.yaml
+-rw-r--r-- 1 neoalmasana neoalmasana 2075 Apr 27 23:57 telegram_human_notifications_001.yaml
+
+codex
+Los cuatro archivos permitidos ya existen. Ahora voy a inspeccionarlos contra el objetivo para decidir si basta validar o si hace falta una actualización mínima.
+exec
+/bin/bash -lc "sed -n '1,220p' docs/factory/GPT_DIRECTOR_AUDITOR.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT DIRECTOR-AUDITOR — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## Rol
+
+GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+
+## Mandato
+
+- auditar ciclos cerrados por la factoria;
+- aprobar, rechazar o bloquear en base a evidencia;
+- escribir el proximo roadmap operativo;
+- convertir decisiones del owner en specs ejecutables;
+- preservar la arquitectura canonica de SmartPyme;
+- no tocar core sin contrato explicito.
+
+## Regla principal
+
+Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+
+exec
+/bin/bash -lc "sed -n '1,260p' prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT DIRECTOR-AUDITOR PROMPT — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## System role
+
+Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
+
+Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+
+## Fuentes de verdad
+
+Orden obligatorio:
+
+1. Archivos actuales del repositorio.
+2. `AGENTS.md`.
+3. `CODEX.md`.
+4. `GEMINI.md`.
+5. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+6. `factory/control/AUDIT_GATE.md`.
+7. `factory/control/FACTORY_STATUS.md`.
+8. `factory/control/NEXT_CYCLE.md`, si existe.
+9. Evidencia en `factory/evidence/`.
+10. Bugs en `factory/bugs/`.
+
+No uses memoria conversacional como fuente de verdad operativa.
+
+## Responsabilidades
+
+- Auditar ciclos cerrados por Hermes/Codex.
+- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+- Exigir evidencia reproducible antes de aprobar.
+- Escribir specs YAML compatibles con `factory/ai_governance/taskspec.schema.json`.
+- Escribir roadmap operativo corto, priorizado y ejecutable.
+- Mantener foco en un solo frente por ciclo.
+- Preservar la arquitectura canonica: Ingesta -> Normalizacion -> Entity Resolution -> Clarification -> Orquestacion -> Comparacion -> Hallazgos -> Comunicacion -> Accion.
+
+## Prohibiciones
+
+- No aprobar si hay codigo pendiente sin explicar.
+- No aprobar si faltan tests requeridos y no hay bloqueo justificado.
+- No desbloquear gate sin revisar evidencia.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicita.
+- No pedir al owner que repita datos que ya estan en evidencia.
+- No generar tareas abiertas o ambiguas.
+- No usar `n8n` como arquitectura nueva.
+- No tocar core si la tarea es de gobernanza.
+
+## Criterio de decision
+
+### APPROVED
+Solo si:
+- la evidencia existe;
+- el cambio coincide con el objetivo;
+- los archivos modificados estan dentro del alcance;
+- los tests o smokes minimos pasaron, o el bloqueo de entorno esta documentado;
+- no hay deriva de arquitectura.
+
+### REJECTED
+Usar cuando:
+- la implementacion no cumple el objetivo;
+- toca archivos fuera de alcance;
+- mezcla frentes;
+- degrada UX, auditoria o trazabilidad;
+- inventa contratos.
+
+### BLOCKED
+Usar cuando:
+- falta entorno de validacion;
+- falta evidencia;
+- el repo esta sucio con cambios ajenos;
+- hay conflicto entre tarea, roadmap y arquitectura.
+
+### NO_VALIDADO
+Usar cuando:
+- no se puede verificar filesystem, diff, tests o evidencia.
+
+## Formato de salida obligatorio
+
+```text
+VEREDICTO
+DECISION
+EVIDENCIA_REVISADA
+ARCHIVOS_AFECTADOS
+CUMPLIMIENTO_DEL_OBJETIVO
+RIESGOS
+PROXIMO_ROADMAP
+NEXT_CYCLE_PROPUESTO
+```
+
+## NEXT_CYCLE_PROPUESTO
+
+Cuando corresponda, entregar una tarea YAML con estos campos:
+
+```yaml
+task_id: string
+mode: governance | product | patch_only | create_only
+status: pending
+human_required: true|false
+objective: >
+  texto
+allowed_files:
+  - ruta
+forbidden_files:
+  - ruta
+required_tests:
+  - comando
+acceptance_criteria:
+  - criterio
+preflight_commands:
+  - comando
+post_commands:
+  - comando
+```
+
+## Regla final
+
+Ante duda: bloquear. Sin evidencia: no aprobar.
+
+exec
+/bin/bash -lc "sed -n '1,260p' factory/ai_governance/skills/gpt_director_auditor.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+skill_id: gpt_director_auditor
+name: GPT Director-Auditor
+version: 1
+status: canonical
+owner: GPT
+purpose: >
+  Gobernar SmartPyme Factory como director tecnico externo: auditar evidencia,
+  decidir gates, escribir roadmap operativo y producir specs ejecutables para
+  el siguiente ciclo sin tocar core productivo.
+
+inputs:
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/control/NEXT_CYCLE.md
+  - factory/evidence/**
+  - factory/bugs/**
+  - git status --short
+  - git log --oneline -5
+
+outputs:
+  - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+  - audit_summary
+  - risks
+  - next_roadmap
+  - next_cycle_yaml
+
+rules:
+  - No aprobar sin evidencia reproducible.
+  - No validar trabajo propio de Builder.
+  - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+  - Una sola tarea por ciclo.
+  - Si falta contexto verificable, bloquear.
+  - Si hay cambios fuera de alcance, rechazar o bloquear.
+  - Si falta contrato de entorno, bloquear con motivo exacto.
+
+allowed_actions:
+  - redactar auditoria
+  - redactar roadmap operativo
+  - redactar task spec compatible con taskspec.schema.json
+  - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+
+forbidden_actions:
+  - modificar core Python sin task spec explicita
+  - aprobar cambios sin tests o smoke verificable
+  - mezclar frentes de producto
+  - usar memoria conversacional como evidencia
+  - inventar rutas o archivos
+
+acceptance_criteria:
+  - La salida incluye decision concreta.
+  - La salida cita evidencia revisada.
+  - La salida propone maximo una proxima tarea.
+  - La tarea propuesta tiene allowed_files, forbidden_files, tests y criterios de aceptacion.
+
+exec
+/bin/bash -lc "sed -n '1,260p' factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+task_id: gpt_director_auditor_bootstrap_001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Formalizar a GPT como Director-Auditor externo de SmartPyme Factory dentro del repo.
+  Debe quedar documentado el rol, el prompt canonico, el skill operativo y la forma de
+  producir auditorias, roadmap y proximo NEXT_CYCLE sin depender de memoria conversacional.
+allowed_files:
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - factory/ai_governance/skills/gpt_director_auditor.yaml
+  - factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - factory/control/**
+  - factory/evidence/**
+  - factory/bugs/**
+required_tests:
+  - test -f docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - test -f factory/ai_governance/skills/gpt_director_auditor.yaml
+  - test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+  - grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+acceptance_criteria:
+  - Existe contrato documental del rol GPT Director-Auditor.
+  - Existe prompt canonico versionado en el repo.
+  - Existe skill YAML con inputs, outputs, reglas, acciones permitidas y prohibidas.
+  - Existe esta task spec para trazabilidad de la formalizacion.
+  - No se toca core, runner, Telegram, control, evidencia ni bugs.
+preflight_commands:
+  - git status --short
+  - test -f AGENTS.md
+  - test -f factory/ai_governance/taskspec.schema.json
+post_commands:
+  - git status --short
+  - git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+
+codex
+PLAN: objetivo, formalizar el contrato GPT Director-Auditor sin tocar core ni control; archivos permitidos, los cuatro listados en la task; archivos prohibidos, `app/**`, `smartcounter_core/**`, runner, Telegram, `factory/control/**`, `factory/evidence/**`, `factory/bugs/**`; cierre, tests requeridos pasan y el diff queda limitado al alcance. Haré una actualización documental mínima para que el rol no dependa solo del prompt y el skill incluya explícitamente el arranque desde `GPT.md`.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/docs/factory/GPT_DIRECTOR_AUDITOR.md
+/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills/gpt_director_auditor.yaml
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..ebd22e3e318ce872ae96f05eb10231486532303f
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -6,6 +6,10 @@
+ 
+ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +19,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..ebd22e3e318ce872ae96f05eb10231486532303f
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -6,6 +6,10 @@
+ 
+ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +19,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+
+codex
+Edición hecha solo en el documento del rol y el skill YAML. Ahora verifico existencia física, contenido relevante, tests requeridos y diff acotado.
+exec
+/bin/bash -lc 'pwd && git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+/opt/smartpyme-factory/repos/SmartPyme
+ M docs/factory/GPT_DIRECTOR_AUDITOR.md
+ M factory/ai_governance/skills/gpt_director_auditor.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+?? factory/control/.telegram_cycle_lock
+?? factory/runner_logs/
+
+exec
+/bin/bash -lc "test -f docs/factory/GPT_DIRECTOR_AUDITOR.md && ls -la docs/factory/GPT_DIRECTOR_AUDITOR.md && sed -n '1,220p' docs/factory/GPT_DIRECTOR_AUDITOR.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 1802 Apr 28 02:35 docs/factory/GPT_DIRECTOR_AUDITOR.md
+# GPT DIRECTOR-AUDITOR — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## Rol
+
+GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+
+No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
+conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
+aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
+
+## Mandato
+
+- auditar ciclos cerrados por la factoria;
+- aprobar, rechazar o bloquear en base a evidencia;
+- escribir el proximo roadmap operativo;
+- convertir decisiones del owner en specs ejecutables;
+- preservar la arquitectura canonica de SmartPyme;
+- no tocar core sin contrato explicito.
+
+## Entrada canonica
+
+Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
+indicados por el repo. La memoria conversacional no es entrada valida.
+
+## Produccion de auditorias
+
+Cada auditoria debe revisar, como minimo:
+
+- objetivo de la tarea;
+- alcance permitido y prohibido;
+- `git status --short`;
+- diff relevante;
+- evidencia declarada;
+- comandos de verificacion y tests;
+- riesgos o bloqueos.
+
+La decision debe ser una de:
+
+- `APPROVED`;
+- `REJECTED`;
+- `BLOCKED`;
+- `NO_VALIDADO`.
+
+## Roadmap operativo
+
+El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
+a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
+features de producto.
+
+## NEXT_CYCLE
+
+Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
+`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
+`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
+
+## Regla principal
+
+Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+
+exec
+/bin/bash -lc "test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md && ls -la prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md && sed -n '1,220p' prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 3248 Apr 28 01:29 prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+# GPT DIRECTOR-AUDITOR PROMPT — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## System role
+
+Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
+
+Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+
+## Fuentes de verdad
+
+Orden obligatorio:
+
+1. Archivos actuales del repositorio.
+2. `AGENTS.md`.
+3. `CODEX.md`.
+4. `GEMINI.md`.
+5. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+6. `factory/control/AUDIT_GATE.md`.
+7. `factory/control/FACTORY_STATUS.md`.
+8. `factory/control/NEXT_CYCLE.md`, si existe.
+9. Evidencia en `factory/evidence/`.
+10. Bugs en `factory/bugs/`.
+
+No uses memoria conversacional como fuente de verdad operativa.
+
+## Responsabilidades
+
+- Auditar ciclos cerrados por Hermes/Codex.
+- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+- Exigir evidencia reproducible antes de aprobar.
+- Escribir specs YAML compatibles con `factory/ai_governance/taskspec.schema.json`.
+- Escribir roadmap operativo corto, priorizado y ejecutable.
+- Mantener foco en un solo frente por ciclo.
+- Preservar la arquitectura canonica: Ingesta -> Normalizacion -> Entity Resolution -> Clarification -> Orquestacion -> Comparacion -> Hallazgos -> Comunicacion -> Accion.
+
+## Prohibiciones
+
+- No aprobar si hay codigo pendiente sin explicar.
+- No aprobar si faltan tests requeridos y no hay bloqueo justificado.
+- No desbloquear gate sin revisar evidencia.
+- No mezclar SmartPyme con Exceland, SmartSync u otros productos salvo migracion explicita.
+- No pedir al owner que repita datos que ya estan en evidencia.
+- No generar tareas abiertas o ambiguas.
+- No usar `n8n` como arquitectura nueva.
+- No tocar core si la tarea es de gobernanza.
+
+## Criterio de decision
+
+### APPROVED
+Solo si:
+- la evidencia existe;
+- el cambio coincide con el objetivo;
+- los archivos modificados estan dentro del alcance;
+- los tests o smokes minimos pasaron, o el bloqueo de entorno esta documentado;
+- no hay deriva de arquitectura.
+
+### REJECTED
+Usar cuando:
+- la implementacion no cumple el objetivo;
+- toca archivos fuera de alcance;
+- mezcla frentes;
+- degrada UX, auditoria o trazabilidad;
+- inventa contratos.
+
+### BLOCKED
+Usar cuando:
+- falta entorno de validacion;
+- falta evidencia;
+- el repo esta sucio con cambios ajenos;
+- hay conflicto entre tarea, roadmap y arquitectura.
+
+### NO_VALIDADO
+Usar cuando:
+- no se puede verificar filesystem, diff, tests o evidencia.
+
+## Formato de salida obligatorio
+
+```text
+VEREDICTO
+DECISION
+EVIDENCIA_REVISADA
+ARCHIVOS_AFECTADOS
+CUMPLIMIENTO_DEL_OBJETIVO
+RIESGOS
+PROXIMO_ROADMAP
+NEXT_CYCLE_PROPUESTO
+```
+
+## NEXT_CYCLE_PROPUESTO
+
+Cuando corresponda, entregar una tarea YAML con estos campos:
+
+```yaml
+task_id: string
+mode: governance | product | patch_only | create_only
+status: pending
+human_required: true|false
+objective: >
+  texto
+allowed_files:
+  - ruta
+forbidden_files:
+  - ruta
+required_tests:
+  - comando
+acceptance_criteria:
+  - criterio
+preflight_commands:
+  - comando
+post_commands:
+  - comando
+```
+
+## Regla final
+
+Ante duda: bloquear. Sin evidencia: no aprobar.
+
+exec
+/bin/bash -lc "test -f factory/ai_governance/skills/gpt_director_auditor.yaml && ls -la factory/ai_governance/skills/gpt_director_auditor.yaml && sed -n '1,220p' factory/ai_governance/skills/gpt_director_auditor.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 2046 Apr 28 02:35 factory/ai_governance/skills/gpt_director_auditor.yaml
+skill_id: gpt_director_auditor
+name: GPT Director-Auditor
+version: 1
+status: canonical
+owner: GPT
+purpose: >
+  Gobernar SmartPyme Factory como director tecnico externo: auditar evidencia,
+  decidir gates, escribir roadmap operativo y producir specs ejecutables para
+  el siguiente ciclo sin tocar core productivo.
+
+inputs:
+  - GPT.md
+  - AGENTS.md
+  - CODEX.md
+  - GEMINI.md
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - factory/control/AUDIT_GATE.md
+  - factory/control/FACTORY_STATUS.md
+  - factory/control/NEXT_CYCLE.md
+  - factory/evidence/**
+  - factory/bugs/**
+  - git status --short
+  - git log --oneline -5
+
+outputs:
+  - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+  - evidence_reviewed
+  - affected_files
+  - objective_compliance
+  - audit_summary
+  - risks
+  - next_roadmap
+  - next_cycle_yaml
+
+rules:
+  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+  - No aprobar sin evidencia reproducible.
+  - No validar trabajo propio de Builder.
+  - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+  - Una sola tarea por ciclo.
+  - Si falta contexto verificable, bloquear.
+  - Si hay cambios fuera de alcance, rechazar o bloquear.
+  - Si falta contrato de entorno, bloquear con motivo exacto.
+
+allowed_actions:
+  - redactar auditoria
+  - redactar roadmap operativo
+  - redactar task spec compatible con taskspec.schema.json
+  - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+  - proponer el proximo NEXT_CYCLE como una unica task YAML
+
+forbidden_actions:
+  - modificar core Python sin task spec explicita
+  - aprobar cambios sin tests o smoke verificable
+  - mezclar frentes de producto
+  - usar memoria conversacional como evidencia
+  - inventar rutas o archivos
+  - proponer multiples ciclos simultaneos
+
+acceptance_criteria:
+  - La salida incluye decision concreta.
+  - La salida cita evidencia revisada.
+  - La salida propone maximo una proxima tarea.
+  - La tarea propuesta tiene allowed_files, forbidden_files, tests y criterios de aceptacion.
+
+exec
+/bin/bash -lc "test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml && ls -la factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml && sed -n '1,220p' factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+-rw-r--r-- 1 neoalmasana neoalmasana 1946 Apr 28 01:34 factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+task_id: gpt_director_auditor_bootstrap_001
+mode: governance
+status: pending
+human_required: true
+objective: >
+  Formalizar a GPT como Director-Auditor externo de SmartPyme Factory dentro del repo.
+  Debe quedar documentado el rol, el prompt canonico, el skill operativo y la forma de
+  producir auditorias, roadmap y proximo NEXT_CYCLE sin depender de memoria conversacional.
+allowed_files:
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - factory/ai_governance/skills/gpt_director_auditor.yaml
+  - factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - scripts/hermes_factory_runner.py
+  - factory/telegram_notify.py
+  - factory/control/**
+  - factory/evidence/**
+  - factory/bugs/**
+required_tests:
+  - test -f docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+  - test -f factory/ai_governance/skills/gpt_director_auditor.yaml
+  - test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+  - grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+acceptance_criteria:
+  - Existe contrato documental del rol GPT Director-Auditor.
+  - Existe prompt canonico versionado en el repo.
+  - Existe skill YAML con inputs, outputs, reglas, acciones permitidas y prohibidas.
+  - Existe esta task spec para trazabilidad de la formalizacion.
+  - No se toca core, runner, Telegram, control, evidencia ni bugs.
+preflight_commands:
+  - git status --short
+  - test -f AGENTS.md
+  - test -f factory/ai_governance/taskspec.schema.json
+post_commands:
+  - git status --short
+  - git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml
+
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..ebd22e3e318ce872ae96f05eb10231486532303f
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -6,6 +6,10 @@
+ 
+ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +19,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+
+exec
+/bin/bash -lc 'test -f docs/factory/GPT_DIRECTOR_AUDITOR.md && test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md && test -f factory/ai_governance/skills/gpt_director_auditor.yaml && test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml && grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+factory/ai_governance/skills/gpt_director_auditor.yaml:name: GPT Director-Auditor
+
+exec
+/bin/bash -lc 'git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b..ebd22e3 100644
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -6,6 +6,10 @@ Estado: CANONICO v1
+ 
+ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +19,42 @@ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme F
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20..f2139e7 100644
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@ purpose: >
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@ inputs:
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@ allowed_actions:
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@ forbidden_actions:
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+
+exec
+/bin/bash -lc 'git diff --name-only' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs/factory/GPT_DIRECTOR_AUDITOR.md
+factory/ai_governance/skills/gpt_director_auditor.yaml
+factory/control/.telegram_control_offset
+factory/control/AUDIT_GATE.md
+factory/control/FACTORY_STATUS.md
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M docs/factory/GPT_DIRECTOR_AUDITOR.md
+ M factory/ai_governance/skills/gpt_director_auditor.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+?? factory/control/.telegram_cycle_lock
+?? factory/runner_logs/
+
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..ebd22e3e318ce872ae96f05eb10231486532303f
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -6,6 +6,10 @@
+ 
+ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +19,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+
+codex
+El test `grep` pasa porque el skill contiene la cadena exacta, pero el documento y el prompt usan variantes en mayúsculas o separadas. Voy a normalizar la cadena “GPT Director-Auditor” en los tres artefactos para que la evidencia sea más directa.
+apply patch
+patch: completed
+/opt/smartpyme-factory/repos/SmartPyme/docs/factory/GPT_DIRECTOR_AUDITOR.md
+/opt/smartpyme-factory/repos/SmartPyme/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..2a4c19428dd8e084d4db844295f2f9d3b4aef7c2
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -4,8 +4,13 @@
+ 
+ ## Rol
+ 
+-GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
++GPT opera como GPT Director-Auditor: director tecnico externo y auditor
++humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +20,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+diff --git a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+index 10b243e4d6e836e8e7c96cfa39fbd28839ebbc35..b7c2c913834bb78a37e8d6dbd9f553c50224c9fe
+--- a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
++++ b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+@@ -4,7 +4,7 @@
+ 
+ ## System role
+ 
+-Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
++Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+ 
+ Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+ 
+
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..2a4c19428dd8e084d4db844295f2f9d3b4aef7c2
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -4,8 +4,13 @@
+ 
+ ## Rol
+ 
+-GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
++GPT opera como GPT Director-Auditor: director tecnico externo y auditor
++humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +20,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+diff --git a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+index 10b243e4d6e836e8e7c96cfa39fbd28839ebbc35..b7c2c913834bb78a37e8d6dbd9f553c50224c9fe
+--- a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
++++ b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+@@ -4,7 +4,7 @@
+ 
+ ## System role
+ 
+-Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
++Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+ 
+ Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+ 
+
+exec
+/bin/bash -lc 'test -f docs/factory/GPT_DIRECTOR_AUDITOR.md && test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md && test -f factory/ai_governance/skills/gpt_director_auditor.yaml && test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml && grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+docs/factory/GPT_DIRECTOR_AUDITOR.md:GPT opera como GPT Director-Auditor: director tecnico externo y auditor
+prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md:Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+factory/ai_governance/skills/gpt_director_auditor.yaml:name: GPT Director-Auditor
+
+exec
+/bin/bash -lc "sed -n '1,80p' docs/factory/GPT_DIRECTOR_AUDITOR.md && sed -n '1,40p' prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md" in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+# GPT DIRECTOR-AUDITOR — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## Rol
+
+GPT opera como GPT Director-Auditor: director tecnico externo y auditor
+humano-asistido de SmartPyme Factory.
+
+No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
+conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
+aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
+
+## Mandato
+
+- auditar ciclos cerrados por la factoria;
+- aprobar, rechazar o bloquear en base a evidencia;
+- escribir el proximo roadmap operativo;
+- convertir decisiones del owner en specs ejecutables;
+- preservar la arquitectura canonica de SmartPyme;
+- no tocar core sin contrato explicito.
+
+## Entrada canonica
+
+Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
+indicados por el repo. La memoria conversacional no es entrada valida.
+
+## Produccion de auditorias
+
+Cada auditoria debe revisar, como minimo:
+
+- objetivo de la tarea;
+- alcance permitido y prohibido;
+- `git status --short`;
+- diff relevante;
+- evidencia declarada;
+- comandos de verificacion y tests;
+- riesgos o bloqueos.
+
+La decision debe ser una de:
+
+- `APPROVED`;
+- `REJECTED`;
+- `BLOCKED`;
+- `NO_VALIDADO`.
+
+## Roadmap operativo
+
+El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
+a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
+features de producto.
+
+## NEXT_CYCLE
+
+Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
+`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
+`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
+
+## Regla principal
+
+Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+# GPT DIRECTOR-AUDITOR PROMPT — SmartPyme Factory
+
+Estado: CANONICO v1
+
+## System role
+
+Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+
+Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+
+## Fuentes de verdad
+
+Orden obligatorio:
+
+1. Archivos actuales del repositorio.
+2. `AGENTS.md`.
+3. `CODEX.md`.
+4. `GEMINI.md`.
+5. `docs/factory/GPT_DIRECTOR_AUDITOR.md`.
+6. `factory/control/AUDIT_GATE.md`.
+7. `factory/control/FACTORY_STATUS.md`.
+8. `factory/control/NEXT_CYCLE.md`, si existe.
+9. Evidencia en `factory/evidence/`.
+10. Bugs en `factory/bugs/`.
+
+No uses memoria conversacional como fuente de verdad operativa.
+
+## Responsabilidades
+
+- Auditar ciclos cerrados por Hermes/Codex.
+- Decidir `APPROVED`, `REJECTED`, `BLOCKED` o `NO_VALIDADO`.
+- Exigir evidencia reproducible antes de aprobar.
+- Escribir specs YAML compatibles con `factory/ai_governance/taskspec.schema.json`.
+- Escribir roadmap operativo corto, priorizado y ejecutable.
+- Mantener foco en un solo frente por ciclo.
+- Preservar la arquitectura canonica: Ingesta -> Normalizacion -> Entity Resolution -> Clarification -> Orquestacion -> Comparacion -> Hallazgos -> Comunicacion -> Accion.
+
+## Prohibiciones
+
+- No aprobar si hay codigo pendiente sin explicar.
+
+exec
+/bin/bash -lc 'git diff -- docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b..2a4c194 100644
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -4,7 +4,12 @@ Estado: CANONICO v1
+ 
+ ## Rol
+ 
+-GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
++GPT opera como GPT Director-Auditor: director tecnico externo y auditor
++humano-asistido de SmartPyme Factory.
++
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
+ 
+ ## Mandato
+ 
+@@ -15,6 +20,42 @@ GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme F
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20..f2139e7 100644
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@ purpose: >
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@ inputs:
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@ allowed_actions:
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@ forbidden_actions:
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+diff --git a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+index 10b243e..b7c2c91 100644
+--- a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
++++ b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+@@ -4,7 +4,7 @@ Estado: CANONICO v1
+ 
+ ## System role
+ 
+-Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
++Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+ 
+ Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+ 
+
+exec
+/bin/bash -lc 'git status --short' in /opt/smartpyme-factory/repos/SmartPyme
+ succeeded in 0ms:
+ M docs/factory/GPT_DIRECTOR_AUDITOR.md
+ M factory/ai_governance/skills/gpt_director_auditor.yaml
+ M factory/control/.telegram_control_offset
+ M factory/control/AUDIT_GATE.md
+ M factory/control/FACTORY_STATUS.md
+ M prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+?? factory/control/.telegram_cycle_lock
+?? factory/runner_logs/
+
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..2a4c19428dd8e084d4db844295f2f9d3b4aef7c2
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -4,8 +4,13 @@
+ 
+ ## Rol
+ 
+-GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
++GPT opera como GPT Director-Auditor: director tecnico externo y auditor
++humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +20,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+diff --git a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+index 10b243e4d6e836e8e7c96cfa39fbd28839ebbc35..b7c2c913834bb78a37e8d6dbd9f553c50224c9fe
+--- a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
++++ b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+@@ -4,7 +4,7 @@
+ 
+ ## System role
+ 
+-Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
++Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+ 
+ Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+ 
+
+codex
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- [docs/factory/GPT_DIRECTOR_AUDITOR.md](/opt/smartpyme-factory/repos/SmartPyme/docs/factory/GPT_DIRECTOR_AUDITOR.md)
+- [prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md](/opt/smartpyme-factory/repos/SmartPyme/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md)
+- [factory/ai_governance/skills/gpt_director_auditor.yaml](/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills/gpt_director_auditor.yaml)
+
+VERIFICACION_FISICA  
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` OK para los 4 archivos requeridos.
+- `ls -la` OK para documento, prompt, skill y task spec.
+
+TESTS  
+Ejecutado OK:
+
+```bash
+test -f docs/factory/GPT_DIRECTOR_AUDITOR.md &&
+test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md &&
+test -f factory/ai_governance/skills/gpt_director_auditor.yaml &&
+test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml &&
+grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+```
+
+EVIDENCIA  
+- Preflight confirmó `AGENTS.md`, `GPT.md`, `CODEX.md` y `factory/ai_governance/taskspec.schema.json`.
+- `grep` encontró `GPT Director-Auditor` en documento, prompt y skill.
+- `git diff --name-only` muestra mis cambios solo en archivos permitidos, además de cambios previos ya existentes en `factory/control/*`.
+
+DIFF  
+- Se amplió el contrato documental del rol GPT Director-Auditor: entrada canónica, producción de auditorías, roadmap operativo y `NEXT_CYCLE`.
+- Se normalizó el prompt para nombrar explícitamente `GPT Director-Auditor`.
+- Se amplió el skill YAML con inputs canónicos (`GPT.md`, `AGENTS.md`, `CODEX.md`, `GEMINI.md`, doc y prompt), outputs de auditoría, regla de arranque desde `GPT.md` y límites sobre una sola task YAML.
+
+BLOQUEOS  
+Ninguno para esta unidad.
+
+RIESGOS  
+El repo ya tenía cambios fuera de alcance antes de mi edición en `factory/control/.telegram_control_offset`, `factory/control/AUDIT_GATE.md`, `factory/control/FACTORY_STATUS.md`, además de `factory/control/.telegram_cycle_lock` y `factory/runner_logs/` sin trackear. No los modifiqué.
+diff --git a/docs/factory/GPT_DIRECTOR_AUDITOR.md b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+index 154ee9b1c7e0de756f5d231a5c3d783639793649..2a4c19428dd8e084d4db844295f2f9d3b4aef7c2
+--- a/docs/factory/GPT_DIRECTOR_AUDITOR.md
++++ b/docs/factory/GPT_DIRECTOR_AUDITOR.md
+@@ -4,8 +4,13 @@
+ 
+ ## Rol
+ 
+-GPT opera como director tecnico externo y auditor humano-asistido de SmartPyme Factory.
++GPT opera como GPT Director-Auditor: director tecnico externo y auditor
++humano-asistido de SmartPyme Factory.
+ 
++No ejecuta ciclos operativos ni sustituye a Hermes, Codex o Gemini. Su autoridad es
++conceptual y de gate: interpreta evidencia real del repo, decide si el ciclo esta
++aprobado, rechazado, bloqueado o no validado, y produce la siguiente unidad ejecutable.
++
+ ## Mandato
+ 
+ - auditar ciclos cerrados por la factoria;
+@@ -15,6 +20,42 @@
+ - preservar la arquitectura canonica de SmartPyme;
+ - no tocar core sin contrato explicito.
+ 
++## Entrada canonica
++
++Todo chat GPT debe arrancar leyendo `GPT.md` y, desde ahi, los archivos canonicos
++indicados por el repo. La memoria conversacional no es entrada valida.
++
++## Produccion de auditorias
++
++Cada auditoria debe revisar, como minimo:
++
++- objetivo de la tarea;
++- alcance permitido y prohibido;
++- `git status --short`;
++- diff relevante;
++- evidencia declarada;
++- comandos de verificacion y tests;
++- riesgos o bloqueos.
++
++La decision debe ser una de:
++
++- `APPROVED`;
++- `REJECTED`;
++- `BLOCKED`;
++- `NO_VALIDADO`.
++
++## Roadmap operativo
++
++El roadmap producido por GPT debe ser corto, priorizado y ejecutable. Debe limitarse
++a la siguiente unidad necesaria para cerrar la factoria industrial antes de expandir
++features de producto.
++
++## NEXT_CYCLE
++
++Cuando proponga el siguiente ciclo, GPT debe emitir una sola task YAML compatible con
++`factory/ai_governance/taskspec.schema.json`, con `allowed_files`, `forbidden_files`,
++`required_tests`, `acceptance_criteria`, `preflight_commands` y `post_commands`.
++
+ ## Regla principal
+ 
+ Sin evidencia reproducible, el veredicto es NO_VALIDADO o BLOCKED.
+diff --git a/factory/ai_governance/skills/gpt_director_auditor.yaml b/factory/ai_governance/skills/gpt_director_auditor.yaml
+index 99cfd20543b4b8651403a420830e6190ab86beac..f2139e78b0dccfe6786f20b96d064847e210d4c0
+--- a/factory/ai_governance/skills/gpt_director_auditor.yaml
++++ b/factory/ai_governance/skills/gpt_director_auditor.yaml
+@@ -9,6 +9,12 @@
+   el siguiente ciclo sin tocar core productivo.
+ 
+ inputs:
++  - GPT.md
++  - AGENTS.md
++  - CODEX.md
++  - GEMINI.md
++  - docs/factory/GPT_DIRECTOR_AUDITOR.md
++  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+   - factory/control/AUDIT_GATE.md
+   - factory/control/FACTORY_STATUS.md
+   - factory/control/NEXT_CYCLE.md
+@@ -19,12 +25,16 @@
+ 
+ outputs:
+   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
++  - evidence_reviewed
++  - affected_files
++  - objective_compliance
+   - audit_summary
+   - risks
+   - next_roadmap
+   - next_cycle_yaml
+ 
+ rules:
++  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+   - No aprobar sin evidencia reproducible.
+   - No validar trabajo propio de Builder.
+   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
+@@ -38,6 +48,7 @@
+   - redactar roadmap operativo
+   - redactar task spec compatible con taskspec.schema.json
+   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
++  - proponer el proximo NEXT_CYCLE como una unica task YAML
+ 
+ forbidden_actions:
+   - modificar core Python sin task spec explicita
+@@ -45,6 +56,7 @@
+   - mezclar frentes de producto
+   - usar memoria conversacional como evidencia
+   - inventar rutas o archivos
++  - proponer multiples ciclos simultaneos
+ 
+ acceptance_criteria:
+   - La salida incluye decision concreta.
+diff --git a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+index 10b243e4d6e836e8e7c96cfa39fbd28839ebbc35..b7c2c913834bb78a37e8d6dbd9f553c50224c9fe
+--- a/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
++++ b/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
+@@ -4,7 +4,7 @@
+ 
+ ## System role
+ 
+-Eres GPT operando como Director-Auditor externo de SmartPyme Factory.
++Eres GPT operando como GPT Director-Auditor externo de SmartPyme Factory.
+ 
+ Tu funcion no es escribir codigo de producto directamente. Tu funcion es gobernar el ciclo industrial de la factoria: auditar evidencia, decidir gates, convertir intencion del owner en specs ejecutables, escribir el proximo roadmap operativo y bloquear cualquier avance sin trazabilidad.
+ 
+
+2026-04-28T02:36:29.544355Z ERROR codex_core::session: failed to record rollout items: thread 019dd1f0-0211-7ae2-aa79-6dcf826a3fd5 not found
+tokens used
+85,347
+VEREDICTO  
+CORRECTO
+
+ARCHIVOS_MODIFICADOS  
+- [docs/factory/GPT_DIRECTOR_AUDITOR.md](/opt/smartpyme-factory/repos/SmartPyme/docs/factory/GPT_DIRECTOR_AUDITOR.md)
+- [prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md](/opt/smartpyme-factory/repos/SmartPyme/prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md)
+- [factory/ai_governance/skills/gpt_director_auditor.yaml](/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills/gpt_director_auditor.yaml)
+
+VERIFICACION_FISICA  
+- `pwd` -> `/opt/smartpyme-factory/repos/SmartPyme`
+- `test -f` OK para los 4 archivos requeridos.
+- `ls -la` OK para documento, prompt, skill y task spec.
+
+TESTS  
+Ejecutado OK:
+
+```bash
+test -f docs/factory/GPT_DIRECTOR_AUDITOR.md &&
+test -f prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md &&
+test -f factory/ai_governance/skills/gpt_director_auditor.yaml &&
+test -f factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml &&
+grep -R "GPT Director-Auditor" docs/factory/GPT_DIRECTOR_AUDITOR.md prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md factory/ai_governance/skills/gpt_director_auditor.yaml
+```
+
+EVIDENCIA  
+- Preflight confirmó `AGENTS.md`, `GPT.md`, `CODEX.md` y `factory/ai_governance/taskspec.schema.json`.
+- `grep` encontró `GPT Director-Auditor` en documento, prompt y skill.
+- `git diff --name-only` muestra mis cambios solo en archivos permitidos, además de cambios previos ya existentes en `factory/control/*`.
+
+DIFF  
+- Se amplió el contrato documental del rol GPT Director-Auditor: entrada canónica, producción de auditorías, roadmap operativo y `NEXT_CYCLE`.
+- Se normalizó el prompt para nombrar explícitamente `GPT Director-Auditor`.
+- Se amplió el skill YAML con inputs canónicos (`GPT.md`, `AGENTS.md`, `CODEX.md`, `GEMINI.md`, doc y prompt), outputs de auditoría, regla de arranque desde `GPT.md` y límites sobre una sola task YAML.
+
+BLOQUEOS  
+Ninguno para esta unidad.
+
+RIESGOS  
+El repo ya tenía cambios fuera de alcance antes de mi edición en `factory/control/.telegram_control_offset`, `factory/control/AUDIT_GATE.md`, `factory/control/FACTORY_STATUS.md`, además de `factory/control/.telegram_cycle_lock` y `factory/runner_logs/` sin trackear. No los modifiqué.

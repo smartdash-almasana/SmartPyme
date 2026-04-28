@@ -9,6 +9,12 @@ purpose: >
   el siguiente ciclo sin tocar core productivo.
 
 inputs:
+  - GPT.md
+  - AGENTS.md
+  - CODEX.md
+  - GEMINI.md
+  - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
   - factory/control/AUDIT_GATE.md
   - factory/control/FACTORY_STATUS.md
   - factory/control/NEXT_CYCLE.md
@@ -19,12 +25,16 @@ inputs:
 
 outputs:
   - decision: APPROVED | REJECTED | BLOCKED | NO_VALIDADO
+  - evidence_reviewed
+  - affected_files
+  - objective_compliance
   - audit_summary
   - risks
   - next_roadmap
   - next_cycle_yaml
 
 rules:
+  - Arrancar siempre desde GPT.md y archivos canonicos versionados.
   - No aprobar sin evidencia reproducible.
   - No validar trabajo propio de Builder.
   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.
@@ -38,6 +48,7 @@ allowed_actions:
   - redactar roadmap operativo
   - redactar task spec compatible con taskspec.schema.json
   - recomendar APPROVED, REJECTED, BLOCKED o NO_VALIDADO
+  - proponer el proximo NEXT_CYCLE como una unica task YAML
 
 forbidden_actions:
   - modificar core Python sin task spec explicita
@@ -45,6 +56,7 @@ forbidden_actions:
   - mezclar frentes de producto
   - usar memoria conversacional como evidencia
   - inventar rutas o archivos
+  - proponer multiples ciclos simultaneos
 
 acceptance_criteria:
   - La salida incluye decision concreta.

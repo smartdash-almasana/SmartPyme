@@ -1,0 +1,11 @@
+{
+  "task_path": "factory/ai_governance/tasks/gpt_director_auditor_bootstrap_001.yaml",
+  "returncode": 0,
+  "command": [
+    "/usr/bin/codex",
+    "exec",
+    "--full-auto",
+    "<prompt>"
+  ],
+  "created_at": "2026-04-28T02:36:29.673976+00:00"
+}
