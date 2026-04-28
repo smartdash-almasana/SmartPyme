@@ -90,9 +90,6 @@ def select_task():
     if TASKS_DIR.exists():
         pending = sorted(p for p in TASKS_DIR.glob("*.yaml") if task_is_pending(p))
         if pending:
-            for p in pending:
-                if p.name == "core_reconciliacion_v1.yaml":
-                    return p
             return pending[0]
     return TEMPLATE_TASK if TEMPLATE_TASK.exists() else None
 
@@ -187,13 +184,14 @@ def main():
     if gate_code:
         return 0
 
-    set_gate("RUNNING")
-    write_status("RUNNING", "cycle started")
-
     task = select_task()
-    rel_task = None
+    rel_task = task.relative_to(REPO) if task else None
+    task_label = str(rel_task) if rel_task else "none"
+
+    set_gate("RUNNING", 0, task_label)
+    write_status("RUNNING", f"task={task_label}")
+
     if task:
-        rel_task = task.relative_to(REPO)
         print(f"[Hermes->Codex] Dispatching task: {rel_task}")
         notify("TASK_DISPATCH", str(rel_task))
         r = subprocess.run(["python3", str(CODEX_RUNNER), "--repo", str(REPO), "--task", str(rel_task), "--full-auto", "--timeout", "3600"])
@@ -205,15 +203,15 @@ def main():
         notify("NO_TASK", "Sin tareas pending")
         code = post_cycle(0)
 
-    set_gate("WAITING_AUDIT", code, str(rel_task) if rel_task else "none")
-    write_status("WAITING_AUDIT", "cycle closed")
+    set_gate("WAITING_AUDIT", code, task_label)
+    write_status("WAITING_AUDIT", f"task={task_label}; cycle closed")
     print("CYCLE_CLOSED_WAITING_AUDIT")
 
     if code == 0:
-        notify("CYCLE_OK", "cycle closed; gate=WAITING_AUDIT")
+        notify("CYCLE_OK", f"cycle closed; gate=WAITING_AUDIT; task={task_label}")
         auto_commit_and_push(rel_task, code)
     else:
-        notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT")
+        notify("CYCLE_FAIL", f"exit_code={code}; gate=WAITING_AUDIT; task={task_label}")
 
     return code
 
