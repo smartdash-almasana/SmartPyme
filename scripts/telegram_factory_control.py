@@ -101,6 +101,18 @@ def write_offset(value: int) -> None:
     OFFSET_FILE.write_text(str(value), encoding="utf-8")
 
 
+def _read_status_file() -> dict[str, str]:
+    data: dict[str, str] = {}
+    if not STATUS.exists():
+        return data
+    for line in STATUS.read_text(encoding="utf-8", errors="replace").splitlines():
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
 def gate_status() -> str:
     if not GATE.exists():
         return "APPROVED"
@@ -125,13 +137,35 @@ def write_gate(status: str, reason: str) -> None:
 
 
 def status_text() -> str:
-    lines = ["SmartPyme Factory", f"gate: {gate_status()}"]
-    if STATUS.exists():
-        text = STATUS.read_text(encoding="utf-8", errors="replace")
-        for line in text.splitlines():
-            if line.startswith(("updated_at:", "last_cycle_result:", "audit_gate:", "last_error:")):
-                lines.append(line)
-    return "\n".join(lines)
+    data = _read_status_file()
+    gate = gate_status()
+    if gate == "WAITING_AUDIT":
+        headline = "La factoría está pausada esperando auditoría."
+    elif gate in {"APPROVED", "OPEN", "RUN"}:
+        headline = "La factoría está habilitada para trabajar."
+    elif gate == "BLOCKED":
+        headline = "La factoría está bloqueada."
+    else:
+        headline = "La factoría reporta un estado que requiere revisión."
+
+    return "\n".join(
+        [
+            "📊 Estado de SmartPyme Factory",
+            "",
+            headline,
+            "",
+            f"Decisión actual: {gate}",
+            f"Último resultado: {data.get('last_cycle_result', 'no informado')}",
+            f"Última actualización: {data.get('updated_at', 'no informada')}",
+            f"Detalle para GPT: {data.get('last_error', 'sin detalle')}",
+            "",
+            "Botones útiles:",
+            "- 🧭 En curso: ver tareas activas.",
+            "- ▶ Seguir: aprobar próximo ciclo.",
+            "- ⏸️ Pausar: mantener detenido.",
+            "- 🔁 Corregir: reabrir la última tarea.",
+        ]
+    )
 
 
 def _read_simple_yaml(path: Path) -> dict[str, str]:
