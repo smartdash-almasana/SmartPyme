@@ -12,6 +12,16 @@ La auditoría de Opus queda incorporada como evidencia histórica y referencia b
 
 Regla: cualquier auditoría posterior debe contrastar el estado actual del repo contra los hallazgos B-001…B-030 de Opus y marcar explícitamente cuáles quedaron cerrados, cuáles siguen abiertos y cuáles fueron reabiertos por cambios posteriores.
 
+## Decisión operativa de agentes
+
+Copilot queda excluido del circuito SmartPyme Factory.
+
+El circuito vigente queda reducido a:
+
+1. Gemini Auditor externo: lee el repo local desde la instancia y emite informe independiente.
+2. GPT Orquestador: ejecuta remediación documental/contractual bajo jaula operativa y no se autoaprueba.
+3. Gemini Auditor externo: reaudita la remediación y decide si se habilita `dry_run`.
+
 ## Objetivo
 
 Auditar la documentación, specs, skills, contratos y evidencias del repo para detectar contradicciones que puedan impedir operar SmartPyme Factory con Hermes.
@@ -67,14 +77,34 @@ El auditor debe entregar:
 8. COMANDOS DE VALIDACIÓN
 9. LISTA DE ARCHIVOS QUE NO DEBEN TOCARSE
 
+## Formato de remediación exigido a GPT
+
+GPT debe crear o actualizar evidencia en:
+
+`factory/ai_governance/evidence/documental_cross_audit_20260428/gpt_remediation_report.md`
+
+El reporte debe indicar:
+
+1. VEREDICTO
+2. ARCHIVOS MODIFICADOS
+3. BLOQUEOS GEMINI CERRADOS
+4. BLOQUEOS OPUS RELACIONADOS
+5. VALIDACIONES EJECUTADAS
+6. BLOQUEOS RESTANTES
+7. PRÓXIMO PASO SEGURO
+
 ## Regla de confianza
 
 Un hallazgo solo es válido si cita archivo y línea o fragmento inequívoco.
 
 ## Resultado esperado
 
-Archivo de salida:
+Archivo de salida de Gemini:
 
 `factory/ai_governance/evidence/documental_cross_audit_20260428/gemini_audit_report.md`
 
-No se activa systemd ni se migran TaskSpecs reales durante esta auditoría.
+Archivo de salida de GPT:
+
+`factory/ai_governance/evidence/documental_cross_audit_20260428/gpt_remediation_report.md`
+
+No se activa systemd ni se migran TaskSpecs reales durante esta auditoría/remediación documental.
