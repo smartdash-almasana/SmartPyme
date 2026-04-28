@@ -8,6 +8,11 @@ purpose: >
   desde Telegram mediante Hermes Gateway. Esta skill no reemplaza Hermes y no
   crea procesos paralelos.
 
+prompt_operativo:
+  path: prompts/hermes_control_telegram_prompt.md
+  idioma: castellano
+  uso: Interpretar comandos Telegram del owner y ejecutar solo operaciones gobernadas.
+
 runtime:
   canal: Telegram
   entrada: Hermes Gateway
