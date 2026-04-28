@@ -1,0 +1,27 @@
+task_id: legacy_isolation_001
+mode: governance
+status: pending
+priority: 0
+objective: >
+  Aislar todo el código legacy (scripts caseros de Telegram y runner) en una carpeta temporal
+  legacy/ para limpiar el repo y preparar migración a Hermes profesional.
+allowed_files:
+  - scripts/**
+  - legacy/**
+  - .gitignore
+forbidden_files:
+  - app/**
+  - smartcounter_core/**
+  - factory/evidence/**
+  - factory/runner_logs/**
+acceptance_criteria:
+  - Existe carpeta legacy/
+  - Todos los scripts de control casero movidos a legacy/scripts/
+  - Repo root queda sin scripts sueltos de orquestación
+  - git status limpio después del movimiento
+required_tests:
+  - git status --short
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
