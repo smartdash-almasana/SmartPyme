@@ -1,0 +1,52 @@
+MANIFIESTO DE DESPLIEGUE — _BOVEDA_PURIFICADA
+Fecha: 2026-04-29
+Objetivo: preparar contratos e infraestructura documental del SME OS para sincronización controlada en Google Cloud.
+
+ARCHIVOS CREADOS / CONSOLIDADOS Y DESTINO SUGERIDO
+
+1. VALOR_ALTO_ESTRUCTURAL/docs/factory/HERMES_DOCUMENTATION_INDEX.md
+   destino_sugerido: docs/factory/HERMES_DOCUMENTATION_INDEX.md
+
+2. VALOR_ALTO_ESTRUCTURAL/docs/factory/CONTRATO_HANDOFF_AGENTES.md
+   destino_sugerido: docs/factory/CONTRATO_HANDOFF_AGENTES.md
+
+3. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/contracts/verdict_enum.yaml
+   destino_sugerido: factory/ai_governance/contracts/verdict_enum.yaml
+
+4. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/taskspec.schema.json
+   destino_sugerido: factory/ai_governance/schemas/taskspec.schema.json
+
+5. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/agent_handoff.schema.json
+   destino_sugerido: factory/ai_governance/schemas/agent_handoff.schema.json
+
+6. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/task_result.schema.json
+   destino_sugerido: factory/ai_governance/schemas/task_result.schema.json
+
+7. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/audit_result.schema.json
+   destino_sugerido: factory/ai_governance/schemas/audit_result.schema.json
+
+8. VALOR_ALTO_ESTRUCTURAL/PRODUCTO_SMARTPYME/schema_maestro.py
+   destino_sugerido: docs/audit/schema_maestro.py
+   nota: snapshot de app/repositories/entity_repository.py; NO reemplazar código productivo.
+
+9. VALOR_ALTO_ESTRUCTURAL/factory/hermes_gateway.yaml
+   destino_sugerido: factory/config/hermes_gateway.yaml
+   seguridad: usa TELEGRAM_BOT_TOKEN y TELEGRAM_ALLOWED_USER_IDS como variables de entorno.
+
+10. VALOR_ALTO_ESTRUCTURAL/factory/hermes.yaml
+    destino_sugerido: factory/config/hermes.yaml
+
+11. VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/skills/auditor_skill.yaml
+    destino_sugerido: factory/ai_governance/skills/auditor_skill.yaml
+
+REGLAS DE DESPLIEGUE
+- No sobrescribir código de producto sin revisión humana.
+- No copiar BAJO_VALOR_RUIDO ni _CRITICAL_FAILURE_LOG.
+- Mantener cliente_id como campo obligatorio en contratos nuevos.
+- Rechazar tenant_id mediante BLOCKED_IDENTIDAD_CONFLICT.
+- No versionar secretos reales.
+
+VERIFICACIÓN DE SEGURIDAD
+- No se detectaron tokens reales en hermes_gateway.yaml, hermes.yaml ni auditor_skill.yaml.
+- Telegram se referencia exclusivamente por TELEGRAM_BOT_TOKEN.
+- Allowlist se referencia por TELEGRAM_ALLOWED_USER_IDS.
