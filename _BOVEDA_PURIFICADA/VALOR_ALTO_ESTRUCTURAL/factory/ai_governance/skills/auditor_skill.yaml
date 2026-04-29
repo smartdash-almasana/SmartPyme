@@ -1,0 +1,31 @@
+version: "2.0.0"
+skill_id: "auditor_skill"
+description: "Skill de auditoría que valida outputs contra schemas canónicos del SME OS"
+
+inputs:
+  - task_result
+  - audit_context
+
+validation:
+  schemas:
+    task_result: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/task_result.schema.json"
+    audit_result: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/audit_result.schema.json"
+  rules:
+    - require_cliente_id: true
+    - reject_tenant_id: true
+    - enforce_verdict_enum: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/contracts/verdict_enum.yaml"
+
+outputs:
+  audit_result:
+    schema: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/audit_result.schema.json"
+    required_fields:
+      - task_id
+      - cliente_id
+      - verdict
+      - gate_open
+      - violations
+
+failure_modes:
+  - missing_schema: "BLOCKED_MISSING_ASSET"
+  - identity_violation: "BLOCKED_IDENTIDAD_CONFLICT"
+  - invalid_output: "FAILED_RUNTIME"
