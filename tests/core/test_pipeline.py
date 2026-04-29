@@ -11,6 +11,8 @@ from app.repositories.fact_repository import FactRepository
 from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
 
+TEST_TENANT_ID = "test_cliente"
+
 
 def _db_path(name: str) -> Path:
     base = Path(__file__).resolve().parents[1] / "fixtures" / f"tmp_pipeline_{name}"
@@ -21,7 +23,7 @@ def _db_path(name: str) -> Path:
 def _make_pipeline() -> tuple[Pipeline, EntityRepository]:
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     pipeline = Pipeline(
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
@@ -87,7 +89,6 @@ def test_pipeline_returns_counts():
 
 def test_pipeline_returns_empty_findings_when_no_differences():
     pipeline, entity_repo = _make_pipeline()
-    # Two entities with identical price — no difference expected.
     entity_repo.save(Entity(
         entity_id="cuit-x",
         entity_type="cuit",
@@ -117,7 +118,7 @@ def test_pipeline_persists_findings_when_finding_repo_configured():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     finding_repo = FindingRepository(_db_path("findings"))
 
     pipeline = Pipeline(
@@ -149,7 +150,7 @@ def test_pipeline_generates_messages_when_communication_service_configured():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
 
     pipeline = Pipeline(
         fact_repo=fact_repo,
@@ -196,11 +197,10 @@ def test_pipeline_blocked_when_clarification_pending():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     clarif_repo = ClarificationRepository(_db_path("clarif"))
     clarif_service = ClarificationService(clarif_repo)
 
-    # Create a blocking clarification for this job before running the pipeline.
     clarif_service.create_blocking_clarification(
         question="¿El monto es correcto?",
         reason="Diferencia detectada",
@@ -236,11 +236,10 @@ def test_pipeline_not_blocked_when_clarification_answered():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     clarif_repo = ClarificationRepository(_db_path("clarif"))
     clarif_service = ClarificationService(clarif_repo)
 
-    # Create and immediately answer the clarification.
     c = clarif_service.create_blocking_clarification(
         question="¿El monto es correcto?",
         reason="Diferencia detectada",
@@ -274,7 +273,7 @@ def test_pipeline_generates_action_proposals_when_service_configured():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
 
     pipeline = Pipeline(
         fact_repo=fact_repo,
