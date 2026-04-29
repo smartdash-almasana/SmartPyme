@@ -1,0 +1,30 @@
+# TASK-HERMES-SKILLS-VERIFY-001 — skills discovery evidence
+
+Fecha: 2026-04-28
+Origen: VM smartpyme-factory
+Comando:
+
+```bash
+/home/neoalmasana/.hermes/venv/bin/hermes skills list | grep -i "hermes_smartpyme_factory\|factory_auditor\|factory_bounded_builder" || true
+```
+
+Salida relevante verificada:
+
+```text
+│ factory_auditor             │                      │ local   │ local   │
+│ factory_bounded_builder     │                      │ local   │ local   │
+│ hermes_smartpyme_factory    │                      │ local   │ local   │
+```
+
+Salida agregada del listado completo:
+
+```text
+0 hub-installed, 70 builtin, 3 local
+```
+
+Decision:
+
+```text
+P0-4_CLOSED_OPERATIONALLY
+Hermes descubre hermes_smartpyme_factory como skill local.
+```
