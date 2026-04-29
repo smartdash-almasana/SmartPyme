@@ -25,6 +25,7 @@ class PipelineCounts:
 
 @dataclass(frozen=True, slots=True)
 class PipelineResult:
+    cliente_id: str
     status: str                          # "OK" | "ERROR" | "BLOCKED"
     job_id: str | None
     plan_id: str | None
