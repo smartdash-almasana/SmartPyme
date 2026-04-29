@@ -1,0 +1,26 @@
+version: "2.0.0"
+component: "hermes_gateway"
+description: "Configuración controlada del Gateway Telegram para SmartPyme Factory / SME OS"
+
+telegram:
+  enabled: true
+  token_env: "TELEGRAM_BOT_TOKEN"
+  output_format: "MarkdownV2"
+  allowlist:
+    mode: "from_user.id"
+    ids_env: "TELEGRAM_ALLOWED_USER_IDS"
+    reject_verdict: "REJECTED_SECURITY"
+  commands:
+    control_cli: "factory/hermes_control_cli.py"
+    context_path: "_BOVEDA_PURIFICADA"
+
+security:
+  no_secret_values_in_repo: true
+  require_cliente_id: true
+  reject_tenant_id: true
+  identity_conflict_verdict: "BLOCKED_IDENTIDAD_CONFLICT"
+
+runtime:
+  mcp_transport: "stdio"
+  local_http_tools_allowed: false
+  evidence_root: "factory/evidence"
