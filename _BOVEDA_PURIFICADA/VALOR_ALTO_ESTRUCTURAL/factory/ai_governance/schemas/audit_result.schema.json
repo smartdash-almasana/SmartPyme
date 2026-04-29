@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://smartpyme.local/schemas/audit-result-v2.0.0.json",
+  "title": "AuditResult v2.0.0",
+  "description": "Resultado de auditoría de Gemini/ChatGPT en SmartPyme Factory",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "cliente_id",
+    "agent_id",
+    "verdict",
+    "gate_open",
+    "violations",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["2.0.0"]},
+    "task_id": {"type": "string"},
+    "cliente_id": {"type": "string"},
+    "agent_id": {"type": "string"},
+    "verdict": {"type": "string"},
+    "gate_open": {"type": "boolean"},
+    "violations": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "evidence_reviewed": {"type": "array", "items": {"type": "string"}},
+    "risk_level": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}
