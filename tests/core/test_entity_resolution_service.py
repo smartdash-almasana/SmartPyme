@@ -8,11 +8,17 @@ from app.contracts.evidence_contract import CanonicalRowCandidate
 from app.repositories.entity_repository import EntityRepository
 from app.services.entity_resolution_service import EntityResolutionService
 
+TEST_TENANT_ID = "test_cliente"
+
 
 def _db_path() -> Path:
     base = Path(__file__).resolve().parents[1] / "fixtures" / "tmp_entity_resolution"
     base.mkdir(parents=True, exist_ok=True)
     return base / f"entities-{uuid.uuid4().hex[:8]}.db"
+
+
+def _entity_repo() -> EntityRepository:
+    return EntityRepository(TEST_TENANT_ID, _db_path())
 
 
 def _canonical_row(
@@ -33,7 +39,7 @@ def _canonical_row(
 
 
 def test_resolve_entities_creates_new_entity():
-    repo = EntityRepository(_db_path())
+    repo = _entity_repo()
     service = EntityResolutionService(repo)
 
     rows = [_canonical_row("row-1", entity_type="person", value="John Doe")]
@@ -46,8 +52,9 @@ def test_resolve_entities_creates_new_entity():
     assert entity is not None
     assert entity.attributes["value"] == "John Doe"
 
+
 def test_resolve_entities_merges_with_existing_entity():
-    repo = EntityRepository(_db_path())
+    repo = _entity_repo()
     service = EntityResolutionService(repo)
 
     # First, create an entity
@@ -73,7 +80,7 @@ def test_resolve_entities_preserves_validated_status():
     """Una entidad con validation_status='validated' no debe ser degradada a pending_validation."""
     from app.contracts.entity_contract import Entity
 
-    repo = EntityRepository(_db_path())
+    repo = _entity_repo()
     service = EntityResolutionService(repo)
 
     # Pre-cargar entidad ya validada por un humano.
