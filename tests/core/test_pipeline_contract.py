@@ -16,6 +16,8 @@ from app.repositories.fact_repository import FactRepository
 from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
 
+TEST_TENANT_ID = "test_cliente"
+
 
 def _db_path(name: str) -> Path:
     base = Path(__file__).resolve().parents[1] / "fixtures" / f"tmp_pipeline_contract_{name}"
@@ -26,7 +28,7 @@ def _db_path(name: str) -> Path:
 def _make_pipeline() -> tuple[Pipeline, EntityRepository]:
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     pipeline = Pipeline(
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
@@ -77,7 +79,6 @@ def test_pipeline_result_has_required_fields():
         plan_id="plan-1",
     )
 
-    # Campos obligatorios del contrato
     assert result.status in ("OK", "ERROR")
     assert result.job_id == "job-fields"
     assert result.plan_id == "plan-1"
@@ -90,7 +91,7 @@ def test_pipeline_result_has_required_fields():
     assert isinstance(result.action_proposals, list)
     assert isinstance(result.errors, list)
     assert isinstance(result.counts, PipelineCounts)
-    assert result.blocking_reason is None  # no blockers configured
+    assert result.blocking_reason is None
 
 
 def test_pipeline_result_counts_are_consistent():
@@ -112,7 +113,6 @@ def test_pipeline_result_counts_are_consistent():
         job_id="job-counts",
     )
 
-    # counts deben ser coherentes con las listas reales
     assert result.counts.facts == len(result.facts)
     assert result.counts.canonical == len(result.canonical)
     assert result.counts.entities == len(result.entities)
@@ -155,7 +155,6 @@ def test_pipeline_result_messages_empty_without_communication_service():
         job_id="job-no-comm",
     )
 
-    # No communication_service configured → messages must be empty.
     assert result.messages == []
     assert result.counts.messages == 0
 
@@ -167,7 +166,7 @@ def test_pipeline_result_blocked_contract():
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
-    entity_repo = EntityRepository(_db_path("entities"))
+    entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     clarif_repo = ClarificationRepository(_db_path("clarif"))
     clarif_service = ClarificationService(clarif_repo)
 
@@ -222,6 +221,5 @@ def test_pipeline_result_action_proposals_empty_without_service():
         job_id="job-no-proposals",
     )
 
-    # No action_proposal_service configured → action_proposals must be empty.
     assert result.action_proposals == []
     assert result.counts.action_proposals == 0
