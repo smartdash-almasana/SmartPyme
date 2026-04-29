@@ -1,0 +1,33 @@
+version: "2.0.0"
+component: "hermes_root_config"
+description: "Configuración global del orquestador Hermes para SME OS"
+
+context:
+  context_path: "_BOVEDA_PURIFICADA"
+  enforce_context_only: true
+  reject_external_docs: true
+
+identity:
+  require_cliente_id: true
+  reject_tenant_id: true
+  conflict_verdict: "BLOCKED_IDENTIDAD_CONFLICT"
+
+schemas:
+  base_path: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas"
+  required:
+    - taskspec.schema.json
+    - task_result.schema.json
+    - audit_result.schema.json
+    - agent_handoff.schema.json
+
+contracts:
+  verdict_enum: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/contracts/verdict_enum.yaml"
+
+execution:
+  control_cli: "factory/hermes_control_cli.py"
+  transport: "stdio"
+  gateway_config: "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/hermes_gateway.yaml"
+
+security:
+  allow_only_declared_paths: true
+  forbid_runtime_mutation: true
