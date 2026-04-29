@@ -2,11 +2,24 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any
 
 from app.contracts.entity_contract import Entity
+
+
+_CLIENTE_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_.:-]+$")
+
+
+def _validate_cliente_id(cliente_id: str) -> str:
+    if not isinstance(cliente_id, str) or not cliente_id.strip():
+        raise ValueError("cliente_id is required")
+    normalized = cliente_id.strip()
+    if not _CLIENTE_ID_PATTERN.fullmatch(normalized):
+        raise ValueError("cliente_id contains invalid characters")
+    return normalized
 
 
 def _default_db_path() -> Path:
@@ -24,18 +37,34 @@ def _connect() -> sqlite3.Connection:
     return sqlite3.connect(db_path)
 
 
+def _ensure_cliente_id_column(conn: sqlite3.Connection) -> None:
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(entities)").fetchall()}
+    if "cliente_id" not in columns:
+        conn.execute("ALTER TABLE entities ADD COLUMN cliente_id TEXT NOT NULL DEFAULT 'sistema'")
+
+
 def init_entities_db() -> None:
     with _connect() as conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS entities (
-                entity_id TEXT PRIMARY KEY,
+                cliente_id TEXT NOT NULL DEFAULT 'sistema',
+                entity_id TEXT NOT NULL,
                 entity_type TEXT NOT NULL,
                 attributes_json TEXT NOT NULL,
                 linked_canonical_rows_json TEXT NOT NULL,
                 validation_status TEXT NOT NULL,
-                errors_json TEXT NOT NULL
+                errors_json TEXT NOT NULL,
+                PRIMARY KEY (cliente_id, entity_id),
+                CHECK (length(trim(cliente_id)) > 0)
             )
+            """
+        )
+        _ensure_cliente_id_column(conn)
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_entities_cliente_type
+            ON entities(cliente_id, entity_type)
             """
         )
         conn.execute(
@@ -64,6 +93,7 @@ class EntityRepository:
                 os.environ["SMARTPYME_ENTITIES_DB"] = previous_env
 
     def save(self, entity: Entity) -> None:
+        cliente_id = _validate_cliente_id(entity.cliente_id)
         attributes_json = json.dumps(entity.attributes, ensure_ascii=False, sort_keys=True)
         linked_canonical_rows_json = json.dumps(entity.linked_canonical_rows, ensure_ascii=False)
         errors_json = json.dumps(entity.errors, ensure_ascii=False)
@@ -72,6 +102,7 @@ class EntityRepository:
             conn.execute(
                 """
                 INSERT INTO entities (
+                    cliente_id,
                     entity_id,
                     entity_type,
                     attributes_json,
@@ -79,8 +110,8 @@ class EntityRepository:
                     validation_status,
                     errors_json
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(entity_id) DO UPDATE SET
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(cliente_id, entity_id) DO UPDATE SET
                     entity_type = excluded.entity_type,
                     attributes_json = excluded.attributes_json,
                     linked_canonical_rows_json = excluded.linked_canonical_rows_json,
@@ -88,6 +119,7 @@ class EntityRepository:
                     errors_json = excluded.errors_json
                 """,
                 (
+                    cliente_id,
                     entity.entity_id,
                     entity.entity_type,
                     attributes_json,
@@ -101,11 +133,17 @@ class EntityRepository:
         for entity in entities:
             self.save(entity)
 
-    def find_by_attribute(self, entity_type: str, attribute: str, value: Any) -> Entity | None:
-        # This is a simplified search and might need to be more robust
-        # depending on the actual attributes and their structure.
+    def find_by_attribute(
+        self,
+        cliente_id: str,
+        entity_type: str,
+        attribute: str,
+        value: Any,
+    ) -> Entity | None:
+        cliente_id = _validate_cliente_id(cliente_id)
         query = f"""
             SELECT
+                cliente_id,
                 entity_id,
                 entity_type,
                 attributes_json,
@@ -113,17 +151,21 @@ class EntityRepository:
                 validation_status,
                 errors_json
             FROM entities
-            WHERE entity_type = ? AND json_extract(attributes_json, '$.{attribute}') = ?
+            WHERE cliente_id = ?
+              AND entity_type = ?
+              AND json_extract(attributes_json, '$.{attribute}') = ?
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            row = conn.execute(query, (entity_type, value)).fetchone()
+            row = conn.execute(query, (cliente_id, entity_type, value)).fetchone()
 
         return _row_to_entity(row) if row else None
 
-    def list_entities(self, entity_type: str | None = None) -> list[Entity]:
+    def list_entities(self, cliente_id: str, entity_type: str | None = None) -> list[Entity]:
+        cliente_id = _validate_cliente_id(cliente_id)
         query = """
             SELECT
+                cliente_id,
                 entity_id,
                 entity_type,
                 attributes_json,
@@ -131,19 +173,23 @@ class EntityRepository:
                 validation_status,
                 errors_json
             FROM entities
-            WHERE (? IS NULL OR entity_type = ?)
+            WHERE cliente_id = ?
+              AND (? IS NULL OR entity_type = ?)
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+            rows = conn.execute(query, (cliente_id, entity_type, entity_type)).fetchall()
         return [_row_to_entity(row) for row in rows]
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path)
+        _ensure_cliente_id_column(conn)
+        return conn
 
 
 def _row_to_entity(row: sqlite3.Row) -> Entity:
     return Entity(
+        cliente_id=row["cliente_id"],
         entity_id=row["entity_id"],
         entity_type=row["entity_type"],
         attributes=json.loads(row["attributes_json"]),
