@@ -299,6 +299,14 @@ def comando_avanzar() -> Resultado:
     if task == "ninguna" or task.startswith("ninguna:"):
         return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), task, "ninguna", "no hay TaskSpec pending", "crear una TaskSpec pending")
 
+    # P0-5 / TASK-AVANZAR-DISPATCH-001:
+    # Este bloqueo es intencional y fail-closed. No debe reemplazarse por dispatch real
+    # hasta que existan cinco requisitos verificables:
+    # 1) Builder real invocable por Hermes Gateway, sin runners legacy.
+    # 2) Validacion estricta de TaskSpec contra schema antes de cualquier cambio.
+    # 3) Control de allowed_files / forbidden_files antes de delegar.
+    # 4) Evidencia reproducible en factory/evidence/<task_id>/ para comandos, diff y tests.
+    # 5) Gate de auditoria externo que impida nuevo dispatch hasta decision humana/GPT.
     motivo = "DISPATCH_REAL_NO_IMPLEMENTADO_SIN_BUILDER_VERIFICABLE"
     evidencia = escribir_evidencia_bloqueo(repo, task, motivo, pull_out)
     escribir_estado(repo, "BLOCKED", motivo)
@@ -311,7 +319,7 @@ def comando_avanzar() -> Resultado:
         task,
         evidencia,
         motivo,
-        "implementar dispatch real bajo TaskSpec antes de ejecutar cambios",
+        "implementar dispatch real bajo TASK-AVANZAR-DISPATCH-001 antes de ejecutar cambios",
     )
 
 
@@ -323,7 +331,7 @@ def comando_auditar() -> Resultado:
     recientes = []
     if evidence.exists():
         recientes = [str(p) for p in sorted(evidence.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)[:5]]
-    decision = "NO_VALIDADO" if not recientes else "BLOCKED"
+    decision = "NEEDS_REVIEW" if not recientes else "BLOCKED"
     return Resultado(
         "/auditar",
         decision,
