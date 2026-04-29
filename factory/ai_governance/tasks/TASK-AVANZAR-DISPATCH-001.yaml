@@ -3,26 +3,36 @@ mode: governance
 status: pending
 human_required: true
 objective: >
-  Documentar la futura habilitacion segura del comando avanzar con Builder verificable,
-  manteniendo gate, evidencia y alcance controlado.
+  Documentar y preparar la futura habilitacion segura del comando /avanzar con
+  Builder verificable, manteniendo gate, evidencia, alcance controlado y bloqueo
+  fail-closed hasta que existan los requisitos operativos minimos.
 allowed_files:
   - factory/hermes_control_cli.py
   - tests/factory/test_hermes_control_cli.py
   - factory/ai_governance/tasks/TASK-AVANZAR-DISPATCH-001.yaml
+  - factory/evidence/TASK-AVANZAR-DISPATCH-001/**
 forbidden_files:
   - app/**
   - core/**
   - services/**
   - mcp_smartpyme_bridge.py
+  - factory/config/telegram.local.env
+  - .env
+  - scripts/hermes_factory_runner.py
+  - scripts/telegram_factory_control.py
 required_tests:
   - python3 -m pytest tests/factory/test_hermes_control_cli.py -q
   - python3 -m compileall factory/hermes_control_cli.py
+  - python3 factory/hermes_control_cli.py estado --json
 acceptance_criteria:
-  - El comando avanzar conserva bloqueo fail-closed.
-  - El bloqueo documenta cinco requisitos previos.
+  - El comando /avanzar conserva bloqueo fail-closed hasta implementar dispatch real.
+  - El bloqueo documenta cinco requisitos previos verificables.
   - El bloqueo referencia TASK-AVANZAR-DISPATCH-001.
-  - No se toca core de producto.
+  - No se toca core de producto ni runners legacy.
+  - La evidencia queda en factory/evidence/TASK-AVANZAR-DISPATCH-001/.
 preflight_commands:
   - cd /opt/smartpyme-factory/repos/SmartPyme && git pull --ff-only origin main
+  - cd /opt/smartpyme-factory/repos/SmartPyme && git status --short
 post_commands:
   - cd /opt/smartpyme-factory/repos/SmartPyme && python3 -m pytest tests/factory/test_hermes_control_cli.py -q
+  - cd /opt/smartpyme-factory/repos/SmartPyme && python3 -m compileall factory/hermes_control_cli.py
