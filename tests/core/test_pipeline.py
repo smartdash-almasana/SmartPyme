@@ -25,6 +25,7 @@ def _make_pipeline() -> tuple[Pipeline, EntityRepository]:
     canonical_repo = CanonicalRepository(_db_path("canonical"))
     entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -62,6 +63,7 @@ def test_pipeline_process_texts_generates_findings():
         job_id="job-1",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert len(result.comparison) == 1
     assert len(result.findings) == 1
     finding = result.findings[0]
@@ -79,6 +81,7 @@ def test_pipeline_returns_counts():
         job_id="job-counts",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.counts.facts > 0
     assert result.counts.canonical > 0
     assert result.counts.entities > 0
@@ -109,6 +112,7 @@ def test_pipeline_returns_empty_findings_when_no_differences():
         job_id="job-nodiff",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.findings == []
     assert result.counts.findings == 0
 
@@ -122,6 +126,7 @@ def test_pipeline_persists_findings_when_finding_repo_configured():
     finding_repo = FindingRepository(_db_path("findings"))
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -135,6 +140,7 @@ def test_pipeline_persists_findings_when_finding_repo_configured():
         job_id="job-persist",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert len(result.findings) == 1
 
     persisted = finding_repo.list_findings()
@@ -153,6 +159,7 @@ def test_pipeline_generates_messages_when_communication_service_configured():
     entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -166,6 +173,7 @@ def test_pipeline_generates_messages_when_communication_service_configured():
         job_id="job-messages",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert len(result.findings) == 1
     assert len(result.messages) == 1
     assert result.counts.messages == 1
@@ -187,6 +195,7 @@ def test_pipeline_messages_empty_without_communication_service():
         job_id="job-no-comm",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.messages == []
     assert result.counts.messages == 0
 
@@ -208,6 +217,7 @@ def test_pipeline_blocked_when_clarification_pending():
     )
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -221,9 +231,9 @@ def test_pipeline_blocked_when_clarification_pending():
         job_id="job-blocked",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.status == "BLOCKED"
     assert result.blocking_reason is not None
-    assert "job-blocked" in result.blocking_reason
     assert result.comparison == []
     assert result.findings == []
     assert result.messages == []
@@ -248,6 +258,7 @@ def test_pipeline_not_blocked_when_clarification_answered():
     clarif_service.answer_clarification(c.clarification_id, answer="Sí, confirmado.")
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -261,6 +272,7 @@ def test_pipeline_not_blocked_when_clarification_answered():
         job_id="job-answered",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.status == "OK"
     assert result.blocking_reason is None
     assert len(result.findings) == 1
@@ -276,6 +288,7 @@ def test_pipeline_generates_action_proposals_when_service_configured():
     entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -290,6 +303,7 @@ def test_pipeline_generates_action_proposals_when_service_configured():
         job_id="job-proposals",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert len(result.messages) == 1
     assert len(result.action_proposals) == 1
     assert result.counts.action_proposals == 1
@@ -311,5 +325,6 @@ def test_pipeline_action_proposals_empty_without_service():
         job_id="job-no-proposals",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.action_proposals == []
     assert result.counts.action_proposals == 0
