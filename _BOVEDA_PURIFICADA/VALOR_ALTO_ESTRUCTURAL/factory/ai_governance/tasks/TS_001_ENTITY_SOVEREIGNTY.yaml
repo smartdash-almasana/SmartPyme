@@ -1,0 +1,98 @@
+taskspec_version: "2.0.0"
+task_id: "TASK-2026-04-29-001"
+title: "Inyectar soberanía cliente_id en EntityRepository"
+created_at: "2026-04-29T00:00:00Z"
+created_by: "gpt_director"
+priority: "P0"
+cliente_id: "OWNER_REVIEW_REQUIRED"
+
+runtime:
+  target_skill: "codex_builder"
+  target_agent: "codex"
+  agent_version: "TBD"
+  max_retries: 0
+  timeout_minutes: 60
+
+context:
+  repo_ref: "export/auditoria-total"
+  base_commit: "5052aef5513517e74d741b86d4092f49ba4e95c9"
+  canonical_docs:
+    - "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/docs/factory/CONTRATO_HANDOFF_AGENTES.md"
+    - "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/contracts/verdict_enum.yaml"
+    - "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/factory/ai_governance/schemas/taskspec.schema.json"
+    - "_BOVEDA_PURIFICADA/VALOR_ALTO_ESTRUCTURAL/PRODUCTO_SMARTPYME/schema_maestro.py"
+
+scope:
+  allowed_files:
+    - "app/repositories/entity_repository.py"
+    - "app/contracts/entity_contract.py"
+    - "tests/**/test_entity*.py"
+  forbidden_files:
+    - "core/**"
+    - "app/core/**"
+    - "app/auth/**"
+    - "app/kernel/**"
+    - "data/**"
+    - "*.db"
+    - "*.sqlite"
+    - "factory/evidence/**"
+  tags:
+    - "HUMAN_OVERRIDE_REQUIRED"
+    - "NO_TOCAR_CORE_REVIEW"
+    - "IDENTIDAD_OS"
+    - "SOVEREIGNTY_INJECTION"
+
+commands:
+  preflight:
+    - command: "test -f app/repositories/entity_repository.py"
+      description: "Verificar existencia del repositorio de entidades"
+      expected_exit_code: 0
+    - command: "test -f app/contracts/entity_contract.py"
+      description: "Verificar existencia del contrato Entity"
+      expected_exit_code: 0
+  post:
+    - command: "python -m py_compile app/repositories/entity_repository.py app/contracts/entity_contract.py"
+      description: "Validación sintáctica mínima"
+      expected_exit_code: 0
+    - command: "grep -R \"tenant_id\" app/repositories/entity_repository.py app/contracts/entity_contract.py && exit 1 || exit 0"
+      description: "Bloquear reintroducción de tenant_id"
+      expected_exit_code: 0
+    - command: "grep -R \"cliente_id\" app/repositories/entity_repository.py app/contracts/entity_contract.py"
+      description: "Confirmar presencia de cliente_id"
+      expected_exit_code: 0
+
+acceptance_criteria:
+  - description: "EntityRepository persiste y consulta entidades con cliente_id obligatorio"
+    verification_command: "grep -R \"cliente_id\" app/repositories/entity_repository.py"
+    expected_output_pattern: "cliente_id"
+    required_files:
+      - "app/repositories/entity_repository.py"
+  - description: "Entity contract exige cliente_id como campo obligatorio"
+    verification_command: "grep -R \"cliente_id\" app/contracts/entity_contract.py"
+    expected_output_pattern: "cliente_id"
+    required_files:
+      - "app/contracts/entity_contract.py"
+  - description: "No existe tenant_id en los archivos intervenidos"
+    verification_command: "grep -R \"tenant_id\" app/repositories/entity_repository.py app/contracts/entity_contract.py || true"
+    expected_output_pattern: "^$"
+
+risk:
+  level: "HIGH"
+  reason: "Modifica persistencia canónica de entidades; afecta aislamiento de datos del SME OS."
+  no_tocar_core_triggered: true
+  human_override_required: true
+  owner_gate_required: true
+
+gate:
+  required_audit: true
+  auto_merge: false
+  human_scope_approved: false
+  human_evidence_review_required: true
+  deploy_allowed: false
+
+status: "PENDING"
+retry_count: 0
+evidence_path: "factory/evidence/TASK-2026-04-29-001"
+blockers:
+  - "Pendiente aprobación humana de scope antes de Builder."
+  - "Pendiente revisión línea por línea por tocar persistencia crítica."
