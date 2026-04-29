@@ -13,7 +13,14 @@ def create_app():
 def test_process_block_without_header():
     client = TestClient(create_app())
 
-    response = client.post("/process", json={})
+    payload = {
+        "evidence_id_a": "ev-a",
+        "text_a": "Factura 1 $100",
+        "evidence_id_b": "ev-b",
+        "text_b": "Factura 1 $200",
+    }
+
+    response = client.post("/process", json=payload)
     assert response.status_code == 403
 
 
