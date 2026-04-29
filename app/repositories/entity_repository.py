@@ -29,25 +29,37 @@ def init_entities_db() -> None:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS entities (
-                entity_id TEXT PRIMARY KEY,
+                cliente_id TEXT NOT NULL DEFAULT 'sistema',
+                entity_id TEXT NOT NULL,
                 entity_type TEXT NOT NULL,
                 attributes_json TEXT NOT NULL,
                 linked_canonical_rows_json TEXT NOT NULL,
                 validation_status TEXT NOT NULL,
-                errors_json TEXT NOT NULL
+                errors_json TEXT NOT NULL,
+                PRIMARY KEY (cliente_id, entity_id)
             )
             """
         )
         conn.execute(
             """
-            CREATE INDEX IF NOT EXISTS idx_entities_entity_type
-            ON entities(entity_type)
+            CREATE INDEX IF NOT EXISTS idx_entities_cliente_id
+            ON entities(cliente_id)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_entities_cliente_id_entity_type
+            ON entities(cliente_id, entity_type)
             """
         )
 
 
 class EntityRepository:
-    def __init__(self, db_path: str | Path | None = None) -> None:
+    def __init__(self, cliente_id: str, db_path: str | Path | None = None) -> None:
+        if not cliente_id or not cliente_id.strip():
+            raise ValueError("cliente_id is required for EntityRepository isolation")
+
+        self.cliente_id = cliente_id
         self.db_path = Path(db_path) if db_path is not None else _get_db_path()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.init_db()
@@ -72,6 +84,7 @@ class EntityRepository:
             conn.execute(
                 """
                 INSERT INTO entities (
+                    cliente_id,
                     entity_id,
                     entity_type,
                     attributes_json,
@@ -79,8 +92,8 @@ class EntityRepository:
                     validation_status,
                     errors_json
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(entity_id) DO UPDATE SET
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(cliente_id, entity_id) DO UPDATE SET
                     entity_type = excluded.entity_type,
                     attributes_json = excluded.attributes_json,
                     linked_canonical_rows_json = excluded.linked_canonical_rows_json,
@@ -88,6 +101,7 @@ class EntityRepository:
                     errors_json = excluded.errors_json
                 """,
                 (
+                    self.cliente_id,
                     entity.entity_id,
                     entity.entity_type,
                     attributes_json,
@@ -102,8 +116,6 @@ class EntityRepository:
             self.save(entity)
 
     def find_by_attribute(self, entity_type: str, attribute: str, value: Any) -> Entity | None:
-        # This is a simplified search and might need to be more robust
-        # depending on the actual attributes and their structure.
         query = f"""
             SELECT
                 entity_id,
@@ -113,11 +125,13 @@ class EntityRepository:
                 validation_status,
                 errors_json
             FROM entities
-            WHERE entity_type = ? AND json_extract(attributes_json, '$.{attribute}') = ?
+            WHERE cliente_id = ?
+              AND entity_type = ?
+              AND json_extract(attributes_json, '$.{attribute}') = ?
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            row = conn.execute(query, (entity_type, value)).fetchone()
+            row = conn.execute(query, (self.cliente_id, entity_type, value)).fetchone()
 
         return _row_to_entity(row) if row else None
 
@@ -131,11 +145,12 @@ class EntityRepository:
                 validation_status,
                 errors_json
             FROM entities
-            WHERE (? IS NULL OR entity_type = ?)
+            WHERE cliente_id = ?
+              AND (? IS NULL OR entity_type = ?)
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+            rows = conn.execute(query, (self.cliente_id, entity_type, entity_type)).fetchall()
         return [_row_to_entity(row) for row in rows]
 
     def _connect(self) -> sqlite3.Connection:
