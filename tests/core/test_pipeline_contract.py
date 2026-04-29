@@ -30,6 +30,7 @@ def _make_pipeline() -> tuple[Pipeline, EntityRepository]:
     canonical_repo = CanonicalRepository(_db_path("canonical"))
     entity_repo = EntityRepository(TEST_TENANT_ID, _db_path("entities"))
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -57,6 +58,7 @@ def test_pipeline_result_is_pipeline_result_instance():
     )
 
     assert isinstance(result, PipelineResult)
+    assert result.cliente_id == TEST_TENANT_ID
 
 
 def test_pipeline_result_has_required_fields():
@@ -79,6 +81,7 @@ def test_pipeline_result_has_required_fields():
         plan_id="plan-1",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.status in ("OK", "ERROR")
     assert result.job_id == "job-fields"
     assert result.plan_id == "plan-1"
@@ -113,6 +116,7 @@ def test_pipeline_result_counts_are_consistent():
         job_id="job-counts",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.counts.facts == len(result.facts)
     assert result.counts.canonical == len(result.canonical)
     assert result.counts.entities == len(result.entities)
@@ -132,6 +136,7 @@ def test_pipeline_result_status_ok_when_no_errors():
         job_id="job-ok",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.status == "OK"
     assert result.errors == []
 
@@ -155,6 +160,7 @@ def test_pipeline_result_messages_empty_without_communication_service():
         job_id="job-no-comm",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.messages == []
     assert result.counts.messages == 0
 
@@ -177,6 +183,7 @@ def test_pipeline_result_blocked_contract():
     )
 
     pipeline = Pipeline(
+        cliente_id=TEST_TENANT_ID,
         fact_repo=fact_repo,
         canonical_repo=canonical_repo,
         entity_repo=entity_repo,
@@ -190,6 +197,7 @@ def test_pipeline_result_blocked_contract():
     )
 
     assert isinstance(result, PipelineResult)
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.status == "BLOCKED"
     assert result.blocking_reason is not None
     assert isinstance(result.blocking_reason, str)
@@ -221,5 +229,6 @@ def test_pipeline_result_action_proposals_empty_without_service():
         job_id="job-no-proposals",
     )
 
+    assert result.cliente_id == TEST_TENANT_ID
     assert result.action_proposals == []
     assert result.counts.action_proposals == 0
