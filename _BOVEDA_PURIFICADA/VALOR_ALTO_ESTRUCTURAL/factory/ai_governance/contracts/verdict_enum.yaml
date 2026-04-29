@@ -1,0 +1,18 @@
+version: "2.0.0"
+description: "Vocabulario canónico de veredictos para SmartPyme Factory"
+
+verdicts:
+  SUCCESS_CODE: "Código generado y validado sintácticamente."
+  SUCCESS_FACTORY: "Módulo SaaS listo para integración en Core."
+  VALIDATED_ARCH: "La propuesta respeta el Editorial Monolith y Sacred Modernism."
+
+  BLOCKED_MISSING_ASSET: "Falta un archivo o contrato referenciado en el Índice."
+  BLOCKED_AMBIGUOUS_SPEC: "La TaskSpec contiene instrucciones contradictorias o vagas."
+  BLOCKED_IDENTIDAD_CONFLICT: "Se detectó uso de 'tenant_id'. Se requiere 'cliente_id'."
+
+  REJECTED_STACK: "La propuesta usa tecnologías fuera del stack (FastAPI/SQLite/Tailwind)."
+  REJECTED_INFERENCE: "El agente intentó proponer lógica basada en documentos conceptuales (literatura)."
+  REJECTED_SECURITY: "El código vulnera el aislamiento de datos entre clientes."
+
+  FAILED_LINT: "El código no pasa la validación de PEP8 o tipos."
+  FAILED_RUNTIME: "Error en el dry-run del módulo."
