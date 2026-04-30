@@ -13,8 +13,10 @@ from factory.core.run_report import (
     write_factory_run_report,
 )
 from factory.core.run_report_summary import (
+    build_factory_health_summary,
     build_failed_paths_summary,
     build_run_report_summary,
+    format_factory_health_summary,
     format_failed_paths_summary,
     format_run_report_summary,
 )
@@ -69,6 +71,8 @@ class TelegramSuperownerAdapter:
 
         if text == "/status_factory":
             return self._handle_status_factory(user_id)
+        if text == "/factory_health":
+            return self._handle_factory_health(user_id)
         if text == "/run_one":
             return self._handle_run_one(user_id)
         if text.startswith("/run_batch"):
@@ -104,7 +108,7 @@ class TelegramSuperownerAdapter:
             "status": "unsupported_command",
             "telegram_user_id": str(user_id),
             "message": (
-                "Comando no soportado. Usá /status_factory, /tasks_pending, "
+                "Comando no soportado. Usá /status_factory, /factory_health, /tasks_pending, "
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
                 "/diff <task_id>, /failed_paths, /evidence <task_id>, /enqueue_dev <objetivo>, "
                 "/enqueue_template <template> <objetivo>, /templates, "
@@ -121,6 +125,22 @@ class TelegramSuperownerAdapter:
             "counts": counts,
             "next_pending_task_id": next_task.task_id if next_task else None,
             "message": self._format_status_message(counts, next_task.task_id if next_task else None),
+        }
+
+    def _handle_factory_health(self, user_id: str | int) -> dict:
+        counts = self.store.counts()
+        next_task = self.store.next_pending()
+        report = read_last_factory_run_report(self.evidence_dir)
+        summary = build_factory_health_summary(
+            queue_counts=counts,
+            next_pending_task_id=next_task.task_id if next_task else None,
+            last_report=report,
+        )
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "health": summary,
+            "message": format_factory_health_summary(summary),
         }
 
     def _handle_tasks_pending(self, user_id: str | int) -> dict:
