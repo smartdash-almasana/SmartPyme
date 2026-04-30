@@ -101,13 +101,69 @@ def build_factory_run_report(
 
 
 def write_factory_run_report(report: FactoryRunReport, evidence_dir: str | Path) -> dict[str, str]:
-    directory = Path(evidence_dir) / "run_reports"
+    directory = _report_dir(evidence_dir)
     directory.mkdir(parents=True, exist_ok=True)
     json_path = directory / f"{report.report_id}.json"
     md_path = directory / f"{report.report_id}.md"
     json_path.write_text(report.to_json(), encoding="utf-8")
     md_path.write_text(report.to_markdown(), encoding="utf-8")
     return {"json_path": str(json_path), "markdown_path": str(md_path)}
+
+
+def read_factory_run_report(report_id: str, evidence_dir: str | Path) -> FactoryRunReport | None:
+    path = _report_dir(evidence_dir) / f"{report_id}.json"
+    if not path.exists():
+        return None
+    return factory_run_report_from_dict(json.loads(path.read_text(encoding="utf-8")))
+
+
+def read_factory_run_report_markdown(report_id: str, evidence_dir: str | Path) -> str | None:
+    path = _report_dir(evidence_dir) / f"{report_id}.md"
+    if not path.exists():
+        return None
+    return path.read_text(encoding="utf-8")
+
+
+def read_last_factory_run_report(evidence_dir: str | Path) -> FactoryRunReport | None:
+    reports = list_factory_run_reports(evidence_dir)
+    if not reports:
+        return None
+    return sorted(reports, key=lambda report: report.created_at)[-1]
+
+
+def list_factory_run_reports(evidence_dir: str | Path) -> list[FactoryRunReport]:
+    directory = _report_dir(evidence_dir)
+    if not directory.exists():
+        return []
+    reports: list[FactoryRunReport] = []
+    for path in sorted(directory.glob("*.json")):
+        reports.append(factory_run_report_from_dict(json.loads(path.read_text(encoding="utf-8"))))
+    return reports
+
+
+def factory_run_report_from_dict(data: dict[str, Any]) -> FactoryRunReport:
+    return FactoryRunReport(
+        report_id=data["report_id"],
+        run_type=data["run_type"],
+        requested_count=data["requested_count"],
+        executed_count=data["executed_count"],
+        done_count=data["done_count"],
+        blocked_count=data["blocked_count"],
+        idle=data["idle"],
+        task_results=[
+            FactoryTaskRunSummary(
+                task_id=item.get("task_id"),
+                status=item["status"],
+                evidence_paths=list(item.get("evidence_paths") or []),
+                blocking_reason=item.get("blocking_reason"),
+                command_exit_codes=list(item.get("command_exit_codes") or []),
+                path_errors=list(item.get("path_errors") or []),
+            )
+            for item in data.get("task_results", [])
+        ],
+        created_at=data["created_at"],
+        metadata=dict(data.get("metadata") or {}),
+    )
 
 
 def _summarize_task_result(result: TaskSpecRunResult) -> FactoryTaskRunSummary:
@@ -119,3 +175,7 @@ def _summarize_task_result(result: TaskSpecRunResult) -> FactoryTaskRunSummary:
         command_exit_codes=[command.exit_code for command in result.command_results],
         path_errors=list(result.path_errors),
     )
+
+
+def _report_dir(evidence_dir: str | Path) -> Path:
+    return Path(evidence_dir) / "run_reports"
