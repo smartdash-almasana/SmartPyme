@@ -7,8 +7,14 @@ from typing import Any, Literal
 EvidenceContractStatus = Literal["implemented", "partial", "pending"]
 
 
+def _require_non_empty(value: str, field_name: str) -> None:
+    if not value or not value.strip():
+        raise ValueError(f"{field_name} is required")
+
+
 @dataclass(frozen=True, slots=True)
 class RawDocument:
+    cliente_id: str
     raw_document_id: str
     job_id: str | None
     plan_id: str | None
@@ -21,9 +27,13 @@ class RawDocument:
     created_at: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        _require_non_empty(self.cliente_id, "cliente_id")
+
 
 @dataclass(frozen=True, slots=True)
 class DocumentRecord:
+    cliente_id: str
     document_id: str
     raw_document_id: str
     job_id: str | None
@@ -33,6 +43,9 @@ class DocumentRecord:
     text_hash: str
     page_count: int | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        _require_non_empty(self.cliente_id, "cliente_id")
 
 
 @dataclass(frozen=True, slots=True)
