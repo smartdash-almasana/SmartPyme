@@ -1,28 +1,27 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable
 from uuid import uuid4
 
-from factory.core.queue_runner import find_next_pending_task, list_task_ids
-from factory.tools.factory_control import (
-    DEFAULT_EVIDENCE_DIR,
-    DEFAULT_TASKS_DIR,
-    enqueue_factory_task,
-    get_factory_task_status,
-    run_factory_once,
-)
+from factory.core.task_spec import TaskSpec, TaskSpecStatus
+from factory.core.task_spec_runner import TaskSpecRunner
+from factory.core.task_spec_store import TaskSpecStore
 
-FactoryEnqueuer = Callable[..., dict]
-FactoryRunner = Callable[..., dict]
-FactoryStatusReader = Callable[..., dict]
+
+DEFAULT_TASKS_DIR = Path("factory/taskspecs")
+DEFAULT_EVIDENCE_DIR = Path("factory/evidence/taskspecs")
+DEFAULT_ALLOWED_PATHS = ["factory", "tests/factory"]
+DEFAULT_FORBIDDEN_PATHS = ["app", "data", ".git"]
+DEFAULT_VALIDATION_COMMANDS = [
+    "PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py tests/factory/test_task_spec_store_fm_014.py tests/factory/test_task_spec_runner_fm_015.py"
+]
 
 
 class TelegramSuperownerAdapter:
     """Telegram control plane for the multiagent factory superowner.
 
-    This adapter belongs to the factory package and must not depend on SmartPyme
-    runtime modules under app/.
+    This adapter belongs to the factory package and controls development TaskSpec
+    items only. It does not depend on SmartPyme runtime modules under app/.
     """
 
     def __init__(
@@ -30,18 +29,16 @@ class TelegramSuperownerAdapter:
         superowner_telegram_user_id: str | int,
         tasks_dir: str | Path = DEFAULT_TASKS_DIR,
         evidence_dir: str | Path = DEFAULT_EVIDENCE_DIR,
-        factory_enqueuer: FactoryEnqueuer = enqueue_factory_task,
-        factory_runner: FactoryRunner = run_factory_once,
-        factory_status_reader: FactoryStatusReader = get_factory_task_status,
+        store: TaskSpecStore | None = None,
+        runner: TaskSpecRunner | None = None,
     ) -> None:
         if not str(superowner_telegram_user_id).strip():
             raise ValueError("superowner_telegram_user_id is required")
         self.superowner_telegram_user_id = str(superowner_telegram_user_id)
         self.tasks_dir = Path(tasks_dir)
         self.evidence_dir = Path(evidence_dir)
-        self.factory_enqueuer = factory_enqueuer
-        self.factory_runner = factory_runner
-        self.factory_status_reader = factory_status_reader
+        self.store = store or TaskSpecStore(self.tasks_dir)
+        self.runner = runner or TaskSpecRunner(self.store, evidence_dir=self.evidence_dir)
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -77,14 +74,8 @@ class TelegramSuperownerAdapter:
         }
 
     def _handle_status_factory(self, user_id: str | int) -> dict:
-        task_ids = list_task_ids(self.tasks_dir)
-        counts = {"pending": 0, "in_progress": 0, "done": 0, "blocked": 0, "unknown": 0}
-        for task_id in task_ids:
-            status = self.factory_status_reader(task_id, tasks_dir=self.tasks_dir)
-            state = status.get("status", "unknown")
-            counts[state if state in counts else "unknown"] += 1
-
-        next_task = find_next_pending_task(self.tasks_dir)
+        counts = self.store.counts()
+        next_task = self.store.next_pending()
         return {
             "status": "ok",
             "telegram_user_id": str(user_id),
@@ -94,18 +85,8 @@ class TelegramSuperownerAdapter:
         }
 
     def _handle_tasks_pending(self, user_id: str | int) -> dict:
-        pending = []
-        for task_id in list_task_ids(self.tasks_dir):
-            task_status = self.factory_status_reader(task_id, tasks_dir=self.tasks_dir)
-            if task_status.get("status") == "pending":
-                pending.append(
-                    {
-                        "task_id": task_status["task_id"],
-                        "objective": task_status.get("objective"),
-                        "task_type": task_status.get("task_type"),
-                    }
-                )
-
+        pending_tasks = self.store.list(TaskSpecStatus.PENDING)
+        pending = [self._serialize_task_summary(task) for task in pending_tasks]
         return {
             "status": "ok",
             "telegram_user_id": str(user_id),
@@ -124,12 +105,22 @@ class TelegramSuperownerAdapter:
             }
 
         task_id = parts[1].strip()
-        status = self.factory_status_reader(task_id, tasks_dir=self.tasks_dir)
+        task = self.store.get(task_id)
+        if task is None:
+            payload = {"status": "not_found", "task_id": task_id}
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "task": payload,
+                "message": self._format_task_message(payload),
+            }
+
+        payload = self._serialize_task(task)
         return {
-            "status": status.get("status"),
+            "status": task.status.value,
             "telegram_user_id": str(user_id),
-            "task": status,
-            "message": self._format_task_message(status),
+            "task": payload,
+            "message": self._format_task_message(payload),
         }
 
     def _handle_enqueue_dev(self, user_id: str | int, text: str) -> dict:
@@ -142,28 +133,67 @@ class TelegramSuperownerAdapter:
             }
 
         objective = parts[1].strip()
-        task_id = f"dev:{uuid4()}"
-        queued = self.factory_enqueuer(
+        task_id = f"dev-{uuid4()}"
+        task = TaskSpec(
             task_id=task_id,
+            title=_title_from_objective(objective),
             objective=objective,
-            tasks_dir=self.tasks_dir,
-            task_type="dev_task",
-            payload={"origin": "telegram_superowner", "objective": objective},
+            allowed_paths=list(DEFAULT_ALLOWED_PATHS),
+            forbidden_paths=list(DEFAULT_FORBIDDEN_PATHS),
+            acceptance_criteria=["La tarea dev produce evidencia verificable o queda bloqueada con motivo."],
+            validation_commands=list(DEFAULT_VALIDATION_COMMANDS),
+            metadata={"origin": "telegram_superowner", "telegram_user_id": str(user_id)},
         )
+        path = self.store.enqueue(task)
+        queued = {
+            "status": "queued",
+            "task_id": task.task_id,
+            "task_type": "taskspec_dev",
+            "path": path,
+        }
         return {
             "status": "queued",
             "telegram_user_id": str(user_id),
             "task": queued,
-            "message": f"Tarea dev encolada: {task_id}.",
+            "message": f"TaskSpec dev encolada: {task_id}.",
         }
 
     def _handle_run_one(self, user_id: str | int) -> dict:
-        result = self.factory_runner(tasks_dir=self.tasks_dir, evidence_dir=self.evidence_dir)
+        result = self.runner.run_next()
+        if result.task_id is None:
+            payload = {
+                "status": "idle",
+                "task_id": None,
+                "reason": result.blocking_reason,
+            }
+            return {
+                "status": "idle",
+                "telegram_user_id": str(user_id),
+                "result": payload,
+                "message": self._format_run_message(payload),
+            }
+
+        payload = {
+            "status": result.status.value,
+            "task_id": result.task_id,
+            "evidence_paths": result.evidence_paths,
+            "blocking_reason": result.blocking_reason,
+            "path_errors": result.path_errors,
+            "command_results": [
+                {
+                    "command": command_result.command,
+                    "exit_code": command_result.exit_code,
+                    "stdout": command_result.stdout,
+                    "stderr": command_result.stderr,
+                }
+                for command_result in result.command_results
+            ],
+        }
         return {
-            "status": result.get("status"),
+            "status": result.status.value,
             "telegram_user_id": str(user_id),
-            "result": result,
-            "message": self._format_run_message(result),
+            "result": payload,
+            "message": self._format_run_message(payload),
         }
 
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
@@ -174,6 +204,17 @@ class TelegramSuperownerAdapter:
     def _extract_text(self, update_dict: dict) -> str:
         message = update_dict.get("message") or {}
         return (message.get("text") or "").strip()
+
+    def _serialize_task_summary(self, task: TaskSpec) -> dict:
+        return {
+            "task_id": task.task_id,
+            "title": task.title,
+            "objective": task.objective,
+            "status": task.status.value,
+        }
+
+    def _serialize_task(self, task: TaskSpec) -> dict:
+        return task.to_dict()
 
     def _format_status_message(self, counts: dict, next_pending_task_id: str | None) -> str:
         return (
@@ -187,7 +228,7 @@ class TelegramSuperownerAdapter:
 
     def _format_task_message(self, status: dict) -> str:
         if status.get("status") == "not_found":
-            return f"Tarea no encontrada: {status.get('task_id')} ."
+            return f"Tarea no encontrada: {status.get('task_id')}."
         return (
             f"Tarea {status.get('task_id')}: {status.get('status')}. "
             f"Objetivo: {status.get('objective')}. "
@@ -202,3 +243,8 @@ class TelegramSuperownerAdapter:
             f"status={result.get('status')} "
             f"blocking_reason={result.get('blocking_reason') or 'no'}."
         )
+
+
+def _title_from_objective(objective: str) -> str:
+    title = objective.strip().split("\n", maxsplit=1)[0]
+    return title[:80] or "Tarea dev"
