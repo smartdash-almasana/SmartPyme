@@ -24,6 +24,7 @@ def _validate_decimal(v: Any) -> decimal.Decimal:
 class HallazgoOperativo(BaseModel):
     model_config = ConfigDict(strict=False)
 
+    cliente_id: str
     entidad_origen: str
     patologia_id: str
     nivel_severidad: str
@@ -36,12 +37,12 @@ class HallazgoOperativo(BaseModel):
     fuente_b: Optional[str] = None
     descripcion: Optional[str] = None
 
-    @field_validator('entidad_origen', 'patologia_id', mode='before')
+    @field_validator('cliente_id', 'entidad_origen', 'patologia_id', mode='before')
     @classmethod
     def _validate_not_empty(cls, v: Any) -> str:
         if not isinstance(v, str) or not v.strip():
             raise ValueError("String field cannot be empty or whitespace only.")
-        return v
+        return v.strip()
 
     @field_validator('nivel_severidad', mode='before')
     @classmethod
