@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+from factory.core.run_report import build_factory_run_report, write_factory_run_report
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
 from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
 from factory.core.task_spec_store import TaskSpecStore
@@ -252,18 +253,24 @@ class TelegramSuperownerAdapter:
                 "task_id": None,
                 "reason": result.blocking_reason,
             }
+            report, report_paths = self._write_run_report("run_one", 1, [])
             return {
                 "status": "idle",
                 "telegram_user_id": str(user_id),
                 "result": payload,
+                "run_report": report.to_dict(),
+                "run_report_paths": report_paths,
                 "message": self._format_run_message(payload),
             }
 
         payload = self._serialize_run_result(result)
+        report, report_paths = self._write_run_report("run_one", 1, [result])
         return {
             "status": result.status.value,
             "telegram_user_id": str(user_id),
             "result": payload,
+            "run_report": report.to_dict(),
+            "run_report_paths": report_paths,
             "message": self._format_run_message(payload),
         }
 
@@ -276,15 +283,17 @@ class TelegramSuperownerAdapter:
                 "message": f"Formato inválido. Usá /run_batch <n>, con 1 <= n <= {MAX_RUN_BATCH_SIZE}.",
             }
 
-        results = []
+        raw_results = []
         for _ in range(parsed):
             result = self.runner.run_next()
             if result.task_id is None:
                 break
-            results.append(self._serialize_run_result(result))
+            raw_results.append(result)
 
+        results = [self._serialize_run_result(result) for result in raw_results]
         done_count = sum(1 for result in results if result["status"] == TaskSpecStatus.DONE.value)
         blocked_count = sum(1 for result in results if result["status"] == TaskSpecStatus.BLOCKED.value)
+        report, report_paths = self._write_run_report("run_batch", parsed, raw_results)
         return {
             "status": "ok",
             "telegram_user_id": str(user_id),
@@ -293,8 +302,25 @@ class TelegramSuperownerAdapter:
             "done_count": done_count,
             "blocked_count": blocked_count,
             "results": results,
+            "run_report": report.to_dict(),
+            "run_report_paths": report_paths,
             "message": self._format_run_batch_message(parsed, results, done_count, blocked_count),
         }
+
+    def _write_run_report(
+        self,
+        run_type: str,
+        requested_count: int,
+        results: list[TaskSpecRunResult],
+    ):
+        report = build_factory_run_report(
+            run_type=run_type,
+            requested_count=requested_count,
+            results=results,
+            metadata={"source": "telegram_superowner"},
+        )
+        report_paths = write_factory_run_report(report, self.evidence_dir)
+        return report, report_paths
 
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
         message = update_dict.get("message") or {}
