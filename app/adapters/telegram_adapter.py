@@ -7,6 +7,7 @@ from uuid import uuid4
 from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.mcp.tools.owner_status_tool import get_owner_status
+from app.services.document_intake_service import DocumentIntakeService
 from app.services.identity_service import IdentityService
 
 
@@ -24,10 +25,12 @@ class TelegramAdapter:
         identity_service: IdentityService | None = None,
         owner_status_provider: OwnerStatusProvider = get_owner_status,
         factory_task_enqueuer: FactoryTaskEnqueuer = enqueue_factory_task,
+        document_intake_service: DocumentIntakeService | None = None,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
         self.factory_task_enqueuer = factory_task_enqueuer
+        self.document_intake_service = document_intake_service or DocumentIntakeService()
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -109,6 +112,14 @@ class TelegramAdapter:
                 "message": "Formato no soportado. Enviá PDF, XLSX o CSV.",
             }
 
+        candidate = self.document_intake_service.register_telegram_document_candidate(
+            cliente_id=cliente_id,
+            telegram_user_id=user_id,
+            file_id=file_id,
+            file_name=filename,
+            mime_type=document.get("mime_type"),
+        )
+
         task_id = f"telegram:{cliente_id}:{file_id or filename}"
         objective = f"Procesar evidencia Telegram para cliente {cliente_id}: {filename}"
         queued = self.factory_task_enqueuer(task_id, objective)
@@ -122,8 +133,9 @@ class TelegramAdapter:
                 "file_name": filename,
                 "mime_type": document.get("mime_type"),
             },
+            "evidence_candidate": candidate.model_dump(mode="json"),
             "task": queued,
-            "message": "Documento recibido y enviado a la factoría.",
+            "message": "Documento recibido, registrado como candidato de evidencia y enviado a la factoría.",
         }
 
     def _handle_audit_venta_bajo_costo(
