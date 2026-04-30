@@ -16,12 +16,20 @@ def enqueue_factory_task(
     task_id: str,
     objective: str,
     tasks_dir: str | Path = DEFAULT_TASKS_DIR,
+    task_type: str | None = None,
+    payload: dict | None = None,
 ) -> dict:
-    task = MultiagentTask(task_id=task_id, objective=objective)
+    task = MultiagentTask(
+        task_id=task_id,
+        objective=objective,
+        task_type=task_type,
+        payload=payload or {},
+    )
     path = save_task(task, tasks_dir)
     return {
         "status": "queued",
         "task_id": task_id,
+        "task_type": task_type,
         "path": path,
     }
 
@@ -48,6 +56,9 @@ def get_factory_task_status(
         "status": task.status,
         "task_id": task.task_id,
         "objective": task.objective,
+        "task_type": task.task_type,
+        "payload": task.payload,
+        "output": task.output,
         "report_path": task.report_path,
         "blocking_reason": task.blocking_reason,
         "plan": task.plan,
