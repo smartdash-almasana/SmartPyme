@@ -85,7 +85,6 @@ class RetrievalResult:
 
 @dataclass(frozen=True, slots=True)
 class ExtractedFactCandidate:
-    cliente_id: str
     fact_candidate_id: str
     evidence_id: str
     job_id: str | None
@@ -96,9 +95,6 @@ class ExtractedFactCandidate:
     extraction_method: str
     validation_status: str = "pending_validation"
     errors: list[str] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        _require_non_empty(self.cliente_id, "cliente_id")
 
 
 @dataclass(frozen=True, slots=True)
