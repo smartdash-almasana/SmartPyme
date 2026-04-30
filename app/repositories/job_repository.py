@@ -51,8 +51,8 @@ class JobRepository:
                 job.job_id,
                 job.job_type,
                 job.status.value,
-                json.dumps(job.payload),
-                json.dumps(job.traceable_origin),
+                json.dumps(job.payload or {}),
+                json.dumps(job.traceable_origin or {}),
             ))
 
     def get(self, job_id: str):
@@ -70,10 +70,10 @@ class JobRepository:
                 cliente_id=row["cliente_id"],
                 job_type=row["job_type"],
                 status=JobStatus(row["status"]),
-                payload=json.loads(row["payload"]),
+                payload=json.loads(row["payload"]) if row["payload"] else {},
                 result=json.loads(row["result"]) if row["result"] else None,
                 error_log=row["error_log"],
-                traceable_origin=json.loads(row["traceable_origin"]),
+                traceable_origin=json.loads(row["traceable_origin"]) if row["traceable_origin"] else {},
             )
 
     def list_jobs(self):
@@ -92,7 +92,7 @@ class JobRepository:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 "UPDATE background_jobs SET status=?, result=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
-                (JobStatus.SUCCESS.value, json.dumps(result), self.cliente_id, job_id),
+                (JobStatus.SUCCESS.value, json.dumps(result or {}), self.cliente_id, job_id),
             )
 
     def mark_failed(self, job_id: str, error_log: str):
