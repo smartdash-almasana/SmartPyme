@@ -85,7 +85,7 @@ def test_enqueue_template_rejects_invalid_format(tmp_path):
     missing_objective = adapter.handle_update(_update(111, "/enqueue_template code_change"))
     missing_template = adapter.handle_update(_update(111, "/enqueue_template"))
 
-    assert missing_objective["status"] == "unsupported_command"
+    assert missing_objective["status"] == "invalid_command"
     assert missing_template["status"] == "unsupported_command"
 
 
