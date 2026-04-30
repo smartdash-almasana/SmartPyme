@@ -9,7 +9,11 @@ from app.services.findings_service import Finding
 
 
 class FindingRepository:
-    def __init__(self, db_path: str | Path) -> None:
+    def __init__(self, cliente_id: str, db_path: str | Path) -> None:
+        if not cliente_id or not cliente_id.strip():
+            raise ValueError("cliente_id is required for FindingRepository isolation")
+
+        self.cliente_id = cliente_id
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
@@ -19,7 +23,8 @@ class FindingRepository:
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS findings (
-                    finding_id          TEXT PRIMARY KEY,
+                    cliente_id          TEXT NOT NULL DEFAULT 'sistema',
+                    finding_id          TEXT NOT NULL,
                     entity_id_a         TEXT NOT NULL,
                     entity_id_b         TEXT NOT NULL,
                     entity_type         TEXT NOT NULL,
@@ -30,14 +35,21 @@ class FindingRepository:
                     difference_pct      REAL NOT NULL,
                     severity            TEXT NOT NULL,
                     suggested_action    TEXT NOT NULL,
-                    traceable_origin_json TEXT NOT NULL
+                    traceable_origin_json TEXT NOT NULL,
+                    PRIMARY KEY (cliente_id, finding_id)
                 )
                 """
             )
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_findings_entity_type
-                ON findings(entity_type)
+                CREATE INDEX IF NOT EXISTS idx_findings_cliente_id
+                ON findings(cliente_id)
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_findings_cliente_id_entity_type
+                ON findings(cliente_id, entity_type)
                 """
             )
 
@@ -46,13 +58,14 @@ class FindingRepository:
             conn.execute(
                 """
                 INSERT INTO findings (
+                    cliente_id,
                     finding_id, entity_id_a, entity_id_b, entity_type,
                     metric, source_a_value, source_b_value,
                     difference, difference_pct, severity,
                     suggested_action, traceable_origin_json
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(finding_id) DO UPDATE SET
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(cliente_id, finding_id) DO UPDATE SET
                     entity_id_a         = excluded.entity_id_a,
                     entity_id_b         = excluded.entity_id_b,
                     entity_type         = excluded.entity_type,
@@ -66,6 +79,7 @@ class FindingRepository:
                     traceable_origin_json = excluded.traceable_origin_json
                 """,
                 (
+                    self.cliente_id,
                     finding.finding_id,
                     finding.entity_id_a,
                     finding.entity_id_b,
@@ -93,12 +107,13 @@ class FindingRepository:
                 difference, difference_pct, severity,
                 suggested_action, traceable_origin_json
             FROM findings
-            WHERE (? IS NULL OR entity_type = ?)
+            WHERE cliente_id = ?
+              AND (? IS NULL OR entity_type = ?)
             ORDER BY finding_id
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute(query, (entity_type, entity_type)).fetchall()
+            rows = conn.execute(query, (self.cliente_id, entity_type, entity_type)).fetchall()
         return [_row_to_finding(row) for row in rows]
 
     def _connect(self) -> sqlite3.Connection:
