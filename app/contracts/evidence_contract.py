@@ -50,6 +50,7 @@ class DocumentRecord:
 
 @dataclass(frozen=True, slots=True)
 class EvidenceChunk:
+    cliente_id: str
     evidence_id: str
     document_id: str
     raw_document_id: str | None
@@ -61,9 +62,13 @@ class EvidenceChunk:
     chunk_order: int
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        _require_non_empty(self.cliente_id, "cliente_id")
+
 
 @dataclass(frozen=True, slots=True)
 class RetrievalResult:
+    cliente_id: str
     query_id: str
     evidence_id: str
     document_id: str | None
@@ -73,6 +78,9 @@ class RetrievalResult:
     text: str
     citation: dict[str, Any]
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        _require_non_empty(self.cliente_id, "cliente_id")
 
 
 @dataclass(frozen=True, slots=True)
