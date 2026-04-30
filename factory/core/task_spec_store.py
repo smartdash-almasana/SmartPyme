@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from factory.core.task_spec import TaskSpec, TaskSpecStatus, read_task_spec, write_task_spec
 
@@ -69,6 +70,38 @@ class TaskSpecStore:
             task,
             task.with_status(TaskSpecStatus.BLOCKED, blocking_reason=blocking_reason),
         )
+
+    def retry_blocked(self, task_id: str, retried_by: str | None = None) -> TaskSpec:
+        task = self._require(task_id)
+        if task.status != TaskSpecStatus.BLOCKED:
+            raise ValueError("Only blocked TaskSpec can be retried")
+
+        metadata = dict(task.metadata)
+        retry_history = list(metadata.get("retry_history") or [])
+        retry_history.append(
+            {
+                "previous_status": task.status.value,
+                "previous_blocking_reason": task.blocking_reason,
+                "retried_by": retried_by,
+            }
+        )
+        metadata["retry_history"] = retry_history
+        metadata["retry_count"] = int(metadata.get("retry_count") or 0) + 1
+
+        retried = TaskSpec(
+            task_id=task.task_id,
+            title=task.title,
+            objective=task.objective,
+            allowed_paths=list(task.allowed_paths),
+            forbidden_paths=list(task.forbidden_paths),
+            acceptance_criteria=list(task.acceptance_criteria),
+            validation_commands=list(task.validation_commands),
+            status=TaskSpecStatus.PENDING,
+            evidence_paths=[],
+            blocking_reason=None,
+            metadata=metadata,
+        )
+        return self._move(task, retried)
 
     def counts(self) -> dict[str, int]:
         return {status.value: len(self._list_status(status)) for status in TaskSpecStatus}
