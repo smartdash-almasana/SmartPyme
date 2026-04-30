@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from app.api.dependencies import get_active_client
 from app.contracts.job_contract import Job
+from app.core.job_worker import JobWorker
 from app.repositories.job_repository import JobRepository
 
 router = APIRouter()
@@ -45,7 +46,8 @@ async def create_job(
     db_path: JobsDbPath = Depends(get_jobs_db_path),
 ):
     request = request or CreateJobRequest()
-    repo = JobRepository(cliente_id, Path(db_path.jobs))
+    jobs_db_path = Path(db_path.jobs)
+    repo = JobRepository(cliente_id, jobs_db_path)
     job = Job(
         job_id=str(uuid4()),
         cliente_id=cliente_id,
@@ -55,7 +57,11 @@ async def create_job(
     )
     repo.create(job)
 
-    return serialize_job(job)
+    if request.payload:
+        worker = JobWorker(cliente_id=cliente_id, db_base_path=jobs_db_path.parent)
+        worker.run(job.job_id, job.payload)
+
+    return serialize_job(repo.get(job.job_id) or job)
 
 
 @router.get("/jobs")
