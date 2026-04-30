@@ -62,6 +62,8 @@ class TelegramSuperownerAdapter:
             return self._handle_tasks_pending(user_id)
         if text == "/blocked":
             return self._handle_blocked(user_id)
+        if text.startswith("/retry_blocked "):
+            return self._handle_retry_blocked(user_id, text)
         if text.startswith("/evidence "):
             return self._handle_evidence(user_id, text)
         if text.startswith("/task "):
@@ -74,8 +76,8 @@ class TelegramSuperownerAdapter:
             "telegram_user_id": str(user_id),
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
-                "/blocked, /task <task_id>, /evidence <task_id>, "
-                "/enqueue_dev <objetivo>, /run_one."
+                "/blocked, /retry_blocked <task_id>, /task <task_id>, "
+                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one."
             ),
         }
 
@@ -110,6 +112,40 @@ class TelegramSuperownerAdapter:
             "blocked_count": len(blocked),
             "blocked_tasks": blocked,
             "message": self._format_blocked_message(blocked),
+        }
+
+    def _handle_retry_blocked(self, user_id: str | int, text: str) -> dict:
+        parts = text.split(maxsplit=1)
+        if len(parts) != 2 or not parts[1].strip():
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": "Formato inválido. Usá /retry_blocked <task_id>.",
+            }
+
+        task_id = parts[1].strip()
+        try:
+            task = self.store.retry_blocked(task_id, retried_by=f"telegram:{user_id}")
+        except FileNotFoundError:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "task_id": task_id,
+                "message": f"Tarea no encontrada: {task_id}.",
+            }
+        except ValueError as exc:
+            return {
+                "status": "invalid_transition",
+                "telegram_user_id": str(user_id),
+                "task_id": task_id,
+                "message": str(exc),
+            }
+
+        return {
+            "status": "queued",
+            "telegram_user_id": str(user_id),
+            "task": self._serialize_task(task),
+            "message": f"Tarea bloqueada devuelta a pending: {task_id}.",
         }
 
     def _handle_evidence(self, user_id: str | int, text: str) -> dict:
