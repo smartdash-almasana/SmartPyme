@@ -3,7 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
-from factory.core.run_report import build_factory_run_report, write_factory_run_report
+from factory.core.run_report import (
+    FactoryRunReport,
+    build_factory_run_report,
+    read_factory_run_report,
+    read_factory_run_report_markdown,
+    read_last_factory_run_report,
+    write_factory_run_report,
+)
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
 from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
 from factory.core.task_spec_store import TaskSpecStore
@@ -18,6 +25,7 @@ DEFAULT_VALIDATION_COMMANDS = [
 ]
 MAX_EVIDENCE_CHARS = 3500
 MAX_RUN_BATCH_SIZE = 10
+MAX_REPORT_MARKDOWN_CHARS = 3500
 
 
 class TelegramSuperownerAdapter:
@@ -62,6 +70,10 @@ class TelegramSuperownerAdapter:
             return self._handle_run_one(user_id)
         if text.startswith("/run_batch"):
             return self._handle_run_batch(user_id, text)
+        if text == "/last_report":
+            return self._handle_last_report(user_id)
+        if text.startswith("/report "):
+            return self._handle_report(user_id, text)
         if text == "/tasks_pending":
             return self._handle_tasks_pending(user_id)
         if text == "/blocked":
@@ -81,7 +93,8 @@ class TelegramSuperownerAdapter:
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
-                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one, /run_batch <n>."
+                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one, "
+                "/run_batch <n>, /last_report, /report <report_id>."
             ),
         }
 
@@ -181,6 +194,36 @@ class TelegramSuperownerAdapter:
             "evidence": evidence,
             "message": self._format_evidence_message(task_id, evidence),
         }
+
+    def _handle_last_report(self, user_id: str | int) -> dict:
+        report = read_last_factory_run_report(self.evidence_dir)
+        if report is None:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "message": "No hay reportes de ejecución registrados.",
+            }
+        return self._report_response(user_id, report)
+
+    def _handle_report(self, user_id: str | int, text: str) -> dict:
+        parts = text.split(maxsplit=1)
+        if len(parts) != 2 or not parts[1].strip():
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": "Formato inválido. Usá /report <report_id>.",
+            }
+
+        report_id = parts[1].strip()
+        report = read_factory_run_report(report_id, self.evidence_dir)
+        if report is None:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "report_id": report_id,
+                "message": f"Reporte no encontrado: {report_id}.",
+            }
+        return self._report_response(user_id, report)
 
     def _handle_task_status(self, user_id: str | int, text: str) -> dict:
         parts = text.split(maxsplit=1)
@@ -322,6 +365,21 @@ class TelegramSuperownerAdapter:
         report_paths = write_factory_run_report(report, self.evidence_dir)
         return report, report_paths
 
+    def _report_response(self, user_id: str | int, report: FactoryRunReport) -> dict:
+        markdown = read_factory_run_report_markdown(report.report_id, self.evidence_dir) or ""
+        truncated = False
+        if len(markdown) > MAX_REPORT_MARKDOWN_CHARS:
+            markdown = markdown[:MAX_REPORT_MARKDOWN_CHARS]
+            truncated = True
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "report": report.to_dict(),
+            "markdown": markdown,
+            "truncated": truncated,
+            "message": self._format_report_message(report),
+        }
+
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
         message = update_dict.get("message") or {}
         user = message.get("from") or {}
@@ -424,6 +482,13 @@ class TelegramSuperownerAdapter:
         return (
             f"Run batch solicitado={requested}, ejecutado={len(results)}, "
             f"done={done_count}, blocked={blocked_count}."
+        )
+
+    def _format_report_message(self, report: FactoryRunReport) -> str:
+        return (
+            f"Reporte {report.report_id}: type={report.run_type}, "
+            f"executed={report.executed_count}, done={report.done_count}, "
+            f"blocked={report.blocked_count}, idle={report.idle}."
         )
 
     def _format_blocked_message(self, blocked: list[dict]) -> str:
