@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+import json
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Callable
 
@@ -19,6 +20,38 @@ Planner = Callable[[MultiagentTask], list[str]]
 Builder = Callable[[MultiagentTask], dict]
 Auditor = Callable[[MultiagentTask], dict]
 Reporter = Callable[[MultiagentTask, Path], str]
+
+
+def task_to_dict(task: MultiagentTask) -> dict:
+    return asdict(task)
+
+
+def task_from_dict(data: dict) -> MultiagentTask:
+    return MultiagentTask(
+        task_id=data["task_id"],
+        objective=data["objective"],
+        status=data.get("status", "pending"),
+        plan=data.get("plan", []),
+        output=data.get("output"),
+        audit=data.get("audit"),
+        report_path=data.get("report_path"),
+        blocking_reason=data.get("blocking_reason"),
+    )
+
+
+def save_task(task: MultiagentTask, tasks_dir: str | Path) -> str:
+    target_dir = Path(tasks_dir)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    path = target_dir / f"{task.task_id}.json"
+    path.write_text(json.dumps(task_to_dict(task), ensure_ascii=False, indent=2), encoding="utf-8")
+    return str(path)
+
+
+def load_task(task_id: str, tasks_dir: str | Path) -> MultiagentTask | None:
+    path = Path(tasks_dir) / f"{task_id}.json"
+    if not path.exists():
+        return None
+    return task_from_dict(json.loads(path.read_text(encoding="utf-8")))
 
 
 def default_planner(task: MultiagentTask) -> list[str]:
@@ -78,3 +111,28 @@ def run_multiagent_task_cycle(
 
     task.report_path = reporter(task, Path(evidence_dir))
     return task
+
+
+def run_persisted_multiagent_task_cycle(
+    task_id: str,
+    tasks_dir: str | Path,
+    evidence_dir: str | Path,
+    planner: Planner = default_planner,
+    builder: Builder = default_builder,
+    auditor: Auditor = default_auditor,
+    reporter: Reporter = default_reporter,
+) -> MultiagentTask | None:
+    task = load_task(task_id, tasks_dir)
+    if task is None:
+        return None
+
+    result = run_multiagent_task_cycle(
+        task,
+        evidence_dir,
+        planner=planner,
+        builder=builder,
+        auditor=auditor,
+        reporter=reporter,
+    )
+    save_task(result, tasks_dir)
+    return result
