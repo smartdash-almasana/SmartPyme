@@ -1,4 +1,4 @@
-from app.contracts.formula_contract import FormulaInput
+from app.contracts.formula_contract import FormulaInput, FormulaResult, FormulaStatus
 from app.contracts.pathology_contract import PathologyEvaluationInput, PathologyStatus
 from app.services.formula_engine_service import FormulaEngineService
 from app.services.pathology_engine_service import PathologyEngineService
@@ -51,12 +51,20 @@ def test_engine_uses_registry_for_venta_bajo_costo():
 
 
 def test_catalog_pathology_without_registry_evaluator_is_pending_data():
+    formula_result = FormulaResult(
+        formula_id="integridad_identificador",
+        status=FormulaStatus.OK,
+        value=1,
+        inputs={"identificador_valido": 1},
+        source_refs=["source:identifier:1"],
+    )
+
     result = PathologyEngineService().evaluate(
         "falla_precision_int64",
         PathologyEvaluationInput(
             cliente_id="pyme_A",
             formula_result_id="fr3",
-            formula_result=_formula_result("integridad_identificador", 1000, 600),
+            formula_result=formula_result,
         ),
     )
 
