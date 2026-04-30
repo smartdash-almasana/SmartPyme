@@ -18,6 +18,7 @@ class FactoryTaskRunSummary:
     evidence_paths: list[str] = field(default_factory=list)
     blocking_reason: str | None = None
     command_exit_codes: list[int] = field(default_factory=list)
+    changed_paths: list[str] = field(default_factory=list)
     path_errors: list[str] = field(default_factory=list)
 
 
@@ -66,9 +67,14 @@ class FactoryRunReport:
                     f"- blocking_reason: {result.blocking_reason or 'none'}",
                     f"- command_exit_codes: {result.command_exit_codes}",
                     f"- path_errors: {result.path_errors}",
-                    "- evidence_paths:",
+                    "- changed_paths:",
                 ]
             )
+            if result.changed_paths:
+                lines.extend(f"  - {path}" for path in result.changed_paths)
+            else:
+                lines.append("  - none")
+            lines.append("- evidence_paths:")
             if result.evidence_paths:
                 lines.extend(f"  - {path}" for path in result.evidence_paths)
             else:
@@ -157,6 +163,7 @@ def factory_run_report_from_dict(data: dict[str, Any]) -> FactoryRunReport:
                 evidence_paths=list(item.get("evidence_paths") or []),
                 blocking_reason=item.get("blocking_reason"),
                 command_exit_codes=list(item.get("command_exit_codes") or []),
+                changed_paths=list(item.get("changed_paths") or []),
                 path_errors=list(item.get("path_errors") or []),
             )
             for item in data.get("task_results", [])
@@ -173,6 +180,7 @@ def _summarize_task_result(result: TaskSpecRunResult) -> FactoryTaskRunSummary:
         evidence_paths=list(result.evidence_paths),
         blocking_reason=result.blocking_reason,
         command_exit_codes=[command.exit_code for command in result.command_results],
+        changed_paths=list(result.changed_paths),
         path_errors=list(result.path_errors),
     )
 
