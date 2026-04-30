@@ -15,6 +15,7 @@ DEFAULT_FORBIDDEN_PATHS = ["app", "data", ".git"]
 DEFAULT_VALIDATION_COMMANDS = [
     "PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py tests/factory/test_task_spec_store_fm_014.py tests/factory/test_task_spec_runner_fm_015.py"
 ]
+MAX_EVIDENCE_CHARS = 3500
 
 
 class TelegramSuperownerAdapter:
@@ -59,6 +60,10 @@ class TelegramSuperownerAdapter:
             return self._handle_run_one(user_id)
         if text == "/tasks_pending":
             return self._handle_tasks_pending(user_id)
+        if text == "/blocked":
+            return self._handle_blocked(user_id)
+        if text.startswith("/evidence "):
+            return self._handle_evidence(user_id, text)
         if text.startswith("/task "):
             return self._handle_task_status(user_id, text)
         if text.startswith("/enqueue_dev "):
@@ -69,7 +74,8 @@ class TelegramSuperownerAdapter:
             "telegram_user_id": str(user_id),
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
-                "/task <task_id>, /enqueue_dev <objetivo>, /run_one."
+                "/blocked, /task <task_id>, /evidence <task_id>, "
+                "/enqueue_dev <objetivo>, /run_one."
             ),
         }
 
@@ -93,6 +99,47 @@ class TelegramSuperownerAdapter:
             "pending_count": len(pending),
             "pending_tasks": pending,
             "message": f"Tareas pendientes: {len(pending)}.",
+        }
+
+    def _handle_blocked(self, user_id: str | int) -> dict:
+        blocked_tasks = self.store.list(TaskSpecStatus.BLOCKED)
+        blocked = [self._serialize_blocked_task(task) for task in blocked_tasks]
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "blocked_count": len(blocked),
+            "blocked_tasks": blocked,
+            "message": self._format_blocked_message(blocked),
+        }
+
+    def _handle_evidence(self, user_id: str | int, text: str) -> dict:
+        parts = text.split(maxsplit=1)
+        if len(parts) != 2 or not parts[1].strip():
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": "Formato inválido. Usá /evidence <task_id>.",
+            }
+
+        task_id = parts[1].strip()
+        task = self.store.get(task_id)
+        if task is None:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "task_id": task_id,
+                "evidence": [],
+                "message": f"Tarea no encontrada: {task_id}.",
+            }
+
+        evidence = [self._read_evidence_path(path) for path in task.evidence_paths]
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "task_id": task_id,
+            "evidence_count": len(evidence),
+            "evidence": evidence,
+            "message": self._format_evidence_message(task_id, evidence),
         }
 
     def _handle_task_status(self, user_id: str | int, text: str) -> dict:
@@ -213,8 +260,34 @@ class TelegramSuperownerAdapter:
             "status": task.status.value,
         }
 
+    def _serialize_blocked_task(self, task: TaskSpec) -> dict:
+        return {
+            "task_id": task.task_id,
+            "title": task.title,
+            "objective": task.objective,
+            "blocking_reason": task.blocking_reason,
+            "evidence_paths": task.evidence_paths,
+        }
+
     def _serialize_task(self, task: TaskSpec) -> dict:
         return task.to_dict()
+
+    def _read_evidence_path(self, evidence_path: str) -> dict:
+        path = Path(evidence_path)
+        exists = path.exists()
+        content = ""
+        truncated = False
+        if exists:
+            content = path.read_text(encoding="utf-8")
+            if len(content) > MAX_EVIDENCE_CHARS:
+                content = content[:MAX_EVIDENCE_CHARS]
+                truncated = True
+        return {
+            "path": evidence_path,
+            "exists": exists,
+            "content": content,
+            "truncated": truncated,
+        }
 
     def _format_status_message(self, counts: dict, next_pending_task_id: str | None) -> str:
         return (
@@ -228,7 +301,7 @@ class TelegramSuperownerAdapter:
 
     def _format_task_message(self, status: dict) -> str:
         if status.get("status") == "not_found":
-            return f"Tarea no encontrada: {status.get('task_id')}."
+            return f"Tarea no encontrada: {status.get('task_id')} ."
         return (
             f"Tarea {status.get('task_id')}: {status.get('status')}. "
             f"Objetivo: {status.get('objective')}. "
@@ -243,6 +316,19 @@ class TelegramSuperownerAdapter:
             f"status={result.get('status')} "
             f"blocking_reason={result.get('blocking_reason') or 'no'}."
         )
+
+    def _format_blocked_message(self, blocked: list[dict]) -> str:
+        if not blocked:
+            return "No hay tareas bloqueadas."
+        return "Tareas bloqueadas: " + ", ".join(
+            f"{item['task_id']} ({item.get('blocking_reason') or 'sin motivo'})" for item in blocked
+        )
+
+    def _format_evidence_message(self, task_id: str, evidence: list[dict]) -> str:
+        if not evidence:
+            return f"La tarea {task_id} no tiene evidencia registrada."
+        existing = sum(1 for item in evidence if item["exists"])
+        return f"Evidencia para {task_id}: {existing}/{len(evidence)} archivos disponibles."
 
 
 def _title_from_objective(objective: str) -> str:
