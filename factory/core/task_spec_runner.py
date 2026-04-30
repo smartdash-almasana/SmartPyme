@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from factory.core.git_diff_detector import get_changed_paths
 from factory.core.task_spec import TaskSpec, TaskSpecStatus, validate_changed_paths
 from factory.core.task_spec_store import TaskSpecStore
 
@@ -45,7 +46,7 @@ class TaskSpecRunner:
     ) -> None:
         self.store = store
         self.evidence_dir = Path(evidence_dir)
-        self.changed_paths_provider = changed_paths_provider or (lambda task: [])
+        self.changed_paths_provider = changed_paths_provider
         self.command_runner = command_runner or run_shell_command
 
     def run_next(self) -> TaskSpecRunResult:
@@ -68,7 +69,11 @@ class TaskSpecRunner:
         command_results = [self.command_runner(command) for command in task.validation_commands]
         command_report_path = self._write_command_report(task, evidence_dir, command_results)
 
-        changed_paths = self.changed_paths_provider(task)
+        changed_paths = (
+            self.changed_paths_provider(task)
+            if self.changed_paths_provider is not None
+            else get_changed_paths()
+        )
         path_validation = validate_changed_paths(task, changed_paths)
         path_report_path = self._write_path_report(task, evidence_dir, changed_paths, path_validation.errors)
 
