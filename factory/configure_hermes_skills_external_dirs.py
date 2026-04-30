@@ -24,8 +24,8 @@ def main() -> int:
         smartpyme_skills_dir / "hermes_smartpyme_factory/SKILL.md",
         smartpyme_skills_dir / "factory_bounded_builder/SKILL.md",
         smartpyme_skills_dir / "factory_auditor/SKILL.md",
-        gemini_skills_dir / "lean_audit_vm_protocol.md",
-        gemini_skills_dir / "write_verify_protocol.md",
+        gemini_skills_dir / "lean_audit_vm_protocol/SKILL.md",
+        gemini_skills_dir / "write_verify_protocol/SKILL.md",
     ]
 
     for required_file in required_files:
