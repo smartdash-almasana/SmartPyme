@@ -12,6 +12,7 @@ from factory.core.run_report import (
     read_last_factory_run_report,
     write_factory_run_report,
 )
+from factory.core.run_report_summary import build_run_report_summary, format_run_report_summary
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
 from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
 from factory.core.task_spec_store import TaskSpecStore
@@ -69,6 +70,8 @@ class TelegramSuperownerAdapter:
             return self._handle_run_batch(user_id, text)
         if text == "/last_report":
             return self._handle_last_report(user_id)
+        if text == "/run_report_summary":
+            return self._handle_run_report_summary(user_id)
         if text.startswith("/report "):
             return self._handle_report(user_id, text)
         if text == "/templates":
@@ -98,7 +101,7 @@ class TelegramSuperownerAdapter:
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
                 "/diff <task_id>, /evidence <task_id>, /enqueue_dev <objetivo>, "
                 "/enqueue_template <template> <objetivo>, /templates, "
-                "/run_one, /run_batch <n>, /last_report, /report <report_id>."
+                "/run_one, /run_batch <n>, /last_report, /run_report_summary, /report <report_id>."
             ),
         }
 
@@ -254,6 +257,22 @@ class TelegramSuperownerAdapter:
                 "message": "No hay reportes de ejecución registrados.",
             }
         return self._report_response(user_id, report)
+
+    def _handle_run_report_summary(self, user_id: str | int) -> dict:
+        report = read_last_factory_run_report(self.evidence_dir)
+        if report is None:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "message": "No hay reportes de ejecución registrados.",
+            }
+        summary = build_run_report_summary(report)
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "summary": summary,
+            "message": format_run_report_summary(summary),
+        }
 
     def _handle_report(self, user_id: str | int, text: str) -> dict:
         parts = text.split(maxsplit=1)
