@@ -33,6 +33,7 @@ class TaskSpecRunResult:
     evidence_paths: list[str] = field(default_factory=list)
     blocking_reason: str | None = None
     command_results: list[CommandResult] = field(default_factory=list)
+    changed_paths: list[str] = field(default_factory=list)
     path_errors: list[str] = field(default_factory=list)
 
 
@@ -89,6 +90,7 @@ class TaskSpecRunner:
                 evidence_paths=evidence_paths,
                 blocking_reason=blocking_reason,
                 command_results=command_results,
+                changed_paths=changed_paths,
                 path_errors=path_validation.errors,
             )
 
@@ -101,6 +103,7 @@ class TaskSpecRunner:
                 evidence_paths=evidence_paths,
                 blocking_reason=blocking_reason,
                 command_results=command_results,
+                changed_paths=changed_paths,
                 path_errors=path_validation.errors,
             )
 
@@ -110,6 +113,7 @@ class TaskSpecRunner:
             task_id=task.task_id,
             evidence_paths=evidence_paths,
             command_results=command_results,
+            changed_paths=changed_paths,
             path_errors=[],
         )
 
