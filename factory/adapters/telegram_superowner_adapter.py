@@ -14,15 +14,11 @@ from factory.core.run_report import (
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
 from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
 from factory.core.task_spec_store import TaskSpecStore
+from factory.core.task_spec_templates import build_task_spec_from_template, list_template_names
 
 
 DEFAULT_TASKS_DIR = Path("factory/taskspecs")
 DEFAULT_EVIDENCE_DIR = Path("factory/evidence/taskspecs")
-DEFAULT_ALLOWED_PATHS = ["factory", "tests/factory"]
-DEFAULT_FORBIDDEN_PATHS = ["app", "data", ".git"]
-DEFAULT_VALIDATION_COMMANDS = [
-    "PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py tests/factory/test_task_spec_store_fm_014.py tests/factory/test_task_spec_runner_fm_015.py"
-]
 MAX_EVIDENCE_CHARS = 3500
 MAX_RUN_BATCH_SIZE = 10
 MAX_REPORT_MARKDOWN_CHARS = 3500
@@ -74,6 +70,10 @@ class TelegramSuperownerAdapter:
             return self._handle_last_report(user_id)
         if text.startswith("/report "):
             return self._handle_report(user_id, text)
+        if text == "/templates":
+            return self._handle_templates(user_id)
+        if text.startswith("/enqueue_template "):
+            return self._handle_enqueue_template(user_id, text)
         if text == "/tasks_pending":
             return self._handle_tasks_pending(user_id)
         if text == "/blocked":
@@ -93,8 +93,9 @@ class TelegramSuperownerAdapter:
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
-                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one, "
-                "/run_batch <n>, /last_report, /report <report_id>."
+                "/evidence <task_id>, /enqueue_dev <objetivo>, "
+                "/enqueue_template <template> <objetivo>, /templates, "
+                "/run_one, /run_batch <n>, /last_report, /report <report_id>."
             ),
         }
 
@@ -225,6 +226,54 @@ class TelegramSuperownerAdapter:
             }
         return self._report_response(user_id, report)
 
+    def _handle_templates(self, user_id: str | int) -> dict:
+        templates = list_template_names()
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "templates": templates,
+            "message": "Templates disponibles: " + ", ".join(templates),
+        }
+
+    def _handle_enqueue_template(self, user_id: str | int, text: str) -> dict:
+        parsed = _parse_enqueue_template(text)
+        if parsed is None:
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": "Formato inválido. Usá /enqueue_template <template> <objetivo>.",
+            }
+
+        template_name, objective = parsed
+        try:
+            task = build_task_spec_from_template(
+                template_name,
+                objective,
+                metadata={"origin": "telegram_superowner", "telegram_user_id": str(user_id)},
+            )
+        except ValueError as exc:
+            return {
+                "status": "invalid_template",
+                "telegram_user_id": str(user_id),
+                "template": template_name,
+                "message": str(exc),
+            }
+
+        path = self.store.enqueue(task)
+        queued = {
+            "status": "queued",
+            "task_id": task.task_id,
+            "task_type": "taskspec_template",
+            "template": template_name,
+            "path": path,
+        }
+        return {
+            "status": "queued",
+            "telegram_user_id": str(user_id),
+            "task": queued,
+            "message": f"TaskSpec template encolada: {task.task_id} ({template_name}).",
+        }
+
     def _handle_task_status(self, user_id: str | int, text: str) -> dict:
         parts = text.split(maxsplit=1)
         if len(parts) != 2 or not parts[1].strip():
@@ -263,30 +312,7 @@ class TelegramSuperownerAdapter:
             }
 
         objective = parts[1].strip()
-        task_id = f"dev-{uuid4()}"
-        task = TaskSpec(
-            task_id=task_id,
-            title=_title_from_objective(objective),
-            objective=objective,
-            allowed_paths=list(DEFAULT_ALLOWED_PATHS),
-            forbidden_paths=list(DEFAULT_FORBIDDEN_PATHS),
-            acceptance_criteria=["La tarea dev produce evidencia verificable o queda bloqueada con motivo."],
-            validation_commands=list(DEFAULT_VALIDATION_COMMANDS),
-            metadata={"origin": "telegram_superowner", "telegram_user_id": str(user_id)},
-        )
-        path = self.store.enqueue(task)
-        queued = {
-            "status": "queued",
-            "task_id": task.task_id,
-            "task_type": "taskspec_dev",
-            "path": path,
-        }
-        return {
-            "status": "queued",
-            "telegram_user_id": str(user_id),
-            "task": queued,
-            "message": f"TaskSpec dev encolada: {task_id}.",
-        }
+        return self._handle_enqueue_template(user_id, f"/enqueue_template code_change {objective}")
 
     def _handle_run_one(self, user_id: str | int) -> dict:
         result = self.runner.run_next()
@@ -505,11 +531,6 @@ class TelegramSuperownerAdapter:
         return f"Evidencia para {task_id}: {existing}/{len(evidence)} archivos disponibles."
 
 
-def _title_from_objective(objective: str) -> str:
-    title = objective.strip().split("\n", maxsplit=1)[0]
-    return title[:80] or "Tarea dev"
-
-
 def _parse_batch_size(text: str) -> int | None:
     parts = text.split()
     if len(parts) != 2 or parts[0] != "/run_batch":
@@ -518,3 +539,14 @@ def _parse_batch_size(text: str) -> int | None:
         return int(parts[1])
     except ValueError:
         return None
+
+
+def _parse_enqueue_template(text: str) -> tuple[str, str] | None:
+    parts = text.split(maxsplit=2)
+    if len(parts) != 3 or parts[0] != "/enqueue_template":
+        return None
+    template_name = parts[1].strip()
+    objective = parts[2].strip()
+    if not template_name or not objective:
+        return None
+    return template_name, objective
