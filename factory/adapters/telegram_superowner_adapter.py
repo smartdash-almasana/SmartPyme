@@ -6,6 +6,7 @@ from uuid import uuid4
 from factory.core.run_report import (
     FactoryRunReport,
     build_factory_run_report,
+    list_factory_run_reports,
     read_factory_run_report,
     read_factory_run_report_markdown,
     read_last_factory_run_report,
@@ -80,6 +81,8 @@ class TelegramSuperownerAdapter:
             return self._handle_blocked(user_id)
         if text.startswith("/retry_blocked "):
             return self._handle_retry_blocked(user_id, text)
+        if text.startswith("/diff"):
+            return self._handle_diff(user_id, text)
         if text.startswith("/evidence "):
             return self._handle_evidence(user_id, text)
         if text.startswith("/task "):
@@ -93,7 +96,7 @@ class TelegramSuperownerAdapter:
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
-                "/evidence <task_id>, /enqueue_dev <objetivo>, "
+                "/diff <task_id>, /evidence <task_id>, /enqueue_dev <objetivo>, "
                 "/enqueue_template <template> <objetivo>, /templates, "
                 "/run_one, /run_batch <n>, /last_report, /report <report_id>."
             ),
@@ -194,6 +197,52 @@ class TelegramSuperownerAdapter:
             "evidence_count": len(evidence),
             "evidence": evidence,
             "message": self._format_evidence_message(task_id, evidence),
+        }
+
+    def _handle_diff(self, user_id: str | int, text: str) -> dict:
+        parts = text.split(maxsplit=1)
+        if len(parts) != 2 or not parts[1].strip():
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": "Formato inválido. Usá /diff <task_id>.",
+            }
+
+        task_id = parts[1].strip()
+        report_diff = self._find_changed_paths_in_reports(task_id)
+        if report_diff is not None:
+            changed_paths, report_id = report_diff
+            return {
+                "status": "ok",
+                "telegram_user_id": str(user_id),
+                "task_id": task_id,
+                "source": "run_report",
+                "report_id": report_id,
+                "changed_paths_count": len(changed_paths),
+                "changed_paths": changed_paths,
+                "message": self._format_diff_message(task_id, changed_paths, "run_report"),
+            }
+
+        task = self.store.get(task_id)
+        if task is None:
+            return {
+                "status": "not_found",
+                "telegram_user_id": str(user_id),
+                "task_id": task_id,
+                "changed_paths": [],
+                "message": f"Tarea no encontrada: {task_id}.",
+            }
+
+        changed_paths = self._find_changed_paths_in_task_evidence(task)
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "task_id": task_id,
+            "source": "task_evidence",
+            "report_id": None,
+            "changed_paths_count": len(changed_paths),
+            "changed_paths": changed_paths,
+            "message": self._format_diff_message(task_id, changed_paths, "task_evidence"),
         }
 
     def _handle_last_report(self, user_id: str | int) -> dict:
@@ -406,6 +455,22 @@ class TelegramSuperownerAdapter:
             "message": self._format_report_message(report),
         }
 
+    def _find_changed_paths_in_reports(self, task_id: str) -> tuple[list[str], str] | None:
+        reports = sorted(list_factory_run_reports(self.evidence_dir), key=lambda report: report.created_at, reverse=True)
+        for report in reports:
+            for result in report.task_results:
+                if result.task_id == task_id:
+                    return list(result.changed_paths), report.report_id
+        return None
+
+    def _find_changed_paths_in_task_evidence(self, task: TaskSpec) -> list[str]:
+        for evidence_path in task.evidence_paths:
+            path = Path(evidence_path)
+            if path.name != "paths.txt" or not path.exists():
+                continue
+            return _parse_changed_paths_report(path.read_text(encoding="utf-8"))
+        return []
+
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
         message = update_dict.get("message") or {}
         user = message.get("from") or {}
@@ -441,6 +506,7 @@ class TelegramSuperownerAdapter:
             "task_id": result.task_id,
             "evidence_paths": result.evidence_paths,
             "blocking_reason": result.blocking_reason,
+            "changed_paths": result.changed_paths,
             "path_errors": result.path_errors,
             "command_results": [
                 {
@@ -530,6 +596,11 @@ class TelegramSuperownerAdapter:
         existing = sum(1 for item in evidence if item["exists"])
         return f"Evidencia para {task_id}: {existing}/{len(evidence)} archivos disponibles."
 
+    def _format_diff_message(self, task_id: str, changed_paths: list[str], source: str) -> str:
+        if not changed_paths:
+            return f"Diff para {task_id}: 0 archivos modificados registrados en {source}."
+        return f"Diff para {task_id}: {len(changed_paths)} archivos desde {source}: " + ", ".join(changed_paths)
+
 
 def _parse_batch_size(text: str) -> int | None:
     parts = text.split()
@@ -550,3 +621,18 @@ def _parse_enqueue_template(text: str) -> tuple[str, str] | None:
     if not template_name or not objective:
         return None
     return template_name, objective
+
+
+def _parse_changed_paths_report(content: str) -> list[str]:
+    changed_paths: list[str] = []
+    in_changed_paths = False
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped == "changed_paths:":
+            in_changed_paths = True
+            continue
+        if stripped == "path_errors:":
+            break
+        if in_changed_paths and stripped:
+            changed_paths.append(stripped)
+    return changed_paths
