@@ -43,6 +43,35 @@ def build_run_report_summary(report: FactoryRunReport) -> dict[str, Any]:
     }
 
 
+def build_failed_paths_summary(report: FactoryRunReport) -> dict[str, Any]:
+    failed_tasks = [
+        {
+            "task_id": result.task_id,
+            "status": result.status,
+            "blocking_reason": result.blocking_reason,
+            "path_errors_count": len(result.path_errors),
+            "path_errors": list(result.path_errors),
+        }
+        for result in report.task_results
+        if result.path_errors
+    ]
+    all_path_errors = [
+        error
+        for task in failed_tasks
+        for error in task["path_errors"]
+    ]
+    return {
+        "report_id": report.report_id,
+        "run_type": report.run_type,
+        "executed_count": report.executed_count,
+        "blocked_count": report.blocked_count,
+        "failed_tasks_count": len(failed_tasks),
+        "path_errors_count": len(all_path_errors),
+        "path_errors": all_path_errors,
+        "failed_tasks": failed_tasks,
+    }
+
+
 def format_run_report_summary(summary: dict[str, Any]) -> str:
     if summary["idle"]:
         return f"Último reporte {summary['report_id']}: idle, sin tareas ejecutadas."
@@ -56,4 +85,20 @@ def format_run_report_summary(summary: dict[str, Any]) -> str:
         f"done={summary['done_count']}, "
         f"blocked={summary['blocked_count']}, "
         f"changed_paths={summary['changed_paths_count']} ({changed_part})."
+    )
+
+
+def format_failed_paths_summary(summary: dict[str, Any]) -> str:
+    if summary["path_errors_count"] == 0:
+        return f"Último reporte {summary['report_id']}: sin path_errors registrados."
+
+    task_parts = [
+        f"{task['task_id']}={task['path_errors_count']}"
+        for task in summary["failed_tasks"]
+    ]
+    return (
+        f"Último reporte {summary['report_id']}: "
+        f"path_errors={summary['path_errors_count']}, "
+        f"failed_tasks={summary['failed_tasks_count']} "
+        f"({', '.join(task_parts)})."
     )
