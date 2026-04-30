@@ -72,6 +72,49 @@ def build_failed_paths_summary(report: FactoryRunReport) -> dict[str, Any]:
     }
 
 
+def build_factory_health_summary(
+    *,
+    queue_counts: dict[str, int],
+    next_pending_task_id: str | None,
+    last_report: FactoryRunReport | None,
+) -> dict[str, Any]:
+    if last_report is None:
+        return {
+            "queue_counts": dict(queue_counts),
+            "next_pending_task_id": next_pending_task_id,
+            "has_report": False,
+            "last_report": None,
+            "changed_paths_count": 0,
+            "changed_paths": [],
+            "path_errors_count": 0,
+            "path_errors": [],
+            "health_status": _derive_health_status(queue_counts, None, 0),
+        }
+
+    report_summary = build_run_report_summary(last_report)
+    failed_summary = build_failed_paths_summary(last_report)
+    return {
+        "queue_counts": dict(queue_counts),
+        "next_pending_task_id": next_pending_task_id,
+        "has_report": True,
+        "last_report": {
+            "report_id": last_report.report_id,
+            "run_type": last_report.run_type,
+            "executed_count": last_report.executed_count,
+            "done_count": last_report.done_count,
+            "blocked_count": last_report.blocked_count,
+            "idle": last_report.idle,
+            "created_at": last_report.created_at,
+        },
+        "changed_paths_count": report_summary["changed_paths_count"],
+        "changed_paths": report_summary["changed_paths"],
+        "path_errors_count": failed_summary["path_errors_count"],
+        "path_errors": failed_summary["path_errors"],
+        "failed_tasks": failed_summary["failed_tasks"],
+        "health_status": _derive_health_status(queue_counts, last_report, failed_summary["path_errors_count"]),
+    }
+
+
 def format_run_report_summary(summary: dict[str, Any]) -> str:
     if summary["idle"]:
         return f"Último reporte {summary['report_id']}: idle, sin tareas ejecutadas."
@@ -102,3 +145,37 @@ def format_failed_paths_summary(summary: dict[str, Any]) -> str:
         f"failed_tasks={summary['failed_tasks_count']} "
         f"({', '.join(task_parts)})."
     )
+
+
+def format_factory_health_summary(summary: dict[str, Any]) -> str:
+    counts = summary["queue_counts"]
+    report = summary["last_report"]
+    report_part = "sin reportes" if report is None else (
+        f"last_report={report['report_id']} executed={report['executed_count']} "
+        f"done={report['done_count']} blocked={report['blocked_count']}"
+    )
+    return (
+        f"Factory health: status={summary['health_status']}; "
+        f"queue pending={counts.get('pending', 0)}, in_progress={counts.get('in_progress', 0)}, "
+        f"done={counts.get('done', 0)}, blocked={counts.get('blocked', 0)}; "
+        f"next={summary['next_pending_task_id'] or 'none'}; "
+        f"{report_part}; "
+        f"changed_paths={summary['changed_paths_count']}; "
+        f"path_errors={summary['path_errors_count']}."
+    )
+
+
+def _derive_health_status(
+    queue_counts: dict[str, int],
+    last_report: FactoryRunReport | None,
+    path_errors_count: int,
+) -> str:
+    if path_errors_count > 0:
+        return "attention_required"
+    if queue_counts.get("blocked", 0) > 0:
+        return "blocked_tasks"
+    if last_report is not None and last_report.blocked_count > 0:
+        return "last_run_blocked"
+    if queue_counts.get("pending", 0) > 0:
+        return "pending_work"
+    return "ok"
