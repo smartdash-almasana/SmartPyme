@@ -9,6 +9,8 @@ class MultiagentTask:
     task_id: str
     objective: str
     status: str = "pending"
+    task_type: str | None = None
+    payload: dict = field(default_factory=dict)
     plan: list[str] = field(default_factory=list)
     output: dict | None = None
     audit: dict | None = None
@@ -31,6 +33,8 @@ def task_from_dict(data: dict) -> MultiagentTask:
         task_id=data["task_id"],
         objective=data["objective"],
         status=data.get("status", "pending"),
+        task_type=data.get("task_type"),
+        payload=data.get("payload") or {},
         plan=data.get("plan", []),
         output=data.get("output"),
         audit=data.get("audit"),
@@ -76,7 +80,10 @@ def default_reporter(task: MultiagentTask, evidence_dir: Path) -> str:
             f"task_id={task.task_id}",
             f"status={task.status}",
             f"objective={task.objective}",
+            f"task_type={task.task_type}",
+            f"payload={task.payload}",
             f"plan={task.plan}",
+            f"output={task.output}",
             f"audit={task.audit}",
         ]),
         encoding="utf-8",
