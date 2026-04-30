@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
-from factory.core.task_spec_runner import TaskSpecRunner
+from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
 from factory.core.task_spec_store import TaskSpecStore
 
 
@@ -16,6 +16,7 @@ DEFAULT_VALIDATION_COMMANDS = [
     "PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py tests/factory/test_task_spec_store_fm_014.py tests/factory/test_task_spec_runner_fm_015.py"
 ]
 MAX_EVIDENCE_CHARS = 3500
+MAX_RUN_BATCH_SIZE = 10
 
 
 class TelegramSuperownerAdapter:
@@ -58,6 +59,8 @@ class TelegramSuperownerAdapter:
             return self._handle_status_factory(user_id)
         if text == "/run_one":
             return self._handle_run_one(user_id)
+        if text.startswith("/run_batch"):
+            return self._handle_run_batch(user_id, text)
         if text == "/tasks_pending":
             return self._handle_tasks_pending(user_id)
         if text == "/blocked":
@@ -77,7 +80,7 @@ class TelegramSuperownerAdapter:
             "message": (
                 "Comando no soportado. Usá /status_factory, /tasks_pending, "
                 "/blocked, /retry_blocked <task_id>, /task <task_id>, "
-                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one."
+                "/evidence <task_id>, /enqueue_dev <objetivo>, /run_one, /run_batch <n>."
             ),
         }
 
@@ -256,27 +259,41 @@ class TelegramSuperownerAdapter:
                 "message": self._format_run_message(payload),
             }
 
-        payload = {
-            "status": result.status.value,
-            "task_id": result.task_id,
-            "evidence_paths": result.evidence_paths,
-            "blocking_reason": result.blocking_reason,
-            "path_errors": result.path_errors,
-            "command_results": [
-                {
-                    "command": command_result.command,
-                    "exit_code": command_result.exit_code,
-                    "stdout": command_result.stdout,
-                    "stderr": command_result.stderr,
-                }
-                for command_result in result.command_results
-            ],
-        }
+        payload = self._serialize_run_result(result)
         return {
             "status": result.status.value,
             "telegram_user_id": str(user_id),
             "result": payload,
             "message": self._format_run_message(payload),
+        }
+
+    def _handle_run_batch(self, user_id: str | int, text: str) -> dict:
+        parsed = _parse_batch_size(text)
+        if parsed is None or parsed < 1 or parsed > MAX_RUN_BATCH_SIZE:
+            return {
+                "status": "invalid_command",
+                "telegram_user_id": str(user_id),
+                "message": f"Formato inválido. Usá /run_batch <n>, con 1 <= n <= {MAX_RUN_BATCH_SIZE}.",
+            }
+
+        results = []
+        for _ in range(parsed):
+            result = self.runner.run_next()
+            if result.task_id is None:
+                break
+            results.append(self._serialize_run_result(result))
+
+        done_count = sum(1 for result in results if result["status"] == TaskSpecStatus.DONE.value)
+        blocked_count = sum(1 for result in results if result["status"] == TaskSpecStatus.BLOCKED.value)
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "requested": parsed,
+            "executed_count": len(results),
+            "done_count": done_count,
+            "blocked_count": blocked_count,
+            "results": results,
+            "message": self._format_run_batch_message(parsed, results, done_count, blocked_count),
         }
 
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
@@ -307,6 +324,24 @@ class TelegramSuperownerAdapter:
 
     def _serialize_task(self, task: TaskSpec) -> dict:
         return task.to_dict()
+
+    def _serialize_run_result(self, result: TaskSpecRunResult) -> dict:
+        return {
+            "status": result.status.value,
+            "task_id": result.task_id,
+            "evidence_paths": result.evidence_paths,
+            "blocking_reason": result.blocking_reason,
+            "path_errors": result.path_errors,
+            "command_results": [
+                {
+                    "command": command_result.command,
+                    "exit_code": command_result.exit_code,
+                    "stdout": command_result.stdout,
+                    "stderr": command_result.stderr,
+                }
+                for command_result in result.command_results
+            ],
+        }
 
     def _read_evidence_path(self, evidence_path: str) -> dict:
         path = Path(evidence_path)
@@ -353,6 +388,18 @@ class TelegramSuperownerAdapter:
             f"blocking_reason={result.get('blocking_reason') or 'no'}."
         )
 
+    def _format_run_batch_message(
+        self,
+        requested: int,
+        results: list[dict],
+        done_count: int,
+        blocked_count: int,
+    ) -> str:
+        return (
+            f"Run batch solicitado={requested}, ejecutado={len(results)}, "
+            f"done={done_count}, blocked={blocked_count}."
+        )
+
     def _format_blocked_message(self, blocked: list[dict]) -> str:
         if not blocked:
             return "No hay tareas bloqueadas."
@@ -370,3 +417,13 @@ class TelegramSuperownerAdapter:
 def _title_from_objective(objective: str) -> str:
     title = objective.strip().split("\n", maxsplit=1)[0]
     return title[:80] or "Tarea dev"
+
+
+def _parse_batch_size(text: str) -> int | None:
+    parts = text.split()
+    if len(parts) != 2 or parts[0] != "/run_batch":
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
