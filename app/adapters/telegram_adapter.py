@@ -3,13 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
+from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.mcp.tools.owner_status_tool import get_owner_status
 from app.services.identity_service import IdentityService
 
 
 DEFAULT_IDENTITY_DB = Path("data/identity.db")
+ALLOWED_DOCUMENT_EXTENSIONS = {".pdf", ".xlsx", ".csv"}
 
 OwnerStatusProvider = Callable[[str], dict]
+FactoryTaskEnqueuer = Callable[[str, str], dict]
 
 
 class TelegramAdapter:
@@ -17,9 +20,11 @@ class TelegramAdapter:
         self,
         identity_service: IdentityService | None = None,
         owner_status_provider: OwnerStatusProvider = get_owner_status,
+        factory_task_enqueuer: FactoryTaskEnqueuer = enqueue_factory_task,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
+        self.factory_task_enqueuer = factory_task_enqueuer
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -38,6 +43,10 @@ class TelegramAdapter:
                 "telegram_user_id": str(user_id),
                 "message": "Cuenta no vinculada. Usá /vincular <token> para autorizar Telegram.",
             }
+
+        document = self._extract_document(update_dict)
+        if document is not None:
+            return self._handle_document(user_id, cliente_id, document)
 
         if text.startswith("/status"):
             status = self.owner_status_provider(cliente_id)
@@ -81,6 +90,36 @@ class TelegramAdapter:
             "message": "Cuenta vinculada correctamente.",
         }
 
+    def _handle_document(self, user_id: int | str, cliente_id: str, document: dict) -> dict:
+        filename = document.get("file_name") or ""
+        file_id = document.get("file_id")
+        extension = Path(filename).suffix.lower()
+
+        if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
+            return {
+                "status": "unsupported_document",
+                "telegram_user_id": str(user_id),
+                "cliente_id": cliente_id,
+                "message": "Formato no soportado. Enviá PDF, XLSX o CSV.",
+            }
+
+        task_id = f"telegram:{cliente_id}:{file_id or filename}"
+        objective = f"Procesar evidencia Telegram para cliente {cliente_id}: {filename}"
+        queued = self.factory_task_enqueuer(task_id, objective)
+
+        return {
+            "status": "queued",
+            "telegram_user_id": str(user_id),
+            "cliente_id": cliente_id,
+            "document": {
+                "file_id": file_id,
+                "file_name": filename,
+                "mime_type": document.get("mime_type"),
+            },
+            "task": queued,
+            "message": "Documento recibido y enviado a la factoría.",
+        }
+
     def _extract_user_id(self, update_dict: dict) -> int | str | None:
         message = update_dict.get("message") or {}
         user = message.get("from") or {}
@@ -90,6 +129,13 @@ class TelegramAdapter:
         message = update_dict.get("message") or {}
         text = message.get("text") or ""
         return text.strip()
+
+    def _extract_document(self, update_dict: dict) -> dict | None:
+        message = update_dict.get("message") or {}
+        document = message.get("document")
+        if isinstance(document, dict):
+            return document
+        return None
 
     def _security_error(self, reason: str) -> dict:
         return {
