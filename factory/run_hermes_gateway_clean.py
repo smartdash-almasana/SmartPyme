@@ -6,7 +6,6 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -42,14 +41,24 @@ def main() -> int:
     env = os.environ.copy()
     for key in TOKEN_ENV_KEYS:
         env.pop(key, None)
+
+    # Hermes and its python-dotenv layer can read token-like variables from the
+    # environment. Force the already validated config token into every known key
+    # so stale shell/.env values cannot win during gateway startup.
     env["HERMES_CONFIG_PATH"] = str(config_path)
+    env["HERMES_HOME"] = str(hermes_home)
+    env["TELEGRAM_BOT_TOKEN"] = token
+    env["HERMES_TELEGRAM_TOKEN"] = token
+    env["TELEGRAM_TOKEN"] = token
 
     print("HERMES_GATEWAY_CLEAN_LAUNCH_READY", flush=True)
     print(f"repo={repo}", flush=True)
     print(f"config={config_path}", flush=True)
-    print(f"telegram_ok=True", flush=True)
+    print("telegram_ok=True", flush=True)
     print(f"telegram_username={bot_info.get('username')}", flush=True)
     print(f"telegram_bot_id={bot_info.get('id')}", flush=True)
+    print("token_source=config_validated", flush=True)
+    print("token_injected_env=True", flush=True)
     print("token_printed=False", flush=True)
     print(f"hermes_bin={hermes_bin}", flush=True)
     print("exec=hermes gateway", flush=True)
