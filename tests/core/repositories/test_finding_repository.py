@@ -7,11 +7,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from app.repositories.finding_repository import FindingRepository
 from app.services.findings_service import Finding
 
+TEST_CLIENTE_ID = "test_cliente"
+
 
 def _db_path() -> Path:
     base = Path(__file__).resolve().parents[2] / "fixtures" / "tmp_finding_repository"
     base.mkdir(parents=True, exist_ok=True)
     return base / f"findings-{uuid.uuid4().hex[:8]}.db"
+
+
+def _repo() -> FindingRepository:
+    return FindingRepository(TEST_CLIENTE_ID, _db_path())
 
 
 def _finding(
@@ -40,7 +46,7 @@ def _finding(
 
 
 def test_finding_repository_save_and_list():
-    repo = FindingRepository(_db_path())
+    repo = _repo()
     repo.save(_finding("f-1"))
 
     results = repo.list_findings()
@@ -53,7 +59,7 @@ def test_finding_repository_save_and_list():
 
 
 def test_finding_repository_save_batch():
-    repo = FindingRepository(_db_path())
+    repo = _repo()
     repo.save_batch([
         _finding("f-1", entity_type="cuit"),
         _finding("f-2", entity_type="invoice"),
@@ -70,19 +76,18 @@ def test_finding_repository_save_batch():
     assert len(invoice_findings) == 1
 
 
-def test_finding_repository_idempotent_by_finding_id():
-    repo = FindingRepository(_db_path())
+def test_finding_repository_idempotent_by_finding_id_per_cliente():
+    repo = _repo()
     repo.save(_finding("f-1", severity="ALTO"))
-    repo.save(_finding("f-1", severity="CRITICO"))  # mismo finding_id, severity distinto
+    repo.save(_finding("f-1", severity="CRITICO"))
 
     results = repo.list_findings()
     assert len(results) == 1
-    # ON CONFLICT DO UPDATE — debe reflejar el último valor
     assert results[0].severity == "CRITICO"
 
 
 def test_finding_repository_preserves_fields():
-    repo = FindingRepository(_db_path())
+    repo = _repo()
     origin = {"comparison_result": {"entity_id_a": "a", "value": 42}}
     repo.save(_finding(
         "f-1",
@@ -102,5 +107,25 @@ def test_finding_repository_preserves_fields():
 
 
 def test_finding_repository_list_empty_returns_empty_list():
-    repo = FindingRepository(_db_path())
+    repo = _repo()
     assert repo.list_findings() == []
+
+
+def test_finding_repository_isolated_by_cliente_shared_db():
+    db = _db_path()
+    repo_a = FindingRepository("pyme_A", db)
+    repo_b = FindingRepository("pyme_B", db)
+
+    repo_a.save(_finding("same-finding", severity="ALTO", traceable_origin={"owner": "pyme_A"}))
+    repo_b.save(_finding("same-finding", severity="CRITICO", traceable_origin={"owner": "pyme_B"}))
+
+    findings_a = repo_a.list_findings()
+    findings_b = repo_b.list_findings()
+
+    assert len(findings_a) == 1
+    assert len(findings_b) == 1
+    assert findings_a[0].finding_id == findings_b[0].finding_id == "same-finding"
+    assert findings_a[0].severity == "ALTO"
+    assert findings_b[0].severity == "CRITICO"
+    assert findings_a[0].traceable_origin["owner"] == "pyme_A"
+    assert findings_b[0].traceable_origin["owner"] == "pyme_B"
