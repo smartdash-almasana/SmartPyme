@@ -30,8 +30,8 @@ async def create_job(
     Crea un Job real desde un OperationalPlanContract minimo.
     """
     from app.contracts.operational_plan_contract import create_operational_plan
-    from app.factory.orchestrator.models import STATE_CREATED, Job
-    from app.factory.orchestrator.persistence import save_job
+    from app.orchestrator.models import STATE_CREATED, Job
+    from app.orchestrator.persistence import save_job
 
     try:
         plan = create_operational_plan(
@@ -78,7 +78,7 @@ async def get_job_status(job_id: str) -> dict:
     Consulta el estado actual de un Job en el JobEngine.
     Utilizar cuando el usuario pregunte 'cómo va la tarea X'.
     """
-    from app.factory.orchestrator.persistence import get_job
+    from app.orchestrator.persistence import get_job
 
     job_data = get_job(job_id)
 
