@@ -37,6 +37,7 @@ class CanonicalizationService:
         entity_type = fact.schema_name.replace("simple_", "")
         canonical_row_id = _build_canonical_id(fact.fact_candidate_id, entity_type)
         return CanonicalRowCandidate(
+            cliente_id=fact.cliente_id,
             canonical_row_id=canonical_row_id,
             fact_candidate_id=fact.fact_candidate_id,
             evidence_id=fact.evidence_id,
@@ -47,6 +48,7 @@ class CanonicalizationService:
             validation_status="pending_validation",
             errors=[]
         )
+
 
 def _build_canonical_id(fact_candidate_id: str, entity_type: str) -> str:
     digest = hashlib.sha256(f"{fact_candidate_id}:{entity_type}".encode()).hexdigest()
