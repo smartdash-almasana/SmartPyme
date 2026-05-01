@@ -10,8 +10,8 @@ Solo registra quick_commands oficiales de Hermes que invocan factory/hermes_cont
 
 from __future__ import annotations
 
+import os
 import shutil
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -22,10 +22,16 @@ except Exception as exc:  # pragma: no cover - error operativo claro
     raise SystemExit(f"ERROR: PyYAML no disponible: {exc}")
 
 
-REPO = Path("/opt/smartpyme-factory/repos/SmartPyme")
-HERMES_CONFIG = Path("/home/neoalmasana/.hermes/config.yaml")
+REPO = Path(
+    os.getenv(
+        "SMARTPYME_REPO",
+        "/home/neoalmasana/smartpyme-factory/repos/SmartPyme",
+    )
+)
+HERMES_CONFIG = Path(os.getenv("HERMES_CONFIG", "/home/neoalmasana/.hermes/config.yaml"))
 CONTROL_CLI = REPO / "factory/hermes_control_cli.py"
 PYTHON = "/usr/bin/python3"
+HERMES_BIN = Path(os.getenv("HERMES_CLI", "/home/neoalmasana/.local/bin/hermes"))
 
 COMANDOS = {
     "estado": "estado",
@@ -58,7 +64,7 @@ def load_config(path: Path) -> dict[str, Any]:
 
 
 def command_for(nombre: str) -> str:
-    return f"{PYTHON} {CONTROL_CLI} {nombre}"
+    return f"SMARTPYME_REPO={REPO} HERMES_CLI={HERMES_BIN} {PYTHON} {CONTROL_CLI} {nombre}"
 
 
 def install() -> int:
@@ -66,6 +72,8 @@ def install() -> int:
         raise SystemExit(f"ERROR: no existe repo SmartPyme: {REPO}")
     if not CONTROL_CLI.exists():
         raise SystemExit(f"ERROR: no existe control CLI: {CONTROL_CLI}")
+    if not HERMES_BIN.exists():
+        raise SystemExit(f"ERROR: no existe Hermes CLI: {HERMES_BIN}")
 
     HERMES_CONFIG.parent.mkdir(parents=True, exist_ok=True)
     backup_path = backup(HERMES_CONFIG)
@@ -85,6 +93,12 @@ def install() -> int:
 
     config["quick_commands"] = quick
 
+    terminal = config.get("terminal")
+    if not isinstance(terminal, dict):
+        terminal = {}
+    terminal["cwd"] = str(REPO)
+    config["terminal"] = terminal
+
     HERMES_CONFIG.write_text(
         yaml.safe_dump(config, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
@@ -97,7 +111,7 @@ def install() -> int:
     print("comandos:")
     for alias in COMANDOS:
         print(f"  /{alias} -> {quick[alias]['command']}")
-    print("reiniciar_gateway: cd /home/neoalmasana && /home/neoalmasana/.hermes/venv/bin/hermes gateway run --replace")
+    print(f"reiniciar_gateway: cd /home/neoalmasana && {HERMES_BIN} gateway run --replace")
     return 0
 
 
