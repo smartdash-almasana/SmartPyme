@@ -50,6 +50,9 @@ def _load_agent_class() -> type[Any] | None:
     return Agent
 
 
+HAS_PYDANTIC_AI = _load_agent_class() is not None
+
+
 def _has_llm_credentials() -> bool:
     return any(os.getenv(name) for name in _REQUIRED_API_KEY_NAMES)
 
@@ -80,6 +83,12 @@ def create_owner_message_interpreter_agent(model_name: str | None = None) -> Any
     except Exception as exc:
         logger.debug("OwnerMessageInterpreterAgent creation failed: %s", exc)
         return None
+
+
+def build_owner_message_interpreter_agent(model_name: str | None = None) -> Any | None:
+    """Backward-compatible factory alias for the TS_015 scaffold."""
+
+    return create_owner_message_interpreter_agent(model_name=model_name)
 
 
 def _coerce_interpretation(raw_output: Any) -> OwnerMessageInterpretation | None:
