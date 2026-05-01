@@ -18,6 +18,7 @@ class FactExtractionService:
 
     def extract_from_evidence(
         self,
+        cliente_id: str,
         evidence_id: str,
         text: str,
         *,
@@ -25,6 +26,7 @@ class FactExtractionService:
         plan_id: str | None = None,
     ) -> dict[str, Any]:
         facts = self._extract_facts(
+            cliente_id=cliente_id,
             evidence_id=evidence_id,
             text=text,
             job_id=job_id,
@@ -41,6 +43,7 @@ class FactExtractionService:
     def _extract_facts(
         self,
         *,
+        cliente_id: str,
         evidence_id: str,
         text: str,
         job_id: str | None,
@@ -54,6 +57,7 @@ class FactExtractionService:
         ]
         facts.extend(
             self._build_facts(
+                cliente_id=cliente_id,
                 evidence_id=evidence_id,
                 job_id=job_id,
                 plan_id=plan_id,
@@ -67,6 +71,7 @@ class FactExtractionService:
         )
         facts.extend(
             self._build_facts(
+                cliente_id=cliente_id,
                 evidence_id=evidence_id,
                 job_id=job_id,
                 plan_id=plan_id,
@@ -76,6 +81,7 @@ class FactExtractionService:
         )
         facts.extend(
             self._build_facts(
+                cliente_id=cliente_id,
                 evidence_id=evidence_id,
                 job_id=job_id,
                 plan_id=plan_id,
@@ -88,6 +94,7 @@ class FactExtractionService:
     def _build_facts(
         self,
         *,
+        cliente_id: str,
         evidence_id: str,
         job_id: str | None,
         plan_id: str | None,
@@ -99,6 +106,7 @@ class FactExtractionService:
             data = {"fact_type": fact_type, "value": value}
             facts.append(
                 ExtractedFactCandidate(
+                    cliente_id=cliente_id,
                     fact_candidate_id=_build_fact_id(evidence_id, fact_type, value, index),
                     evidence_id=evidence_id,
                     job_id=job_id,
