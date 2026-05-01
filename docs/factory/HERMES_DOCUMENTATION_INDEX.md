@@ -95,13 +95,13 @@ Escala corta del blueprint v2.1:
 | 2 | Primer ciclo dry-run con mocks | NO HABILITADA |
 | 3 | Infra/systemd y activación gradual | PROHIBIDA POR AHORA |
 
-El repo no debe tratarse como listo para Fase 2/3 hasta cerrar los bloqueos documentales P0: vocabulario de veredictos y `tenant_id` activo vs `cliente_id` canónico.
+El repo no debe tratarse como listo para Fase 2/3 hasta cerrar los bloqueos documentales P0: vocabulario de veredictos y `cliente_id` activo vs `cliente_id` canónico.
 
 ## Bloqueos documentales vigentes
 
 1. `gemini_audit_report.md` fue generado localmente pero no está garantizado como evidencia versionada en GitHub.
 2. Hay contradicción de veredictos entre alias legacy y vocabulario canónico.
-3. Hay referencias activas sospechosas a `tenant_id` fuera de evidencia histórica.
+3. Hay referencias activas sospechosas a `cliente_id` fuera de evidencia histórica.
 4. TaskSpecs legacy/SIN_VERSION fueron detectadas por Fase 0A; migración real sigue prohibida sin gate.
 5. Allowlist real de Telegram no debe versionarse con secretos; solo `.example` pertenece al repo.
 
@@ -110,7 +110,7 @@ El repo no debe tratarse como listo para Fase 2/3 hasta cerrar los bloqueos docu
 Crear una remediación documental GPT que cierre solo:
 
 1. vocabulario de veredictos;
-2. `tenant_id` activo vs `cliente_id`;
+2. `cliente_id` activo vs `cliente_id`;
 3. registro versionado de evidencias críticas ya existentes localmente cuando estén disponibles.
 
 No activar Hermes Gateway hasta que la documentación y evidencia cierren esos bloqueos.
