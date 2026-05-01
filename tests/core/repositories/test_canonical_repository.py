@@ -7,6 +7,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from app.contracts.evidence_contract import CanonicalRowCandidate
 from app.repositories.canonical_repository import CanonicalRepository
 
+TEST_CLIENTE_ID = "cliente-test"
+OTHER_CLIENTE_ID = "cliente-otro"
+
 
 def _db_path() -> Path:
     base = Path(__file__).resolve().parents[2] / "fixtures" / "tmp_canonical_repository"
@@ -17,11 +20,13 @@ def _db_path() -> Path:
 def _canonical_row(
     canonical_row_id: str,
     *,
+    cliente_id: str = TEST_CLIENTE_ID,
     fact_candidate_id: str = "fact-1",
     evidence_id: str = "ev-1",
     entity_type: str = "amount",
 ) -> CanonicalRowCandidate:
     return CanonicalRowCandidate(
+        cliente_id=cliente_id,
         canonical_row_id=canonical_row_id,
         fact_candidate_id=fact_candidate_id,
         evidence_id=evidence_id,
@@ -41,14 +46,19 @@ def test_canonical_repository_init_save_and_list():
 
     assert len(rows) == 1
     assert rows[0] == row
+    assert rows[0].cliente_id == TEST_CLIENTE_ID
 
 
-def test_canonical_repository_save_is_idempotent_by_canonical_row_id():
+def test_canonical_repository_save_is_idempotent_by_cliente_id_and_canonical_row_id():
     repo = CanonicalRepository(_db_path())
-    repo.save(_canonical_row("row-1"))
-    repo.save(_canonical_row("row-1"))
+    repo.save(_canonical_row("row-1", cliente_id=TEST_CLIENTE_ID))
+    repo.save(_canonical_row("row-1", cliente_id=TEST_CLIENTE_ID))
+    repo.save(_canonical_row("row-1", cliente_id=OTHER_CLIENTE_ID))
 
-    assert len(repo.list_canonical_rows()) == 1
+    rows = repo.list_canonical_rows()
+
+    assert len(rows) == 2
+    assert {row.cliente_id for row in rows} == {TEST_CLIENTE_ID, OTHER_CLIENTE_ID}
 
 
 def test_canonical_repository_save_batch():
@@ -59,6 +69,20 @@ def test_canonical_repository_save_batch():
     ])
 
     assert len(repo.list_canonical_rows()) == 2
+
+
+def test_canonical_repository_filters_by_cliente_id():
+    repo = CanonicalRepository(_db_path())
+    repo.save_batch([
+        _canonical_row("row-1", cliente_id=TEST_CLIENTE_ID),
+        _canonical_row("row-2", cliente_id=OTHER_CLIENTE_ID),
+    ])
+
+    rows = repo.list_canonical_rows(cliente_id=OTHER_CLIENTE_ID)
+
+    assert len(rows) == 1
+    assert rows[0].cliente_id == OTHER_CLIENTE_ID
+    assert rows[0].canonical_row_id == "row-2"
 
 
 def test_canonical_repository_filters_by_evidence_id():
