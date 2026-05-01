@@ -284,6 +284,22 @@ async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
             "reason": f"unexpected_ingestion_error: {str(e)}"
         }
 
+@mcp.tool()
+async def factory_get_queue_summary(tasks_dir: str | None = None) -> dict:
+    """
+    Obtiene un resumen de la cola operativa de la factoría.
+    """
+    from app.mcp.tools.factory_control_tool import get_factory_queue_summary
+    return get_factory_queue_summary(tasks_dir)
+
+@mcp.tool()
+async def factory_get_queue_details(tasks_dir: str | None = None, include_done: bool = False) -> dict:
+    """
+    Obtiene los detalles completos de las tareas en la cola de la factoría.
+    """
+    from app.mcp.tools.factory_control_tool import get_factory_queue_details
+    return get_factory_queue_details(tasks_dir, include_done=include_done)
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()

@@ -6,9 +6,37 @@ from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import (
     save_task,
 )
 from factory.adapters.app_bridge.agent_loop.queue_runner import run_one_queued_task
+from app.mcp.tools.queue_list_tool import list_factory_queue, get_next_factory_task
 
 DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
 DEFAULT_EVIDENCE_DIR = Path("factory/multiagent/evidence")
+
+
+def get_factory_queue_summary(tasks_dir: str | Path | None = None) -> dict:
+    """
+    Obtiene un resumen de la cola operativa.
+    """
+    path = Path(tasks_dir) if tasks_dir else DEFAULT_TASKS_DIR
+    res = list_factory_queue(path, include_done=True)
+    next_task = get_next_factory_task(path)
+    
+    return {
+        "status": "ok",
+        "total": res["total"],
+        "counts": res["counts"],
+        "next_task": next_task["task"]
+    }
+
+
+def get_factory_queue_details(
+    tasks_dir: str | Path | None = None, 
+    include_done: bool = False
+) -> dict:
+    """
+    Obtiene los detalles completos de la cola operativa.
+    """
+    path = Path(tasks_dir) if tasks_dir else DEFAULT_TASKS_DIR
+    return list_factory_queue(path, include_done=include_done)
 
 
 def enqueue_factory_task(
