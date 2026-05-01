@@ -1,5 +1,5 @@
 import decimal
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
@@ -33,10 +33,10 @@ class HallazgoOperativo(BaseModel):
     diferencia: decimal.Decimal
     alicuota_iva: decimal.Decimal
 
-    entidad_referencia: Optional[str] = None
-    fuente_a: Optional[str] = None
-    fuente_b: Optional[str] = None
-    descripcion: Optional[str] = None
+    entidad_referencia: str | None = None
+    fuente_a: str | None = None
+    fuente_b: str | None = None
+    descripcion: str | None = None
 
     @field_validator("cliente_id", "entidad_origen", "patologia_id", mode="before")
     @classmethod
