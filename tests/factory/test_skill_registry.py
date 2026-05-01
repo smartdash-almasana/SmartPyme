@@ -3,9 +3,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.skills.models import SkillSpec
-from app.factory.skills.registry import SkillRegistry
-from app.factory.skills.runner import run_skill
+from app.orchestrator.skills.models import SkillSpec
+from app.orchestrator.skills.registry import SkillRegistry
+from app.orchestrator.skills.runner import run_skill
 
 
 def test_registry_loads_builtin_skill():

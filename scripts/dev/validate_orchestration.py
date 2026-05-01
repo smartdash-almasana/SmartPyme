@@ -3,10 +3,10 @@ import json
 import os
 import uuid
 
-from app.factory.orchestrator.models import STATE_CREATED, Job
-from app.factory.orchestrator.persistence import _get_db_path, init_jobs_db, save_job
-from app.factory.orchestrator.service import orchestrate_job
-from app.factory.skills.registry import SkillRegistry
+from app.orchestrator.models import STATE_CREATED, Job
+from app.orchestrator.persistence import _get_db_path, init_jobs_db, save_job
+from app.orchestrator.service import orchestrate_job
+from app.orchestrator.skills.registry import SkillRegistry
 
 
 # Define a dummy skill for the orchestrator to execute

@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.chain.models import ChainStep
-from app.factory.chain.service import run_skill_chain
+from app.orchestrator.chain.models import ChainStep
+from app.orchestrator.chain.service import run_skill_chain
 
 
 def test_skill_chain_success_two_steps_echo_then_wrap():

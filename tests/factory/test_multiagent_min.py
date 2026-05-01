@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.multiagent.models import DirectorRequest
-from app.factory.multiagent.service import run_multiagent_flow
+from app.orchestrator.multiagent.models import DirectorRequest
+from app.orchestrator.multiagent.service import run_multiagent_flow
 
 
 def test_multiagent_valid_request_runs_full_flow_and_finishes_done():
@@ -37,7 +37,7 @@ def test_multiagent_empty_objetivo_blocks_in_director_before_execution():
 
 
 def test_multiagent_blocked_plan_never_reaches_execution(monkeypatch):
-    import app.factory.multiagent.service as multiagent_service
+    import app.orchestrator.multiagent.service as multiagent_service
 
     def fail_if_called(*_args, **_kwargs):
         raise AssertionError("execute_plan no debe llamarse con plan bloqueado")

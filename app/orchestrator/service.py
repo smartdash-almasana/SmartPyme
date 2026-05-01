@@ -7,8 +7,8 @@ from app.orchestrator.models import (
 )
 from app.orchestrator.persistence import save_job
 from app.orchestrator.transitions import ensure_transition_allowed
-from app.factory.skills.registry import SkillRegistry
-from app.factory.skills.runner import run_skill
+from app.orchestrator.skills.registry import SkillRegistry
+from app.orchestrator.skills.runner import run_skill
 
 
 class OrchestrationStateError(ValueError):
