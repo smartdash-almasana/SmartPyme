@@ -1,4 +1,4 @@
-# TS_016-019 AI Layer Technical Record
+# TS_016-021 AI Layer Technical Record
 
 ## Active branch
 
@@ -92,6 +92,24 @@ local_adapter
 
 Makes the adapter expose `SoftInterpretationResult` while preserving the previous interpretation-only API.
 
+### TS_021 Soft interpretation consumer
+
+Adds the first internal consumer of `SoftInterpretationResult`.
+
+Main file:
+
+```text
+app/ai/consumers/owner_message_soft_interpretation_consumer.py
+```
+
+Public API:
+
+```text
+OwnerMessageSoftInterpretationConsumer.consume(message) -> SoftInterpretationResult
+```
+
+The consumer normalizes adapter failures into `failed`, returns `empty` for blank messages, and preserves valid adapter results.
+
 ## Compatibility decision
 
 The active branch contains earlier TS_015 scaffold tests.
@@ -142,6 +160,7 @@ tests/ai/test_owner_message_interpretation_schema.py
 tests/ai/test_owner_message_interpreter_agent.py
 tests/ai/test_owner_message_interpreter_adapter.py
 tests/ai/test_soft_interpretation_result.py
+tests/ai/test_owner_message_soft_interpretation_consumer.py
 ```
 
 ## Validation command
@@ -161,10 +180,10 @@ PASS
 Recommended next task:
 
 ```text
-TS_021 first internal consumer of SoftInterpretationResult
+TS_023 local orchestration boundary for AI intake
 ```
 
-Scope restriction for TS_021:
+Scope restriction for TS_023:
 
 ```text
 No pipeline integration yet.

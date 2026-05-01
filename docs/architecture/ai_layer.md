@@ -32,6 +32,7 @@ app/ai/schemas/owner_message_interpretation.py
 app/ai/schemas/soft_interpretation_result.py
 app/ai/agents/owner_message_interpreter_agent.py
 app/ai/adapters/owner_message_interpreter_adapter.py
+app/ai/consumers/owner_message_soft_interpretation_consumer.py
 ```
 
 ## Responsibility
@@ -45,6 +46,7 @@ The AI layer may:
 - extract mentioned evidence
 - expose doubts or missing context
 - return a validated empty result when interpretation is unavailable
+- consume a soft interpretation result inside the AI boundary
 
 The AI layer must not:
 
@@ -88,7 +90,7 @@ The compatibility fields remain because the active branch still contains scaffol
 
 ### SoftInterpretationResult
 
-Stable adapter result:
+Stable adapter and consumer result:
 
 ```text
 raw_message
@@ -132,6 +134,20 @@ interpret_result(message) -> SoftInterpretationResult
 `interpret()` is compatibility-oriented.
 `interpret_result()` is the preferred future integration surface.
 
+## Consumer boundary
+
+`OwnerMessageSoftInterpretationConsumer` is the first internal consumer of `SoftInterpretationResult`.
+
+It exposes:
+
+```text
+consume(message) -> SoftInterpretationResult
+```
+
+The consumer may normalize adapter failures into `failed` results.
+It may return `empty` for blank messages.
+It must not persist, create jobs, call pipeline, confirm context, or decide actions.
+
 ## Integration status
 
 Current status:
@@ -153,7 +169,7 @@ Not yet connected to:
 pytest tests/ai -q
 ```
 
-Expected state after TS_020:
+Expected state after TS_022:
 
 ```text
 tests/ai PASS
