@@ -2,7 +2,10 @@ import decimal
 from typing import Any
 
 
-def calcular_diferencia_absoluta(monto_detectado: Any, monto_esperado: Any) -> decimal.Decimal:
+def calcular_diferencia_absoluta(
+    monto_detectado: Any,
+    monto_esperado: Any,
+) -> decimal.Decimal:
     """
     Calcula determinísticamente la diferencia absoluta entre dos montos para SmartCounter.
     Rechaza floats y aspersiones NaN/Infinity explícitamente.
@@ -23,14 +26,16 @@ def calcular_diferencia_absoluta(monto_detectado: Any, monto_esperado: Any) -> d
             if isinstance(monto_esperado, decimal.Decimal)
             else decimal.Decimal(str(monto_esperado))
         )
-    except decimal.InvalidOperation:
+    except decimal.InvalidOperation as error:
         raise ValueError(
-            "Error extrayendo Decimal nativo: los datos no son parseables como dinero."
-        )
+            "Error extrayendo Decimal nativo: los datos no son parseables "
+            "como dinero."
+        ) from error
 
     if d1.is_nan() or d2.is_nan() or d1.is_infinite() or d2.is_infinite():
         raise ValueError(
-            "Los valores matemáticos NaN o Infinity están estrictamente prohibidos en el motor fiscal."
+            "Los valores matemáticos NaN o Infinity están estrictamente "
+            "prohibidos en el motor fiscal."
         )
 
     return abs(d1 - d2)
