@@ -48,7 +48,10 @@ class TelegramAdapter:
             return {
                 "status": "unauthorized",
                 "telegram_user_id": str(user_id),
-                "message": "Cuenta no vinculada. Usá /vincular <token> para autorizar Telegram.",
+                "message": (
+                    "Cuenta no vinculada. Usá /vincular <token> para "
+                    "autorizar Telegram."
+                ),
             }
 
         document = self._extract_document(update_dict)
@@ -72,7 +75,10 @@ class TelegramAdapter:
             "status": "unsupported_command",
             "telegram_user_id": str(user_id),
             "cliente_id": cliente_id,
-            "message": "Comando no soportado. Comandos disponibles: /status, /auditar_venta_bajo_costo.",
+            "message": (
+                "Comando no soportado. Comandos disponibles: /status, "
+                "/auditar_venta_bajo_costo."
+            ),
         }
 
     def _handle_link(self, user_id: int | str, text: str) -> dict:
@@ -136,7 +142,10 @@ class TelegramAdapter:
             },
             "evidence_candidate": candidate.model_dump(mode="json"),
             "task": queued,
-            "message": "Documento recibido, registrado como candidato de evidencia y enviado a la factoría.",
+            "message": (
+                "Documento recibido, registrado como candidato de evidencia "
+                "y enviado a la factoría."
+            ),
         }
 
     def _handle_audit_venta_bajo_costo(
@@ -151,7 +160,10 @@ class TelegramAdapter:
                 "status": "invalid_command",
                 "telegram_user_id": str(user_id),
                 "cliente_id": cliente_id,
-                "message": "Formato inválido. Usá /auditar_venta_bajo_costo <ventas> <costos>.",
+                "message": (
+                    "Formato inválido. Usá /auditar_venta_bajo_costo "
+                    "<ventas> <costos>."
+                ),
             }
 
         ventas = parsed["ventas"]
@@ -164,7 +176,10 @@ class TelegramAdapter:
             "costos": costos,
             "source_refs": [source_ref],
         }
-        objective = f"Auditar venta bajo costo para cliente {cliente_id} desde Telegram"
+        objective = (
+            f"Auditar venta bajo costo para cliente {cliente_id} "
+            "desde Telegram"
+        )
         queued = self.factory_task_enqueuer(
             task_id,
             objective,
@@ -178,7 +193,9 @@ class TelegramAdapter:
             "cliente_id": cliente_id,
             "task": queued,
             "payload": payload,
-            "message": "Auditoría venta bajo costo encolada en la factoría.",
+            "message": (
+                "Auditoría venta bajo costo encolada en la factoría."
+            ),
         }
 
     def _parse_audit_venta_bajo_costo_command(self, text: str) -> dict:
