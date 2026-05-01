@@ -103,6 +103,7 @@ class ExtractedFactCandidate:
 
 @dataclass(frozen=True, slots=True)
 class CanonicalRowCandidate:
+    cliente_id: str
     canonical_row_id: str
     fact_candidate_id: str
     evidence_id: str
@@ -112,3 +113,6 @@ class CanonicalRowCandidate:
     row: dict[str, Any]
     validation_status: str = "pending_validation"
     errors: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        _require_non_empty(self.cliente_id, "cliente_id")
