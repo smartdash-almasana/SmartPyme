@@ -1,152 +1,2017 @@
 {
   "catalog_id": "taxonomia_operativa_pyme_argentina_v0",
   "version": "0.1",
-  "description": "Catálogo semilla que separa actividad oficial CLAE/ClaNAE de tipo operativo SmartPyme.",
-  "criteria": "CLAE/ClaNAE clasifica actividad oficial; SmartPyme clasifica funcionamiento operativo diagnosticable.",
+  "description": "Catálogo v0 de 30 tipos operativos PyME argentinos. Separa actividad oficial CLAE/ClaNAE de funcionamiento operativo diagnosticable.",
+  "criteria": "CLAE/ClaNAE clasifica actividad oficial; SmartPyme clasifica patrón operativo, señales de anamnesis, datos mínimos, patologías probables, fórmulas y buenas prácticas.",
   "items": [
     {
       "id": "TAX_COM_001",
       "actividad_oficial_referencia": {
         "fuente": "CLAE/ClaNAE",
         "seccion": "Comercio",
-        "division_o_grupo": "Venta al por menor en comercios no especializados",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["kiosco", "almacén", "autoservicio", "tienda de barrio"],
+        "division_o_grupo": "Venta al por menor no especializada",
+        "codigo_clae_aproximado": "4771",
+        "keywords_clae": [
+          "tienda",
+          "indumentaria",
+          "calzado",
+          "regalería"
+        ],
         "confianza_mapeo_oficial": "media",
         "validacion_requerida": true
       },
       "familia_smartpyme": "comercio",
       "tipo_operativo": "tienda_minorista_familiar",
       "derivada_operativa": true,
-      "ejemplos_argentinos": ["kiosco de barrio", "almacén familiar", "autoservicio chico"],
-      "modelo_ingresos": "Venta minorista con margen sobre mercadería comprada a proveedores.",
-      "intensidad": {"stock": "alta", "personal": "baja", "tiempo": "alta", "documentacion": "media"},
-      "senales_anamnesis": ["vendo mucho pero no veo la plata", "tengo mucha mercadería vieja", "compro sin orden de compra", "no sé qué stock real tengo"],
-      "preguntas_al_dueno": ["¿Qué vendés principalmente?", "¿Cómo registrás las ventas diarias?", "¿Sabés cuánto stock tenés hoy?", "¿Comprás con factura y control de proveedor?"],
-      "datos_minimos_a_pedir": ["ventas_mensuales", "costo_mercaderia_vendida", "stock_estimado", "proveedores_principales", "costos_fijos"],
-      "patologias_probables": ["margen_invisible", "stock_inmovilizado", "informacion_fragmentada", "flujo_caja_sin_anticipacion"],
-      "formulas_utiles": ["FORM_011", "FORM_036", "FORM_041", "FORM_065"],
-      "buenas_practicas_asociadas": ["inventario periódico", "control de compras", "margen por familia de producto", "cierre diario de caja"]
+      "ejemplos_argentinos": [
+        "tienda",
+        "indumentaria",
+        "calzado"
+      ],
+      "modelo_ingresos": "Margen bruto sobre productos físicos.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "vendo mucho pero no veo el dinero",
+        "el stock se achica aunque vendo",
+        "uso la caja para gastos personales",
+        "no sé cuánto cuesta reponer"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo determinás precios?",
+        "¿Hacés inventario físico?",
+        "¿Separás cuenta personal y negocio?",
+        "¿Cómo definís retiros del dueño?"
+      ],
+      "datos_minimos_a_pedir": [
+        "ticket_promedio",
+        "retiros_socios",
+        "costo_reposicion_top_10",
+        "saldo_caja",
+        "valor_inventario"
+      ],
+      "patologias_probables": [
+        "margen_invisible",
+        "confusion_finanzas_personales",
+        "stock_inmovilizado",
+        "falta_reserva_impositiva"
+      ],
+      "formulas_utiles": [
+        "FORM_011",
+        "FORM_036",
+        "FORM_003"
+      ],
+      "buenas_practicas_asociadas": [
+        "actualización semanal de precios",
+        "arqueo diario de caja",
+        "sueldo fijo del dueño",
+        "ABC de inventario"
+      ]
     },
     {
       "id": "TAX_COM_002",
       "actividad_oficial_referencia": {
         "fuente": "CLAE/ClaNAE",
         "seccion": "Comercio",
-        "division_o_grupo": "Venta minorista online / no especializada",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["ecommerce", "venta por internet", "marketplace", "mercado libre"],
-        "confianza_mapeo_oficial": "baja",
+        "division_o_grupo": "Venta al por menor por internet",
+        "codigo_clae_aproximado": "479101",
+        "keywords_clae": [
+          "ecommerce",
+          "marketplace",
+          "mercado libre"
+        ],
+        "confianza_mapeo_oficial": "media",
         "validacion_requerida": true
       },
       "familia_smartpyme": "comercio",
       "tipo_operativo": "ecommerce_marketplace",
       "derivada_operativa": true,
-      "ejemplos_argentinos": ["tienda Mercado Libre", "tienda nube chica", "vendedor multicanal"],
-      "modelo_ingresos": "Venta online con comisiones, publicidad y logística como costos centrales.",
-      "intensidad": {"stock": "media", "personal": "baja", "tiempo": "media", "documentacion": "alta"},
-      "senales_anamnesis": ["mercado libre me come el margen", "no sé cuánto gano por publicación", "tengo devoluciones", "me cancelan ventas por falta de stock"],
-      "preguntas_al_dueno": ["¿Vendés con stock propio o por dropshipping?", "¿Qué comisión te cobra la plataforma?", "¿Tenés calculado el margen neto por publicación?", "¿Cómo sincronizás stock entre canales?"],
-      "datos_minimos_a_pedir": ["precio_publicacion", "costo_reposicion", "comisiones_marketplace", "costo_envio", "gasto_ads", "stock_por_sku"],
-      "patologias_probables": ["margen_invisible", "costo_reposicion_ignorado", "stock_critico", "erosion_confianza_clientes_proveedores"],
-      "formulas_utiles": ["FORM_068", "FORM_070", "FORM_071", "FORM_072", "FORM_074"],
-      "buenas_practicas_asociadas": ["margen neto por publicación", "stock multicanal sincronizado", "control de ACOS", "ranking de publicaciones rentables"]
+      "ejemplos_argentinos": [
+        "ecommerce",
+        "marketplace",
+        "mercado libre"
+      ],
+      "modelo_ingresos": "Venta digital con comisiones, publicidad y logística.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "las comisiones me comen el margen",
+        "gasto en publicidad y no sé si rinde",
+        "tengo devoluciones",
+        "me cuesta conciliar pagos"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cuál es tu CAC?",
+        "¿Qué porcentaje se pierde en devoluciones?",
+        "¿Cómo gestionás reclamos por stock?",
+        "¿Qué herramienta usás para pauta?"
+      ],
+      "datos_minimos_a_pedir": [
+        "inversion_marketing",
+        "conversion_web",
+        "devoluciones",
+        "tiempo_despacho",
+        "margen_neto_comisiones"
+      ],
+      "patologias_probables": [
+        "dependencia_canal",
+        "cac_mayor_margen",
+        "logistica_ineficiente",
+        "rentabilidad_producto_invisible"
+      ],
+      "formulas_utiles": [
+        "FORM_068",
+        "FORM_069",
+        "FORM_070"
+      ],
+      "buenas_practicas_asociadas": [
+        "diversificar canales",
+        "stock sincronizado",
+        "optimizar embalaje",
+        "seguimiento diario ROAS"
+      ]
     },
     {
-      "id": "TAX_GAS_001",
+      "id": "TAX_COM_003",
       "actividad_oficial_referencia": {
         "fuente": "CLAE/ClaNAE",
-        "seccion": "Alojamiento y servicios de comida",
-        "division_o_grupo": "Servicios de comidas y bebidas",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["restaurante", "rotisería", "parrilla", "pizzería"],
+        "seccion": "Comercio",
+        "division_o_grupo": "Ferretería y materiales",
+        "codigo_clae_aproximado": "475230",
+        "keywords_clae": [
+          "ferretería",
+          "corralón",
+          "herramientas"
+        ],
         "confianza_mapeo_oficial": "media",
         "validacion_requerida": true
       },
-      "familia_smartpyme": "servicios",
-      "tipo_operativo": "restaurante_rotiseria_barrio",
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "ferreteria_corralon_chico",
       "derivada_operativa": true,
-      "ejemplos_argentinos": ["parrilla de barrio", "rotisería familiar", "pizzería con delivery"],
-      "modelo_ingresos": "Venta de comida preparada presencial, take away y delivery.",
-      "intensidad": {"stock": "alta", "personal": "media", "tiempo": "alta", "documentacion": "media"},
-      "senales_anamnesis": ["el lunes y martes casi no hay nadie", "no sé qué tan rentable es cada plato", "compro siempre al mismo proveedor", "todo pasa por mí"],
-      "preguntas_al_dueno": ["¿Cuáles son tus días fuertes y flojos?", "¿Sabés el costo de cada plato?", "¿Qué porcentaje se vende por delivery?", "¿Cuánta merma tenés por semana?"],
-      "datos_minimos_a_pedir": ["ventas_diarias", "costo_materia_prima_por_plato", "cubiertos_por_dia", "merma", "costos_fijos"],
-      "patologias_probables": ["margen_invisible", "capital_inmovilizado_stock_sin_rotacion", "dependencia_del_dueno", "flujo_caja_sin_anticipacion"],
-      "formulas_utiles": ["FORM_011", "FORM_020", "FORM_043", "FORM_045", "FORM_049"],
-      "buenas_practicas_asociadas": ["costeo de menú", "control de merma", "compras planificadas", "producción por demanda"]
-    },
-    {
-      "id": "TAX_IND_001",
-      "actividad_oficial_referencia": {
-        "fuente": "CLAE/ClaNAE",
-        "seccion": "Industria manufacturera",
-        "division_o_grupo": "Elaboración de productos de panadería",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["panadería", "panificados", "facturas", "pastelería"],
-        "confianza_mapeo_oficial": "media",
-        "validacion_requerida": true
+      "ejemplos_argentinos": [
+        "ferretería",
+        "corralón",
+        "herramientas"
+      ],
+      "modelo_ingresos": "Venta minorista/mayorista de insumos y materiales.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "media"
       },
-      "familia_smartpyme": "industria",
-      "tipo_operativo": "panaderia_tradicional",
-      "derivada_operativa": true,
-      "ejemplos_argentinos": ["panadería de barrio", "panadería con reparto", "panadería y confitería chica"],
-      "modelo_ingresos": "Producción diaria y venta de panificados perecederos.",
-      "intensidad": {"stock": "media", "personal": "alta", "tiempo": "alta", "documentacion": "media"},
-      "senales_anamnesis": ["me sobra mercadería al final del día", "la harina aumentó", "no sé cuánto me cuesta producir cada producto", "trabajamos de madrugada"],
-      "preguntas_al_dueno": ["¿Cuántos kilos producís por día?", "¿Cuánta mercadería se descarta?", "¿Tenés receta/costo por producto?", "¿Cuántas personas trabajan por turno?"],
-      "datos_minimos_a_pedir": ["kg_producidos", "costo_harina_insumos", "ventas_diarias", "merma_diaria", "horas_personal"],
-      "patologias_probables": ["costo_reposicion_ignorado", "margen_invisible", "dependencia_del_dueno", "capital_inmovilizado_stock_sin_rotacion"],
-      "formulas_utiles": ["FORM_043", "FORM_045", "FORM_046", "FORM_077"],
-      "buenas_practicas_asociadas": ["producción por demanda", "recetas costeadas", "control de merma", "ajuste frecuente de precios por insumos"]
-    },
-    {
-      "id": "TAX_SER_001",
-      "actividad_oficial_referencia": {
-        "fuente": "CLAE/ClaNAE",
-        "seccion": "Actividades profesionales, científicas y técnicas",
-        "division_o_grupo": "Servicios contables",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["contador", "estudio contable", "servicios contables", "liquidación impositiva"],
-        "confianza_mapeo_oficial": "media",
-        "validacion_requerida": true
-      },
-      "familia_smartpyme": "profesional",
-      "tipo_operativo": "estudio_contable_pyme",
-      "derivada_operativa": true,
-      "ejemplos_argentinos": ["contador independiente", "estudio contable chico", "liquidador de sueldos"],
-      "modelo_ingresos": "Honorarios mensuales, liquidaciones y trabajos puntuales.",
-      "intensidad": {"stock": "baja", "personal": "media", "tiempo": "alta", "documentacion": "alta"},
-      "senales_anamnesis": ["yo soy el negocio", "no sé cuánto gano por cliente", "los clientes mandan papeles tarde", "no puedo tomar vacaciones"],
-      "preguntas_al_dueno": ["¿Cuántos clientes mensuales tenés?", "¿Cuántas horas demanda cada cliente?", "¿Tenés honorarios fijos o trabajos sueltos?", "¿Qué tareas repetitivas hacés todos los meses?"],
-      "datos_minimos_a_pedir": ["clientes_activos", "honorario_por_cliente", "horas_por_cliente", "tareas_recurrentes", "vencimientos"],
-      "patologias_probables": ["dependencia_del_dueno", "informacion_fragmentada", "margen_invisible", "data_decay_excel_contable"],
-      "formulas_utiles": ["FORM_016", "FORM_052", "FORM_080", "FORM_091"],
-      "buenas_practicas_asociadas": ["segmentación de clientes", "plantillas de tareas", "portal documental", "automatización de vencimientos"]
+      "senales_anamnesis": [
+        "tengo productos que no se venden hace años",
+        "proveedores cambian precios todos los días",
+        "no encuentro cosas en depósito",
+        "clientes de confianza me deben"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo controlás cuentas corrientes?",
+        "¿Qué porcentaje del stock no rota?",
+        "¿Cada cuánto actualizás precios?",
+        "¿Cómo manejás pedidos por encargo?"
+      ],
+      "datos_minimos_a_pedir": [
+        "deuda_clientes",
+        "antiguedad_inventario",
+        "sku_activos",
+        "margen_por_rubro",
+        "frecuencia_compra"
+      ],
+      "patologias_probables": [
+        "stock_inmovilizado",
+        "obsolescencia",
+        "descalce_cobro_pago",
+        "perdida_stock"
+      ],
+      "formulas_utiles": [
+        "FORM_065",
+        "FORM_036",
+        "FORM_040"
+      ],
+      "buenas_practicas_asociadas": [
+        "código de barras",
+        "revisión baja rotación",
+        "límite crédito clientes",
+        "estanterías dinámicas"
+      ]
     },
     {
       "id": "TAX_COM_004",
       "actividad_oficial_referencia": {
         "fuente": "CLAE/ClaNAE",
         "seccion": "Comercio",
-        "division_o_grupo": "Comercio mayorista / distribución",
-        "codigo_clae_aproximado": null,
-        "keywords_clae": ["distribuidora", "mayorista", "reparto", "venta a comercios"],
+        "division_o_grupo": "Autoservicio y alimentos",
+        "codigo_clae_aproximado": "471130",
+        "keywords_clae": [
+          "minimercado",
+          "autoservicio",
+          "supermercado"
+        ],
         "confianza_mapeo_oficial": "media",
         "validacion_requerida": true
       },
       "familia_smartpyme": "comercio",
-      "tipo_operativo": "distribuidora_mayorista_chica",
+      "tipo_operativo": "minimercado_autoservicio",
       "derivada_operativa": true,
-      "ejemplos_argentinos": ["distribuidora de alimentos", "mayorista barrial", "reparto a comercios"],
-      "modelo_ingresos": "Venta mayorista con margen bajo, volumen alto, logística y crédito a clientes.",
-      "intensidad": {"stock": "alta", "personal": "media", "tiempo": "alta", "documentacion": "alta"},
-      "senales_anamnesis": ["me deben varios clientes", "tengo mucho stock parado", "los fletes me comen el margen", "no sé qué cliente me conviene"],
-      "preguntas_al_dueno": ["¿Vendés a crédito?", "¿Cuántos días tardan en pagarte?", "¿Cuánto stock tenés inmovilizado?", "¿Calculás rentabilidad por cliente o ruta?"],
-      "datos_minimos_a_pedir": ["ventas_por_cliente", "cuentas_por_cobrar", "stock_valorizado", "costo_logistico", "margen_por_producto", "rutas"],
-      "patologias_probables": ["descalce_ventas_cobranzas", "stock_inmovilizado", "margen_invisible", "erosion_confianza_clientes_proveedores"],
-      "formulas_utiles": ["FORM_010", "FORM_016", "FORM_047", "FORM_083", "FORM_065"],
-      "buenas_practicas_asociadas": ["límite de crédito por cliente", "rentabilidad por ruta", "stock ABC", "cobranza semanal"]
+      "ejemplos_argentinos": [
+        "minimercado",
+        "autoservicio",
+        "supermercado"
+      ],
+      "modelo_ingresos": "Venta de consumo masivo con alta frecuencia y bajo margen.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "salón lleno pero banco vacío",
+        "mucha merma en frescos",
+        "no compito con cadenas",
+        "empleados no cuidan mercadería"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cuál es tu merma?",
+        "¿Qué productos traen gente?",
+        "¿Cómo controlás vencimientos?",
+        "¿Cuánto vendés por medios electrónicos?"
+      ],
+      "datos_minimos_a_pedir": [
+        "merma_mensual",
+        "ventas_m2",
+        "ticket_hora",
+        "participacion_frescos",
+        "energia_sobre_ventas"
+      ],
+      "patologias_probables": [
+        "merma_no_controlada",
+        "robo_hormiga",
+        "costos_fijos_altos",
+        "poca_negociacion_proveedor"
+      ],
+      "formulas_utiles": [
+        "FORM_022",
+        "FORM_042",
+        "FORM_041"
+      ],
+      "buenas_practicas_asociadas": [
+        "stock crítico alta rotación",
+        "pesaje de recepción",
+        "cámaras anti pérdida",
+        "promos por vencimiento"
+      ]
+    },
+    {
+      "id": "TAX_COM_005",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Kiosco y polirrubro",
+        "codigo_clae_aproximado": "471190",
+        "keywords_clae": [
+          "kiosco",
+          "polirrubro",
+          "golosinas"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "kiosco_polirrubro",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "kiosco",
+        "polirrubro",
+        "golosinas"
+      ],
+      "modelo_ingresos": "Micro-margen por volumen y alta rotación de efectivo.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "baja",
+        "tiempo": "alta",
+        "documentacion": "baja"
+      },
+      "senales_anamnesis": [
+        "estoy 14 horas y no rinde",
+        "gano centavos por producto",
+        "la carga virtual trae gente pero no deja ganancia",
+        "me cuesta pagar alquiler"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cuánto ganás por categoría?",
+        "¿Cuánto pesa el alquiler?",
+        "¿Qué servicios ofrecés?",
+        "¿Registrás retiros propios?"
+      ],
+      "datos_minimos_a_pedir": [
+        "tickets_diarios",
+        "alquiler",
+        "facturacion_servicios",
+        "margen_ponderado",
+        "horas_apertura"
+      ],
+      "patologias_probables": [
+        "autoexplotacion",
+        "rentabilidad_real_baja",
+        "retiros_no_registrados",
+        "stock_mal_distribuido"
+      ],
+      "formulas_utiles": [
+        "FORM_022",
+        "FORM_080",
+        "FORM_011"
+      ],
+      "buenas_practicas_asociadas": [
+        "especialización en nichos",
+        "optimizar exhibición",
+        "cobro digital ágil",
+        "rentabilidad por proveedor"
+      ]
+    },
+    {
+      "id": "TAX_COM_006",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Electrodomésticos y hogar",
+        "codigo_clae_aproximado": "475300",
+        "keywords_clae": [
+          "electrodomésticos",
+          "artículos del hogar"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "casa_electrodomesticos_hogar",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "electrodomésticos",
+        "artículos del hogar"
+      ],
+      "modelo_ingresos": "Venta de bienes durables con financiamiento.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "la gente no compra sin cuotas",
+        "depósito lleno de modelos viejos",
+        "inflación destruyó cuotas fijas",
+        "garantías cuestan logística"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo calculás interés de financiación?",
+        "¿Contado vs cuotas?",
+        "¿Cómo gestionás garantías?",
+        "¿Cuál es tu CFT?"
+      ],
+      "datos_minimos_a_pedir": [
+        "morosidad_cartera",
+        "ventas_por_canal",
+        "almacenamiento_unidad",
+        "reclamos_garantia",
+        "inventario_actualizado"
+      ],
+      "patologias_probables": [
+        "descalce_financiero",
+        "obsolescencia_stock",
+        "estructura_costos_alta",
+        "morosidad"
+      ],
+      "formulas_utiles": [
+        "FORM_009",
+        "FORM_076",
+        "FORM_018"
+      ],
+      "buenas_practicas_asociadas": [
+        "cuotas con interés variable",
+        "convenios bancarios",
+        "liquidación exhibición",
+        "servicio técnico tercerizado"
+      ]
+    },
+    {
+      "id": "TAX_COM_007",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Juguetería y cotillón",
+        "codigo_clae_aproximado": "476400",
+        "keywords_clae": [
+          "juguetería",
+          "cotillón",
+          "artículos infantiles"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "jugueteria_cotillon",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "juguetería",
+        "cotillón",
+        "artículos infantiles"
+      ],
+      "modelo_ingresos": "Venta minorista estacional.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "si no vendo en Reyes el año es malo",
+        "artículos chicos se pierden",
+        "la moda cambia rápido",
+        "sobra mercadería después de Navidad"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo planificás compras?",
+        "¿Qué inventario es moda vs permanente?",
+        "¿Cómo cubrís picos de personal?",
+        "¿Cómo liquidás post temporada?"
+      ],
+      "datos_minimos_a_pedir": [
+        "ventas_por_mes",
+        "rotacion_moda",
+        "personal_eventual",
+        "stock_post_temporada",
+        "margen_categoria"
+      ],
+      "patologias_probables": [
+        "sobrestock_moda",
+        "liquidez_baja_temporada",
+        "robo_hormiga",
+        "dependencia_fechas"
+      ],
+      "formulas_utiles": [
+        "FORM_036",
+        "FORM_040",
+        "FORM_021"
+      ],
+      "buenas_practicas_asociadas": [
+        "compras programadas",
+        "gestión por variantes",
+        "eventos en tienda",
+        "liquidación inmediata"
+      ]
+    },
+    {
+      "id": "TAX_IND_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Productos de panadería",
+        "codigo_clae_aproximado": "107121",
+        "keywords_clae": [
+          "panadería",
+          "panificados",
+          "facturas"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "panaderia_tradicional",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "panadería",
+        "panificados",
+        "facturas"
+      ],
+      "modelo_ingresos": "Producción propia diaria y despacho minorista.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "no sé cuánto cuesta la docena",
+        "mucha merma al final del día",
+        "el horno consume mucho",
+        "faltan panaderos y se para producción"
+      ],
+      "preguntas_al_dueno": [
+        "¿Tenés receta estándar?",
+        "¿Controlás gas y harina por kilo?",
+        "¿Qué hacés con remanente?",
+        "¿Separás producción y venta?"
+      ],
+      "datos_minimos_a_pedir": [
+        "costo_harina",
+        "merma_diaria",
+        "mano_obra_kg",
+        "consumo_energia",
+        "ventas_por_rubro"
+      ],
+      "patologias_probables": [
+        "falta_costeo_receta",
+        "merma_excesiva",
+        "maquinaria_ineficiente",
+        "informalidad_turnos"
+      ],
+      "formulas_utiles": [
+        "FORM_043",
+        "FORM_045",
+        "FORM_046"
+      ],
+      "buenas_practicas_asociadas": [
+        "recetas estándar",
+        "pesaje de producción",
+        "mantenimiento hornos",
+        "productos de mayor margen"
+      ]
+    },
+    {
+      "id": "TAX_IND_002",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Carpintería y muebles",
+        "codigo_clae_aproximado": "162201",
+        "keywords_clae": [
+          "carpintería",
+          "muebles",
+          "obra"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "carpinteria_muebleria_chica",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "carpintería",
+        "muebles",
+        "obra"
+      ],
+      "modelo_ingresos": "Fabricación bajo pedido con anticipos.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "termino obra y pierdo plata",
+        "herrajes suben cada semana",
+        "cliente cambia diseño",
+        "taller lleno de retazos"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo ajustás presupuestos por inflación?",
+        "¿Qué desperdicio de placa tenés?",
+        "¿Cómo valuás diseño y montaje?",
+        "¿Tenés seguros?"
+      ],
+      "datos_minimos_a_pedir": [
+        "tiempo_entrega",
+        "desperdicio_madera",
+        "costo_hora_taller",
+        "anticipos",
+        "materiales_sobre_presupuesto"
+      ],
+      "patologias_probables": [
+        "subestimacion_costos",
+        "precios_insumos_desactualizados",
+        "riesgo_seguridad",
+        "dependencia_proveedor"
+      ],
+      "formulas_utiles": [
+        "FORM_086",
+        "FORM_043",
+        "FORM_079"
+      ],
+      "buenas_practicas_asociadas": [
+        "software de cortes",
+        "cláusula de ajuste",
+        "anticipo por materiales",
+        "5S taller"
+      ]
+    },
+    {
+      "id": "TAX_IND_003",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Estructuras metálicas",
+        "codigo_clae_aproximado": "251100",
+        "keywords_clae": [
+          "herrería",
+          "metalúrgica",
+          "soldadura"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "metalurgica_herreria_liviana",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "herrería",
+        "metalúrgica",
+        "soldadura"
+      ],
+      "modelo_ingresos": "Fabricación y reparación de estructuras metálicas.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "cuesta conseguir soldadores",
+        "máquinas consumen electricidad",
+        "trabajos grandes se cobran a 90 días",
+        "miedo a accidentes"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo gestionás seguridad?",
+        "¿Qué capacidad ociosa tenés?",
+        "¿Calculás insumos de soldadura?",
+        "¿Tenés mantenimiento preventivo?"
+      ],
+      "datos_minimos_a_pedir": [
+        "incidentes_anuales",
+        "capacidad_utilizada",
+        "plazo_cobro",
+        "mantenimiento_equipos",
+        "kg_acero"
+      ],
+      "patologias_probables": [
+        "siniestralidad",
+        "obsolescencia",
+        "procesos_no_estandarizados",
+        "dependencia_clientes_grandes"
+      ],
+      "formulas_utiles": [
+        "FORM_044",
+        "FORM_079",
+        "FORM_083"
+      ],
+      "buenas_practicas_asociadas": [
+        "seguridad e higiene",
+        "mantenimiento preventivo",
+        "diversificar clientes",
+        "procesos MIG/MAG"
+      ]
+    },
+    {
+      "id": "TAX_IND_004",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Confección textil",
+        "codigo_clae_aproximado": "141130",
+        "keywords_clae": [
+          "textil",
+          "confección",
+          "costura"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "taller_textil_confeccion",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "textil",
+        "confección",
+        "costura"
+      ],
+      "modelo_ingresos": "Producción por prenda terminada o marca propia.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "cuello de botella en terminación",
+        "prendas falladas vuelven",
+        "no controlo rendimiento de tela",
+        "no llego con tiempos"
+      ],
+      "preguntas_al_dueno": [
+        "¿Medís rendimiento por tizada?",
+        "¿Cuál es tasa de prendas falladas?",
+        "¿Cómo gestionás temporada?",
+        "¿Qué informalidad hay en subcontratación?"
+      ],
+      "datos_minimos_a_pedir": [
+        "metros_por_prenda",
+        "fallas_costura",
+        "produccion_diaria_maquina",
+        "mano_obra_externa",
+        "stock_telas"
+      ],
+      "patologias_probables": [
+        "cuello_botella",
+        "falta_calidad",
+        "dependencia_cliente_grande",
+        "informalidad_laboral"
+      ],
+      "formulas_utiles": [
+        "FORM_043",
+        "FORM_046",
+        "FORM_079"
+      ],
+      "buenas_practicas_asociadas": [
+        "control de calidad por etapa",
+        "mantenimiento máquinas",
+        "moldes digitales",
+        "especialización de prenda"
+      ]
+    },
+    {
+      "id": "TAX_IND_005",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Impresión y gráfica",
+        "codigo_clae_aproximado": "181101",
+        "keywords_clae": [
+          "imprenta",
+          "gráfica",
+          "plotter",
+          "impresión"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "grafica_imprenta_digital",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "imprenta",
+        "gráfica",
+        "plotter"
+      ],
+      "modelo_ingresos": "Trabajos personalizados o por volumen con plazos cortos.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "tinta sube sin aviso",
+        "si se rompe máquina pierdo semana",
+        "desperdicio papel ajustando colores",
+        "archivos mal hechos hacen perder tiempo"
+      ],
+      "preguntas_al_dueno": [
+        "¿Calculás costo por página/m2?",
+        "¿Tenés mantenimiento de máquinas?",
+        "¿Cuál es setup entre trabajos?",
+        "¿Cómo gestionás archivos?"
+      ],
+      "datos_minimos_a_pedir": [
+        "costo_tinta_papel",
+        "downtime_maquinas",
+        "scrap",
+        "pedidos_diarios",
+        "tiempo_entrega"
+      ],
+      "patologias_probables": [
+        "falta_prevision_equipos",
+        "tecnologia_obsoleta",
+        "preprensa_no_facturada",
+        "dependencia_insumos"
+      ],
+      "formulas_utiles": [
+        "FORM_079",
+        "FORM_086",
+        "FORM_044"
+      ],
+      "buenas_practicas_asociadas": [
+        "preflight archivos",
+        "estandarizar soportes",
+        "fondo renovación equipos",
+        "vender diseño"
+      ]
+    },
+    {
+      "id": "TAX_IND_006",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Productos de limpieza",
+        "codigo_clae_aproximado": "202312",
+        "keywords_clae": [
+          "productos de limpieza",
+          "química",
+          "detergente"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "productos_limpieza_pyme",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "productos de limpieza",
+        "química",
+        "detergente"
+      ],
+      "modelo_ingresos": "Formulación, envasado y distribución de limpieza.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "normativas me cuestan",
+        "envase vale más que líquido",
+        "problemas de estabilidad",
+        "devuelven por olor/color"
+      ],
+      "preguntas_al_dueno": [
+        "¿Tenés habilitación vigente?",
+        "¿Controlás dosificación?",
+        "¿Cuál es radio rentable?",
+        "¿Cómo gestionás envases?"
+      ],
+      "datos_minimos_a_pedir": [
+        "costo_quimicos",
+        "tiempo_mezclado",
+        "rotura_envases",
+        "litros_mes",
+        "costo_flete"
+      ],
+      "patologias_probables": [
+        "riesgo_normativo",
+        "formulas_no_estandarizadas",
+        "logistica_ineficiente",
+        "almacenamiento_caro"
+      ],
+      "formulas_utiles": [
+        "FORM_043",
+        "FORM_047",
+        "FORM_089"
+      ],
+      "buenas_practicas_asociadas": [
+        "registro de lotes",
+        "llenado básico automatizado",
+        "optimizar rutas",
+        "hojas de seguridad"
+      ]
+    },
+    {
+      "id": "TAX_IND_007",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Elaboración de cerveza",
+        "codigo_clae_aproximado": "110300",
+        "keywords_clae": [
+          "cervecería artesanal",
+          "taproom",
+          "barriles"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "cerveceria_artesanal",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "cervecería artesanal",
+        "taproom",
+        "barriles"
+      ],
+      "modelo_ingresos": "Producción de cerveza con venta directa y distribución.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "se contaminó un lote",
+        "verano no doy abasto e invierno no vendo",
+        "limpieza lleva más tiempo",
+        "no sé qué canal rinde más"
+      ],
+      "preguntas_al_dueno": [
+        "¿Controlás temperatura/presión?",
+        "¿Costo por litro en barra?",
+        "¿Cómo limpiás líneas?",
+        "¿Merma por espuma?"
+      ],
+      "datos_minimos_a_pedir": [
+        "rendimiento_coccion",
+        "costo_malta_lupulo",
+        "perdida_barra",
+        "ventas_por_canal",
+        "costo_limpieza"
+      ],
+      "patologias_probables": [
+        "contaminacion_lotes",
+        "inconsistencia_producto",
+        "estacionalidad",
+        "envases_mal_gestionados"
+      ],
+      "formulas_utiles": [
+        "FORM_043",
+        "FORM_045",
+        "FORM_017"
+      ],
+      "buenas_practicas_asociadas": [
+        "protocolos CIP",
+        "análisis sensorial",
+        "trazabilidad barriles",
+        "happy hour para demanda"
+      ]
+    },
+    {
+      "id": "TAX_SER_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios de comida",
+        "division_o_grupo": "Servicios de comidas",
+        "codigo_clae_aproximado": "561019",
+        "keywords_clae": [
+          "restaurante",
+          "rotisería",
+          "parrilla"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "restaurante_rotiseria",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "restaurante",
+        "rotisería",
+        "parrilla"
+      ],
+      "modelo_ingresos": "Venta de platos con inventario perecedero.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "carne cambió tres veces",
+        "salón lleno y caja no refleja",
+        "cocina caos en horas pico",
+        "apps sacan ganancia"
+      ],
+      "preguntas_al_dueno": [
+        "¿Tenés food cost por plato?",
+        "¿Cómo manejás turnos?",
+        "¿Qué comisión de delivery pagás?",
+        "¿Cómo controlás desperdicio?"
+      ],
+      "datos_minimos_a_pedir": [
+        "food_cost",
+        "ticket_promedio",
+        "rotacion_mesas",
+        "ventas_por_canal",
+        "ausentismo"
+      ],
+      "patologias_probables": [
+        "falta_costeo_platos",
+        "mermas_cocina",
+        "personal_sobredimensionado",
+        "dependencia_apps"
+      ],
+      "formulas_utiles": [
+        "FORM_011",
+        "FORM_045",
+        "FORM_054"
+      ],
+      "buenas_practicas_asociadas": [
+        "ingeniería de menú",
+        "inventario diario proteínas",
+        "capacitación servicio",
+        "negociar proveedores"
+      ]
+    },
+    {
+      "id": "TAX_SER_002",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios personales",
+        "division_o_grupo": "Lavandería",
+        "codigo_clae_aproximado": "960102",
+        "keywords_clae": [
+          "lavadero",
+          "lavandería",
+          "tintorería"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "lavadero_lavanderia_barrial",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "lavadero",
+        "lavandería",
+        "tintorería"
+      ],
+      "modelo_ingresos": "Limpieza de prendas por carga o unidad.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "baja"
+      },
+      "senales_anamnesis": [
+        "luz y gas impagables",
+        "se rompió secadora",
+        "faltan prendas",
+        "no controlo empleado"
+      ],
+      "preguntas_al_dueno": [
+        "¿Kilos por m3 de gas?",
+        "¿Registro entrada/salida?",
+        "¿Plan mantenimiento?",
+        "¿Cómo gestionás reclamos?"
+      ],
+      "datos_minimos_a_pedir": [
+        "servicios_sobre_ventas",
+        "procesos_por_maquina",
+        "quimicos",
+        "tiempo_entrega",
+        "reclamos"
+      ],
+      "patologias_probables": [
+        "energia_ineficiente",
+        "falta_control_proceso",
+        "maquinaria_obsoleta",
+        "turnos_informales"
+      ],
+      "formulas_utiles": [
+        "FORM_047",
+        "FORM_046",
+        "FORM_079"
+      ],
+      "buenas_practicas_asociadas": [
+        "máquinas eficientes",
+        "tickets prendas",
+        "mantenimiento mensual",
+        "promos baja demanda"
+      ]
+    },
+    {
+      "id": "TAX_SER_003",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios deportivos",
+        "division_o_grupo": "Gimnasio",
+        "codigo_clae_aproximado": "931100",
+        "keywords_clae": [
+          "gimnasio",
+          "fitness",
+          "centro deportivo"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "gimnasio_fitness",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "gimnasio",
+        "fitness",
+        "centro deportivo"
+      ],
+      "modelo_ingresos": "Membresía recurrente con foco en retención.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "se anotan en enero y dejan en marzo",
+        "máquinas cardio ocupadas y pesas vacías",
+        "cuesta cobrar cuota",
+        "lugar viejo"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cuál es churn mensual?",
+        "¿Socios por m2?",
+        "¿Incentivás pago anual?",
+        "¿Capacitación instructores?"
+      ],
+      "datos_minimos_a_pedir": [
+        "socios_activos",
+        "churn",
+        "arpu",
+        "mantenimiento_equipos",
+        "superficie"
+      ],
+      "patologias_probables": [
+        "alta_desercion",
+        "mantenimiento_falto",
+        "cobranza_ineficiente",
+        "subutilizacion_horarios"
+      ],
+      "formulas_utiles": [
+        "FORM_030",
+        "FORM_028",
+        "FORM_003"
+      ],
+      "buenas_practicas_asociadas": [
+        "débito automático",
+        "seguimiento socios",
+        "clases grupales",
+        "mantenimiento máquinas"
+      ]
+    },
+    {
+      "id": "TAX_SER_004",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios personales",
+        "division_o_grupo": "Peluquería y estética",
+        "codigo_clae_aproximado": "960201",
+        "keywords_clae": [
+          "peluquería",
+          "estética",
+          "barbería"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "peluqueria_estetica",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "peluquería",
+        "estética",
+        "barbería"
+      ],
+      "modelo_ingresos": "Servicio estético más venta de productos.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "baja"
+      },
+      "senales_anamnesis": [
+        "empleados se llevan clientes",
+        "tinturas caras sin control",
+        "salón lleno y no queda plata",
+        "agenda desordenada"
+      ],
+      "preguntas_al_dueno": [
+        "¿Venta de productos sobre ingresos?",
+        "¿Comisión del personal?",
+        "¿Ocupación de sillón?",
+        "¿Cómo atraés clientes?"
+      ],
+      "datos_minimos_a_pedir": [
+        "ticket_servicio",
+        "venta_productos",
+        "retorno_clientes",
+        "costo_insumos",
+        "tiempo_espera"
+      ],
+      "patologias_probables": [
+        "dependencia_personal_clave",
+        "stock_insumos_sin_control",
+        "huecos_agenda",
+        "falta_venta_cruzada"
+      ],
+      "formulas_utiles": [
+        "FORM_022",
+        "FORM_024",
+        "FORM_016"
+      ],
+      "buenas_practicas_asociadas": [
+        "agenda digital",
+        "incentivos productos",
+        "control tinturas",
+        "encuestas satisfacción"
+      ]
+    },
+    {
+      "id": "TAX_SER_005",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Reparación vehículos",
+        "division_o_grupo": "Taller mecánico",
+        "codigo_clae_aproximado": "452000",
+        "keywords_clae": [
+          "taller mecánico",
+          "autos",
+          "repuestos"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "taller_mecanico_automotor",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "taller mecánico",
+        "autos",
+        "repuestos"
+      ],
+      "modelo_ingresos": "Mano de obra y margen sobre repuestos.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "autos desarmados esperando repuestos",
+        "presupuesto y no vuelve",
+        "cuesta cobrar mano de obra",
+        "miedo a accidentes"
+      ],
+      "preguntas_al_dueno": [
+        "¿Valor hora de taller?",
+        "¿Retrabajo?",
+        "¿Stock crítico vs demanda?",
+        "¿Protocolos seguridad?"
+      ],
+      "datos_minimos_a_pedir": [
+        "horas_facturadas",
+        "margen_repuestos",
+        "permanencia_autos",
+        "presupuestos_rechazados",
+        "seguros_art"
+      ],
+      "patologias_probables": [
+        "lucro_cesante_bahias",
+        "horas_subestimadas",
+        "desorden_taller",
+        "riesgos_seguridad"
+      ],
+      "formulas_utiles": [
+        "FORM_046",
+        "FORM_079",
+        "FORM_018"
+      ],
+      "buenas_practicas_asociadas": [
+        "presupuesto detallado",
+        "repuestos JIT",
+        "limpieza taller",
+        "capacitación técnica"
+      ]
+    },
+    {
+      "id": "TAX_SER_006",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios administrativos",
+        "division_o_grupo": "Limpieza de edificios",
+        "codigo_clae_aproximado": "812010",
+        "keywords_clae": [
+          "limpieza",
+          "oficinas",
+          "edificios"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "empresa_limpieza_oficinas",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "limpieza",
+        "oficinas",
+        "edificios"
+      ],
+      "modelo_ingresos": "Abonos mensuales por horas de servicio.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "alta",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "rotación personal me vuelve loco",
+        "competencia por precio",
+        "clientes pagan tarde",
+        "ART y ausentismo"
+      ],
+      "preguntas_al_dueno": [
+        "¿Costo hora con cargas?",
+        "¿Rotación semestral?",
+        "¿Cómo supervisás calidad?",
+        "¿Política ante roturas?"
+      ],
+      "datos_minimos_a_pedir": [
+        "rotacion_empleados",
+        "ausentismo",
+        "margen_por_contrato",
+        "plazo_cobranza",
+        "insumos_sobre_ventas"
+      ],
+      "patologias_probables": [
+        "competencia_desleal",
+        "dependencia_mano_obra",
+        "riesgo_legal",
+        "convenios_erosionan_margen"
+      ],
+      "formulas_utiles": [
+        "FORM_053",
+        "FORM_054",
+        "FORM_055"
+      ],
+      "buenas_practicas_asociadas": [
+        "selección rigurosa",
+        "supervisión sorpresa",
+        "incentivos presentismo",
+        "kits por cliente"
+      ]
+    },
+    {
+      "id": "TAX_SER_007",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios de seguridad",
+        "division_o_grupo": "Seguridad privada",
+        "codigo_clae_aproximado": "801020",
+        "keywords_clae": [
+          "seguridad",
+          "monitoreo",
+          "alarmas"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "seguridad_monitoreo",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "seguridad",
+        "monitoreo",
+        "alarmas"
+      ],
+      "modelo_ingresos": "Abono por monitoreo y venta/instalación de equipos.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "falsas alarmas consumen recursos",
+        "cuesta turnos noche",
+        "regulaciones exigentes",
+        "tecnología queda vieja"
+      ],
+      "preguntas_al_dueno": [
+        "¿Ratio falsas alarmas?",
+        "¿Protocolos de respuesta?",
+        "¿Abonos vs instalaciones?",
+        "¿Habilitaciones vigentes?"
+      ],
+      "datos_minimos_a_pedir": [
+        "cuentas_activas",
+        "churn_servicios",
+        "costo_respuesta_evento",
+        "horas_extra",
+        "inventario_equipos"
+      ],
+      "patologias_probables": [
+        "falsas_alarmas",
+        "rotacion_vigiladores",
+        "obsolescencia_tecnologica",
+        "riesgo_legal"
+      ],
+      "formulas_utiles": [
+        "FORM_030",
+        "FORM_028",
+        "FORM_046"
+      ],
+      "buenas_practicas_asociadas": [
+        "verificación por video",
+        "capacitación",
+        "mantenimiento enlaces",
+        "software incidencias"
+      ]
+    },
+    {
+      "id": "TAX_PRO_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Profesional",
+        "division_o_grupo": "Servicios contables",
+        "codigo_clae_aproximado": "692000",
+        "keywords_clae": [
+          "contador",
+          "estudio contable",
+          "impuestos"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "profesional",
+      "tipo_operativo": "estudio_contable_impositivo",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "contador",
+        "estudio contable",
+        "impuestos"
+      ],
+      "modelo_ingresos": "Abonos mensuales y honorarios por trámites.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "corremos detrás de vencimientos",
+        "clientes traen todo último día",
+        "soy administrativo de clientes",
+        "cuesta aumentar honorarios"
+      ],
+      "preguntas_al_dueno": [
+        "¿Rentabilidad horaria por cliente?",
+        "¿Procesos automatizados?",
+        "¿Cómo retenés conocimiento?",
+        "¿Ofrecés consultoría?"
+      ],
+      "datos_minimos_a_pedir": [
+        "clientes_por_empleado",
+        "facturacion_cliente",
+        "horas_mensuales",
+        "errores_liquidacion",
+        "antiguedad_cartera"
+      ],
+      "patologias_probables": [
+        "efecto_bombero",
+        "rentabilidad_horaria_baja",
+        "riesgo_firma",
+        "dependencia_dueno"
+      ],
+      "formulas_utiles": [
+        "FORM_016",
+        "FORM_079",
+        "FORM_091"
+      ],
+      "buenas_practicas_asociadas": [
+        "automatizar importación",
+        "portal cliente",
+        "especialización por rubros",
+        "reuniones estratégicas"
+      ]
+    },
+    {
+      "id": "TAX_PRO_002",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Salud",
+        "division_o_grupo": "Consultorio médico/odontológico",
+        "codigo_clae_aproximado": "862110",
+        "keywords_clae": [
+          "médico",
+          "odontólogo",
+          "consultorio"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "profesional",
+      "tipo_operativo": "consultorio_medico_odontologico",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "médico",
+        "odontólogo",
+        "consultorio"
+      ],
+      "modelo_ingresos": "Pago por consulta/práctica con cobro diferido.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "obras sociales pagan tarde",
+        "huecos por no show",
+        "insumos a dólar",
+        "mucho papeleo prepaga"
+      ],
+      "preguntas_al_dueno": [
+        "¿No-show?",
+        "¿Costo por práctica?",
+        "¿Demora de cobro?",
+        "¿Uso de consultorios por hora?"
+      ],
+      "datos_minimos_a_pedir": [
+        "no_show",
+        "costo_insumos_practica",
+        "plazo_cobro_entidad",
+        "pacientes_hora",
+        "gastos_fijos_consultorio"
+      ],
+      "patologias_probables": [
+        "descalce_financiero",
+        "capacidad_subutilizada",
+        "insumos_criticos_sin_control",
+        "carga_administrativa"
+      ],
+      "formulas_utiles": [
+        "FORM_010",
+        "FORM_022",
+        "FORM_083"
+      ],
+      "buenas_practicas_asociadas": [
+        "recordatorios WhatsApp",
+        "señas prácticas caras",
+        "compras conjuntas",
+        "pacientes particulares"
+      ]
+    },
+    {
+      "id": "TAX_PRO_003",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Servicios turísticos",
+        "division_o_grupo": "Agencia de viajes",
+        "codigo_clae_aproximado": "791100",
+        "keywords_clae": [
+          "agencia de viajes",
+          "turismo"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "profesional",
+      "tipo_operativo": "agencia_viajes_minorista",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "agencia de viajes",
+        "turismo"
+      ],
+      "modelo_ingresos": "Comisiones y honorarios por gestión turística.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "averiguan acá y compran online",
+        "impuestos cambiarios complican",
+        "solo alta gama sostiene",
+        "responsabilidad por terceros"
+      ],
+      "preguntas_al_dueno": [
+        "¿Conversión consultas/ventas?",
+        "¿Margen por servicio?",
+        "¿Nacional vs internacional?",
+        "¿Cómo gestionás reclamos?"
+      ],
+      "datos_minimos_a_pedir": [
+        "conversion_leads",
+        "margen_servicio",
+        "ticket_paquete",
+        "costo_estructura",
+        "reclamos"
+      ],
+      "patologias_probables": [
+        "desintermediacion",
+        "regulacion_cambiaria",
+        "falta_nicho",
+        "bajo_margen_aereos"
+      ],
+      "formulas_utiles": [
+        "FORM_023",
+        "FORM_017",
+        "FORM_022"
+      ],
+      "buenas_practicas_asociadas": [
+        "especialización nicho",
+        "CRM seguimiento",
+        "honorario no reembolsable",
+        "convenios asistencia"
+      ]
+    },
+    {
+      "id": "TAX_LOG_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Transporte",
+        "division_o_grupo": "Fletes y transporte",
+        "codigo_clae_aproximado": "492230",
+        "keywords_clae": [
+          "flete",
+          "camión",
+          "transporte"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "transporte_fletes",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "flete",
+        "camión",
+        "transporte"
+      ],
+      "modelo_ingresos": "Tarifa por viaje, km u hora.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "camión vive roto",
+        "gasoil cuesta más que flete",
+        "choferes no cuidan vehículo",
+        "permisos vencidos"
+      ],
+      "preguntas_al_dueno": [
+        "¿Costo por km?",
+        "¿Km vacíos?",
+        "¿Fondo renovación?",
+        "¿Control combustible/neumáticos?"
+      ],
+      "datos_minimos_a_pedir": [
+        "mantenimiento_km",
+        "combustible",
+        "viajes",
+        "antiguedad_flota",
+        "seguros_patentes"
+      ],
+      "patologias_probables": [
+        "amortizacion_ignorada",
+        "mantenimiento_falto",
+        "riesgo_accidentes",
+        "rutas_ineficientes"
+      ],
+      "formulas_utiles": [
+        "FORM_089",
+        "FORM_047",
+        "FORM_092"
+      ],
+      "buenas_practicas_asociadas": [
+        "mantenimiento preventivo",
+        "GPS rutas",
+        "control consumo chofer",
+        "tarifa por índice costos"
+      ]
+    },
+    {
+      "id": "TAX_LOG_002",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Logística",
+        "division_o_grupo": "Almacenamiento y última milla",
+        "codigo_clae_aproximado": "521010",
+        "keywords_clae": [
+          "última milla",
+          "depósito",
+          "almacenamiento"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "ultima_milla_almacenamiento",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "última milla",
+        "depósito",
+        "almacenamiento"
+      ],
+      "modelo_ingresos": "Cobro por bulto, m2 o envío realizado.",
+      "intensidad": {
+        "stock": "media",
+        "personal": "alta",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "no encuentro paquetes",
+        "quejas por entregas tarde",
+        "no controlo inventario de clientes",
+        "rotación choferes"
+      ],
+      "preguntas_al_dueno": [
+        "¿Exactitud inventario?",
+        "¿Tiempo ciclo pedido?",
+        "¿Primer intento exitoso?",
+        "¿Seguridad mercadería?"
+      ],
+      "datos_minimos_a_pedir": [
+        "otif",
+        "rotura_mercaderia",
+        "capacidad_deposito",
+        "costo_envio",
+        "bultos_hora_hombre"
+      ],
+      "patologias_probables": [
+        "inventario_sin_visibilidad",
+        "errores_manual",
+        "productividad_baja",
+        "costos_reentrega"
+      ],
+      "formulas_utiles": [
+        "FORM_049",
+        "FORM_088",
+        "FORM_047"
+      ],
+      "buenas_practicas_asociadas": [
+        "WMS",
+        "picking móvil",
+        "layout depósito",
+        "conteos cíclicos"
+      ]
+    },
+    {
+      "id": "TAX_AGR_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Agro/servicios",
+        "division_o_grupo": "Vivero y jardinería",
+        "codigo_clae_aproximado": "477450",
+        "keywords_clae": [
+          "vivero",
+          "jardinería",
+          "plantas"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "agro",
+      "tipo_operativo": "vivero_jardineria",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "vivero",
+        "jardinería",
+        "plantas"
+      ],
+      "modelo_ingresos": "Venta de plantas y abonos por mantenimiento.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "baja"
+      },
+      "senales_anamnesis": [
+        "se mueren plantas",
+        "clima arruina temporada",
+        "cuesta conseguir ayudantes",
+        "stock ya no está lindo"
+      ],
+      "preguntas_al_dueno": [
+        "¿Cómo reducís merma?",
+        "¿Ingresos recurrentes?",
+        "¿Compras por temporada?",
+        "¿Costo agua/fertilizantes?"
+      ],
+      "datos_minimos_a_pedir": [
+        "merma_biologica",
+        "abonos_mensuales",
+        "rotacion_estacional",
+        "herramientas",
+        "ventas_complementarios"
+      ],
+      "patologias_probables": [
+        "merma_biologica",
+        "dependencia_clima",
+        "falta_personal",
+        "baja_rotacion_stock"
+      ],
+      "formulas_utiles": [
+        "FORM_042",
+        "FORM_017",
+        "FORM_036"
+      ],
+      "buenas_practicas_asociadas": [
+        "riego automatizado",
+        "plantas nativas",
+        "paisajismo",
+        "redes con trabajos"
+      ]
+    },
+    {
+      "id": "TAX_HIB_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Salud/comercio",
+        "division_o_grupo": "Veterinaria y pet shop",
+        "codigo_clae_aproximado": "750000",
+        "keywords_clae": [
+          "veterinaria",
+          "pet shop",
+          "mascotas"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "hibrido",
+      "tipo_operativo": "veterinaria_pet_shop",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "veterinaria",
+        "pet shop",
+        "mascotas"
+      ],
+      "modelo_ingresos": "Servicios médicos y venta de alimentos/accesorios.",
+      "intensidad": {
+        "stock": "alta",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "media"
+      },
+      "senales_anamnesis": [
+        "alimento ocupa espacio y deja poco margen",
+        "turnos cirugía se pisan",
+        "medicamentos vencidos",
+        "competencia supermercados"
+      ],
+      "preguntas_al_dueno": [
+        "¿Mix clínica/retail?",
+        "¿Control vencimiento fármacos?",
+        "¿Visitas por cliente/año?",
+        "¿Diferenciación pet shop?"
+      ],
+      "datos_minimos_a_pedir": [
+        "ticket_clinica_retail",
+        "vencimiento_medicamentos",
+        "frecuencia_cliente",
+        "margen_alimento",
+        "cirugias_mes"
+      ],
+      "patologias_probables": [
+        "stock_accesorios_inmovilizado",
+        "perdida_recurrencia",
+        "confusion_margenes",
+        "residuos_patogenicos"
+      ],
+      "formulas_utiles": [
+        "FORM_017",
+        "FORM_024",
+        "FORM_042"
+      ],
+      "buenas_practicas_asociadas": [
+        "recordatorios vacunación",
+        "planes prepagos",
+        "PEPS",
+        "diagnóstico especializado"
+      ]
+    },
+    {
+      "id": "TAX_PRO_004",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Profesional",
+        "division_o_grupo": "Publicidad y marketing",
+        "codigo_clae_aproximado": "731100",
+        "keywords_clae": [
+          "marketing",
+          "diseño",
+          "agencia digital"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "profesional",
+      "tipo_operativo": "agencia_marketing_digital",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "marketing",
+        "diseño",
+        "agencia digital"
+      ],
+      "modelo_ingresos": "Retainers mensuales y proyectos creativos.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "media",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "cambios constantes no facturados",
+        "cuesta cumplir plazos",
+        "no sé si abono cubre horas",
+        "perdí cliente grande"
+      ],
+      "preguntas_al_dueno": [
+        "¿Time-tracking por cliente?",
+        "¿Margen hora diseño?",
+        "¿Control de alcance?",
+        "¿Recurrente vs puntual?"
+      ],
+      "datos_minimos_a_pedir": [
+        "horas_facturables",
+        "churn_clientes",
+        "costo_hora_personal",
+        "proyectos_activos",
+        "margen_abono"
+      ],
+      "patologias_probables": [
+        "scope_creep",
+        "dependencia_clientes",
+        "falta_procesos",
+        "escala_lineal_personal"
+      ],
+      "formulas_utiles": [
+        "FORM_016",
+        "FORM_029",
+        "FORM_080"
+      ],
+      "buenas_practicas_asociadas": [
+        "gestión proyectos",
+        "contratos con límites",
+        "diversificar servicios",
+        "rentabilidad mensual cliente"
+      ]
+    },
+    {
+      "id": "TAX_CON_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Construcción",
+        "division_o_grupo": "Instalaciones técnicas",
+        "codigo_clae_aproximado": "432190",
+        "keywords_clae": [
+          "electricista",
+          "gasista",
+          "instalador",
+          "clima"
+        ],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "construccion",
+      "tipo_operativo": "instalador_matriculado",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": [
+        "electricista",
+        "gasista",
+        "instalador"
+      ],
+      "modelo_ingresos": "Mano de obra técnica y materiales.",
+      "intensidad": {
+        "stock": "baja",
+        "personal": "media",
+        "tiempo": "alta",
+        "documentacion": "alta"
+      },
+      "senales_anamnesis": [
+        "pierdo tiempo buscando materiales",
+        "urgencias no pagan visita",
+        "si no estoy no avanza",
+        "normativas cambian"
+      ],
+      "preguntas_al_dueno": [
+        "¿Valor visita mínima?",
+        "¿Tiempo no facturable?",
+        "¿Control calidad ayudantes?",
+        "¿Seguro responsabilidad civil?"
+      ],
+      "datos_minimos_a_pedir": [
+        "tiempo_instalacion",
+        "presupuestos_aceptados",
+        "costo_movilidad",
+        "valor_herramientas",
+        "certificados_aprobados"
+      ],
+      "patologias_probables": [
+        "visita_no_cobrada",
+        "tiempos_muertos",
+        "dependencia_dueno",
+        "riesgo_mala_praxis"
+      ],
+      "formulas_utiles": [
+        "FORM_023",
+        "FORM_080",
+        "FORM_018"
+      ],
+      "buenas_practicas_asociadas": [
+        "cobro visita técnica",
+        "kit en vehículo",
+        "presupuestos estándar",
+        "agenda digital"
+      ]
     }
   ]
 }
