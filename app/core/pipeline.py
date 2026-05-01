@@ -56,7 +56,11 @@ class Pipeline:
 
     def _process_one_text(self, evidence_id: str, text: str, job_id=None, plan_id=None):
         self.fact_extraction_service.extract_from_evidence(
-            evidence_id=evidence_id, text=text, job_id=job_id, plan_id=plan_id
+            cliente_id=self.cliente_id,
+            evidence_id=evidence_id,
+            text=text,
+            job_id=job_id,
+            plan_id=plan_id
         )
         facts = self.fact_repo.list_facts(evidence_id=evidence_id)
         self.canonicalization_service.canonicalize_facts(facts=facts, job_id=job_id, plan_id=plan_id)
