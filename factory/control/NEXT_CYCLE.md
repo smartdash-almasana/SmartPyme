@@ -1,29 +1,70 @@
-OBJETIVO CICLO ACTUAL:
+# NEXT CYCLE — SmartPyme Factory
 
-Implementar core-reconciliacion-v1.
+status: READY_FOR_HERMES
+updated_by: ChatGPT_Director_Auditor
+source_of_truth:
+  - docs/factory/FACTORY_CONTRATO_OPERATIVO.md
+  - factory/ai_governance/skills/hermes_smartpyme_factory/SKILL.md
+  - factory/ai_governance/taskspec.schema.json
 
-TAREA:
-1. Implementar primer motor deterministico de reconciliacion entre dos fuentes CSV.
-2. Crear o modificar solo los archivos minimos necesarios para esta unidad.
-3. Agregar tests especificos para validar una diferencia numerica por entidad.
-4. Generar evidencia en factory/evidence/core-reconciliacion-v1/ o en el directorio de evidencia del runner.
-5. Cerrar con git status, git diff, tests y decision verificable.
+## Ciclo vigente
 
-ALCANCE AUTORIZADO:
-- Se autoriza tocar codigo de core o modulo equivalente si es necesario para implementar la reconciliacion.
-- Se autoriza crear tests especificos.
-- Se autoriza definir estructuras minimas de salida tipo hallazgo.
+Hermes Gateway debe ejecutar una unica TaskSpec YAML `pending` desde:
 
-RESTRICCIONES:
-- No usar IA para logica core.
-- No hacer refactor global.
-- No tocar integraciones externas.
-- No mezclar con Telegram, reporting ni systemd.
-- Mantener salida de negocio con entidad, diferencia cuantificada y fuentes.
+```text
+factory/ai_governance/tasks/*.yaml
+```
 
-CRITERIO DE CIERRE:
-- input: 2 CSV.
-- output: diferencias por entidad.
-- al menos un test pasa.
-- no hay cambios fuera del alcance.
-- evidencia real guardada.
+La TaskSpec prioritaria autorizada para el proximo `/avanzar` es:
+
+```text
+factory/ai_governance/tasks/0000_hermes_avanzar_dispatch_real_001.yaml
+```
+
+## Motivo
+
+El contenido anterior de `NEXT_CYCLE.md` apuntaba a `core-reconciliacion-v1`, un frente legacy/desalineado con el contrato operativo vigente.
+
+El contrato vigente establece que:
+
+- Hermes Gateway externo es el runtime conversacional.
+- La unidad de trabajo vigente es TaskSpec YAML.
+- `/avanzar` debe ejecutar un unico ciclo con pull, lectura canonica, schema, alcance, tests, evidencia y gate.
+- No deben reactivarse runners legacy ni scripts paralelos.
+
+## Regla de ejecucion
+
+Hermes debe seguir la TaskSpec tal como esta escrita. Este archivo no reemplaza ni extiende el schema.
+
+## Comando esperado del owner
+
+```text
+/avanzar
+```
+
+## Criterio de cierre del ciclo
+
+El ciclo solo puede cerrar si deja evidencia reproducible en:
+
+```text
+factory/evidence/hermes_avanzar_dispatch_real_001/
+```
+
+con, como minimo:
+
+```text
+cycle.md
+commands.txt
+git_status.txt
+git_diff.patch
+tests.txt
+decision.txt
+```
+
+## Prohibiciones
+
+- No ejecutar `scripts/hermes_factory_runner.py`.
+- No ejecutar `scripts/telegram_factory_control.py`.
+- No ejecutar `run_sfma_cycle.sh`.
+- No tocar `app/**`, `core/**` ni `services/**` en este ciclo.
+- No seleccionar hallazgos markdown como cola operativa.
