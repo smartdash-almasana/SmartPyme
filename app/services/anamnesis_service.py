@@ -7,10 +7,12 @@ from app.contracts.anamnesis_contract import (
     AnamnesisResult,
     DeclaredBusinessContext,
 )
+from app.services.operational_taxonomy_matcher_service import OperationalTaxonomyMatcherService
 
 
 class AnamnesisService:
-    def __init__(self):
+    def __init__(self, matcher: OperationalTaxonomyMatcherService | None = None):
+        self.matcher = matcher or OperationalTaxonomyMatcherService()
         self._rubro_keywords = {
             "kiosco": "kiosco",
             "almacén": "almacén",
@@ -138,12 +140,28 @@ class AnamnesisService:
         new_ctx = DeclaredBusinessContext(
             cliente_id=data.cliente_id,
             rubro_declarado=rubro,
-            tipo_operativo_probable=ctx.tipo_operativo_probable, # No logic yet for this
+            tipo_operativo_probable=ctx.tipo_operativo_probable,
             empleados_declarados=empleados,
             canales_venta=tuple(new_canales),
             fuentes_datos=tuple(new_fuentes),
             dolores_declarados=tuple(new_dolores),
             preguntas_pendientes=tuple(preguntas)
+        )
+
+        # Operational Taxonomy Candidates Integration
+        candidates = self.matcher.match(data.owner_message, limit=3)
+        candidate_ids = tuple(c["item_id"] for c in candidates)
+        
+        new_ctx = DeclaredBusinessContext(
+            cliente_id=new_ctx.cliente_id,
+            rubro_declarado=new_ctx.rubro_declarado,
+            tipo_operativo_probable=new_ctx.tipo_operativo_probable,
+            empleados_declarados=new_ctx.empleados_declarados,
+            canales_venta=new_ctx.canales_venta,
+            fuentes_datos=new_ctx.fuentes_datos,
+            dolores_declarados=new_ctx.dolores_declarados,
+            preguntas_pendientes=new_ctx.preguntas_pendientes,
+            taxonomia_candidata_ids=candidate_ids
         )
 
         status = "CONTEXT_UPDATED" if not preguntas else "NEEDS_MORE_CONTEXT"

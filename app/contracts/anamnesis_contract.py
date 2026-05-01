@@ -13,6 +13,7 @@ class DeclaredBusinessContext:
     fuentes_datos: tuple[str, ...] = field(default_factory=tuple)
     dolores_declarados: tuple[str, ...] = field(default_factory=tuple)
     preguntas_pendientes: tuple[str, ...] = field(default_factory=tuple)
+    taxonomia_candidata_ids: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True, slots=True)

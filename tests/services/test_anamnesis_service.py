@@ -108,3 +108,41 @@ def test_error_si_cliente_id_no_coincide_con_contexto(service):
     
     with pytest.raises(ValueError, match="Mismatch de cliente_id"):
         service.process(data)
+
+
+def test_genera_candidatos_taxonomia(service):
+    data = AnamnesisInput(cliente_id="C1", owner_message="Tengo un kiosco")
+    res = service.process(data)
+    
+    assert len(res.context.taxonomia_candidata_ids) > 0
+    assert "TAX_COM_005" in res.context.taxonomia_candidata_ids
+
+
+def test_no_decide_tipo_operativo_probable(service):
+    data = AnamnesisInput(cliente_id="C1", owner_message="Tengo un kiosco")
+    res = service.process(data)
+    
+    # Aunque haya candidatos, no debe elegir uno automáticamente todavía
+    assert res.context.tipo_operativo_probable is None
+
+
+def test_conserva_tipo_operativo_probable_previo(service):
+    prev_ctx = DeclaredBusinessContext(
+        cliente_id="C1",
+        tipo_operativo_probable="mi_tipo_fijo"
+    )
+    data = AnamnesisInput(
+        cliente_id="C1", 
+        owner_message="Tengo un kiosco",
+        current_context=prev_ctx
+    )
+    res = service.process(data)
+    
+    assert res.context.tipo_operativo_probable == "mi_tipo_fijo"
+
+
+def test_sin_candidatos_deja_tupla_vacia(service):
+    data = AnamnesisInput(cliente_id="C1", owner_message="Hola")
+    res = service.process(data)
+    
+    assert res.context.taxonomia_candidata_ids == ()
