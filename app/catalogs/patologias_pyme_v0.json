@@ -1,0 +1,129 @@
+{
+  "catalog_id": "patologias_pyme_v0",
+  "version": "0.1",
+  "description": "Catálogo mínimo de patologías PyME para anamnesis, diagnóstico y propuestas.",
+  "criteria": "Patología PyME = patrón repetible de pérdida de dinero, pérdida de tiempo o pérdida de control.",
+  "items": [
+    {
+      "id": "LIQ_001",
+      "domain": "liquidez",
+      "name": "descalce_ventas_cobranzas",
+      "description": "Las ventas registradas superan las cobranzas efectivas y generan tensión de caja.",
+      "symptoms": ["hay ventas pero falta dinero", "clientes pagan tarde", "no alcanza para proveedores"],
+      "anamnesis_signals": ["vendo pero no veo la plata", "me deben mucho", "no sé cuánto cobré realmente"],
+      "minimum_data": ["total_ventas_periodo", "total_cobrado_periodo", "cuentas_por_cobrar", "fecha_vencimiento_cobros"],
+      "associated_formulas": ["Diferencia vendido-cobrado", "Antigüedad de deuda", "Flujo de fondos proyectado"],
+      "impact": ["pérdida de liquidez", "incapacidad de pagar proveedores", "financiamiento forzado"]
+    },
+    {
+      "id": "LIQ_002",
+      "domain": "liquidez",
+      "name": "flujo_caja_sin_anticipacion",
+      "description": "El dueño opera sin previsión de entradas y salidas futuras.",
+      "symptoms": ["pagos inesperados", "faltante de caja recurrente", "decisiones de compra improvisadas"],
+      "anamnesis_signals": ["no sé si llego a fin de mes", "me entero tarde de los vencimientos", "vivo apagando incendios"],
+      "minimum_data": ["saldo_inicial", "cobros_estimados", "pagos_estimados", "vencimientos", "costos_fijos"],
+      "associated_formulas": ["Flujo de fondos proyectado", "Caja diaria", "Punto de equilibrio"],
+      "impact": ["estrés financiero", "atraso en pagos", "compras urgentes caras"]
+    },
+    {
+      "id": "REN_001",
+      "domain": "rentabilidad",
+      "name": "margen_invisible",
+      "description": "El negocio factura pero no sabe qué productos, clientes o canales dejan ganancia real.",
+      "symptoms": ["vende mucho pero no gana", "precios definidos a ojo", "no distingue facturación de rentabilidad"],
+      "anamnesis_signals": ["no sé qué producto me conviene", "vendo pero no sé si gano", "pongo precios mirando a la competencia"],
+      "minimum_data": ["precio_venta", "costo_unitario", "comisiones", "impuestos", "logistica", "descuentos"],
+      "associated_formulas": ["Margen bruto por producto", "Margen neto", "Precio de venta con margen objetivo"],
+      "impact": ["descapitalización", "venta con pérdida", "subsidio oculto a clientes o canales"]
+    },
+    {
+      "id": "REN_002",
+      "domain": "rentabilidad",
+      "name": "costo_reposicion_ignorado",
+      "description": "El precio se calcula sobre costo histórico y no sobre el costo real de volver a comprar.",
+      "symptoms": ["vende y no puede reponer", "stock pierde valor operativo", "margen aparente positivo"],
+      "anamnesis_signals": ["cuando voy a comprar de nuevo no me alcanza", "el proveedor aumentó y no ajusté", "uso la lista vieja"],
+      "minimum_data": ["costo_historico", "costo_reposicion_actual", "precio_venta", "fecha_ultima_compra", "proveedor"],
+      "associated_formulas": ["Costo de reposición promedio ponderado", "Margen bruto", "Variación intermensual"],
+      "impact": ["pérdida de capacidad de reposición", "capital erosionado", "falsa rentabilidad"]
+    },
+    {
+      "id": "INV_001",
+      "domain": "inventario",
+      "name": "stock_critico",
+      "description": "Productos clave se agotan o están por agotarse y generan pérdida directa de ventas.",
+      "symptoms": ["quiebres frecuentes", "clientes piden productos que no hay", "compras urgentes"],
+      "anamnesis_signals": ["me quedo sin productos importantes", "compro de urgencia", "pierdo ventas por falta de stock"],
+      "minimum_data": ["sku", "descripcion", "stock_actual", "ventas_promedio", "lead_time_proveedor", "stock_minimo"],
+      "associated_formulas": ["Rotación de stock", "Punto de reposición", "SI condicional para alerta"],
+      "impact": ["ventas perdidas", "daño reputacional", "sobrecosto por urgencia"]
+    },
+    {
+      "id": "INV_002",
+      "domain": "inventario",
+      "name": "capital_inmovilizado_stock_sin_rotacion",
+      "description": "Productos con baja o nula rotación bloquean dinero, espacio y capacidad de compra.",
+      "symptoms": ["stock viejo", "depósito lleno", "faltan fondos para mercadería que sí rota"],
+      "anamnesis_signals": ["tengo mercadería parada", "no sé qué liquidar", "hay productos que no salen nunca"],
+      "minimum_data": ["sku", "stock_actual", "fecha_ultima_venta", "ventas_ultimos_30_60_90_dias", "costo_unitario", "valor_inventario"],
+      "associated_formulas": ["Rotación de stock", "Inventario valorizado", "Productos sin rotación"],
+      "impact": ["capital bloqueado", "obsolescencia", "pérdida de liquidez"]
+    },
+    {
+      "id": "OPE_001",
+      "domain": "operaciones",
+      "name": "dependencia_del_dueno",
+      "description": "El negocio depende de decisiones, memoria o aprobación constante del dueño.",
+      "symptoms": ["todo pasa por el dueño", "no hay procedimientos", "se frena la operación si el dueño no está"],
+      "anamnesis_signals": ["si no estoy yo no funciona", "todos me preguntan todo", "no puedo delegar"],
+      "minimum_data": ["procesos_recurrentes", "responsables", "tiempos_de_aprobacion", "tareas_manualizadas"],
+      "associated_formulas": ["Costo oculto por retrabajo", "Tiempo operativo perdido", "Capacidad ocupada"],
+      "impact": ["pérdida de tiempo", "cuello de botella", "imposibilidad de escalar"]
+    },
+    {
+      "id": "OPE_002",
+      "domain": "operaciones",
+      "name": "informacion_fragmentada",
+      "description": "Los datos viven en Excel, WhatsApp, PDFs, emails y sistemas no integrados.",
+      "symptoms": ["versiones múltiples", "datos contradictorios", "búsqueda lenta de información"],
+      "anamnesis_signals": ["tengo todo desparramado", "no sé cuál archivo es el último", "cada empleado tiene su planilla"],
+      "minimum_data": ["fuentes_de_datos", "canales_de_comunicacion", "archivos_operativos", "responsables_de_actualizacion"],
+      "associated_formulas": ["Conciliación bancaria", "Conciliación Mercado Pago", "Dashboard básico"],
+      "impact": ["pérdida de control", "errores de decisión", "tiempo perdido buscando datos"]
+    },
+    {
+      "id": "FIS_001",
+      "domain": "fiscal_contable",
+      "name": "data_decay_excel_contable",
+      "description": "La información fiscal-contable se degrada por manipulación manual, versiones y falta de trazabilidad.",
+      "symptoms": ["archivos FINAL_v2_corregido", "fórmulas rotas", "errores de clasificación", "datos modificados sin registro"],
+      "anamnesis_signals": ["le mando planillas al contador", "después no coincide", "no sabemos quién tocó el archivo"],
+      "minimum_data": ["archivos_excel", "versiones", "origen_dato", "fecha_modificacion", "responsable"],
+      "associated_formulas": ["Conciliación", "BUSCARV/BUSCARX", "SUMAR.SI.CONJUNTO", "Validaciones de consistencia"],
+      "impact": ["riesgo fiscal", "responsabilidad profesional", "horas de depuración"]
+    },
+    {
+      "id": "FIS_002",
+      "domain": "fiscal_contable",
+      "name": "riesgo_fiscal_por_discrepancias",
+      "description": "Diferencias entre registros internos y organismos fiscales generan multas, ajustes o intimaciones.",
+      "symptoms": ["IVA no coincide", "retenciones/percepciones mal registradas", "ventas no declaradas", "comprobantes duplicados u omitidos"],
+      "anamnesis_signals": ["AFIP/ARCA me intimó", "el contador me dice que no cierra", "tengo percepciones que no sé dónde están"],
+      "minimum_data": ["comprobantes_emitidos", "comprobantes_recibidos", "libro_iva", "retenciones", "percepciones", "extractos_bancarios"],
+      "associated_formulas": ["Percepción IVA", "Percepción Ingresos Brutos", "Conciliación bancaria", "Ajuste por inflación"],
+      "impact": ["multas", "intereses", "pérdida de saldos a favor", "riesgo de inspección"]
+    },
+    {
+      "id": "REP_001",
+      "domain": "reputacion",
+      "name": "erosion_confianza_clientes_proveedores",
+      "description": "La pérdida de orden operativo deteriora la confianza de clientes, proveedores o plataformas.",
+      "symptoms": ["reclamos crecientes", "proveedores piden anticipo", "clientes preguntan repetidamente por facturas o entregas"],
+      "anamnesis_signals": ["los proveedores ya no me esperan", "los clientes reclaman más", "Mercado Libre me bajó la reputación"],
+      "minimum_data": ["reclamos", "cancelaciones", "demoras_entrega", "pagos_a_proveedores", "comentarios_clientes"],
+      "associated_formulas": ["Tasa de reclamos", "Días de atraso", "Stock crítico", "Ventas canceladas"],
+      "impact": ["pérdida de clientes", "menor crédito comercial", "penalizaciones de plataforma"]
+    }
+  ]
+}
