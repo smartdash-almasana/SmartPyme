@@ -1,0 +1,152 @@
+{
+  "catalog_id": "taxonomia_operativa_pyme_argentina_v0",
+  "version": "0.1",
+  "description": "Catálogo semilla que separa actividad oficial CLAE/ClaNAE de tipo operativo SmartPyme.",
+  "criteria": "CLAE/ClaNAE clasifica actividad oficial; SmartPyme clasifica funcionamiento operativo diagnosticable.",
+  "items": [
+    {
+      "id": "TAX_COM_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Venta al por menor en comercios no especializados",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["kiosco", "almacén", "autoservicio", "tienda de barrio"],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "tienda_minorista_familiar",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["kiosco de barrio", "almacén familiar", "autoservicio chico"],
+      "modelo_ingresos": "Venta minorista con margen sobre mercadería comprada a proveedores.",
+      "intensidad": {"stock": "alta", "personal": "baja", "tiempo": "alta", "documentacion": "media"},
+      "senales_anamnesis": ["vendo mucho pero no veo la plata", "tengo mucha mercadería vieja", "compro sin orden de compra", "no sé qué stock real tengo"],
+      "preguntas_al_dueno": ["¿Qué vendés principalmente?", "¿Cómo registrás las ventas diarias?", "¿Sabés cuánto stock tenés hoy?", "¿Comprás con factura y control de proveedor?"],
+      "datos_minimos_a_pedir": ["ventas_mensuales", "costo_mercaderia_vendida", "stock_estimado", "proveedores_principales", "costos_fijos"],
+      "patologias_probables": ["margen_invisible", "stock_inmovilizado", "informacion_fragmentada", "flujo_caja_sin_anticipacion"],
+      "formulas_utiles": ["FORM_011", "FORM_036", "FORM_041", "FORM_065"],
+      "buenas_practicas_asociadas": ["inventario periódico", "control de compras", "margen por familia de producto", "cierre diario de caja"]
+    },
+    {
+      "id": "TAX_COM_002",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Venta minorista online / no especializada",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["ecommerce", "venta por internet", "marketplace", "mercado libre"],
+        "confianza_mapeo_oficial": "baja",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "ecommerce_marketplace",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["tienda Mercado Libre", "tienda nube chica", "vendedor multicanal"],
+      "modelo_ingresos": "Venta online con comisiones, publicidad y logística como costos centrales.",
+      "intensidad": {"stock": "media", "personal": "baja", "tiempo": "media", "documentacion": "alta"},
+      "senales_anamnesis": ["mercado libre me come el margen", "no sé cuánto gano por publicación", "tengo devoluciones", "me cancelan ventas por falta de stock"],
+      "preguntas_al_dueno": ["¿Vendés con stock propio o por dropshipping?", "¿Qué comisión te cobra la plataforma?", "¿Tenés calculado el margen neto por publicación?", "¿Cómo sincronizás stock entre canales?"],
+      "datos_minimos_a_pedir": ["precio_publicacion", "costo_reposicion", "comisiones_marketplace", "costo_envio", "gasto_ads", "stock_por_sku"],
+      "patologias_probables": ["margen_invisible", "costo_reposicion_ignorado", "stock_critico", "erosion_confianza_clientes_proveedores"],
+      "formulas_utiles": ["FORM_068", "FORM_070", "FORM_071", "FORM_072", "FORM_074"],
+      "buenas_practicas_asociadas": ["margen neto por publicación", "stock multicanal sincronizado", "control de ACOS", "ranking de publicaciones rentables"]
+    },
+    {
+      "id": "TAX_GAS_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Alojamiento y servicios de comida",
+        "division_o_grupo": "Servicios de comidas y bebidas",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["restaurante", "rotisería", "parrilla", "pizzería"],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "servicios",
+      "tipo_operativo": "restaurante_rotiseria_barrio",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["parrilla de barrio", "rotisería familiar", "pizzería con delivery"],
+      "modelo_ingresos": "Venta de comida preparada presencial, take away y delivery.",
+      "intensidad": {"stock": "alta", "personal": "media", "tiempo": "alta", "documentacion": "media"},
+      "senales_anamnesis": ["el lunes y martes casi no hay nadie", "no sé qué tan rentable es cada plato", "compro siempre al mismo proveedor", "todo pasa por mí"],
+      "preguntas_al_dueno": ["¿Cuáles son tus días fuertes y flojos?", "¿Sabés el costo de cada plato?", "¿Qué porcentaje se vende por delivery?", "¿Cuánta merma tenés por semana?"],
+      "datos_minimos_a_pedir": ["ventas_diarias", "costo_materia_prima_por_plato", "cubiertos_por_dia", "merma", "costos_fijos"],
+      "patologias_probables": ["margen_invisible", "capital_inmovilizado_stock_sin_rotacion", "dependencia_del_dueno", "flujo_caja_sin_anticipacion"],
+      "formulas_utiles": ["FORM_011", "FORM_020", "FORM_043", "FORM_045", "FORM_049"],
+      "buenas_practicas_asociadas": ["costeo de menú", "control de merma", "compras planificadas", "producción por demanda"]
+    },
+    {
+      "id": "TAX_IND_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Industria manufacturera",
+        "division_o_grupo": "Elaboración de productos de panadería",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["panadería", "panificados", "facturas", "pastelería"],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "industria",
+      "tipo_operativo": "panaderia_tradicional",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["panadería de barrio", "panadería con reparto", "panadería y confitería chica"],
+      "modelo_ingresos": "Producción diaria y venta de panificados perecederos.",
+      "intensidad": {"stock": "media", "personal": "alta", "tiempo": "alta", "documentacion": "media"},
+      "senales_anamnesis": ["me sobra mercadería al final del día", "la harina aumentó", "no sé cuánto me cuesta producir cada producto", "trabajamos de madrugada"],
+      "preguntas_al_dueno": ["¿Cuántos kilos producís por día?", "¿Cuánta mercadería se descarta?", "¿Tenés receta/costo por producto?", "¿Cuántas personas trabajan por turno?"],
+      "datos_minimos_a_pedir": ["kg_producidos", "costo_harina_insumos", "ventas_diarias", "merma_diaria", "horas_personal"],
+      "patologias_probables": ["costo_reposicion_ignorado", "margen_invisible", "dependencia_del_dueno", "capital_inmovilizado_stock_sin_rotacion"],
+      "formulas_utiles": ["FORM_043", "FORM_045", "FORM_046", "FORM_077"],
+      "buenas_practicas_asociadas": ["producción por demanda", "recetas costeadas", "control de merma", "ajuste frecuente de precios por insumos"]
+    },
+    {
+      "id": "TAX_SER_001",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Actividades profesionales, científicas y técnicas",
+        "division_o_grupo": "Servicios contables",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["contador", "estudio contable", "servicios contables", "liquidación impositiva"],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "profesional",
+      "tipo_operativo": "estudio_contable_pyme",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["contador independiente", "estudio contable chico", "liquidador de sueldos"],
+      "modelo_ingresos": "Honorarios mensuales, liquidaciones y trabajos puntuales.",
+      "intensidad": {"stock": "baja", "personal": "media", "tiempo": "alta", "documentacion": "alta"},
+      "senales_anamnesis": ["yo soy el negocio", "no sé cuánto gano por cliente", "los clientes mandan papeles tarde", "no puedo tomar vacaciones"],
+      "preguntas_al_dueno": ["¿Cuántos clientes mensuales tenés?", "¿Cuántas horas demanda cada cliente?", "¿Tenés honorarios fijos o trabajos sueltos?", "¿Qué tareas repetitivas hacés todos los meses?"],
+      "datos_minimos_a_pedir": ["clientes_activos", "honorario_por_cliente", "horas_por_cliente", "tareas_recurrentes", "vencimientos"],
+      "patologias_probables": ["dependencia_del_dueno", "informacion_fragmentada", "margen_invisible", "data_decay_excel_contable"],
+      "formulas_utiles": ["FORM_016", "FORM_052", "FORM_080", "FORM_091"],
+      "buenas_practicas_asociadas": ["segmentación de clientes", "plantillas de tareas", "portal documental", "automatización de vencimientos"]
+    },
+    {
+      "id": "TAX_COM_004",
+      "actividad_oficial_referencia": {
+        "fuente": "CLAE/ClaNAE",
+        "seccion": "Comercio",
+        "division_o_grupo": "Comercio mayorista / distribución",
+        "codigo_clae_aproximado": null,
+        "keywords_clae": ["distribuidora", "mayorista", "reparto", "venta a comercios"],
+        "confianza_mapeo_oficial": "media",
+        "validacion_requerida": true
+      },
+      "familia_smartpyme": "comercio",
+      "tipo_operativo": "distribuidora_mayorista_chica",
+      "derivada_operativa": true,
+      "ejemplos_argentinos": ["distribuidora de alimentos", "mayorista barrial", "reparto a comercios"],
+      "modelo_ingresos": "Venta mayorista con margen bajo, volumen alto, logística y crédito a clientes.",
+      "intensidad": {"stock": "alta", "personal": "media", "tiempo": "alta", "documentacion": "alta"},
+      "senales_anamnesis": ["me deben varios clientes", "tengo mucho stock parado", "los fletes me comen el margen", "no sé qué cliente me conviene"],
+      "preguntas_al_dueno": ["¿Vendés a crédito?", "¿Cuántos días tardan en pagarte?", "¿Cuánto stock tenés inmovilizado?", "¿Calculás rentabilidad por cliente o ruta?"],
+      "datos_minimos_a_pedir": ["ventas_por_cliente", "cuentas_por_cobrar", "stock_valorizado", "costo_logistico", "margen_por_producto", "rutas"],
+      "patologias_probables": ["descalce_ventas_cobranzas", "stock_inmovilizado", "margen_invisible", "erosion_confianza_clientes_proveedores"],
+      "formulas_utiles": ["FORM_010", "FORM_016", "FORM_047", "FORM_083", "FORM_065"],
+      "buenas_practicas_asociadas": ["límite de crédito por cliente", "rentabilidad por ruta", "stock ABC", "cobranza semanal"]
+    }
+  ]
+}
