@@ -4,7 +4,7 @@ status: pending
 human_required: false
 objective: >
   Crear contratos mínimos para que los resultados de SmartPyme puedan declarar evidencia,
-  fórmula, input humano, supuestos, confianza, tenant_id y vigencia.
+  fórmula, input humano, supuestos, confianza, cliente_id y vigencia.
 
 allowed_files:
   - app/contracts/source_of_truth.py
@@ -32,7 +32,7 @@ post_commands:
   - .venv/bin/python -m pytest tests/contracts/test_source_of_truth.py -v
 
 acceptance_criteria:
-  - SourceOfTruth exige tenant_id
+  - SourceOfTruth exige cliente_id
   - SourceOfTruth soporta EvidenceRef
   - SourceOfTruth soporta FormulaRef
   - SourceOfTruth soporta HumanInputRef
