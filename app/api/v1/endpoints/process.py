@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 from app.api.dependencies import get_active_client
 from app.core.pipeline import Pipeline
-from app.repositories.fact_repository import FactRepository
 from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
+from app.repositories.fact_repository import FactRepository
 
 router = APIRouter()
 
@@ -64,5 +64,5 @@ async def process(
 
     return {
         "cliente_id": result.cliente_id,
-        "status": result.status
+        "status": result.status,
     }
