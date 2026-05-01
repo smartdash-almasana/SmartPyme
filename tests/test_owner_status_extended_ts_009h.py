@@ -1,6 +1,6 @@
 from app.contracts.formula_contract import FormulaInput
 from app.contracts.job_contract import Job
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.mcp.tools.owner_status_tool import get_owner_status
 from app.repositories.job_repository import JobRepository
 

@@ -6,8 +6,8 @@ from uuid import uuid4
 
 from app.contracts.formula_contract import FormulaInput, FormulaResult
 from app.contracts.pathology_contract import PathologyFinding
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
-from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.pathology_auditor_agent import PathologyAuditorAgent
 
 AUDIT_VENTA_BAJO_COSTO = "audit_venta_bajo_costo"
 

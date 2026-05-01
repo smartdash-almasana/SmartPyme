@@ -1,5 +1,5 @@
 from app.contracts.formula_contract import FormulaInput
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.mcp.tools.formula_results_tool import (
     get_formula_result,
     get_formula_results,

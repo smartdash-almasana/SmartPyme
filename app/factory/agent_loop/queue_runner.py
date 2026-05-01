@@ -6,7 +6,7 @@ from app.factory.agent_loop.multiagent_task_loop import (
     run_persisted_multiagent_task_cycle,
     save_task,
 )
-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO, BusinessTaskExecutor
+from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO, BusinessTaskExecutor
 
 BUSINESS_TASK_TYPES = {AUDIT_VENTA_BAJO_COSTO}
 

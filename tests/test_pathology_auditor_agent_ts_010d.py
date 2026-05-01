@@ -1,7 +1,7 @@
 from app.contracts.formula_contract import FormulaInput
 from app.contracts.pathology_contract import PathologyStatus
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
-from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.pathology_auditor_agent import PathologyAuditorAgent
 from app.repositories.pathology_repository import PathologyRepository
 
 

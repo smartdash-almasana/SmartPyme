@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.mcp.tools.owner_status_tool import get_owner_status
 from app.services.document_intake_service import DocumentIntakeService

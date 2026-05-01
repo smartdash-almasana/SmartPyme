@@ -1,6 +1,6 @@
 from app.contracts.formula_contract import FormulaInput
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
-from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.pathology_auditor_agent import PathologyAuditorAgent
 from app.mcp.tools.owner_status_tool import get_owner_status
 from app.mcp.tools.pathology_explanation_tool import (
     get_pathology_finding,

@@ -1,5 +1,5 @@
 from app.contracts.formula_contract import FormulaInput, FormulaStatus
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.repositories.formula_result_repository import FormulaResultRepository
 
 

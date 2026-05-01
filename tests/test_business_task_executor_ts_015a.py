@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from app.contracts.pathology_contract import PathologyStatus
-from app.factory.business_task_executor import (
+from app.agents.business_task_executor import (
     AUDIT_VENTA_BAJO_COSTO,
     BusinessTaskExecutor,
 )

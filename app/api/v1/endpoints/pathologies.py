@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from app.api.dependencies import get_active_client
 from app.contracts.pathology_contract import PathologyFinding, PathologyStatus
-from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
+from app.agents.pathology_auditor_agent import PathologyAuditorAgent
 from app.repositories.pathology_repository import PathologyRepository
 
 router = APIRouter()

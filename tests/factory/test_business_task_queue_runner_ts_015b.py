@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.mcp.tools.factory_control_tool import (
     enqueue_factory_task,
     get_factory_task_status,

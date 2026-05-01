@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from app.api.dependencies import get_active_client
 from app.contracts.formula_contract import FormulaInput, FormulaResult
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.repositories.formula_result_repository import FormulaResultRepository
 
 router = APIRouter()

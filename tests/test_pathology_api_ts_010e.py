@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.api.v1.endpoints.pathologies import PathologyDbPaths, get_pathology_db_paths, router
 from app.contracts.formula_contract import FormulaInput
-from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+from app.agents.formula_calculation_agent import FormulaCalculationAgent
 
 
 def create_app(formula_db: Path, pathology_db: Path):

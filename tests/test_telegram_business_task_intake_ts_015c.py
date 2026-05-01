@@ -2,7 +2,7 @@ from pathlib import Path
 
 from app.adapters.telegram_adapter import TelegramAdapter
 from app.factory.agent_loop.multiagent_task_loop import load_task
-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.services.identity_service import IdentityService
 
 
