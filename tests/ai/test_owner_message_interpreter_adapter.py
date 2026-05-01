@@ -61,3 +61,67 @@ def test_adapter_rejects_non_validated_raw_output():
     result = adapter.interpret("Revisame ventas")
 
     assert result == LocalOwnerMessageInterpreterAdapter.empty()
+
+
+def test_adapter_interpret_result_returns_ok_status():
+    expected = OwnerMessageInterpretation(intent="consultar_ventas", confidence=0.8)
+    adapter = LocalOwnerMessageInterpreterAdapter(interpreter=lambda message: expected)
+
+    result = adapter.interpret_result("Revisame ventas")
+
+    assert result.raw_message == "Revisame ventas"
+    assert result.interpretation == expected
+    assert result.status == "ok"
+    assert result.source == "local_adapter"
+    assert result.errors == []
+
+
+def test_adapter_interpret_result_returns_empty_status_for_empty_message():
+    adapter = LocalOwnerMessageInterpreterAdapter(
+        interpreter=lambda message: OwnerMessageInterpretation(intent="should_not_run")
+    )
+
+    result = adapter.interpret_result("   ")
+
+    assert result.raw_message == "   "
+    assert result.interpretation == LocalOwnerMessageInterpreterAdapter.empty()
+    assert result.status == "empty"
+    assert result.errors == []
+
+
+def test_adapter_interpret_result_returns_failed_status_for_exception():
+    def failing_interpreter(message: str):
+        raise RuntimeError("soft interpreter failed")
+
+    adapter = LocalOwnerMessageInterpreterAdapter(interpreter=failing_interpreter)
+
+    result = adapter.interpret_result("Revisame ventas")
+
+    assert result.raw_message == "Revisame ventas"
+    assert result.interpretation == LocalOwnerMessageInterpreterAdapter.empty()
+    assert result.status == "failed"
+    assert result.errors == ["interpreter_exception"]
+
+
+def test_adapter_interpret_result_returns_failed_status_for_raw_output():
+    adapter = LocalOwnerMessageInterpreterAdapter(interpreter=lambda message: {"intent": "raw"})
+
+    result = adapter.interpret_result("Revisame ventas")
+
+    assert result.raw_message == "Revisame ventas"
+    assert result.interpretation == LocalOwnerMessageInterpreterAdapter.empty()
+    assert result.status == "failed"
+    assert result.errors == ["invalid_interpreter_output"]
+
+
+def test_adapter_interpret_result_returns_empty_status_for_empty_interpretation():
+    adapter = LocalOwnerMessageInterpreterAdapter(
+        interpreter=lambda message: OwnerMessageInterpretation()
+    )
+
+    result = adapter.interpret_result("Revisame ventas")
+
+    assert result.raw_message == "Revisame ventas"
+    assert result.interpretation == LocalOwnerMessageInterpreterAdapter.empty()
+    assert result.status == "empty"
+    assert result.errors == []
