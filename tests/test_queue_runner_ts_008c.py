@@ -1,5 +1,5 @@
-from app.factory.agent_loop.multiagent_task_loop import MultiagentTask, save_task
-from app.factory.agent_loop.queue_runner import run_one_queued_task
+from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import MultiagentTask, save_task
+from factory.adapters.app_bridge.agent_loop.queue_runner import run_one_queued_task
 
 
 def test_run_one_pending_task(tmp_path):

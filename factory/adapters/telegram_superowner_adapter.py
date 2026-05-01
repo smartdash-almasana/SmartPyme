@@ -645,3 +645,7 @@ def _parse_changed_paths_report(content: str) -> list[str]:
         if in_changed_paths and stripped:
             changed_paths.append(stripped)
     return changed_paths
+
+
+# Legacy shim for internal factory tests compatibility
+FactorySuperownerTelegramAdapter = TelegramSuperownerAdapter

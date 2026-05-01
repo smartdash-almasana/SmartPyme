@@ -1,4 +1,4 @@
-from app.factory.agent_loop.multiagent_task_loop import (
+from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import (
     MultiagentTask,
     load_task,
     run_persisted_multiagent_task_cycle,

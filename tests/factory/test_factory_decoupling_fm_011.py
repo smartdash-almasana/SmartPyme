@@ -75,7 +75,7 @@ def test_decoupled_telegram_superowner_adapter_controls_factory(tmp_path):
 
 
 def test_app_superowner_adapter_shim_preserves_compatibility(tmp_path):
-    from app.adapters.factory_superowner_telegram_adapter import (
+    from factory.adapters.telegram_superowner_adapter import (
         FactorySuperownerTelegramAdapter,
     )
 

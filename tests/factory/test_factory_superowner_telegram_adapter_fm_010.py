@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.adapters.factory_superowner_telegram_adapter import FactorySuperownerTelegramAdapter
+from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter as FactorySuperownerTelegramAdapter
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 
 

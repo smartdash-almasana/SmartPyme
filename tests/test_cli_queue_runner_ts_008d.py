@@ -1,6 +1,7 @@
 import subprocess
-
-from app.factory.agent_loop.multiagent_task_loop import MultiagentTask, save_task
+import sys
+from pathlib import Path
+from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import MultiagentTask, save_task
 
 
 def test_cli_runner_executes_one_task(tmp_path):
@@ -12,9 +13,9 @@ def test_cli_runner_executes_one_task(tmp_path):
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
-            "app.factory.agent_loop.run_queue_once",
+            "factory.adapters.app_bridge.agent_loop.run_queue_once",
             "--tasks-dir",
             str(tasks_dir),
             "--evidence-dir",
@@ -31,9 +32,9 @@ def test_cli_runner_executes_one_task(tmp_path):
 def test_cli_runner_idle(tmp_path):
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
-            "app.factory.agent_loop.run_queue_once",
+            "factory.adapters.app_bridge.agent_loop.run_queue_once",
             "--tasks-dir",
             str(tmp_path),
             "--evidence-dir",

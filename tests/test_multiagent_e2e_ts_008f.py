@@ -10,7 +10,7 @@ def test_enqueue_then_run_once_e2e(tmp_path):
         [
             "python",
             "-m",
-            "app.factory.agent_loop.enqueue_task",
+            "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
             "e2e1",
             "--objective",
@@ -29,7 +29,7 @@ def test_enqueue_then_run_once_e2e(tmp_path):
         [
             "python",
             "-m",
-            "app.factory.agent_loop.run_queue_once",
+            "factory.adapters.app_bridge.agent_loop.run_queue_once",
             "--tasks-dir",
             str(tasks_dir),
             "--evidence-dir",

@@ -1,5 +1,5 @@
-from app.factory.agent_loop.models import AgentLoopContext, AgentLoopResult
-from app.factory.agent_loop.service import run_agent_loop
+from factory.adapters.app_bridge.agent_loop.models import AgentLoopContext, AgentLoopResult
+from factory.adapters.app_bridge.agent_loop.service import run_agent_loop
 from app.orchestrator.multiagent.models import DirectorPlan
 from app.orchestrator.skills.registry import SkillRegistry
 

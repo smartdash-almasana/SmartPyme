@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-from app.factory.agent_loop.multiagent_task_loop import MultiagentTask, save_task
+from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import MultiagentTask, save_task
 
 DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
 

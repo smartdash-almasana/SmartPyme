@@ -2,7 +2,7 @@ from pathlib import Path
 
 from app.adapters.telegram_adapter import TelegramAdapter
 from app.contracts.bem_evidence_contract import BemDocumentType, BemEvidenceStatus
-from app.factory.agent_loop.multiagent_task_loop import load_task
+from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import load_task
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.repositories.evidence_candidate_repository import EvidenceCandidateRepository
 from app.services.document_intake_service import DocumentIntakeService

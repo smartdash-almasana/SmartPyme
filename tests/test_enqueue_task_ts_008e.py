@@ -8,7 +8,7 @@ def test_enqueue_creates_task(tmp_path):
         [
             "python",
             "-m",
-            "app.factory.agent_loop.enqueue_task",
+            "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
             "e1",
             "--objective",
@@ -31,7 +31,7 @@ def test_enqueue_file_exists(tmp_path):
         [
             "python",
             "-m",
-            "app.factory.agent_loop.enqueue_task",
+            "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
             "e2",
             "--objective",

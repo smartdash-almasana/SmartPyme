@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.agent_loop.models import AgentLoopContext
-from app.factory.agent_loop.service import run_agent_loop
+from factory.adapters.app_bridge.agent_loop.models import AgentLoopContext
+from factory.adapters.app_bridge.agent_loop.service import run_agent_loop
 from app.orchestrator.router.models import RoutingDecision
 
 
@@ -89,7 +89,7 @@ def test_agent_loop_final_output_equals_last_successful_output():
 
 
 def test_agent_loop_max_steps_safeguard_works(monkeypatch):
-    import app.factory.agent_loop.service as loop_service
+    import factory.adapters.app_bridge.agent_loop.service as loop_service
 
     def always_route_echo(_):
         return RoutingDecision(
