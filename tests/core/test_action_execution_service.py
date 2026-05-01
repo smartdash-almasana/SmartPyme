@@ -242,7 +242,7 @@ def _repo_path() -> Path:
 
 
 def test_execute_with_adapter_and_repo_persists_executed_result():
-    repo = ActionExecutionRepository(_repo_path())
+    repo = ActionExecutionRepository(cliente_id="test-client", db_path=_repo_path())
     service = ActionExecutionService(
         adapter=_MockAdapter(status="executed"),
         execution_repository=repo,
@@ -256,7 +256,7 @@ def test_execute_with_adapter_and_repo_persists_executed_result():
 
 
 def test_execute_with_adapter_blocked_persists_result_before_raising():
-    repo = ActionExecutionRepository(_repo_path())
+    repo = ActionExecutionRepository(cliente_id="test-client", db_path=_repo_path())
     service = ActionExecutionService(
         adapter=_MockAdapter(status="blocked", message="Bloqueado."),
         execution_repository=repo,
@@ -270,7 +270,7 @@ def test_execute_with_adapter_blocked_persists_result_before_raising():
 
 
 def test_execute_with_adapter_failed_persists_result_before_raising():
-    repo = ActionExecutionRepository(_repo_path())
+    repo = ActionExecutionRepository(cliente_id="test-client", db_path=_repo_path())
     service = ActionExecutionService(
         adapter=_MockAdapter(status="failed", message="Error interno."),
         execution_repository=repo,
@@ -285,7 +285,7 @@ def test_execute_with_adapter_failed_persists_result_before_raising():
 
 def test_execute_guard_fires_before_repo_save():
     """NotApprovedError must be raised before any persistence occurs."""
-    repo = ActionExecutionRepository(_repo_path())
+    repo = ActionExecutionRepository(cliente_id="test-client", db_path=_repo_path())
     service = ActionExecutionService(
         adapter=_MockAdapter(status="executed"),
         execution_repository=repo,
@@ -298,7 +298,7 @@ def test_execute_guard_fires_before_repo_save():
 
 def test_execute_without_adapter_does_not_persist():
     """No adapter → no persistence, even if repo is configured."""
-    repo = ActionExecutionRepository(_repo_path())
+    repo = ActionExecutionRepository(cliente_id="test-client", db_path=_repo_path())
     service = ActionExecutionService(execution_repository=repo)
     service.execute(_proposal(action_id="act-no-adapter"))
 

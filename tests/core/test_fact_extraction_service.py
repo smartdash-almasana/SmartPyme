@@ -19,8 +19,9 @@ def test_extract_from_evidence_detects_amount_date_and_cuit():
     service = FactExtractionService(repo)
 
     result = service.extract_from_evidence(
-        "ev-1",
-        "Factura 20-12345678-3 emitida el 15/04/2026 por $1500.25.",
+        cliente_id="test-client",
+        evidence_id="ev-1",
+        text="Factura 20-12345678-3 emitida el 15/04/2026 por $1500.25.",
     )
     facts = repo.list_facts(evidence_id="ev-1")
 
@@ -36,7 +37,11 @@ def test_extract_from_evidence_without_known_data_returns_zero():
     repo = FactRepository(_db_path())
     service = FactExtractionService(repo)
 
-    result = service.extract_from_evidence("ev-empty", "Texto sin datos estructurados.")
+    result = service.extract_from_evidence(
+        cliente_id="test-client",
+        evidence_id="ev-empty",
+        text="Texto sin datos estructurados.",
+    )
 
     assert result == {
         "status": "EXTRACTED",
