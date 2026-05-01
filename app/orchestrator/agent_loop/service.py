@@ -1,4 +1,4 @@
-from factory.adapters.app_bridge.agent_loop.models import AgentLoopContext, AgentLoopResult
+from app.orchestrator.agent_loop.models import AgentLoopContext, AgentLoopResult
 from app.orchestrator.router.models import RouterContext
 from app.orchestrator.router.service import decide_next_skill
 from app.orchestrator.skills.registry import SkillRegistry
