@@ -17,6 +17,7 @@ def _db_path() -> Path:
 
 def _fact(fact_candidate_id: str, *, fact_type: str, value: str) -> ExtractedFactCandidate:
     return ExtractedFactCandidate(
+        cliente_id="test_cliente",
         fact_candidate_id=fact_candidate_id,
         evidence_id="ev-1",
         job_id=None,
