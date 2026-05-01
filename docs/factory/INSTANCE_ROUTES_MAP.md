@@ -3,51 +3,57 @@
 ## Rutas canónicas
 
 SmartPyme producto:
-
 `/opt/smartpyme-factory/repos/SmartPyme`
 
 Hermes externo:
-
 `/opt/smartpyme-factory/repos/hermes-agent`
 
 Runtime local Hermes:
-
 `/home/neoalmasana/.hermes`
 
 Docker workspace:
-
 `/workspace`
 
 ## Separación obligatoria
 
 `factory/**` es la factoría externa / Hermes dev system.
-
 `app/**` es el runtime producto SmartPyme.
+`app/factory/**` es nombre incorrecto legacy. Debe migrar a `app/orchestrator/**` (o `app/agents/` según corresponda).
 
-`app/factory/**` es nombre incorrecto legacy. Debe migrar a `app/orchestrator/**`.
+## Reglas críticas
 
-## Regla crítica
+1. `app/**` no debe importar `factory/**` (top-level).
+2. Ningún código nuevo debe escribirse bajo `app/factory/**`.
+3. `factory/**` queda reservado exclusivamente a Hermes/dev system.
 
-`app/**` no debe importar `factory/**`.
+## Inventario app/factory/
 
-## Estado detectado
+Subcarpetas detectadas y clasificación:
 
-Hay contaminación arquitectónica detectada en:
+- `app/factory/orchestrator/` -> **ORCHESTRATOR_RUNTIME**
+- `app/factory/router/` -> **ORCHESTRATOR_RUNTIME**
+- `app/factory/chain/` -> **ORCHESTRATOR_RUNTIME**
+- `app/factory/skills/` -> **ORCHESTRATOR_RUNTIME**
+- `app/factory/multiagent/` -> **ORCHESTRATOR_RUNTIME**
+- `app/factory/agents/` -> **PRODUCT_RUNTIME** (Destino futuro: `app/agents/`)
+- `app/factory/agent_loop/` -> **CONTAMINATED_BOUNDARY** (Requiere aislamiento)
 
-- `app/factory/agent_loop/multiagent_task_loop.py`
-- `app/adapters/factory_superowner_telegram_adapter.py`
+## Estado de contaminación
 
 Estado: `BOUNDARY_NOT_CLEAN`
 
-## Decisión
+Contaminación arquitectónica detectada (imports runtime desde `app/` a `factory/` top-level):
+- `app/factory/agent_loop/multiagent_task_loop.py`
+- `app/adapters/factory_superowner_telegram_adapter.py`
 
-No borrar `factory/**`.
+## Plan de migración controlada
 
-No seguir agregando lógica bajo `app/factory/**`.
+Se ejecutará en batches seguros:
 
-Preparar migración controlada:
-
-`app/factory/** -> app/orchestrator/**`
+- **Batch 1:** `app/factory/orchestrator/` -> `app/orchestrator/`
+- **Batch 2:** `app/factory/router/`, `chain/`, `skills/`, `multiagent/` -> `app/orchestrator/`
+- **Batch 3:** `app/factory/agents/` -> `app/agents/`
+- **Batch 4:** `app/factory/agent_loop/` (Aislar imports a `factory/` y migrar a `app/orchestrator/boundary/` o equivalente).
 
 ## Estado provider Hermes
 
@@ -60,35 +66,26 @@ Estado operativo validado desde la VM:
 - DeepSeek/OpenRouter: pendiente configurar API key.
 
 Provider recomendado actual:
-
 `gemini` vía Google AI Studio API key.
 
 Regla operativa:
-
 Antes de loops largos, probar siempre:
-
 `hermes "Responde solo con OK si estás disponible."`
-
 Evitar loops agresivos sin rate control.
 
 ## Comandos útiles
 
 Ir al repo producto:
-
 `cd /opt/smartpyme-factory/repos/SmartPyme`
 
 Ir al repo Hermes:
-
 `cd /opt/smartpyme-factory/repos/hermes-agent`
 
 Ver estado:
-
 `git status --short`
 
 Buscar contaminación:
-
 `grep -R --exclude-dir='__pycache__' "from factory\|import factory" app -n || true`
 
 Diagnóstico provider Hermes:
-
 `python3 scripts/hermes_provider_doctor.py`
