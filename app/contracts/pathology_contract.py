@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -8,13 +8,13 @@ from pydantic import BaseModel, Field
 from app.contracts.formula_contract import FormulaResult
 
 
-class PathologyStatus(str, Enum):
+class PathologyStatus(StrEnum):
     ACTIVE = "ACTIVE"
     NOT_DETECTED = "NOT_DETECTED"
     PENDING_DATA = "PENDING_DATA"
 
 
-class PathologySeverity(str, Enum):
+class PathologySeverity(StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
