@@ -3,8 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.router.models import RouterContext
-from app.factory.router.service import decide_next_skill
+from app.orchestrator.router.models import RouterContext
+from app.orchestrator.router.service import decide_next_skill
 
 
 def test_created_with_needs_echo_routes_to_echo_skill():
