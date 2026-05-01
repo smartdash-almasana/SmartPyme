@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class BemEvidenceStatus(str, Enum):
+class BemEvidenceStatus(StrEnum):
     CANDIDATE = "CANDIDATE"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
     PENDING_REVIEW = "PENDING_REVIEW"
 
 
-class BemDocumentType(str, Enum):
+class BemDocumentType(StrEnum):
     INVOICE = "invoice"
     RECEIPT = "receipt"
     MELI_SALES_REPORT = "meli_sales_report"
@@ -104,5 +104,8 @@ def triage_result_to_evidence_candidates(result: BemTriageResult) -> list[BemEvi
 
 def _build_source_ref(source_evidence_id: str, segment: BemSplitSegment) -> str:
     if segment.page_start is not None and segment.page_end is not None:
-        return f"{source_evidence_id}:pages:{segment.page_start}-{segment.page_end}:segment:{segment.segment_id}"
+        return (
+            f"{source_evidence_id}:pages:{segment.page_start}-{segment.page_end}:"
+            f"segment:{segment.segment_id}"
+        )
     return f"{source_evidence_id}:segment:{segment.segment_id}"
