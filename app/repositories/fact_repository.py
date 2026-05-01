@@ -24,11 +24,18 @@ def _connect() -> sqlite3.Connection:
     return sqlite3.connect(db_path)
 
 
+def _ensure_cliente_id_column(conn: sqlite3.Connection) -> None:
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(extracted_facts)").fetchall()}
+    if "cliente_id" not in columns:
+        conn.execute("ALTER TABLE extracted_facts ADD COLUMN cliente_id TEXT NOT NULL DEFAULT '__migration_pending__'")
+
+
 def init_facts_db() -> None:
     with _connect() as conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS extracted_facts (
+                cliente_id TEXT NOT NULL,
                 fact_candidate_id TEXT PRIMARY KEY,
                 evidence_id TEXT NOT NULL,
                 job_id TEXT,
@@ -41,6 +48,13 @@ def init_facts_db() -> None:
                 validation_status TEXT NOT NULL,
                 errors_json TEXT NOT NULL
             )
+            """
+        )
+        _ensure_cliente_id_column(conn)
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_extracted_facts_cliente_id
+            ON extracted_facts(cliente_id)
             """
         )
         conn.execute(
@@ -83,6 +97,7 @@ class FactRepository:
             conn.execute(
                 """
                 INSERT INTO extracted_facts (
+                    cliente_id,
                     fact_candidate_id,
                     evidence_id,
                     job_id,
@@ -95,8 +110,9 @@ class FactRepository:
                     validation_status,
                     errors_json
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(fact_candidate_id) DO UPDATE SET
+                    cliente_id = excluded.cliente_id,
                     evidence_id = excluded.evidence_id,
                     job_id = excluded.job_id,
                     plan_id = excluded.plan_id,
@@ -109,6 +125,7 @@ class FactRepository:
                     errors_json = excluded.errors_json
                 """,
                 (
+                    fact.cliente_id,
                     fact.fact_candidate_id,
                     fact.evidence_id,
                     fact.job_id,
@@ -135,6 +152,7 @@ class FactRepository:
     ) -> list[ExtractedFactCandidate]:
         query = """
             SELECT
+                cliente_id,
                 fact_candidate_id,
                 evidence_id,
                 job_id,
@@ -164,6 +182,7 @@ class FactRepository:
 
 def _row_to_fact(row: sqlite3.Row) -> ExtractedFactCandidate:
     return ExtractedFactCandidate(
+        cliente_id=row["cliente_id"],
         fact_candidate_id=row["fact_candidate_id"],
         evidence_id=row["evidence_id"],
         job_id=row["job_id"],
