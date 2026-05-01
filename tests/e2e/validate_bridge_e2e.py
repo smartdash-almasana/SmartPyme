@@ -10,7 +10,6 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-
 smartpyme_root = Path(__file__).resolve().parents[2]
 hermes_agent_root = smartpyme_root.parent / "hermes-agent"
 sys.path.insert(0, str(hermes_agent_root))
@@ -27,7 +26,6 @@ from mcp_smartpyme_bridge import (  # noqa: E402
     resolve_clarification,
     save_clarification,
 )
-
 
 TOOL_FUNCTIONS = {
     "create_job": create_job,
@@ -47,11 +45,13 @@ def _parse_hermes_response(raw_response: dict[str, Any], tool_name: str) -> Any:
 
     try:
         return json.loads(result_value)
-    except (json.JSONDecodeError, TypeError):
+    except (json.JSONDecodeError, TypeError) as exc:
         structured = raw_response.get("structuredContent")
         if structured:
             return structured["result"]
-        raise ValueError(f"Could not parse JSON response for {tool_name}: {result_value}")
+        raise ValueError(
+            f"Could not parse JSON response for {tool_name}: {result_value}"
+        ) from exc
 
 
 def _get_hermes_handler():
@@ -139,7 +139,9 @@ def run_validation() -> dict[str, dict[str, Any]]:
         )
         assert create_result["source"] == "real", "Create job source validation failed"
         assert create_result["current_state"] == "CREATED", "Create job state validation failed"
-        assert create_result["skill_id"] == "skill_create_job_from_plan", "Create job skill validation failed"
+        assert (
+            create_result["skill_id"] == "skill_create_job_from_plan"
+        ), "Create job skill validation failed"
         assert create_result["job_id"], "Create job did not return job_id"
         assert create_result["plan_id"], "Create job did not return plan_id"
         test_results["create_job"] = {"status": "OK", "payload": create_result}
@@ -147,7 +149,9 @@ def run_validation() -> dict[str, dict[str, Any]]:
         job_status = call_tool("get_job_status", job_id=create_result["job_id"])
         assert job_status["source"] == "real", "Job status source validation failed"
         assert job_status["current_state"] == "CREATED", "Job status state validation failed"
-        assert job_status["plan_id"] == create_result["plan_id"], "Job status plan_id validation failed"
+        assert (
+            job_status["plan_id"] == create_result["plan_id"]
+        ), "Job status plan_id validation failed"
         assert job_status["payload"]["operational_plan"], "Job status payload validation failed"
         test_results["get_job_status"] = {"status": "OK", "payload": job_status}
 
@@ -161,7 +165,9 @@ def run_validation() -> dict[str, dict[str, Any]]:
         test_results["save_clarification"] = {"status": "OK", "payload": clarif_creation}
 
         pending_list = call_tool("list_pending_validations", owner_id="e2e-owner")
-        assert any(c["id"] == clarification_id for c in pending_list), "List pending validation failed"
+        assert any(
+            c["id"] == clarification_id for c in pending_list
+        ), "List pending validation failed"
         test_results["list_pending_validations"] = {"status": "OK", "payload": pending_list}
 
         resolution = call_tool(

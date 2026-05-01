@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from app.adapters.telegram_adapter import TelegramAdapter
-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.factory.agent_loop.multiagent_task_loop import load_task
+from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.services.identity_service import IdentityService
 
 
@@ -15,7 +15,9 @@ def _update(user_id: int, text: str) -> dict:
     }
 
 
-def _linked_identity(tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A") -> IdentityService:
+def _linked_identity(
+    tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A"
+) -> IdentityService:
     identity = IdentityService(tmp_path / "identity.db")
     identity.create_onboarding_token("token-a", cliente_id)
     result = identity.link_telegram_user(user_id, "token-a")

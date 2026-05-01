@@ -30,7 +30,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 REPO_DEFAULT = Path("/opt/smartpyme-factory/repos/SmartPyme")
 HERMES_HOME_DEFAULT = Path("/home/neoalmasana/.hermes")
 HERMES_CLI_DEFAULT = HERMES_HOME_DEFAULT / "venv/bin/hermes"
@@ -206,7 +205,11 @@ def seleccionar_task_pending(repo: Path) -> str:
 
 
 def escribir_evidencia_bloqueo(repo: Path, task_path: str, motivo: str, pull_out: str) -> str:
-    task_id = Path(task_path).stem if task_path and not task_path.startswith("ninguna") else "sin_task"
+    task_id = (
+        Path(task_path).stem
+        if task_path and not task_path.startswith("ninguna")
+        else "sin_task"
+    )
     evidence_dir = repo / "factory/evidence" / task_id
     evidence_dir.mkdir(parents=True, exist_ok=True)
     (evidence_dir / "control_preflight.txt").write_text(
@@ -233,7 +236,12 @@ def comando_estado() -> Resultado:
     return Resultado(
         comando_recibido="/estado",
         decision="BLOCKED" if errores else "OK",
-        estado_repo=f"ruta={repo}; status={git_status(repo) if repo.exists() else 'no disponible'}; log={git_log(repo) if repo.exists() else 'no disponible'}; gateway={gateway_status()}",
+        estado_repo=(
+            f"ruta={repo}; "
+            f"status={git_status(repo) if repo.exists() else 'no disponible'}; "
+            f"log={git_log(repo) if repo.exists() else 'no disponible'}; "
+            f"gateway={gateway_status()}"
+        ),
         estado_gate=leer_gate(repo) if repo.exists() else "no disponible",
         tarea_seleccionada="ninguna",
         evidencia_generada="ninguna",
@@ -245,7 +253,16 @@ def comando_estado() -> Resultado:
 def comando_actualizar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
-        return Resultado("/actualizar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar MAPA_RUTAS_REPOS_GCP.md")
+        return Resultado(
+            "/actualizar",
+            "BLOCKED",
+            f"repo no existe: {repo}",
+            "no disponible",
+            "ninguna",
+            "ninguna",
+            "repo inexistente",
+            "verificar MAPA_RUTAS_REPOS_GCP.md",
+        )
     ok, out = git_pull(repo)
     return Resultado(
         comando_recibido="/actualizar",
@@ -262,42 +279,132 @@ def comando_actualizar() -> Resultado:
 def comando_pausar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
-        return Resultado("/pausar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar ruta absoluta")
+        return Resultado(
+            "/pausar",
+            "BLOCKED",
+            f"repo no existe: {repo}",
+            "no disponible",
+            "ninguna",
+            "ninguna",
+            "repo inexistente",
+            "verificar ruta absoluta",
+        )
     path = escribir_estado(repo, "PAUSED", "pausa solicitada por owner desde Telegram/Hermes")
-    return Resultado("/pausar", "OK", git_status(repo), leer_gate(repo), "ninguna", str(path), "ninguno", "usar /reanudar para abrir la factoria")
+    return Resultado(
+        "/pausar",
+        "OK",
+        git_status(repo),
+        leer_gate(repo),
+        "ninguna",
+        str(path),
+        "ninguno",
+        "usar /reanudar para abrir la factoria",
+    )
 
 
 def comando_reanudar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
-        return Resultado("/reanudar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar ruta absoluta")
+        return Resultado(
+            "/reanudar",
+            "BLOCKED",
+            f"repo no existe: {repo}",
+            "no disponible",
+            "ninguna",
+            "ninguna",
+            "repo inexistente",
+            "verificar ruta absoluta",
+        )
     bloqueante = estado_bloqueante_actual(repo)
     if bloqueante in {"WAITING_AUDIT", "BLOCKED", "HOLD"}:
-        return Resultado("/reanudar", "BLOCKED", git_status(repo), leer_gate(repo), "ninguna", "ninguna", f"gate bloqueante: {bloqueante}", "auditar o desbloquear manualmente")
+        return Resultado(
+            "/reanudar",
+            "BLOCKED",
+            git_status(repo),
+            leer_gate(repo),
+            "ninguna",
+            "ninguna",
+            f"gate bloqueante: {bloqueante}",
+            "auditar o desbloquear manualmente",
+        )
     path = escribir_estado(repo, "OPEN", "reanudar solicitada por owner desde Telegram/Hermes")
-    return Resultado("/reanudar", "OK", git_status(repo), leer_gate(repo), "ninguna", str(path), "ninguno", "usar /avanzar para ejecutar un ciclo")
+    return Resultado(
+        "/reanudar",
+        "OK",
+        git_status(repo),
+        leer_gate(repo),
+        "ninguna",
+        str(path),
+        "ninguno",
+        "usar /avanzar para ejecutar un ciclo",
+    )
 
 
 def comando_avanzar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
-        return Resultado("/avanzar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar MAPA_RUTAS_REPOS_GCP.md")
+        return Resultado(
+            "/avanzar",
+            "BLOCKED",
+            f"repo no existe: {repo}",
+            "no disponible",
+            "ninguna",
+            "ninguna",
+            "repo inexistente",
+            "verificar MAPA_RUTAS_REPOS_GCP.md",
+        )
 
     ok, pull_out = git_pull(repo)
     if not ok:
-        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), "ninguna", "ninguna", "fallo git pull --ff-only origin main", "resolver conflicto de git")
+        return Resultado(
+            "/avanzar",
+            "BLOCKED",
+            pull_out,
+            leer_gate(repo),
+            "ninguna",
+            "ninguna",
+            "fallo git pull --ff-only origin main",
+            "resolver conflicto de git",
+        )
 
     legacy = procesos_legacy()
     if legacy != "ninguno":
-        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), "ninguna", "ninguna", f"procesos legacy activos: {legacy}", "detener contaminacion legacy")
+        return Resultado(
+            "/avanzar",
+            "BLOCKED",
+            pull_out,
+            leer_gate(repo),
+            "ninguna",
+            "ninguna",
+            f"procesos legacy activos: {legacy}",
+            "detener contaminacion legacy",
+        )
 
     bloqueante = estado_bloqueante_actual(repo)
     if bloqueante:
-        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), "ninguna", "ninguna", f"gate bloqueante: {bloqueante}", "usar /auditar, /reanudar o resolver bloqueo")
+        return Resultado(
+            "/avanzar",
+            "BLOCKED",
+            pull_out,
+            leer_gate(repo),
+            "ninguna",
+            "ninguna",
+            f"gate bloqueante: {bloqueante}",
+            "usar /auditar, /reanudar o resolver bloqueo",
+        )
 
     task = seleccionar_task_pending(repo)
     if task == "ninguna" or task.startswith("ninguna:"):
-        return Resultado("/avanzar", "BLOCKED", pull_out, leer_gate(repo), task, "ninguna", "no hay TaskSpec pending", "crear una TaskSpec pending")
+        return Resultado(
+            "/avanzar",
+            "BLOCKED",
+            pull_out,
+            leer_gate(repo),
+            task,
+            "ninguna",
+            "no hay TaskSpec pending",
+            "crear una TaskSpec pending",
+        )
 
     # P0-5 / TASK-AVANZAR-DISPATCH-001:
     # Este bloqueo es intencional y fail-closed. No debe reemplazarse por dispatch real
@@ -326,11 +433,27 @@ def comando_avanzar() -> Resultado:
 def comando_auditar() -> Resultado:
     repo = repo_path()
     if not repo.exists():
-        return Resultado("/auditar", "BLOCKED", f"repo no existe: {repo}", "no disponible", "ninguna", "ninguna", "repo inexistente", "verificar ruta absoluta")
+        return Resultado(
+            "/auditar",
+            "BLOCKED",
+            f"repo no existe: {repo}",
+            "no disponible",
+            "ninguna",
+            "ninguna",
+            "repo inexistente",
+            "verificar ruta absoluta",
+        )
     evidence = repo / "factory/evidence"
     recientes = []
     if evidence.exists():
-        recientes = [str(p) for p in sorted(evidence.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)[:5]]
+        recientes = [
+            str(p)
+            for p in sorted(
+                evidence.iterdir(),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )[:5]
+        ]
     decision = "NEEDS_REVIEW" if not recientes else "BLOCKED"
     return Resultado(
         "/auditar",
@@ -346,7 +469,10 @@ def comando_auditar() -> Resultado:
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Control seguro de SmartPyme Factory para Hermes")
-    parser.add_argument("comando", choices=["estado", "actualizar", "pausar", "reanudar", "avanzar", "auditar"])
+    parser.add_argument(
+        "comando",
+        choices=["estado", "actualizar", "pausar", "reanudar", "avanzar", "auditar"],
+    )
     parser.add_argument("--json", action="store_true", help="Emitir JSON en vez de texto")
     args = parser.parse_args(list(argv) if argv is not None else None)
 

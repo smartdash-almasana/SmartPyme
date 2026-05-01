@@ -8,6 +8,7 @@ from pathlib import Path
 from factory.atoms_catalog import resolver_atomo_por_id
 from factory.atoms_planner import planificar_secuencia_atomica
 
+
 @dataclass(frozen=True)
 class DirectorInput:
     objetivo: str
@@ -80,7 +81,10 @@ class Director:
         if atomo:
             subagente_writer = atomo.writer_objetivo
             subagente_validator = atomo.validator_objetivo
-            razon_writer = f"Seleccionado por {plan.origen_planificacion} sobre catalogo ({atomo.atomo_id})."
+            razon_writer = (
+                f"Seleccionado por {plan.origen_planificacion} "
+                f"sobre catalogo ({atomo.atomo_id})."
+            )
             razon_validator = f"Validador asignado por {plan.origen_planificacion} ({atomo.area})."
             atomo_id = atomo.atomo_id
             area = atomo.area
@@ -177,7 +181,11 @@ class Validator:
             for archivo in archivos
         )
         veredicto = "exitoso" if contrato_valido else "reprobado"
-        logs = "Chequeo de contratos/tipado local exitoso." if contrato_valido else "Chequeo contractual fallido."
+        logs = (
+            "Chequeo de contratos/tipado local exitoso."
+            if contrato_valido
+            else "Chequeo contractual fallido."
+        )
         return ValidatorOutput(
             veredicto=veredicto,
             logs=logs,
@@ -240,7 +248,11 @@ class FactoryRunner:
         self.director = Director()
         self.writer = CodeWriter()
         self.validator = Validator()
-        self.bitacora_path = Path(bitacora_path) if bitacora_path else Path(__file__).with_name("factory_execution_log.jsonl")
+        self.bitacora_path = (
+            Path(bitacora_path)
+            if bitacora_path
+            else Path(__file__).with_name("factory_execution_log.jsonl")
+        )
 
     def _registrar_bitacora(
         self,

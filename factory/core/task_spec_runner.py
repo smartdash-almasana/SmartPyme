@@ -9,7 +9,6 @@ from factory.core.git_diff_detector import get_changed_paths
 from factory.core.task_spec import TaskSpec, TaskSpecStatus, validate_changed_paths
 from factory.core.task_spec_store import TaskSpecStore
 
-
 ChangedPathsProvider = Callable[[TaskSpec], list[str]]
 CommandRunner = Callable[[str], "CommandResult"]
 
@@ -53,16 +52,22 @@ class TaskSpecRunner:
     def run_next(self) -> TaskSpecRunResult:
         task = self.store.next_pending()
         if task is None:
-            return TaskSpecRunResult(status=TaskSpecStatus.PENDING, task_id=None, blocking_reason="NO_PENDING_TASK")
+            return TaskSpecRunResult(
+                status=TaskSpecStatus.PENDING, task_id=None, blocking_reason="NO_PENDING_TASK"
+            )
         return self.run_task(task.task_id)
 
     def run_task(self, task_id: str) -> TaskSpecRunResult:
         try:
             task = self.store.mark_in_progress(task_id)
         except FileNotFoundError:
-            return TaskSpecRunResult(status=TaskSpecStatus.BLOCKED, task_id=task_id, blocking_reason="TASK_NOT_FOUND")
+            return TaskSpecRunResult(
+                status=TaskSpecStatus.BLOCKED, task_id=task_id, blocking_reason="TASK_NOT_FOUND"
+            )
         except ValueError as exc:
-            return TaskSpecRunResult(status=TaskSpecStatus.BLOCKED, task_id=task_id, blocking_reason=str(exc))
+            return TaskSpecRunResult(
+                status=TaskSpecStatus.BLOCKED, task_id=task_id, blocking_reason=str(exc)
+            )
 
         evidence_dir = self.evidence_dir / task.task_id
         evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -76,7 +81,9 @@ class TaskSpecRunner:
             else get_changed_paths()
         )
         path_validation = validate_changed_paths(task, changed_paths)
-        path_report_path = self._write_path_report(task, evidence_dir, changed_paths, path_validation.errors)
+        path_report_path = self._write_path_report(
+            task, evidence_dir, changed_paths, path_validation.errors
+        )
 
         evidence_paths = [command_report_path, path_report_path]
 

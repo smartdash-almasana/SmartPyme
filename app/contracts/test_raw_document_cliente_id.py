@@ -1,6 +1,6 @@
 import pytest
 
-from app.contracts.evidence_contract import RawDocument, DocumentRecord
+from app.contracts.evidence_contract import DocumentRecord, RawDocument
 
 
 def test_raw_document_requires_cliente_id():

@@ -1,4 +1,5 @@
 import pytest
+
 from app.modules.findings_engine import procesar_extraccion_bruta
 
 

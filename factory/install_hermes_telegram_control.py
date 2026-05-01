@@ -19,7 +19,7 @@ from typing import Any
 try:
     import yaml
 except Exception as exc:  # pragma: no cover - error operativo claro
-    raise SystemExit(f"ERROR: PyYAML no disponible: {exc}")
+    raise SystemExit(f"ERROR: PyYAML no disponible: {exc}") from exc
 
 
 REPO = Path(

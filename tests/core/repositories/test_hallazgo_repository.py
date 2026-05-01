@@ -1,6 +1,6 @@
-import pytest
 from app.core.hallazgos.models import Hallazgo
 from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
+
 
 def test_memory_repository_filtering():
     repo = MemoryHallazgoRepository()

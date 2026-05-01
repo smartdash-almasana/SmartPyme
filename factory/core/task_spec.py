@@ -73,7 +73,9 @@ class TaskSpec:
             acceptance_criteria=list(self.acceptance_criteria),
             validation_commands=list(self.validation_commands),
             status=next_status,
-            evidence_paths=list(evidence_paths if evidence_paths is not None else self.evidence_paths),
+            evidence_paths=list(
+                evidence_paths if evidence_paths is not None else self.evidence_paths
+            ),
             blocking_reason=blocking_reason,
             metadata=dict(metadata if metadata is not None else self.metadata),
         )
@@ -139,7 +141,9 @@ def _require_non_empty_list(value: list[str], field_name: str) -> None:
 
 
 def _require_string_list(value: list[str], field_name: str) -> None:
-    if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item.strip() for item in value
+    ):
         raise ValueError(f"{field_name} must be a list of non-empty strings")
 
 
@@ -149,4 +153,7 @@ def _normalize_path(value: str) -> str:
 
 def _matches_any(path: str, patterns: list[str]) -> bool:
     normalized_patterns = [_normalize_path(pattern) for pattern in patterns]
-    return any(path == pattern or path.startswith(f"{pattern.rstrip('/')}/") for pattern in normalized_patterns)
+    return any(
+        path == pattern or path.startswith(f"{pattern.rstrip('/')}/")
+        for pattern in normalized_patterns
+    )

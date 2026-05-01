@@ -18,7 +18,9 @@ def _task(**overrides):
         "allowed_paths": ["factory/core", "tests/factory"],
         "forbidden_paths": ["app", "data"],
         "acceptance_criteria": ["TaskSpec valida campos obligatorios"],
-        "validation_commands": ["PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py"],
+        "validation_commands": [
+            "PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py"
+        ],
         "metadata": {"owner": "superowner"},
     }
     data.update(overrides)

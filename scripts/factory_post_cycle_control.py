@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -92,7 +91,13 @@ def main() -> int:
     anti_status = "PASS" if not missing and result == "CORRECTO" else "WARNING"
 
     (evidence / "qa_report.md").write_text(
-        f"# QA REPORT\n\ncreated_at: {now}\ndecision: {result}\n\n## git status\n```text\n{status or '<clean>'}\n```\n",
+        (
+            "# QA REPORT\n\n"
+            f"created_at: {now}\n"
+            f"decision: {result}\n\n"
+            "## git status\n"
+            f"```text\n{status or '<clean>'}\n```\n"
+        ),
         encoding="utf-8",
     )
     (evidence / "anti_deriva_check.md").write_text(

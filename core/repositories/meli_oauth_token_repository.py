@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, Session, declarative_base, mapped_column, sessionmaker
 
 from core.models.meli_oauth_token import MeliOAuthToken
-
 
 Base = declarative_base()
 
@@ -96,5 +95,5 @@ class MeliOAuthTokenRepository:
 
     def _normalize_utc_datetime(self, value: datetime) -> datetime:
         if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal, TypeAlias
 
 ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
@@ -58,7 +58,7 @@ ReconciliationJobScope: TypeAlias = Literal["orders"]
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 @dataclass(frozen=True, slots=True)

@@ -7,7 +7,6 @@ from factory.core.task_loop import (
     save_task,
 )
 
-
 BUSINESS_TASK_TYPES: set[str] = set()
 
 

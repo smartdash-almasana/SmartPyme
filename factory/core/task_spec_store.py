@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from factory.core.task_spec import TaskSpec, TaskSpecStatus, read_task_spec, write_task_spec
-
 
 STATE_DIRS = {
     TaskSpecStatus.PENDING: "pending",

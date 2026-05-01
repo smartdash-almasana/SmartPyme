@@ -25,7 +25,12 @@ def _report(task_id: str, status=TaskSpecStatus.DONE):
                 status=status,
                 task_id=task_id,
                 evidence_paths=[f"evidence/{task_id}.txt"],
-                command_results=[CommandResult("pytest fake", 0 if status == TaskSpecStatus.DONE else 1)],
+                command_results=[
+                    CommandResult(
+                        "pytest fake",
+                        0 if status == TaskSpecStatus.DONE else 1,
+                    )
+                ],
                 blocking_reason=None if status == TaskSpecStatus.DONE else "VALIDATION_FAILED",
             )
         ],

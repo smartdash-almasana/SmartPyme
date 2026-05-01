@@ -43,11 +43,17 @@ def _build_suggested_action(difference: DifferenceRecord) -> str:
 
 
 def _build_detail(difference: DifferenceRecord) -> str:
+    entity_segment = f"Entidad {difference.entity_type} ({difference.entity_id})"
+    field_segment = f"campo '{difference.field_name}'"
+    source_segment = (
+        f"comparado entre source_a='{difference.source_a}' "
+        f"y source_b='{difference.source_b}'"
+    )
+    value_segment = f"con value_a={difference.value_a!r}, value_b={difference.value_b!r}"
+    difference_segment = f"y difference_type='{difference.difference_type}'."
     return (
-        f"Entidad {difference.entity_type} ({difference.entity_id}): campo '{difference.field_name}' "
-        f"comparado entre source_a='{difference.source_a}' y source_b='{difference.source_b}', "
-        f"con value_a={difference.value_a!r}, value_b={difference.value_b!r} "
-        f"y difference_type='{difference.difference_type}'."
+        f"{entity_segment}: {field_segment} {source_segment}, "
+        f"{value_segment} {difference_segment}"
     )
 
 

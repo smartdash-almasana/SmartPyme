@@ -1,9 +1,8 @@
-from pathlib import Path
 
-from app.mcp.tools.owner_status_tool import get_owner_status
-from app.repositories.job_repository import JobRepository
-from app.repositories.finding_repository import FindingRepository
 from app.contracts.job_contract import Job
+from app.mcp.tools.owner_status_tool import get_owner_status
+from app.repositories.finding_repository import FindingRepository
+from app.repositories.job_repository import JobRepository
 from app.services.findings_service import Finding
 
 

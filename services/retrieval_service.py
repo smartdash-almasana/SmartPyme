@@ -18,7 +18,9 @@ class RetrievalService:
     def __init__(self, *, chunks: list[DocumentChunk] | None = None) -> None:
         """Initialize retrieval state with optional preloaded chunks."""
         self._chunks = chunks or []
-        self._chunk_by_id: dict[str, DocumentChunk] = {chunk.chunk_id: chunk for chunk in self._chunks}
+        self._chunk_by_id: dict[str, DocumentChunk] = {
+            chunk.chunk_id: chunk for chunk in self._chunks
+        }
         self._langchain_docs: list[object] = []
         self._refresh_langchain_docs()
 

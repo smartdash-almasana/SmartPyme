@@ -1,8 +1,11 @@
-from typing import List, Dict, Any
-from app.modules.findings_engine import procesar_extraccion_bruta
+from typing import Any
+
 from pydantic import ValidationError
 
-def ejecutar_pipeline_extraccion(datos_entrada: List[Dict[str, Any]]) -> Dict[str, Any]:
+from app.modules.findings_engine import procesar_extraccion_bruta
+
+
+def ejecutar_pipeline_extraccion(datos_entrada: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Punto de entrada mínimo al pipeline orquestador en SmartPyme.
     Recibe la extracción simulada en bruto, direcciona los hallazgos al engine puro
@@ -21,7 +24,10 @@ def ejecutar_pipeline_extraccion(datos_entrada: List[Dict[str, Any]]) -> Dict[st
     
     if not isinstance(datos_entrada, list):
         estado_pipeline["status"] = "error"
-        estado_pipeline["errores"].append("El payload de entrada debe ser obligatoriamente una lista de diccionarios.")
+        estado_pipeline["errores"].append(
+            "El payload de entrada debe ser obligatoriamente "
+            "una lista de diccionarios."
+        )
         return estado_pipeline
 
     try:

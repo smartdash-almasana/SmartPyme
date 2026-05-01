@@ -7,7 +7,7 @@ Este archivo es el contexto de proyecto prioritario para Hermes. Según la docum
 La ruta operativa autorizada en VM es:
 
 ```text
-/home/neoalmasana/smartpyme-factory/repos/SmartPyme
+/opt/smartpyme-factory/repos/SmartPyme
 ```
 
 Antes de cualquier análisis o escritura, Hermes debe confirmar:

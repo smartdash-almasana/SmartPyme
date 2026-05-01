@@ -36,7 +36,8 @@ def main() -> int:
     token = token_from_env or existing_token
     if not token:
         raise SystemExit(
-            "ERROR_MISSING_TELEGRAM_TOKEN: set HERMES_TELEGRAM_TOKEN or configure platforms.telegram.token"
+            "ERROR_MISSING_TELEGRAM_TOKEN: set HERMES_TELEGRAM_TOKEN "
+            "or configure platforms.telegram.token"
         )
 
     extra = telegram.setdefault("extra", {})

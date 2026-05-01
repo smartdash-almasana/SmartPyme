@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.pathologies import router, get_pathology_db_paths, PathologyDbPaths
+from app.api.v1.endpoints.pathologies import PathologyDbPaths, get_pathology_db_paths, router
 from app.contracts.formula_contract import FormulaInput
 from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
 

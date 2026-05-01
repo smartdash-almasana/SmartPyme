@@ -35,7 +35,10 @@ class PathologyEngineService:
                 status=PathologyStatus.PENDING_DATA,
                 source_refs=result.source_refs,
                 explanation="No se puede evaluar la patología porque la fórmula está bloqueada.",
-                metadata={"blocking_reason": result.blocking_reason, "catalog": catalog_metadata},
+                metadata={
+                    "blocking_reason": result.blocking_reason,
+                    "catalog": catalog_metadata,
+                },
             )
 
         if result.formula_id != definition.formula_id:
@@ -47,7 +50,10 @@ class PathologyEngineService:
                 status=PathologyStatus.PENDING_DATA,
                 source_refs=result.source_refs,
                 explanation="La fórmula calculada no coincide con la patología solicitada.",
-                metadata={"expected_formula_id": definition.formula_id, "catalog": catalog_metadata},
+                metadata={
+                    "expected_formula_id": definition.formula_id,
+                    "catalog": catalog_metadata,
+                },
             )
 
         evaluator = get_pathology_evaluator(pathology_id)
@@ -60,7 +66,10 @@ class PathologyEngineService:
                 status=PathologyStatus.PENDING_DATA,
                 source_refs=result.source_refs,
                 explanation="Patología sin evaluador implementado.",
-                metadata={"blocking_reason": "PATHOLOGY_NOT_IMPLEMENTED", "catalog": catalog_metadata},
+                metadata={
+                    "blocking_reason": "PATHOLOGY_NOT_IMPLEMENTED",
+                    "catalog": catalog_metadata,
+                },
             )
 
         return evaluator(payload)

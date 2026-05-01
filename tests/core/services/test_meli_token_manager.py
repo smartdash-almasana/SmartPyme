@@ -1,7 +1,7 @@
 import asyncio
 import sys
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
@@ -29,7 +29,11 @@ class _FakeRepository:
 
 
 class _FakeOAuthClient:
-    def __init__(self, response: MeliTokenResponse | None = None, error: Exception | None = None) -> None:
+    def __init__(
+        self,
+        response: MeliTokenResponse | None = None,
+        error: Exception | None = None,
+    ) -> None:
         self._response = response
         self._error = error
         self.calls = 0
@@ -53,7 +57,7 @@ def _token_response(access: str, refresh: str, expires_in_seconds: int) -> MeliT
         expires_in=expires_in_seconds,
         scope="offline_access",
         user_id=99,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=expires_in_seconds),
+        expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
     )
 
 
@@ -80,7 +84,7 @@ def test_get_valid_token_refreshes_when_expiring_in_less_than_two_minutes() -> N
         token_type="bearer",
         scope="offline_access",
         user_id=5,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=60),
+        expires_at=datetime.now(UTC) + timedelta(seconds=60),
     )
     asyncio.run(repo.upsert(expiring))
 
@@ -108,7 +112,7 @@ def test_get_valid_token_marks_invalid_on_invalid_grant() -> None:
         token_type="bearer",
         scope="offline_access",
         user_id=5,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=30),
+        expires_at=datetime.now(UTC) + timedelta(seconds=30),
     )
     asyncio.run(repo.upsert(expiring))
 
@@ -143,11 +147,17 @@ def test_single_flight_refresh_avoids_duplicate_concurrent_calls() -> None:
         token_type="bearer",
         scope="offline_access",
         user_id=5,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=10),
+        expires_at=datetime.now(UTC) + timedelta(seconds=10),
     )
     asyncio.run(repo.upsert(expiring))
 
-    oauth = _FakeOAuthClient(response=_token_response("singleflight-access", "singleflight-refresh", 3600))
+    oauth = _FakeOAuthClient(
+        response=_token_response(
+            "singleflight-access",
+            "singleflight-refresh",
+            3600,
+        )
+    )
     manager = MeliTokenManager(oauth_client=oauth, repository=repo)
 
     async def _run_two_calls() -> tuple[str, str]:

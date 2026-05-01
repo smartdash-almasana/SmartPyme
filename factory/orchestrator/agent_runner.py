@@ -24,7 +24,10 @@ class MockAgentRunner:
     def run_builder(self, hallazgo_text: str) -> AgentResult:
         return AgentResult(
             status="submitted",
-            content="VEREDICTO_BUILDER: submitted\nEVIDENCE: mock builder executed deterministically.\n",
+            content=(
+                "VEREDICTO_BUILDER: submitted\n"
+                "EVIDENCE: mock builder executed deterministically.\n"
+            ),
             data={"status": "submitted"},
         )
 
@@ -32,6 +35,9 @@ class MockAgentRunner:
         verdict = self.auditor_verdict
         return AgentResult(
             status="validated" if verdict == "VALIDADO" else "rejected",
-            content=f"VEREDICTO_AUDITOR: {verdict}\nEVIDENCIA: mock auditor reviewed builder report.\n",
+            content=(
+                f"VEREDICTO_AUDITOR: {verdict}\n"
+                "EVIDENCIA: mock auditor reviewed builder report.\n"
+            ),
             data={"verdict": verdict},
         )

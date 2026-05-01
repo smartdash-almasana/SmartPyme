@@ -10,12 +10,10 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
-
 
 REQUIRED_TOOLSETS = ["terminal", "file", "skills", "delegation", "todo"]
 SKILL_RELATIVE_DIR = Path("factory/ai_governance/skills")

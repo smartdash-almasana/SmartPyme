@@ -1,9 +1,11 @@
-from typing import List, Dict, Any
-from app.core.entities import HallazgoOperativo
+from typing import Any
+
 from app.catalog.patologias import CATALOGO_PATOLOGIAS
 from app.core.calculators import calcular_diferencia_absoluta
+from app.core.entities import HallazgoOperativo
 
-def procesar_extraccion_bruta(datos_crudos: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+def procesar_extraccion_bruta(datos_crudos: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Engine mínimo para evaluar datos crudos y emitir hallazgos validados.
     Aplica el contrato determinístico bloqueando floats o datos corruptos
@@ -23,10 +25,15 @@ def procesar_extraccion_bruta(datos_crudos: List[Dict[str, Any]]) -> List[Dict[s
             raise ValueError(f"Patología no reconocida por el sistema auditado: {pid}")
 
         # Integración Determinística de Diferencia
-        # Si la ráfaga de datos crudos aporta los contrapesos (monto detectado y monto de contraste o esperado),
-        # anula/asigna la diferencia matemáticamente de modo local, rechazando pre-cálculos de la capa integradora si fuera el caso.
+        # Si la ráfaga de datos crudos aporta los contrapesos
+        # (monto detectado y monto de contraste o esperado),
+        # anula/asigna la diferencia matemáticamente de modo local,
+        # rechazando pre-cálculos de la capa integradora si fuera el caso.
         if "monto_detectado" in payload and "monto_esperado" in payload:
-            diferencia_rigor = calcular_diferencia_absoluta(payload["monto_detectado"], payload["monto_esperado"])
+            diferencia_rigor = calcular_diferencia_absoluta(
+                payload["monto_detectado"],
+                payload["monto_esperado"],
+            )
             payload["diferencia"] = diferencia_rigor
             
         # Inyectamos el nivel de severidad por asunción determinística si no se provee nada

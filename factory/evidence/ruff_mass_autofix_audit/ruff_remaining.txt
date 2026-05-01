@@ -1,0 +1,1054 @@
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/entities.py:24:31
+   |
+22 |     entity_type: str | None = None,
+23 |     cliente_id: str = Depends(get_active_client),
+24 |     db_path: EntitiesDbPath = Depends(get_entities_db_path),
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 | ):
+26 |     repo = EntityRepository(cliente_id, Path(db_path.entities))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/findings.py:24:31
+   |
+22 |     entity_type: str | None = None,
+23 |     cliente_id: str = Depends(get_active_client),
+24 |     db_path: FindingsDbPath = Depends(get_findings_db_path),
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 | ):
+26 |     repo = FindingRepository(cliente_id, Path(db_path.findings))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:36:30
+   |
+34 |     payload: FormulaCalculationRequest,
+35 |     cliente_id: str = Depends(get_active_client),
+36 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+37 | ):
+38 |     agent = FormulaCalculationAgent(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:51:30
+   |
+49 |     formula_id: str | None = None,
+50 |     cliente_id: str = Depends(get_active_client),
+51 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+52 | ):
+53 |     repo = FormulaResultRepository(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:67:30
+   |
+65 |     result_id: str,
+66 |     cliente_id: str = Depends(get_active_client),
+67 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+68 | ):
+69 |     repo = FormulaResultRepository(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:46:27
+   |
+44 |     request: CreateJobRequest | None = None,
+45 |     cliente_id: str = Depends(get_active_client),
+46 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+47 | ):
+48 |     request = request or CreateJobRequest()
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:70:27
+   |
+68 | async def list_jobs(
+69 |     cliente_id: str = Depends(get_active_client),
+70 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+71 | ):
+72 |     repo = JobRepository(cliente_id, Path(db_path.jobs))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:86:27
+   |
+84 |     job_id: str,
+85 |     cliente_id: str = Depends(get_active_client),
+86 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+87 | ):
+88 |     repo = JobRepository(cliente_id, Path(db_path.jobs))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:40:34
+   |
+38 |     payload: PathologyAuditRequest,
+39 |     cliente_id: str = Depends(get_active_client),
+40 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+41 | ):
+42 |     agent = PathologyAuditorAgent(
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:63:34
+   |
+61 |     status: PathologyStatus | None = None,
+62 |     cliente_id: str = Depends(get_active_client),
+63 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 | ):
+65 |     repo = PathologyRepository(cliente_id, Path(db_paths.pathologies))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:79:34
+   |
+77 |     pathology_finding_id: str,
+78 |     cliente_id: str = Depends(get_active_client),
+79 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+80 | ):
+81 |     repo = PathologyRepository(cliente_id, Path(db_paths.pathologies))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/process.py:47:33
+   |
+45 |     payload: ProcessRequest,
+46 |     cliente_id: str = Depends(get_active_client),
+47 |     db_paths: PipelineDbPaths = Depends(get_pipeline_db_paths),
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+48 | ):
+49 |     pipeline = Pipeline(
+   |
+
+E501 Line too long (119 > 100)
+  --> app/repositories/fact_repository.py:29:101
+   |
+27 |     columns = {row[1] for row in conn.execute("PRAGMA table_info(extracted_facts)").fetchall()}
+28 |     if "cliente_id" not in columns:
+29 |         conn.execute("ALTER TABLE extracted_facts ADD COLUMN cliente_id TEXT NOT NULL DEFAULT '__migration_pending__'")
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+   |
+
+E501 Line too long (104 > 100)
+  --> app/repositories/job_repository.py:76:101
+   |
+74 |                 result=json.loads(row["result"]) if row["result"] else None,
+75 |                 error_log=row["error_log"],
+76 |                 traceable_origin=json.loads(row["traceable_origin"]) if row["traceable_origin"] else {},
+   |                                                                                                     ^^^^
+77 |             )
+   |
+
+E501 Line too long (126 > 100)
+  --> app/repositories/job_repository.py:94:101
+   |
+92 |         with sqlite3.connect(self.db_path) as conn:
+93 |             conn.execute(
+94 |                 "UPDATE background_jobs SET status=?, result=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+95 |                 (JobStatus.SUCCESS.value, json.dumps(result or {}), self.cliente_id, job_id),
+96 |             )
+   |
+
+E501 Line too long (129 > 100)
+   --> app/repositories/job_repository.py:101:101
+    |
+ 99 |         with sqlite3.connect(self.db_path) as conn:
+100 |             conn.execute(
+101 |                 "UPDATE background_jobs SET status=?, error_log=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+102 |                 (JobStatus.FAILED.value, error_log, self.cliente_id, job_id),
+103 |             )
+    |
+
+E501 Line too long (116 > 100)
+   --> app/repositories/job_repository.py:108:101
+    |
+106 |         with sqlite3.connect(self.db_path) as conn:
+107 |             conn.execute(
+108 |                 "UPDATE background_jobs SET status=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+109 |                 (status.value, self.cliente_id, job_id),
+110 |             )
+    |
+
+E501 Line too long (104 > 100)
+  --> app/services/canonicalization_service.py:15:101
+   |
+14 |     def canonicalize_facts(
+15 |         self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+   |                                                                                                     ^^^^
+16 |     ) -> dict[str, Any]:
+17 |         canonical_rows = self._create_canonical_rows(facts, job_id=job_id, plan_id=plan_id)
+   |
+
+E501 Line too long (104 > 100)
+  --> app/services/canonicalization_service.py:28:101
+   |
+27 |     def _create_canonical_rows(
+28 |         self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+   |                                                                                                     ^^^^
+29 |     ) -> list[CanonicalRowCandidate]:
+30 |         return [
+   |
+
+E501 Line too long (102 > 100)
+  --> app/services/comparison_service.py:28:101
+   |
+26 |                 continue
+27 |
+28 |             if entity_a.validation_status != "validated" or entity_b.validation_status != "validated":
+   |                                                                                                     ^^
+29 |                 continue
+   |
+
+E501 Line too long (112 > 100)
+  --> app/services/entity_resolution_service.py:16:101
+   |
+15 |     def resolve_entities(
+16 |         self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+   |                                                                                                     ^^^^^^^^^^^^
+17 |     ) -> dict[str, Any]:
+   |
+
+E501 Line too long (112 > 100)
+  --> app/services/entity_resolution_service.py:30:101
+   |
+29 |     def _resolve_rows(
+30 |         self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+   |                                                                                                     ^^^^^^^^^^^^
+31 |     ) -> list[Entity]:
+32 |         entities = []
+   |
+
+E501 Line too long (104 > 100)
+  --> app/services/entity_resolution_service.py:34:101
+   |
+32 |         entities = []
+33 |         for row in canonical_rows:
+34 |             # This is a very basic resolution logic. It will create a new entity for each canonical row.
+   |                                                                                                     ^^^^
+35 |             # A more advanced implementation would try to find existing entities and merge them.
+   |
+
+E501 Line too long (101 > 100)
+  --> app/services/entity_resolution_service.py:41:101
+   |
+40 |             # Try to find an existing entity with the same attributes.
+41 |             # This is a simplification. A real implementation would have more complex matching logic.
+   |                                                                                                     ^
+42 |             existing_entity = self.repository.find_by_attribute(entity_type, 'value', attributes.get('value'))
+   |
+
+E501 Line too long (110 > 100)
+  --> app/services/entity_resolution_service.py:42:101
+   |
+40 |             # Try to find an existing entity with the same attributes.
+41 |             # This is a simplification. A real implementation would have more complex matching logic.
+42 |             existing_entity = self.repository.find_by_attribute(entity_type, 'value', attributes.get('value'))
+   |                                                                                                     ^^^^^^^^^^
+43 |             
+44 |             if existing_entity:
+   |
+
+E501 Line too long (105 > 100)
+  --> app/services/entity_resolution_service.py:45:101
+   |
+44 |             if existing_entity:
+45 |                 # If an entity with the same attribute value exists, we link the new canonical row to it.
+   |                                                                                                     ^^^^^
+46 |                 # This is a very basic form of entity resolution.
+47 |                 updated_attributes = existing_entity.attributes.copy()
+   |
+
+E501 Line too long (107 > 100)
+   --> app/services/fact_extraction_service.py:132:101
+    |
+130 | def _overlaps_any(span: tuple[int, int], blocked_spans: list[tuple[int, int]]) -> bool:
+131 |     start, end = span
+132 |     return any(start < blocked_end and end > blocked_start for blocked_start, blocked_end in blocked_spans)
+    |                                                                                                     ^^^^^^^
+    |
+
+E501 Line too long (101 > 100)
+  --> app/services/pathology_engine_service.py:50:101
+   |
+48 |                 source_refs=result.source_refs,
+49 |                 explanation="La fórmula calculada no coincide con la patología solicitada.",
+50 |                 metadata={"expected_formula_id": definition.formula_id, "catalog": catalog_metadata},
+   |                                                                                                     ^
+51 |             )
+   |
+
+E501 Line too long (103 > 100)
+  --> app/services/pathology_engine_service.py:63:101
+   |
+61 |                 source_refs=result.source_refs,
+62 |                 explanation="Patología sin evaluador implementado.",
+63 |                 metadata={"blocking_reason": "PATHOLOGY_NOT_IMPLEMENTED", "catalog": catalog_metadata},
+   |                                                                                                     ^^^
+64 |             )
+   |
+
+E501 Line too long (107 > 100)
+  --> app/services/pathology_evaluators.py:59:101
+   |
+57 |             suggested_action=definition.suggested_action,
+58 |             source_refs=result.source_refs,
+59 |             explanation=f"La ganancia bruta calculada es {result.value}, lo cual indica venta bajo costo.",
+   |                                                                                                     ^^^^^^^
+60 |             metadata=metadata,
+61 |         )
+   |
+
+E501 Line too long (108 > 100)
+  --> core/adapters/meli_oauth_client.py:22:101
+   |
+21 | class MeliOAuthError(RuntimeError):
+22 |     def __init__(self, message: str, *, status_code: int | None = None, details: str | None = None) -> None:
+   |                                                                                                     ^^^^^^^^
+23 |         super().__init__(message)
+24 |         self.status_code = status_code
+   |
+
+E501 Line too long (102 > 100)
+  --> core/adapters/meli_oauth_client.py:85:101
+   |
+83 |             parsed = response.json()
+84 |         except ValueError as exc:
+85 |             raise MeliOAuthError("MELI_OAUTH_INVALID_JSON", status_code=response.status_code) from exc
+   |                                                                                                     ^^
+86 |
+87 |         if not isinstance(parsed, dict):
+   |
+
+E501 Line too long (105 > 100)
+  --> core/services/meli_token_manager.py:87:101
+   |
+85 |         return "invalid_grant" in details
+86 |
+87 |     def _token_from_response(self, account_id: str, token_response: MeliTokenResponse) -> MeliOAuthToken:
+   |                                                                                                     ^^^^^
+88 |         return MeliOAuthToken(
+89 |             account_id=account_id,
+   |
+
+E501 Line too long (117 > 100)
+  --> services/document_ingestion_service.py:60:101
+   |
+58 |             for document in documents
+59 |         }
+60 |         parser_name = "mixed" if len(parser_names) > 1 else (next(iter(parser_names)) if parser_names else "unknown")
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+61 |         return DocumentIngestionResult(
+62 |             parser=str(parser_name),
+   |
+
+E501 Line too long (111 > 100)
+  --> services/document_ingestion_service.py:94:101
+   |
+92 |             for chunk in chunks
+93 |         ]
+94 |         with (self._evidence_root / "citation_index" / "citations.json").open("w", encoding="utf-8") as handle:
+   |                                                                                                     ^^^^^^^^^^^
+95 |             handle.write(json.dumps(citation_rows, ensure_ascii=False, indent=2))
+   |
+
+E501 Line too long (102 > 100)
+ --> services/document_query_service.py:6:101
+  |
+4 | from services.retrieval_service import RetrievalService
+5 |
+6 | INSUFFICIENT_EVIDENCE_MESSAGE = "No tengo evidencia documental suficiente para responder con certeza."
+  |                                                                                                     ^^
+  |
+
+E501 Line too long (103 > 100)
+  --> services/retrieval_service.py:21:101
+   |
+19 |         """Initialize retrieval state with optional preloaded chunks."""
+20 |         self._chunks = chunks or []
+21 |         self._chunk_by_id: dict[str, DocumentChunk] = {chunk.chunk_id: chunk for chunk in self._chunks}
+   |                                                                                                     ^^^
+22 |         self._langchain_docs: list[object] = []
+23 |         self._refresh_langchain_docs()
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/core/services/test_meli_token_manager.py:32:101
+   |
+31 | class _FakeOAuthClient:
+32 |     def __init__(self, response: MeliTokenResponse | None = None, error: Exception | None = None) -> None:
+   |                                                                                                     ^^^^^^
+33 |         self._response = response
+34 |         self._error = error
+   |
+
+E501 Line too long (107 > 100)
+   --> tests/core/services/test_meli_token_manager.py:150:101
+    |
+148 |     asyncio.run(repo.upsert(expiring))
+149 |
+150 |     oauth = _FakeOAuthClient(response=_token_response("singleflight-access", "singleflight-refresh", 3600))
+    |                                                                                                     ^^^^^^^
+151 |     manager = MeliTokenManager(oauth_client=oauth, repository=repo)
+    |
+
+B011 Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+  --> tests/core/test_action_contract.py:66:16
+   |
+64 |     try:
+65 |         object.__setattr__(proposal, "status", "approved")
+66 |         assert False, "Should have raised FrozenInstanceError"
+   |                ^^^^^
+67 |     except Exception:
+68 |         pass
+   |
+help: Replace `assert False`
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:142:1
+    |
+140 | # ── adapter integration ───────────────────────────────────────────────────────
+141 |
+142 | from typing import Any as _Any
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+143 |
+144 | from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+    |
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:144:1
+    |
+142 | from typing import Any as _Any
+143 |
+144 | from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+145 | from app.services.action_execution_service import AdapterExecutionError
+    |
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:145:1
+    |
+144 | from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+145 | from app.services.action_execution_service import AdapterExecutionError
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:233:1
+    |
+231 | # ── execution_repository integration ─────────────────────────────────────────
+232 |
+233 | import uuid
+    | ^^^^^^^^^^^
+234 | from pathlib import Path as _Path
+    |
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:234:1
+    |
+233 | import uuid
+234 | from pathlib import Path as _Path
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+235 |
+236 | from app.repositories.action_execution_repository import ActionExecutionRepository
+    |
+
+E402 Module level import not at top of file
+   --> tests/core/test_action_execution_service.py:236:1
+    |
+234 | from pathlib import Path as _Path
+235 |
+236 | from app.repositories.action_execution_repository import ActionExecutionRepository
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+
+B011 Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+  --> tests/core/test_communication_contract.py:30:16
+   |
+28 |     try:
+29 |         object.__setattr__(msg, "title", "mutated")
+30 |         assert False, "Should have raised FrozenInstanceError"
+   |                ^^^^^
+31 |     except Exception:
+32 |         pass  # frozen — expected
+   |
+help: Replace `assert False`
+
+E501 Line too long (101 > 100)
+  --> tests/core/test_execution_adapter_contract.py:52:101
+   |
+50 |     from dataclasses import fields
+51 |     field_names = {f.name for f in fields(ExecutionAdapterResult)}
+52 |     assert {"adapter_id", "action_id", "status", "message", "traceable_origin"}.issubset(field_names)
+   |                                                                                                     ^
+   |
+
+B011 Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+  --> tests/core/test_execution_adapter_contract.py:62:16
+   |
+60 |     try:
+61 |         object.__setattr__(result, "status", "failed")
+62 |         assert False, "Should have raised FrozenInstanceError"
+   |                ^^^^^
+63 |     except Exception:
+64 |         pass
+   |
+help: Replace `assert False`
+
+B011 Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+   --> tests/core/test_execution_adapter_contract.py:125:16
+    |
+123 |     try:
+124 |         _Incomplete()
+125 |         assert False, "Should have raised TypeError for missing adapter_id"
+    |                ^^^^^
+126 |     except TypeError:
+127 |         pass
+    |
+help: Replace `assert False`
+
+E501 Line too long (105 > 100)
+  --> tests/core/test_findings.py:42:101
+   |
+41 | def test_valor_distinto_becomes_alta():
+42 |     differences = [_difference(field_name="direccion", difference_type="valor_distinto", blocking=False)]
+   |                                                                                                     ^^^^^
+43 |
+44 |     findings = build_findings(differences)
+   |
+
+E501 Line too long (117 > 100)
+  --> tests/core/test_findings.py:51:101
+   |
+50 | def test_faltante_en_a_becomes_media_with_correct_action():
+51 |     differences = [_difference(field_name="telefono", difference_type="faltante_en_a", value_a=None, value_b="1234")]
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+52 |
+53 |     findings = build_findings(differences)
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/core/test_findings.py:56:101
+   |
+55 |     assert findings[0].severity == "media"
+56 |     assert findings[0].suggested_action == "Completar el dato faltante en la fuente A o validar ausencia."
+   |                                                                                                     ^^^^^^
+   |
+
+E501 Line too long (117 > 100)
+  --> tests/core/test_findings.py:60:101
+   |
+59 | def test_faltante_en_b_becomes_media_with_correct_action():
+60 |     differences = [_difference(field_name="email", difference_type="faltante_en_b", value_a="a@b.com", value_b=None)]
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+61 |
+62 |     findings = build_findings(differences)
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/core/test_findings.py:65:101
+   |
+64 |     assert findings[0].severity == "media"
+65 |     assert findings[0].suggested_action == "Completar el dato faltante en la fuente B o validar ausencia."
+   |                                                                                                     ^^^^^^
+   |
+
+E501 Line too long (101 > 100)
+   --> tests/core/test_reconciliation_service.py:414:101
+    |
+412 |     assert all(f.delta == float("inf") for f in result.findings)
+413 |     assert len(result.uncertainty_records) == 2
+414 |     assert {u.field_name for u in result.uncertainty_records} == {"expected_amount", "actual_amount"}
+    |                                                                                                     ^
+415 |     assert result.suggested_actions == ["solicitar_revision_humana"]
+416 |     assert len(result.human_review_questions) == 2
+    |
+
+E501 Line too long (101 > 100)
+   --> tests/core/test_reconciliation_service.py:437:101
+    |
+435 |     assert all(f.delta == float("inf") for f in result.findings)
+436 |     assert len(result.uncertainty_records) == 2
+437 |     assert {u.field_name for u in result.uncertainty_records} == {"expected_amount", "actual_amount"}
+    |                                                                                                     ^
+438 |     assert result.suggested_actions == ["solicitar_revision_humana"]
+439 |     assert len(result.human_review_questions) == 2
+    |
+
+E402 Module level import not at top of file
+  --> tests/e2e/test_hermes_runtime_import_path.py:10:1
+   |
+ 8 | sys.path.insert(0, str(smartpyme_root))
+ 9 |
+10 | from app.runtime.hermes_smartpyme_runtime import HermesSmartPymeRuntime
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+  --> tests/e2e/validate_bridge_e2e.py:52:9
+   |
+50 |         if structured:
+51 |             return structured["result"]
+52 |         raise ValueError(f"Could not parse JSON response for {tool_name}: {result_value}")
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+E501 Line too long (110 > 100)
+   --> tests/e2e/validate_bridge_e2e.py:140:101
+    |
+138 |         assert create_result["source"] == "real", "Create job source validation failed"
+139 |         assert create_result["current_state"] == "CREATED", "Create job state validation failed"
+140 |         assert create_result["skill_id"] == "skill_create_job_from_plan", "Create job skill validation failed"
+    |                                                                                                     ^^^^^^^^^^
+141 |         assert create_result["job_id"], "Create job did not return job_id"
+142 |         assert create_result["plan_id"], "Create job did not return plan_id"
+    |
+
+E501 Line too long (104 > 100)
+   --> tests/e2e/validate_bridge_e2e.py:148:101
+    |
+146 |         assert job_status["source"] == "real", "Job status source validation failed"
+147 |         assert job_status["current_state"] == "CREATED", "Job status state validation failed"
+148 |         assert job_status["plan_id"] == create_result["plan_id"], "Job status plan_id validation failed"
+    |                                                                                                     ^^^^
+149 |         assert job_status["payload"]["operational_plan"], "Job status payload validation failed"
+150 |         test_results["get_job_status"] = {"status": "OK", "payload": job_status}
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/e2e/validate_bridge_e2e.py:162:101
+    |
+161 |         pending_list = call_tool("list_pending_validations", owner_id="e2e-owner")
+162 |         assert any(c["id"] == clarification_id for c in pending_list), "List pending validation failed"
+    |                                                                                                     ^^^
+163 |         test_results["list_pending_validations"] = {"status": "OK", "payload": pending_list}
+    |
+
+E501 Line too long (108 > 100)
+   --> tests/factory/test_continuous_factory.py:194:101
+    |
+192 |             self.assertIn("AUDITOR_ENV_MISSING", result["state"]["errores"][0])
+193 |             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
+194 |             self.assertIn("FAIL_FAST|cycle=1|reason=AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT", log_content)
+    |                                                                                                     ^^^^^^^^
+195 |         finally:
+196 |             shutil.rmtree(root, ignore_errors=True)
+    |
+
+E501 Line too long (108 > 100)
+   --> tests/factory/test_continuous_factory.py:307:101
+    |
+305 |             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
+306 |             self.assertIn("WORKER_IDLE|cycle=1", log_content)
+307 |             self.assertIn("WORKER_STATUS|cycle=1|status=idle|message=NO_HALLAZGOS_DISPONIBLES", log_content)
+    |                                                                                                     ^^^^^^^^
+308 |             self.assertIn("hallazgo=factory/hallazgos/in_progress/x.md", log_content)
+309 |             self.assertIn("close_mode=-", log_content)
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/factory/test_continuous_factory.py:478:101
+    |
+477 |             output = io.StringIO()
+478 |             with patch.object(cf, "run_continuous_factory", fake_run_continuous_factory), patch.object(
+    |                                                                                                     ^^^
+479 |                 sys, "argv", argv
+480 |             ), redirect_stdout(output):
+    |
+
+E501 Line too long (112 > 100)
+   --> tests/factory/test_continuous_factory.py:704:101
+    |
+702 |             cantera_c.mkdir()
+703 |             manifest = root / "manifest.json"
+704 |             self._write_manifest(manifest, [str(cantera_a), str(cantera_b), str(cantera_c)], ["reconciliation"])
+    |                                                                                                     ^^^^^^^^^^^^
+705 |             clock = _FakeClock()
+    |
+
+E501 Line too long (115 > 100)
+   --> tests/factory/test_continuous_factory.py:772:101
+    |
+770 |                 now_fn=clock.now,
+771 |                 sleep_fn=clock.sleep,
+772 |                 run_factory_fn=lambda **_: {"estado": "blocked", "motivo": "VALIDACION_BLOCKED: PREGUNTA_ABIERTA"},
+    |                                                                                                     ^^^^^^^^^^^^^^^
+773 |                 run_worker_fn=lambda: _StubWorkerResult(status="idle", message="idle"),
+774 |                 base_dir=root,
+    |
+
+E501 Line too long (112 > 100)
+   --> tests/factory/test_continuous_factory.py:814:101
+    |
+812 |             expected_unit = f"{cantera}::reconciliation"
+813 |             self.assertIn(expected_unit, blocked_by_unit)
+814 |             self.assertEqual(blocked_by_unit[expected_unit]["last_reason"], "VALIDACION_BLOCKED: RUTA_INVALIDA")
+    |                                                                                                     ^^^^^^^^^^^^
+815 |             self.assertTrue(blocked_by_unit[expected_unit]["suspended"])
+816 |         finally:
+    |
+
+E501 Line too long (106 > 100)
+   --> tests/factory/test_continuous_factory.py:849:101
+    |
+847 |             expected_unit = f"{cantera}::reconciliation"
+848 |             self.assertIn(expected_unit, blocked_by_unit)
+849 |             self.assertEqual(blocked_by_unit[expected_unit]["last_reason"], "TESTS_FAIL: assertion error")
+    |                                                                                                     ^^^^^^
+850 |         finally:
+851 |             shutil.rmtree(root, ignore_errors=True)
+    |
+
+E501 Line too long (101 > 100)
+  --> tests/factory/test_hermes_control_cli.py:58:101
+   |
+56 |     (control_dir / "AUDIT_GATE.md").write_text("status: OPEN\n", encoding="utf-8")
+57 |     (control_dir / "FACTORY_STATUS.md").write_text(
+58 |         "last_cycle_result: AUDIT_GATE_BLOCKING\naudit_gate: BLOCKED\nlast_error: antiguo_bloqueo\n",
+   |                                                                                                     ^
+59 |         encoding="utf-8",
+60 |     )
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/factory/test_report_retrieval_fm_021.py:28:101
+   |
+26 |                 task_id=task_id,
+27 |                 evidence_paths=[f"evidence/{task_id}.txt"],
+28 |                 command_results=[CommandResult("pytest fake", 0 if status == TaskSpecStatus.DONE else 1)],
+   |                                                                                                     ^^^^^^
+29 |                 blocking_reason=None if status == TaskSpecStatus.DONE else "VALIDATION_FAILED",
+30 |             )
+   |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_run_codex_worker.py:127:101
+    |
+125 |                 blocked_dir=root / "blocked",
+126 |                 repo_root=root,
+127 |                 executor=lambda _: ExecutionResult(success=False, message="FAIL", tests_passed=False),
+    |                                                                                                     ^^
+128 |             )
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/factory/test_run_codex_worker.py:194:101
+    |
+192 |             shutil.rmtree(root, ignore_errors=True)
+193 |
+194 |     def test_destination_collision_is_resolved_with_incremental_suffix_and_releases_lock(self) -> None:
+    |                                                                                                     ^^^
+195 |         root = self._local_tmp_root()
+196 |         try:
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_run_codex_worker.py:290:101
+    |
+289 |             class _Result:
+290 |                 def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+    |                                                                                                     ^^
+291 |                     self.returncode = returncode
+292 |                     self.stdout = stdout
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_run_codex_worker.py:339:101
+    |
+338 |             class _Result:
+339 |                 def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+    |                                                                                                     ^^
+340 |                     self.returncode = returncode
+341 |                     self.stdout = stdout
+    |
+
+E501 Line too long (101 > 100)
+   --> tests/factory/test_run_codex_worker.py:406:101
+    |
+404 |             shutil.rmtree(root, ignore_errors=True)
+405 |
+406 |     def test_default_executor_blocks_with_explicit_message_when_model_is_not_supported(self) -> None:
+    |                                                                                                     ^
+407 |         root = self._local_tmp_root()
+408 |         try:
+    |
+
+E501 Line too long (113 > 100)
+   --> tests/factory/test_run_codex_worker.py:429:101
+    |
+427 |                 return _Result(
+428 |                     returncode=1,
+429 |                     stderr="The 'gpt-5.2-codex' model is not supported when using Codex with a ChatGPT account.",
+    |                                                                                                     ^^^^^^^^^^^^^
+430 |                 )
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_run_codex_worker.py:570:101
+    |
+569 |             class _Result:
+570 |                 def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+    |                                                                                                     ^^
+571 |                     self.returncode = returncode
+572 |                     self.stdout = stdout
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_run_factory.py:149:101
+    |
+147 |             auditor.write_text("print('ok')", encoding="utf-8")
+148 |
+149 |             with patch.dict(rf.os.environ, {}, clear=True), patch.object(rf, "AUDITOR_PATH", auditor):
+    |                                                                                                     ^^
+150 |                 with self.assertRaisesRegex(RuntimeError, "AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT"):
+151 |                     rf.run_auditor(
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/factory/test_run_factory.py:150:101
+    |
+149 |             with patch.dict(rf.os.environ, {}, clear=True), patch.object(rf, "AUDITOR_PATH", auditor):
+150 |                 with self.assertRaisesRegex(RuntimeError, "AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT"):
+    |                                                                                                     ^^^
+151 |                     rf.run_auditor(
+152 |                         modulo="clarification",
+    |
+
+E501 Line too long (125 > 100)
+   --> tests/factory/test_run_factory.py:241:101
+    |
+240 |             output = io.StringIO()
+241 |             with patch.object(rf, "run_factory", fake_run_factory), patch.object(sys, "argv", argv), redirect_stdout(output):
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+242 |                 exit_code = rf.main()
+    |
+
+E501 Line too long (120 > 100)
+  --> tests/factory/test_run_report_summary_fm_027.py:23:101
+   |
+21 |                 evidence_paths=["evidence/a.txt"],
+22 |                 command_results=[CommandResult("pytest a", 0)],
+23 |                 changed_paths=["factory/core/run_report_summary.py", "factory/adapters/telegram_superowner_adapter.py"],
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+24 |             ),
+25 |             TaskSpecRunResult(
+   |
+
+E501 Line too long (120 > 100)
+  --> tests/factory/test_run_report_summary_fm_027.py:31:101
+   |
+29 |                 blocking_reason="PATH_VALIDATION_FAILED",
+30 |                 command_results=[CommandResult("pytest b", 0)],
+31 |                 changed_paths=["factory/core/run_report_summary.py", "tests/factory/test_run_report_summary_fm_027.py"],
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+32 |                 path_errors=["PATH_NOT_ALLOWED: docs/x.md"],
+33 |             ),
+   |
+
+E501 Line too long (103 > 100)
+  --> tests/factory/test_task_spec_contract_fm_013.py:21:101
+   |
+19 |         "forbidden_paths": ["app", "data"],
+20 |         "acceptance_criteria": ["TaskSpec valida campos obligatorios"],
+21 |         "validation_commands": ["PYTHONPATH=. pytest tests/factory/test_task_spec_contract_fm_013.py"],
+   |                                                                                                     ^^^
+22 |         "metadata": {"owner": "superowner"},
+23 |     }
+   |
+
+E501 Line too long (101 > 100)
+  --> tests/factory/test_task_spec_store_fm_014.py:86:101
+   |
+84 |     store.mark_done("FM_014", evidence_paths=["factory/evidence/FM_014/report.txt"])
+85 |
+86 |     with pytest.raises(ValueError, match="Only pending or in_progress TaskSpec can move to blocked"):
+   |                                                                                                     ^
+87 |         store.mark_blocked("FM_014", "TOO_LATE")
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/factory/test_task_spec_templates_fm_022.py:39:101
+   |
+38 | def test_docs_change_allows_docs_without_app_runtime():
+39 |     task = build_task_spec_from_template("docs_change", "Actualizar documentación", task_id="FM_022_DOCS")
+   |                                                                                                     ^^^^^^
+40 |
+41 |     assert "docs" in task.allowed_paths
+   |
+
+E501 Line too long (102 > 100)
+  --> tests/factory/test_task_spec_templates_fm_022.py:55:101
+   |
+54 | def test_refactor_has_boundary_validation_command():
+55 |     task = build_task_spec_from_template("refactor", "Reducir duplicación", task_id="FM_022_REFACTOR")
+   |                                                                                                     ^^
+56 |
+57 |     assert any("test_factory_boundary_no_app_imports_fm_012.py" in command for command in task.validation_commands)
+   |
+
+E501 Line too long (115 > 100)
+  --> tests/factory/test_task_spec_templates_fm_022.py:57:101
+   |
+55 |     task = build_task_spec_from_template("refactor", "Reducir duplicación", task_id="FM_022_REFACTOR")
+56 |
+57 |     assert any("test_factory_boundary_no_app_imports_fm_012.py" in command for command in task.validation_commands)
+   |                                                                                                     ^^^^^^^^^^^^^^^
+58 |     assert "app" in task.forbidden_paths
+   |
+
+E501 Line too long (117 > 100)
+   --> tests/factory/test_telegram_diff_fm_026.py:125:101
+    |
+124 | def test_diff_command_rejects_invalid_command(tmp_path):
+125 |     adapter = TelegramSuperownerAdapter(superowner_telegram_user_id=111, store=TaskSpecStore(tmp_path / "taskspecs"))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^
+126 |
+127 |     response = adapter.handle_update(_update(111, "/diff"))
+    |
+
+E501 Line too long (117 > 100)
+   --> tests/factory/test_telegram_diff_fm_026.py:133:101
+    |
+132 | def test_diff_command_rejects_non_superowner(tmp_path):
+133 |     adapter = TelegramSuperownerAdapter(superowner_telegram_user_id=111, store=TaskSpecStore(tmp_path / "taskspecs"))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^
+134 |
+135 |     response = adapter.handle_update(_update(999, "/diff FM_026"))
+    |
+
+E501 Line too long (108 > 100)
+  --> tests/factory/test_telegram_factory_commands_smoke_fm_031.py:39:101
+   |
+37 |     )
+38 |     adapter.runner.command_runner = _ok_runner
+39 |     adapter.runner.changed_paths_provider = lambda task: ["factory/adapters/telegram_superowner_adapter.py"]
+   |                                                                                                     ^^^^^^^^
+40 |     return adapter, store
+   |
+
+E501 Line too long (105 > 100)
+  --> tests/factory/test_telegram_factory_commands_smoke_fm_031.py:62:101
+   |
+60 |     run_response = adapter.handle_update(_update(SUPEROWNER_ID, "/run_one"))
+61 |     assert run_response["status"] == "done"
+62 |     assert run_response["result"]["changed_paths"] == ["factory/adapters/telegram_superowner_adapter.py"]
+   |                                                                                                     ^^^^^
+63 |     report_id = run_response["run_report"]["report_id"]
+   |
+
+E501 Line too long (103 > 100)
+   --> tests/factory/test_telegram_factory_commands_smoke_fm_031.py:105:101
+    |
+103 |     adapter, _store = _adapter(tmp_path)
+104 |
+105 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/unknown"))["status"] == "unsupported_command"
+    |                                                                                                     ^^^
+106 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/diff"))["status"] == "invalid_command"
+107 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/report missing"))["status"] == "not_found"
+    |
+
+E501 Line too long (102 > 100)
+   --> tests/factory/test_telegram_factory_commands_smoke_fm_031.py:109:101
+    |
+107 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/report missing"))["status"] == "not_found"
+108 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/task missing"))["status"] == "not_found"
+109 |     assert adapter.handle_update(_update(SUPEROWNER_ID, "/evidence missing"))["status"] == "not_found"
+    |                                                                                                     ^^
+    |
+
+E501 Line too long (132 > 100)
+  --> tests/factory/test_telegram_handler.py:11:101
+   |
+ 9 | def test_allowlist_and_dedup(tmp_path):
+10 |     allowlist = tmp_path / "allowlist.yaml"
+11 |     allowlist.write_text("owner:\n  user_id: 123\n  role: owner\n  enabled: true\nmoderators: []\nauditors: []\n", encoding="utf-8")
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |     db = tmp_path / "telegram.db"
+13 |     assert load_allowed_user_ids(allowlist) == [123]
+   |
+
+E501 Line too long (103 > 100)
+  --> tests/factory/test_telegram_handler.py:14:101
+   |
+12 |     db = tmp_path / "telegram.db"
+13 |     assert load_allowed_user_ids(allowlist) == [123]
+14 |     update = {"update_id": 1, "message": {"from": {"id": 123}, "text": "/estado", "chat": {"id": 999}}}
+   |                                                                                                     ^^^
+15 |     assert validate_update(update, db_path=db, allowlist_path=allowlist)["status"] == "ok"
+16 |     assert validate_update(update, db_path=db, allowlist_path=allowlist)["code"] == "DUPLICATE_UPDATE"
+   |
+
+E501 Line too long (102 > 100)
+  --> tests/factory/test_telegram_handler.py:16:101
+   |
+14 |     update = {"update_id": 1, "message": {"from": {"id": 123}, "text": "/estado", "chat": {"id": 999}}}
+15 |     assert validate_update(update, db_path=db, allowlist_path=allowlist)["status"] == "ok"
+16 |     assert validate_update(update, db_path=db, allowlist_path=allowlist)["code"] == "DUPLICATE_UPDATE"
+   |                                                                                                     ^^
+   |
+
+E501 Line too long (101 > 100)
+  --> tests/factory/test_telegram_superowner_taskspec_fm_016.py:26:101
+   |
+24 |     )
+25 |
+26 |     response = adapter.handle_update(_update(111, "/enqueue_dev Crear TaskSpec real desde Telegram"))
+   |                                                                                                     ^
+27 |
+28 |     assert response["status"] == "queued"
+   |
+
+E501 Line too long (114 > 100)
+  --> tests/factory/test_topology_catalog.py:26:101
+   |
+24 |                 json.dumps(
+25 |                     {
+26 |                         "core_layers": {"clarification": {"target_files": ["app/core/clarification/service.py"]}},
+   |                                                                                                     ^^^^^^^^^^^^^^
+27 |                         "official_assembly_order": ["clarification"],
+28 |                         "canteras": [
+   |
+
+E501 Line too long (108 > 100)
+  --> tests/factory/test_topology_catalog.py:43:101
+   |
+41 |             assert catalog is not None
+42 |             self.assertTrue(catalog.is_known_layer("clarification"))
+43 |             self.assertTrue(catalog.can_excavate("E:\\BuenosPasos\\smartcounter\\backend", "clarification"))
+   |                                                                                                     ^^^^^^^^
+44 |             self.assertFalse(catalog.can_excavate("E:\\BuenosPasos\\smartexcel", "clarification"))
+45 |         finally:
+   |
+
+E501 Line too long (104 > 100)
+  --> tests/test_document_intake_evidence_candidate_ts_016.py:25:101
+   |
+25 | def _linked_identity(tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A") -> IdentityService:
+   |                                                                                                     ^^^^
+26 |     identity = IdentityService(tmp_path / "identity.db")
+27 |     identity.create_onboarding_token("token-a", cliente_id)
+   |
+
+E501 Line too long (104 > 100)
+  --> tests/test_telegram_business_task_intake_ts_015c.py:18:101
+   |
+18 | def _linked_identity(tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A") -> IdentityService:
+   |                                                                                                     ^^^^
+19 |     identity = IdentityService(tmp_path / "identity.db")
+20 |     identity.create_onboarding_token("token-a", cliente_id)
+   |
+
+Found 102 errors.
+No fixes available (4 hidden fixes can be enabled with the `--unsafe-fixes` option).

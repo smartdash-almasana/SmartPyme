@@ -28,7 +28,10 @@ class EvidenceStore:
 
     def write_status(self, hallazgo_id: str, data: dict[str, Any]) -> Path:
         path = self.evidence_dir(hallazgo_id) / "status.json"
-        path.write_text(json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+        path.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True),
+            encoding="utf-8",
+        )
         return path
 
     def write_text(self, hallazgo_id: str, filename: str, content: str) -> Path:

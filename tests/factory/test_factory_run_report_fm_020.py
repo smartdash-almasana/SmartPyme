@@ -3,7 +3,7 @@ from pathlib import Path
 from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
 from factory.core.run_report import build_factory_run_report, write_factory_run_report
 from factory.core.task_spec import TaskSpec, TaskSpecStatus
-from factory.core.task_spec_runner import CommandResult, TaskSpecRunResult, TaskSpecRunner
+from factory.core.task_spec_runner import CommandResult, TaskSpecRunner, TaskSpecRunResult
 from factory.core.task_spec_store import TaskSpecStore
 
 

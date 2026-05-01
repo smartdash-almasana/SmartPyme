@@ -175,7 +175,9 @@ def _extract_ruta_fuente(content: str) -> str | None:
     return None
 
 
-def _build_unit_metadata(hallazgo_path: Path) -> tuple[str | None, str | None, str | None, str | None]:
+def _build_unit_metadata(
+    hallazgo_path: Path,
+) -> tuple[str | None, str | None, str | None, str | None]:
     content = hallazgo_path.read_text(encoding="utf-8")
     modulo_objetivo = _extract_modulo_objetivo(content)
     cantera_raiz = _extract_meta_value(content, "cantera_raiz")
@@ -194,7 +196,11 @@ def _parse_hallazgo_contract(hallazgo_path: Path) -> HallazgoExecutionContract:
     if not modulo:
         raise ValueError("CONTRATO_INVALIDO: falta modulo_objetivo en hallazgo.")
 
-    objetivo_lines = [line.strip() for line in _extract_section_lines(content, "## OBJETIVO") if line.strip()]
+    objetivo_lines = [
+        line.strip()
+        for line in _extract_section_lines(content, "## OBJETIVO")
+        if line.strip()
+    ]
     objetivo = " ".join(objetivo_lines).strip()
     if not objetivo:
         raise ValueError("CONTRATO_INVALIDO: falta objetivo operativo en hallazgo.")
@@ -239,7 +245,11 @@ def _detect_test_targets(contract: HallazgoExecutionContract, repo_root: Path) -
     return detected
 
 
-def _run_codex_exec(repo_root: Path, contract: HallazgoExecutionContract, hallazgo_path: Path) -> tuple[bool, str]:
+def _run_codex_exec(
+    repo_root: Path,
+    contract: HallazgoExecutionContract,
+    hallazgo_path: Path,
+) -> tuple[bool, str]:
     codex_bin = _resolve_codex_executable()
     if codex_bin is None:
         return False, "CODEX_BINARIO_NO_ENCONTRADO: instalar Codex CLI o agregarlo al PATH."
@@ -406,7 +416,10 @@ def run_codex_worker(
             if moved is None:
                 return WorkerResult(
                     status="idle",
-                    message="HALLAZGO_NO_ENCONTRADO_EN_CIERRE: posiblemente ya fue procesado por otra corrida.",
+                    message=(
+                        "HALLAZGO_NO_ENCONTRADO_EN_CIERRE: posiblemente ya fue "
+                        "procesado por otra corrida."
+                    ),
                     close_mode="idempotent_missing_source",
                     hallazgo=str(hallazgo),
                     moved_to=None,
@@ -435,7 +448,11 @@ def run_codex_worker(
         if moved is None:
             return WorkerResult(
                 status=target_status,
-                message="DONE_BY_OTHER_WORKER" if target_status == "done" else "BLOCKED_BY_OTHER_WORKER",
+                message=(
+                    "DONE_BY_OTHER_WORKER"
+                    if target_status == "done"
+                    else "BLOCKED_BY_OTHER_WORKER"
+                ),
                 close_mode="idempotent_missing_source",
                 hallazgo=str(hallazgo),
                 moved_to=None,

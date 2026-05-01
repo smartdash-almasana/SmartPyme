@@ -1,7 +1,6 @@
-import json
-import re
-import shutil
 import io
+import json
+import shutil
 import sys
 import unittest
 import uuid
@@ -192,7 +191,10 @@ class ContinuousFactoryTests(unittest.TestCase):
             self.assertEqual(result["state"]["current_cycle"], 1)
             self.assertIn("AUDITOR_ENV_MISSING", result["state"]["errores"][0])
             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
-            self.assertIn("FAIL_FAST|cycle=1|reason=AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT", log_content)
+            self.assertIn(
+                "FAIL_FAST|cycle=1|reason=AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT",
+                log_content,
+            )
         finally:
             shutil.rmtree(root, ignore_errors=True)
 
@@ -305,7 +307,10 @@ class ContinuousFactoryTests(unittest.TestCase):
 
             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
             self.assertIn("WORKER_IDLE|cycle=1", log_content)
-            self.assertIn("WORKER_STATUS|cycle=1|status=idle|message=NO_HALLAZGOS_DISPONIBLES", log_content)
+            self.assertIn(
+                "WORKER_STATUS|cycle=1|status=idle|message=NO_HALLAZGOS_DISPONIBLES",
+                log_content,
+            )
             self.assertIn("hallazgo=factory/hallazgos/in_progress/x.md", log_content)
             self.assertIn("close_mode=-", log_content)
             self.assertIn("unit_id=x:clarification", log_content)
@@ -476,9 +481,11 @@ class ContinuousFactoryTests(unittest.TestCase):
             ]
 
             output = io.StringIO()
-            with patch.object(cf, "run_continuous_factory", fake_run_continuous_factory), patch.object(
-                sys, "argv", argv
-            ), redirect_stdout(output):
+            with (
+                patch.object(cf, "run_continuous_factory", fake_run_continuous_factory),
+                patch.object(sys, "argv", argv),
+                redirect_stdout(output),
+            ):
                 exit_code = cf.main()
 
             self.assertEqual(exit_code, 0)
@@ -702,7 +709,11 @@ class ContinuousFactoryTests(unittest.TestCase):
             cantera_b.mkdir()
             cantera_c.mkdir()
             manifest = root / "manifest.json"
-            self._write_manifest(manifest, [str(cantera_a), str(cantera_b), str(cantera_c)], ["reconciliation"])
+            self._write_manifest(
+                manifest,
+                [str(cantera_a), str(cantera_b), str(cantera_c)],
+                ["reconciliation"],
+            )
             clock = _FakeClock()
 
             result = run_continuous_factory(
@@ -719,7 +730,7 @@ class ContinuousFactoryTests(unittest.TestCase):
             )
 
             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
-            self.assertIn(f"HEARTBEAT cycle=1", log_content)
+            self.assertIn("HEARTBEAT cycle=1", log_content)
             self.assertIn(f"cantera={cantera_a}", log_content)
             self.assertNotIn(f"cantera={cantera_c}", log_content)
         finally:
@@ -770,7 +781,10 @@ class ContinuousFactoryTests(unittest.TestCase):
                 repo_destino=str(root),
                 now_fn=clock.now,
                 sleep_fn=clock.sleep,
-                run_factory_fn=lambda **_: {"estado": "blocked", "motivo": "VALIDACION_BLOCKED: PREGUNTA_ABIERTA"},
+                run_factory_fn=lambda **_: {
+                    "estado": "blocked",
+                    "motivo": "VALIDACION_BLOCKED: PREGUNTA_ABIERTA",
+                },
                 run_worker_fn=lambda: _StubWorkerResult(status="idle", message="idle"),
                 base_dir=root,
             )
@@ -812,7 +826,10 @@ class ContinuousFactoryTests(unittest.TestCase):
             blocked_by_unit = result["state"]["blocked_reasons_by_unit"]
             expected_unit = f"{cantera}::reconciliation"
             self.assertIn(expected_unit, blocked_by_unit)
-            self.assertEqual(blocked_by_unit[expected_unit]["last_reason"], "VALIDACION_BLOCKED: RUTA_INVALIDA")
+            self.assertEqual(
+                blocked_by_unit[expected_unit]["last_reason"],
+                "VALIDACION_BLOCKED: RUTA_INVALIDA",
+            )
             self.assertTrue(blocked_by_unit[expected_unit]["suspended"])
         finally:
             shutil.rmtree(root, ignore_errors=True)
@@ -847,7 +864,10 @@ class ContinuousFactoryTests(unittest.TestCase):
             blocked_by_unit = result["state"]["blocked_reasons_by_unit"]
             expected_unit = f"{cantera}::reconciliation"
             self.assertIn(expected_unit, blocked_by_unit)
-            self.assertEqual(blocked_by_unit[expected_unit]["last_reason"], "TESTS_FAIL: assertion error")
+            self.assertEqual(
+                blocked_by_unit[expected_unit]["last_reason"],
+                "TESTS_FAIL: assertion error",
+            )
         finally:
             shutil.rmtree(root, ignore_errors=True)
 

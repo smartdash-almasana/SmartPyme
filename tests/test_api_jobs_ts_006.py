@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.jobs import router, get_jobs_db_path, JobsDbPath
+from app.api.v1.endpoints.jobs import JobsDbPath, get_jobs_db_path, router
 
 
 def create_app(db_jobs: Path):

@@ -57,7 +57,11 @@ class DocumentIngestionService:
             str(document.metadata.get("parser_used", "unknown"))
             for document in documents
         }
-        parser_name = "mixed" if len(parser_names) > 1 else (next(iter(parser_names)) if parser_names else "unknown")
+        parser_name = (
+            "mixed"
+            if len(parser_names) > 1
+            else (next(iter(parser_names)) if parser_names else "unknown")
+        )
         return DocumentIngestionResult(
             parser=str(parser_name),
             source_count=len(documents),
@@ -91,5 +95,7 @@ class DocumentIngestionService:
             }
             for chunk in chunks
         ]
-        with (self._evidence_root / "citation_index" / "citations.json").open("w", encoding="utf-8") as handle:
+        with (
+            self._evidence_root / "citation_index" / "citations.json"
+        ).open("w", encoding="utf-8") as handle:
             handle.write(json.dumps(citation_rows, ensure_ascii=False, indent=2))

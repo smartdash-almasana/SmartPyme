@@ -83,7 +83,10 @@ def test_store_rejects_invalid_transitions(tmp_path):
     store.mark_in_progress("FM_014")
     store.mark_done("FM_014", evidence_paths=["factory/evidence/FM_014/report.txt"])
 
-    with pytest.raises(ValueError, match="Only pending or in_progress TaskSpec can move to blocked"):
+    with pytest.raises(
+        ValueError,
+        match="Only pending or in_progress TaskSpec can move to blocked",
+    ):
         store.mark_blocked("FM_014", "TOO_LATE")
 
 

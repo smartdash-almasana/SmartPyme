@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 MAX_RECENT_FILES = 5
 MAX_SECTION_CHARS = 4000
 

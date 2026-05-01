@@ -4,12 +4,11 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from app.contracts.action_contract import ActionProposal
 from app.contracts.execution_adapter_contract import (
     ExecutionAdapter,
     ExecutionAdapterResult,
 )
-from app.contracts.action_contract import ActionProposal
-
 
 # ── minimal concrete adapter for testing ─────────────────────────────────────
 
@@ -49,8 +48,15 @@ def _proposal(action_id: str = "act-1") -> ActionProposal:
 
 def test_execution_adapter_result_is_dataclass():
     from dataclasses import fields
+
     field_names = {f.name for f in fields(ExecutionAdapterResult)}
-    assert {"adapter_id", "action_id", "status", "message", "traceable_origin"}.issubset(field_names)
+    assert {
+        "adapter_id",
+        "action_id",
+        "status",
+        "message",
+        "traceable_origin",
+    }.issubset(field_names)
 
 
 def test_execution_adapter_result_is_frozen():
@@ -60,7 +66,7 @@ def test_execution_adapter_result_is_frozen():
     )
     try:
         object.__setattr__(result, "status", "failed")
-        assert False, "Should have raised FrozenInstanceError"
+        raise AssertionError("Should have raised FrozenInstanceError")
     except Exception:
         pass
 
@@ -123,6 +129,6 @@ def test_execution_adapter_subclass_must_implement_adapter_id():
 
     try:
         _Incomplete()
-        assert False, "Should have raised TypeError for missing adapter_id"
+        raise AssertionError("Should have raised TypeError for missing adapter_id")
     except TypeError:
         pass

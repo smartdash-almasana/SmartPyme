@@ -22,7 +22,9 @@ def _document_update(user_id: int, file_id: str, file_name: str, mime_type: str)
     }
 
 
-def _linked_identity(tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A") -> IdentityService:
+def _linked_identity(
+    tmp_path: Path, user_id: int = 111, cliente_id: str = "pyme_A"
+) -> IdentityService:
     identity = IdentityService(tmp_path / "identity.db")
     identity.create_onboarding_token("token-a", cliente_id)
     linked = identity.link_telegram_user(user_id, "token-a")

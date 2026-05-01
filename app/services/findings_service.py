@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.services.comparison_service import ComparisonResult
+
 
 @dataclass(frozen=True, slots=True)
 class Finding:

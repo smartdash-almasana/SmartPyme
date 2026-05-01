@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.findings import router, get_findings_db_path, FindingsDbPath
+from app.api.v1.endpoints.findings import FindingsDbPath, get_findings_db_path, router
 from app.repositories.finding_repository import FindingRepository
 from app.services.findings_service import Finding
 

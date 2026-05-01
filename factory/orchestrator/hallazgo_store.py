@@ -98,5 +98,9 @@ def move_to_done(path: str | Path, repo_root: str | Path = ".") -> Path:
     return HallazgoStore(Path(repo_root)).move_to_done(Path(path))
 
 
-def move_to_blocked(path: str | Path, reason: str | None = None, repo_root: str | Path = ".") -> Path:
+def move_to_blocked(
+    path: str | Path,
+    reason: str | None = None,
+    repo_root: str | Path = ".",
+) -> Path:
     return HallazgoStore(Path(repo_root)).move_to_blocked(Path(path), reason=reason)

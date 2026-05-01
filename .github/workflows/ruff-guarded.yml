@@ -1,0 +1,46 @@
+name: Ruff guarded
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "factory/**"
+  workflow_dispatch:
+
+jobs:
+  ruff-e501-gate:
+    name: Ruff E501 gate (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: E501 hard gate
+        run: ruff check . --select E501
+
+  ruff-informative:
+    name: Ruff full report (non-blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Full Ruff report (non-blocking)
+        run: ruff check . --exit-zero

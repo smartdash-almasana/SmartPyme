@@ -54,7 +54,12 @@ def test_contratos_roles_input_output_son_consistentes():
     assert set(writer["input"].keys()) == {"objetivo_mapeado", "plan_corto", "subagente_writer"}
     assert set(writer["output"].keys()) == {"archivos_tocados", "status", "subagente_ejecutado"}
     assert set(validator["input"].keys()) == {"archivos_tocados", "subagente_validator"}
-    assert set(validator["output"].keys()) == {"veredicto", "logs", "tests_corridos", "subagente_ejecutado"}
+    assert set(validator["output"].keys()) == {
+        "veredicto",
+        "logs",
+        "tests_corridos",
+        "subagente_ejecutado",
+    }
 
 
 def test_bitacora_local_creada_con_secuencia_auditable():
@@ -63,7 +68,11 @@ def test_bitacora_local_creada_con_secuencia_auditable():
     res = runner.fabricar("Registrar ejecución de fábrica auditable")
 
     assert bitacora.exists()
-    entries = [json.loads(line) for line in bitacora.read_text(encoding="utf-8").splitlines() if line.strip()]
+    entries = [
+        json.loads(line)
+        for line in bitacora.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     assert len(entries) == 1
     entry = entries[0]
 
@@ -91,24 +100,42 @@ def test_routing_correcto_por_tipo_de_atomo():
     assert res_core["estado_etapas"]["director"]["output"]["subagente_writer"] == "writer_core"
 
     res_pipeline = runner.fabricar("Ajustar app/orchestration/ en flujo principal")
-    assert res_pipeline["estado_etapas"]["director"]["output"]["subagente_writer"] == "writer_pipeline"
+    assert (
+        res_pipeline["estado_etapas"]["director"]["output"]["subagente_writer"] == "writer_pipeline"
+    )
 
 
 def test_validadores_diferenciados_segun_objetivo():
     runner = FactoryRunner(bitacora_path=_bitacora_test_path("execution_log_validators.jsonl"))
 
     res_contracts = runner.fabricar("Refinar contratos y tipado de catálogo")
-    assert res_contracts["estado_etapas"]["director"]["output"]["subagente_validator"] == "validator_contracts"
-    assert res_contracts["estado_etapas"]["validator"]["output"]["subagente_ejecutado"] == "validator_contracts"
-    assert res_contracts["estado_etapas"]["validator"]["output"]["tests_corridos"] == ["contract_check"]
+    assert (
+        res_contracts["estado_etapas"]["director"]["output"]["subagente_validator"]
+        == "validator_contracts"
+    )
+    assert (
+        res_contracts["estado_etapas"]["validator"]["output"]["subagente_ejecutado"]
+        == "validator_contracts"
+    )
+    assert res_contracts["estado_etapas"]["validator"]["output"]["tests_corridos"] == [
+        "contract_check"
+    ]
 
     res_general = runner.fabricar("Corregir comportamiento general de ejecución")
-    assert res_general["estado_etapas"]["director"]["output"]["subagente_validator"] == "validator_tests"
-    assert res_general["estado_etapas"]["validator"]["output"]["subagente_ejecutado"] == "validator_tests"
+    assert (
+        res_general["estado_etapas"]["director"]["output"]["subagente_validator"]
+        == "validator_tests"
+    )
+    assert (
+        res_general["estado_etapas"]["validator"]["output"]["subagente_ejecutado"]
+        == "validator_tests"
+    )
 
 
 def test_director_selecciona_por_catalogo():
-    runner = FactoryRunner(bitacora_path=_bitacora_test_path("execution_log_catalog_selection.jsonl"))
+    runner = FactoryRunner(
+        bitacora_path=_bitacora_test_path("execution_log_catalog_selection.jsonl")
+    )
     res = runner.fabricar("Ajustar app/orchestration/ en pipeline principal")
 
     director_output = res["estado_etapas"]["director"]["output"]
@@ -120,7 +147,9 @@ def test_director_selecciona_por_catalogo():
 
 
 def test_director_caida_fallback_si_no_hay_match_catalogo():
-    runner = FactoryRunner(bitacora_path=_bitacora_test_path("execution_log_fallback_selection.jsonl"))
+    runner = FactoryRunner(
+        bitacora_path=_bitacora_test_path("execution_log_fallback_selection.jsonl")
+    )
     res = runner.fabricar("Objetivo no catalogado zeta omega delta")
 
     director_output = res["estado_etapas"]["director"]["output"]
@@ -142,7 +171,9 @@ def test_bitacora_registra_atomo_y_origen_seleccion():
 
 
 def test_planner_fallback_controlado_si_no_hay_cadena_explicita():
-    runner = FactoryRunner(bitacora_path=_bitacora_test_path("execution_log_planner_fallback_chain.jsonl"))
+    runner = FactoryRunner(
+        bitacora_path=_bitacora_test_path("execution_log_planner_fallback_chain.jsonl")
+    )
     res = runner.fabricar("Trabajo de factoria sin cadena explicita")
     director_output = res["estado_etapas"]["director"]["output"]
 

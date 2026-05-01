@@ -8,7 +8,6 @@ from app.factory.agent_loop.multiagent_task_loop import (
 )
 from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO, BusinessTaskExecutor
 
-
 BUSINESS_TASK_TYPES = {AUDIT_VENTA_BAJO_COSTO}
 
 
@@ -68,7 +67,7 @@ def run_one_business_task(
         task.output = BusinessTaskExecutor().execute(task.task_type or "", task.payload)
         task.audit = {"status": "passed", "reason": "BUSINESS_TASK_EXECUTED"}
         task.status = "done"
-    except Exception as exc:  # pragma: no cover - error path asserted by status contract when needed
+    except Exception as exc:  # pragma: no cover - error path asserted by status contract
         task.output = None
         task.audit = {"status": "blocked", "reason": exc.__class__.__name__}
         task.status = "blocked"

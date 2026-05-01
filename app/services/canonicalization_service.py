@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
-from app.contracts.evidence_contract import ExtractedFactCandidate, CanonicalRowCandidate
+from app.contracts.evidence_contract import CanonicalRowCandidate, ExtractedFactCandidate
 from app.repositories.canonical_repository import CanonicalRepository
 
 
@@ -12,7 +12,10 @@ class CanonicalizationService:
         self.repository = repository
 
     def canonicalize_facts(
-        self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+        self,
+        facts: list[ExtractedFactCandidate],
+        job_id: str | None = None,
+        plan_id: str | None = None,
     ) -> dict[str, Any]:
         canonical_rows = self._create_canonical_rows(facts, job_id=job_id, plan_id=plan_id)
         self.repository.save_batch(canonical_rows)
@@ -25,7 +28,10 @@ class CanonicalizationService:
         }
 
     def _create_canonical_rows(
-        self, facts: list[ExtractedFactCandidate], job_id: str | None = None, plan_id: str | None = None
+        self,
+        facts: list[ExtractedFactCandidate],
+        job_id: str | None = None,
+        plan_id: str | None = None,
     ) -> list[CanonicalRowCandidate]:
         return [
             self._create_canonical_row(fact, job_id=job_id, plan_id=plan_id) for fact in facts

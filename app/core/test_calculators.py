@@ -1,6 +1,9 @@
-import pytest
 import decimal
+
+import pytest
+
 from app.core.calculators import calcular_diferencia_absoluta
+
 
 def test_calculadora_diferencia_positiva():
     res = calcular_diferencia_absoluta("15.55", "10.00")

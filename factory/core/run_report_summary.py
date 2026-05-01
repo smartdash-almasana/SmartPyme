@@ -111,7 +111,11 @@ def build_factory_health_summary(
         "path_errors_count": failed_summary["path_errors_count"],
         "path_errors": failed_summary["path_errors"],
         "failed_tasks": failed_summary["failed_tasks"],
-        "health_status": _derive_health_status(queue_counts, last_report, failed_summary["path_errors_count"]),
+        "health_status": _derive_health_status(
+            queue_counts,
+            last_report,
+            failed_summary["path_errors_count"],
+        ),
     }
 
 

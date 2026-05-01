@@ -12,7 +12,6 @@ from pathlib import Path
 
 import yaml
 
-
 TOKEN_ENV_KEYS = (
     "TELEGRAM_BOT_TOKEN",
     "HERMES_TELEGRAM_TOKEN",
@@ -23,7 +22,9 @@ TOKEN_ENV_KEYS = (
 
 def main() -> int:
     hermes_home = Path(os.environ.get("HERMES_HOME", "~/.hermes")).expanduser()
-    config_path = Path(os.environ.get("HERMES_CONFIG_PATH", str(hermes_home / "config.yaml"))).expanduser()
+    config_path = Path(
+        os.environ.get("HERMES_CONFIG_PATH", str(hermes_home / "config.yaml"))
+    ).expanduser()
     repo = Path(os.environ.get("SMARTPYME_REPO", ".")).resolve()
 
     _assert_repo(repo)

@@ -3,7 +3,6 @@ from factory.core.task_spec import TaskSpec
 from factory.core.task_spec_runner import CommandResult
 from factory.core.task_spec_store import TaskSpecStore
 
-
 SUPEROWNER_ID = 111
 
 
@@ -37,7 +36,9 @@ def _adapter(tmp_path):
         runner=runner,
     )
     adapter.runner.command_runner = _ok_runner
-    adapter.runner.changed_paths_provider = lambda task: ["factory/adapters/telegram_superowner_adapter.py"]
+    adapter.runner.changed_paths_provider = lambda task: [
+        "factory/adapters/telegram_superowner_adapter.py"
+    ]
     return adapter, store
 
 
@@ -60,7 +61,9 @@ def test_telegram_factory_commands_smoke_full_owner_flow(tmp_path):
 
     run_response = adapter.handle_update(_update(SUPEROWNER_ID, "/run_one"))
     assert run_response["status"] == "done"
-    assert run_response["result"]["changed_paths"] == ["factory/adapters/telegram_superowner_adapter.py"]
+    assert run_response["result"]["changed_paths"] == [
+        "factory/adapters/telegram_superowner_adapter.py"
+    ]
     report_id = run_response["run_report"]["report_id"]
 
     assert adapter.handle_update(_update(SUPEROWNER_ID, "/last_report"))["status"] == "ok"
@@ -103,8 +106,14 @@ def test_telegram_factory_commands_smoke_blocked_recovery_flow(tmp_path):
 def test_telegram_factory_commands_smoke_invalid_and_missing_inputs(tmp_path):
     adapter, _store = _adapter(tmp_path)
 
-    assert adapter.handle_update(_update(SUPEROWNER_ID, "/unknown"))["status"] == "unsupported_command"
+    assert (
+        adapter.handle_update(_update(SUPEROWNER_ID, "/unknown"))["status"]
+        == "unsupported_command"
+    )
     assert adapter.handle_update(_update(SUPEROWNER_ID, "/diff"))["status"] == "invalid_command"
     assert adapter.handle_update(_update(SUPEROWNER_ID, "/report missing"))["status"] == "not_found"
     assert adapter.handle_update(_update(SUPEROWNER_ID, "/task missing"))["status"] == "not_found"
-    assert adapter.handle_update(_update(SUPEROWNER_ID, "/evidence missing"))["status"] == "not_found"
+    assert (
+        adapter.handle_update(_update(SUPEROWNER_ID, "/evidence missing"))["status"]
+        == "not_found"
+    )

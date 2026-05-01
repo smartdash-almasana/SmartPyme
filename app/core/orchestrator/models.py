@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Any
-from app.core.reconciliation.models import ReconciliationResult
+
 from app.core.hallazgos.models import Hallazgo
+from app.core.reconciliation.models import ReconciliationResult
+
 
 @dataclass(frozen=True, slots=True)
 class OrchestrationResult:

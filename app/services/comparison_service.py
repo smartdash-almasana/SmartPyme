@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 from itertools import combinations
+from typing import Any
 
 from app.contracts.entity_contract import Entity
+
 
 @dataclass(frozen=True, slots=True)
 class ComparisonResult:
@@ -24,7 +25,10 @@ class ComparisonService:
             if entity_a.entity_type != entity_b.entity_type:
                 continue
 
-            if entity_a.validation_status != "validated" or entity_b.validation_status != "validated":
+            if (
+                entity_a.validation_status != "validated"
+                or entity_b.validation_status != "validated"
+            ):
                 continue
 
             for attr, value_a in entity_a.attributes.items():

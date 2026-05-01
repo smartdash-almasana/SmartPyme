@@ -146,8 +146,14 @@ class RunFactoryTests(unittest.TestCase):
             auditor = root / "gemini_slice_auditor.py"
             auditor.write_text("print('ok')", encoding="utf-8")
 
-            with patch.dict(rf.os.environ, {}, clear=True), patch.object(rf, "AUDITOR_PATH", auditor):
-                with self.assertRaisesRegex(RuntimeError, "AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT"):
+            with (
+                patch.dict(rf.os.environ, {}, clear=True),
+                patch.object(rf, "AUDITOR_PATH", auditor),
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "AUDITOR_ENV_MISSING: GOOGLE_CLOUD_PROJECT",
+                ):
                     rf.run_auditor(
                         modulo="clarification",
                         rutas_fuente=["E:\\a.py"],
@@ -238,7 +244,11 @@ class RunFactoryTests(unittest.TestCase):
             ]
 
             output = io.StringIO()
-            with patch.object(rf, "run_factory", fake_run_factory), patch.object(sys, "argv", argv), redirect_stdout(output):
+            with (
+                patch.object(rf, "run_factory", fake_run_factory),
+                patch.object(sys, "argv", argv),
+                redirect_stdout(output),
+            ):
                 exit_code = rf.main()
 
             self.assertEqual(exit_code, 0)

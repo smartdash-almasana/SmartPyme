@@ -23,7 +23,13 @@ class TopologyCatalogTests(unittest.TestCase):
             catalog_path.write_text(
                 json.dumps(
                     {
-                        "core_layers": {"clarification": {"target_files": ["app/core/clarification/service.py"]}},
+                        "core_layers": {
+                            "clarification": {
+                                "target_files": [
+                                    "app/core/clarification/service.py"
+                                ]
+                            }
+                        },
                         "official_assembly_order": ["clarification"],
                         "canteras": [
                             {
@@ -40,7 +46,12 @@ class TopologyCatalogTests(unittest.TestCase):
             catalog = load_topology_catalog(catalog_path)
             assert catalog is not None
             self.assertTrue(catalog.is_known_layer("clarification"))
-            self.assertTrue(catalog.can_excavate("E:\\BuenosPasos\\smartcounter\\backend", "clarification"))
+            self.assertTrue(
+                catalog.can_excavate(
+                    "E:\\BuenosPasos\\smartcounter\\backend",
+                    "clarification",
+                )
+            )
             self.assertFalse(catalog.can_excavate("E:\\BuenosPasos\\smartexcel", "clarification"))
         finally:
             shutil.rmtree(root, ignore_errors=True)

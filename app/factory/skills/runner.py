@@ -15,7 +15,11 @@ def _error_result(skill_id: str, error_code: str, error_message: str) -> dict[st
     }
 
 
-def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry | None = None) -> dict[str, Any]:
+def run_skill(
+    skill_id: str,
+    payload: dict[str, Any],
+    registry: SkillRegistry | None = None,
+) -> dict[str, Any]:
     active_registry = registry or SkillRegistry.load_builtin()
 
     try:
@@ -27,7 +31,11 @@ def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry | 
 
     valid_input, input_error = validate_schema(payload, skill.input_schema, path="input")
     if not valid_input:
-        return _error_result(skill_id, "INPUT_SCHEMA_INVALID", input_error or "input schema invalid")
+        return _error_result(
+            skill_id,
+            "INPUT_SCHEMA_INVALID",
+            input_error or "input schema invalid",
+        )
 
     try:
         executor = get_executor(skill.executor_ref)
@@ -37,7 +45,11 @@ def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry | 
 
     valid_output, output_error = validate_schema(output, skill.output_schema, path="output")
     if not valid_output:
-        return _error_result(skill_id, "OUTPUT_SCHEMA_INVALID", output_error or "output schema invalid")
+        return _error_result(
+            skill_id,
+            "OUTPUT_SCHEMA_INVALID",
+            output_error or "output schema invalid",
+        )
 
     return {
         "status": "ok",

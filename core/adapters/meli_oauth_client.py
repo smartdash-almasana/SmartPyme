@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -19,7 +19,13 @@ class MeliTokenResponse:
 
 
 class MeliOAuthError(RuntimeError):
-    def __init__(self, message: str, *, status_code: int | None = None, details: str | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        details: str | None = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.details = details
@@ -82,7 +88,10 @@ class MeliOAuthClient:
         try:
             parsed = response.json()
         except ValueError as exc:
-            raise MeliOAuthError("MELI_OAUTH_INVALID_JSON", status_code=response.status_code) from exc
+            raise MeliOAuthError(
+                "MELI_OAUTH_INVALID_JSON",
+                status_code=response.status_code,
+            ) from exc
 
         if not isinstance(parsed, dict):
             raise MeliOAuthError("MELI_OAUTH_INVALID_PAYLOAD", status_code=response.status_code)
@@ -90,7 +99,7 @@ class MeliOAuthClient:
 
     def _build_token_response(self, payload: dict[str, Any]) -> MeliTokenResponse:
         expires_in = int(payload["expires_in"])
-        expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+        expires_at = datetime.now(UTC) + timedelta(seconds=expires_in)
         return MeliTokenResponse(
             access_token=str(payload["access_token"]),
             refresh_token=str(payload["refresh_token"]),

@@ -124,7 +124,11 @@ class RunCodexWorkerTests(unittest.TestCase):
                 done_dir=root / "done",
                 blocked_dir=root / "blocked",
                 repo_root=root,
-                executor=lambda _: ExecutionResult(success=False, message="FAIL", tests_passed=False),
+                executor=lambda _: ExecutionResult(
+                    success=False,
+                    message="FAIL",
+                    tests_passed=False,
+                ),
             )
 
             self.assertEqual(result.status, "blocked")
@@ -191,7 +195,9 @@ class RunCodexWorkerTests(unittest.TestCase):
         finally:
             shutil.rmtree(root, ignore_errors=True)
 
-    def test_destination_collision_is_resolved_with_incremental_suffix_and_releases_lock(self) -> None:
+    def test_destination_collision_is_resolved_with_incremental_suffix_and_releases_lock(
+        self,
+    ) -> None:
         root = self._local_tmp_root()
         try:
             in_progress = root / "in_progress"
@@ -287,7 +293,12 @@ class RunCodexWorkerTests(unittest.TestCase):
             captured_calls: list[list[str]] = []
 
             class _Result:
-                def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+                def __init__(
+                    self,
+                    returncode: int = 0,
+                    stdout: str = "ok",
+                    stderr: str = "",
+                ) -> None:
                     self.returncode = returncode
                     self.stdout = stdout
                     self.stderr = stderr
@@ -336,7 +347,12 @@ class RunCodexWorkerTests(unittest.TestCase):
             captured_calls: list[list[str]] = []
 
             class _Result:
-                def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+                def __init__(
+                    self,
+                    returncode: int = 0,
+                    stdout: str = "ok",
+                    stderr: str = "",
+                ) -> None:
                     self.returncode = returncode
                     self.stdout = stdout
                     self.stderr = stderr
@@ -403,7 +419,9 @@ class RunCodexWorkerTests(unittest.TestCase):
         finally:
             shutil.rmtree(root, ignore_errors=True)
 
-    def test_default_executor_blocks_with_explicit_message_when_model_is_not_supported(self) -> None:
+    def test_default_executor_blocks_with_explicit_message_when_model_is_not_supported(
+        self,
+    ) -> None:
         root = self._local_tmp_root()
         try:
             in_progress = root / "in_progress"
@@ -426,7 +444,10 @@ class RunCodexWorkerTests(unittest.TestCase):
                 _ = (cmd, capture_output, text, timeout, cwd, encoding, errors)
                 return _Result(
                     returncode=1,
-                    stderr="The 'gpt-5.2-codex' model is not supported when using Codex with a ChatGPT account.",
+                    stderr=(
+                        "The 'gpt-5.2-codex' model is not supported "
+                        "when using Codex with a ChatGPT account."
+                    ),
                 )
 
             with patch("factory.run_codex_worker.subprocess.run", _fake_run):
@@ -567,7 +588,12 @@ Objetivo test.
             captured_calls: list[list[str]] = []
 
             class _Result:
-                def __init__(self, returncode: int = 0, stdout: str = "ok", stderr: str = "") -> None:
+                def __init__(
+                    self,
+                    returncode: int = 0,
+                    stdout: str = "ok",
+                    stderr: str = "",
+                ) -> None:
                     self.returncode = returncode
                     self.stdout = stdout
                     self.stderr = stderr

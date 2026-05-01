@@ -374,7 +374,9 @@ def run_factory(
     auditor_runner: Callable[[str, list[str], str, str | None, int | None], None] = run_auditor,
 ) -> dict[str, str]:
     if commit_mode != "disabled":
-        raise ValueError("COMMIT_MODE_NO_IMPLEMENTADO: solo se permite commit_mode=disabled por ahora.")
+        raise ValueError(
+            "COMMIT_MODE_NO_IMPLEMENTADO: solo se permite commit_mode=disabled por ahora."
+        )
 
     if Path(repo_destino).resolve() != repo_root.resolve():
         raise ValueError("REPO_DESTINO_INVALIDO: debe ser el repositorio SmartPyme local.")
@@ -404,7 +406,9 @@ def run_factory(
 
     new_hallazgos = _detect_new_hallazgos(before, pending_dir)
     if not new_hallazgos:
-        raise RuntimeError("HALLAZGO_NUEVO_NO_ENCONTRADO: auditor no genero hallazgo nuevo en pending.")
+        raise RuntimeError(
+            "HALLAZGO_NUEVO_NO_ENCONTRADO: auditor no genero hallazgo nuevo en pending."
+        )
     hallazgo = max(new_hallazgos, key=lambda path: path.stat().st_mtime)
 
     cantera_raiz = rutas_fuente[0]

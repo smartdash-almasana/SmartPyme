@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-from shutil import disk_usage
-from pathlib import Path
 import sys
+from shutil import disk_usage
 
 THRESHOLD_WARN = 80
 THRESHOLD_BLOCK = 90

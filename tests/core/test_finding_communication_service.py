@@ -4,9 +4,9 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.services.findings_service import Finding
-from app.services.finding_communication_service import FindingCommunicationService
 from app.contracts.communication_contract import FindingMessage
+from app.services.finding_communication_service import FindingCommunicationService
+from app.services.findings_service import Finding
 
 
 def _finding(

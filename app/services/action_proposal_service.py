@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any
 
 from app.contracts.action_contract import ActionProposal
 from app.contracts.communication_contract import FindingMessage

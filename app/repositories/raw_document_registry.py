@@ -5,7 +5,7 @@ import json
 import mimetypes
 import os
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -84,7 +84,7 @@ def register_raw_document(
 
     raw_document_id = f"raw_{file_hash[:16]}"
     metadata_json = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
-    created_at = datetime.now(timezone.utc).isoformat()
+    created_at = datetime.now(UTC).isoformat()
     mime_type = mimetypes.guess_type(path.name)[0]
 
     try:

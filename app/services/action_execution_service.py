@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 from app.contracts.action_contract import ActionProposal
 
 if TYPE_CHECKING:
-    from app.contracts.execution_adapter_contract import ExecutionAdapter
     from app.repositories.action_execution_repository import ActionExecutionRepository
+
+    from app.contracts.execution_adapter_contract import ExecutionAdapter
 
 
 class NotApprovedError(Exception):
@@ -37,8 +38,8 @@ class ActionExecutionService:
 
     def __init__(
         self,
-        adapter: "ExecutionAdapter | None" = None,
-        execution_repository: "ActionExecutionRepository | None" = None,
+        adapter: ExecutionAdapter | None = None,
+        execution_repository: ActionExecutionRepository | None = None,
     ) -> None:
         self.adapter = adapter
         self.execution_repository = execution_repository

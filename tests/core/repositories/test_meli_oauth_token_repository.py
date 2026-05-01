@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -43,7 +43,7 @@ def _token(account_id: str, suffix: str, expires_in_seconds: int) -> MeliOAuthTo
         token_type="bearer",
         scope="offline_access",
         user_id=101,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=expires_in_seconds),
+        expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
     )
 
 
@@ -85,7 +85,7 @@ def test_upsert_updates_access_refresh_and_expires_at() -> None:
     assert loaded is not None
     assert loaded.access_token == "access-v2"
     assert loaded.refresh_token == "refresh-v2"
-    assert loaded.expires_at.tzinfo == timezone.utc
+    assert loaded.expires_at.tzinfo == UTC
     assert loaded.expires_at == second.expires_at
 
 

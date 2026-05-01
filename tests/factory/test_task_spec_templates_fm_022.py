@@ -36,7 +36,11 @@ def test_build_code_change_template_creates_taskspec():
 
 
 def test_docs_change_allows_docs_without_app_runtime():
-    task = build_task_spec_from_template("docs_change", "Actualizar documentación", task_id="FM_022_DOCS")
+    task = build_task_spec_from_template(
+        "docs_change",
+        "Actualizar documentación",
+        task_id="FM_022_DOCS",
+    )
 
     assert "docs" in task.allowed_paths
     assert "app" in task.forbidden_paths
@@ -52,9 +56,16 @@ def test_audit_only_sets_read_only_metadata():
 
 
 def test_refactor_has_boundary_validation_command():
-    task = build_task_spec_from_template("refactor", "Reducir duplicación", task_id="FM_022_REFACTOR")
+    task = build_task_spec_from_template(
+        "refactor",
+        "Reducir duplicación",
+        task_id="FM_022_REFACTOR",
+    )
 
-    assert any("test_factory_boundary_no_app_imports_fm_012.py" in command for command in task.validation_commands)
+    assert any(
+        "test_factory_boundary_no_app_imports_fm_012.py" in command
+        for command in task.validation_commands
+    )
     assert "app" in task.forbidden_paths
 
 

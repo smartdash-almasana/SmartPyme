@@ -1,0 +1,18 @@
+comando=/avanzar
+fecha=2026-04-28T15:29:21.391526+00:00
+repo=/opt/smartpyme-factory/repos/SmartPyme
+task=/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/tasks/0000_incident_hermes_breakdown_001.yaml
+gate=AUDIT_GATE.md: # AUDIT GATE
+
+status: OPEN
+updated_at: 2026-04-28T14:20:00+00:00
+updated_by: ChatGPT_Director_Auditor
+reason: control_telegram_operativo_repo_limpio_estado_anterior_resuelto
+FACTORY_STATUS.md: # Estado SmartPyme Factory
+
+estado: OPEN
+motivo: reanudar solicitada por owner desde Telegram/Hermes
+actualizado_en: 2026-04-28T15:28:40.362580+00:00
+pull=Already up to date.
+From https://github.com/smartdash-almasana/SmartPyme
+ * branch            main       -> FETCH_HEAD

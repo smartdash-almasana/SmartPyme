@@ -56,7 +56,10 @@ def evaluate_venta_bajo_costo(payload: PathologyEvaluationInput) -> PathologyFin
             severity=definition.severity,
             suggested_action=definition.suggested_action,
             source_refs=result.source_refs,
-            explanation=f"La ganancia bruta calculada es {result.value}, lo cual indica venta bajo costo.",
+            explanation=(
+                f"La ganancia bruta calculada es {result.value}, "
+                "lo cual indica venta bajo costo."
+            ),
             metadata=metadata,
         )
 

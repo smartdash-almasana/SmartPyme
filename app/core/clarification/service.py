@@ -2,8 +2,10 @@ from app.core.clarification.models import ClarificationRecord, ClarificationRequ
 from app.core.clarification.persistence import (
     has_blocking_pending_clarifications,
     list_pending_clarifications,
-    resolve_clarification as resolve_clarification_in_storage,
     save_clarification,
+)
+from app.core.clarification.persistence import (
+    resolve_clarification as resolve_clarification_in_storage,
 )
 
 

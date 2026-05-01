@@ -4,12 +4,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.core.pipeline import Pipeline
 from app.contracts.entity_contract import Entity
-from app.contracts.pipeline_contract import PipelineResult
-from app.repositories.fact_repository import FactRepository
+from app.core.pipeline import Pipeline
 from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
+from app.repositories.fact_repository import FactRepository
 
 TEST_TENANT_ID = "test_cliente"
 
@@ -151,8 +150,8 @@ def test_pipeline_persists_findings_when_finding_repo_configured():
 
 
 def test_pipeline_generates_messages_when_communication_service_configured():
-    from app.services.finding_communication_service import FindingCommunicationService
     from app.contracts.communication_contract import FindingMessage
+    from app.services.finding_communication_service import FindingCommunicationService
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))
@@ -279,9 +278,9 @@ def test_pipeline_not_blocked_when_clarification_answered():
 
 
 def test_pipeline_generates_action_proposals_when_service_configured():
-    from app.services.finding_communication_service import FindingCommunicationService
-    from app.services.action_proposal_service import ActionProposalService
     from app.contracts.action_contract import ActionProposal
+    from app.services.action_proposal_service import ActionProposalService
+    from app.services.finding_communication_service import FindingCommunicationService
 
     fact_repo = FactRepository(_db_path("facts"))
     canonical_repo = CanonicalRepository(_db_path("canonical"))

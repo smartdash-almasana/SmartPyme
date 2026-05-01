@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from app.repositories.job_repository import JobRepository
 from app.repositories.finding_repository import FindingRepository
+from app.repositories.job_repository import JobRepository
 
 
 def get_jobs(cliente_id: str):

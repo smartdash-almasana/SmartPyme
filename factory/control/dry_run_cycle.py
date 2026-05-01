@@ -2,6 +2,7 @@
 
 No LLM calls, no Telegram calls, no MCP calls. This validates the local control plane.
 """
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -23,7 +24,9 @@ class DryRunResult:
     callback_data_bytes: int
 
 
-def run_dry_run_cycle(task_id: str = "TASK-DRY-RUN", evidence_root: str | Path = "factory/ai_governance/evidence") -> dict[str, object]:
+def run_dry_run_cycle(
+    task_id: str = "TASK-DRY-RUN", evidence_root: str | Path = "factory/ai_governance/evidence"
+) -> dict[str, object]:
     evidence_dir = Path(evidence_root) / task_id
     evidence_dir.mkdir(parents=True, exist_ok=True)
 
@@ -51,7 +54,9 @@ def run_dry_run_cycle(task_id: str = "TASK-DRY-RUN", evidence_root: str | Path =
         callback_data_bytes=len(token.encode("utf-8")),
     )
     (evidence_dir / "dry_run_result.json").write_text(str(asdict(result)), encoding="utf-8")
-    (evidence_dir / "completed_at.txt").write_text(datetime.now(timezone.utc).isoformat(), encoding="utf-8")
+    (evidence_dir / "completed_at.txt").write_text(
+        datetime.now(timezone.utc).isoformat(), encoding="utf-8"
+    )
     return asdict(result)
 
 

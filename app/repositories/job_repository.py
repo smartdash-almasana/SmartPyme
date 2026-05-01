@@ -73,7 +73,11 @@ class JobRepository:
                 payload=json.loads(row["payload"]) if row["payload"] else {},
                 result=json.loads(row["result"]) if row["result"] else None,
                 error_log=row["error_log"],
-                traceable_origin=json.loads(row["traceable_origin"]) if row["traceable_origin"] else {},
+                traceable_origin=(
+                    json.loads(row["traceable_origin"])
+                    if row["traceable_origin"]
+                    else {}
+                ),
             )
 
     def list_jobs(self):
@@ -91,20 +95,26 @@ class JobRepository:
     def mark_success(self, job_id: str, result: dict):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
-                "UPDATE background_jobs SET status=?, result=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+                "UPDATE background_jobs "
+                "SET status=?, result=?, updated_at=CURRENT_TIMESTAMP "
+                "WHERE cliente_id=? AND job_id=?",
                 (JobStatus.SUCCESS.value, json.dumps(result or {}), self.cliente_id, job_id),
             )
 
     def mark_failed(self, job_id: str, error_log: str):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
-                "UPDATE background_jobs SET status=?, error_log=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+                "UPDATE background_jobs "
+                "SET status=?, error_log=?, updated_at=CURRENT_TIMESTAMP "
+                "WHERE cliente_id=? AND job_id=?",
                 (JobStatus.FAILED.value, error_log, self.cliente_id, job_id),
             )
 
     def _update_status(self, job_id: str, status: JobStatus):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
-                "UPDATE background_jobs SET status=?, updated_at=CURRENT_TIMESTAMP WHERE cliente_id=? AND job_id=?",
+                "UPDATE background_jobs "
+                "SET status=?, updated_at=CURRENT_TIMESTAMP "
+                "WHERE cliente_id=? AND job_id=?",
                 (status.value, self.cliente_id, job_id),
             )

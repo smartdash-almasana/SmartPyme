@@ -10,10 +10,17 @@ from typing import Any
 DEFAULT_HEARTBEAT_PATH = Path("factory/control/heartbeat.json")
 
 
-def write_heartbeat(path: str | Path = DEFAULT_HEARTBEAT_PATH, status: str = "healthy") -> dict[str, Any]:
+def write_heartbeat(
+    path: str | Path = DEFAULT_HEARTBEAT_PATH,
+    status: str = "healthy",
+) -> dict[str, Any]:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    payload = {"timestamp": datetime.now(timezone.utc).isoformat(), "pid": os.getpid(), "status": status}
+    payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "pid": os.getpid(),
+        "status": status,
+    }
     target.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     return payload
 

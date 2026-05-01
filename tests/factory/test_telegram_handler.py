@@ -1,14 +1,39 @@
-from factory.control.telegram_handler import create_callback_token, load_allowed_user_ids, resolve_callback_token, validate_update
+from factory.control.telegram_handler import (
+    create_callback_token,
+    load_allowed_user_ids,
+    resolve_callback_token,
+    validate_update,
+)
 
 
 def test_allowlist_and_dedup(tmp_path):
     allowlist = tmp_path / "allowlist.yaml"
-    allowlist.write_text("owner:\n  user_id: 123\n  role: owner\n  enabled: true\nmoderators: []\nauditors: []\n", encoding="utf-8")
+    allowlist.write_text(
+        (
+            "owner:\n"
+            "  user_id: 123\n"
+            "  role: owner\n"
+            "  enabled: true\n"
+            "moderators: []\n"
+            "auditors: []\n"
+        ),
+        encoding="utf-8",
+    )
     db = tmp_path / "telegram.db"
     assert load_allowed_user_ids(allowlist) == [123]
-    update = {"update_id": 1, "message": {"from": {"id": 123}, "text": "/estado", "chat": {"id": 999}}}
+    update = {
+        "update_id": 1,
+        "message": {
+            "from": {"id": 123},
+            "text": "/estado",
+            "chat": {"id": 999},
+        },
+    }
     assert validate_update(update, db_path=db, allowlist_path=allowlist)["status"] == "ok"
-    assert validate_update(update, db_path=db, allowlist_path=allowlist)["code"] == "DUPLICATE_UPDATE"
+    assert (
+        validate_update(update, db_path=db, allowlist_path=allowlist)["code"]
+        == "DUPLICATE_UPDATE"
+    )
 
 
 def test_callback_token_under_64_bytes(tmp_path):

@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
-from app.contracts.evidence_contract import CanonicalRowCandidate
 from app.contracts.entity_contract import Entity
+from app.contracts.evidence_contract import CanonicalRowCandidate
 from app.repositories.entity_repository import EntityRepository
 
 
@@ -13,7 +13,10 @@ class EntityResolutionService:
         self.repository = repository
 
     def resolve_entities(
-        self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+        self,
+        canonical_rows: list[CanonicalRowCandidate],
+        job_id: str | None = None,
+        plan_id: str | None = None,
     ) -> dict[str, Any]:
         
         entities = self._resolve_rows(canonical_rows, job_id=job_id, plan_id=plan_id)
@@ -27,22 +30,32 @@ class EntityResolutionService:
         }
 
     def _resolve_rows(
-        self, canonical_rows: list[CanonicalRowCandidate], job_id: str | None = None, plan_id: str | None = None
+        self,
+        canonical_rows: list[CanonicalRowCandidate],
+        job_id: str | None = None,
+        plan_id: str | None = None,
     ) -> list[Entity]:
         entities = []
         for row in canonical_rows:
-            # This is a very basic resolution logic. It will create a new entity for each canonical row.
+            # This is a very basic resolution logic.
+            # It will create a new entity for each canonical row.
             # A more advanced implementation would try to find existing entities and merge them.
             
             entity_type = row.entity_type
             attributes = row.row
             
             # Try to find an existing entity with the same attributes.
-            # This is a simplification. A real implementation would have more complex matching logic.
-            existing_entity = self.repository.find_by_attribute(entity_type, 'value', attributes.get('value'))
+            # This is a simplification.
+            # A real implementation would have more complex matching logic.
+            existing_entity = self.repository.find_by_attribute(
+                entity_type,
+                "value",
+                attributes.get("value"),
+            )
             
             if existing_entity:
-                # If an entity with the same attribute value exists, we link the new canonical row to it.
+                # If an entity with the same attribute value exists,
+                # we link the new canonical row to it.
                 # This is a very basic form of entity resolution.
                 updated_attributes = existing_entity.attributes.copy()
                 updated_attributes.update(attributes)

@@ -20,7 +20,10 @@ def _report():
                 task_id="FM_027_A",
                 evidence_paths=["evidence/a.txt"],
                 command_results=[CommandResult("pytest a", 0)],
-                changed_paths=["factory/core/run_report_summary.py", "factory/adapters/telegram_superowner_adapter.py"],
+                changed_paths=[
+                    "factory/core/run_report_summary.py",
+                    "factory/adapters/telegram_superowner_adapter.py",
+                ],
             ),
             TaskSpecRunResult(
                 status=TaskSpecStatus.BLOCKED,
@@ -28,7 +31,10 @@ def _report():
                 evidence_paths=["evidence/b.txt"],
                 blocking_reason="PATH_VALIDATION_FAILED",
                 command_results=[CommandResult("pytest b", 0)],
-                changed_paths=["factory/core/run_report_summary.py", "tests/factory/test_run_report_summary_fm_027.py"],
+                changed_paths=[
+                    "factory/core/run_report_summary.py",
+                    "tests/factory/test_run_report_summary_fm_027.py",
+                ],
                 path_errors=["PATH_NOT_ALLOWED: docs/x.md"],
             ),
         ],

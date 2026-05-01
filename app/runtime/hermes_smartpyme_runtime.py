@@ -12,7 +12,7 @@ class HermesSmartPymeRuntime:
         self.hermes_repo_path = Path(hermes_repo_path)
 
     @classmethod
-    def from_env(cls) -> "HermesSmartPymeRuntime":
+    def from_env(cls) -> HermesSmartPymeRuntime:
         hermes_repo_path = os.environ.get("HERMES_REPO_PATH")
         return cls(hermes_repo_path or cls.DEFAULT_HERMES_REPO_PATH)
 

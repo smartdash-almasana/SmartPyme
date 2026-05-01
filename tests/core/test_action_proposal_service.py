@@ -6,9 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from app.contracts.action_contract import ActionProposal
 from app.contracts.communication_contract import FindingMessage, build_message_id
-from app.services.findings_service import Finding
 from app.services.action_proposal_service import ActionProposalService
-
+from app.services.findings_service import Finding
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 

@@ -56,8 +56,8 @@ def test_hermes_pathology_tool_hides_cross_client(tmp_path):
 def test_owner_status_includes_pathologies(tmp_path):
     formula_db, pathology_db = _seed_active_pathology(tmp_path)
 
-    import app.mcp.tools.jobs_read_tool as jobs_tool
     import app.mcp.tools.formula_results_tool as formula_tool
+    import app.mcp.tools.jobs_read_tool as jobs_tool
     import app.mcp.tools.pathology_explanation_tool as pathology_tool
 
     jobs_tool.Path = lambda p: tmp_path / "empty.db"

@@ -1,8 +1,9 @@
 # This is a standalone script to seed the evidence store for validation.
 
-import os
 import json
+import os
 from pathlib import Path
+
 from models.document_models import DocumentChunk
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

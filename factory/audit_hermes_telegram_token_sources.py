@@ -43,7 +43,9 @@ ENV_KEYS = [
 
 def main() -> int:
     hermes_home = Path(os.environ.get("HERMES_HOME", "~/.hermes")).expanduser()
-    config_path = Path(os.environ.get("HERMES_CONFIG_PATH", str(hermes_home / "config.yaml"))).expanduser()
+    config_path = Path(
+        os.environ.get("HERMES_CONFIG_PATH", str(hermes_home / "config.yaml"))
+    ).expanduser()
 
     print("HERMES_TELEGRAM_TOKEN_SOURCE_AUDIT")
     print(f"hermes_home={hermes_home}")
@@ -78,7 +80,9 @@ def _print_config_token_check(config_path: Path) -> None:
         return
     try:
         data = json.loads(
-            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/getMe", timeout=20).read().decode()
+            urllib.request.urlopen(f"https://api.telegram.org/bot{token}/getMe", timeout=20)
+            .read()
+            .decode()
         )
         print(f"telegram_getMe_ok={data.get('ok')}")
         print(f"telegram_username={data.get('result', {}).get('username')}")
@@ -108,7 +112,9 @@ def _iter_candidate_files() -> Iterable[Path]:
             if not path.is_file() or path in seen:
                 continue
             name = path.name.lower()
-            if any(part in name for part in ("env", "config", "telegram", "hermes", "gateway", "token")):
+            if any(
+                part in name for part in ("env", "config", "telegram", "hermes", "gateway", "token")
+            ):
                 seen.add(path)
                 yield path
 

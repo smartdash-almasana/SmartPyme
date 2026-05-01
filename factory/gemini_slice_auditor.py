@@ -9,7 +9,6 @@ from pathlib import Path
 
 from google import genai
 
-
 ROOT_DESTINO = Path(r"E:\BuenosPasos\smartbridge\SmartPyme")
 DEFAULT_OUTPUT_DIR = ROOT_DESTINO / "factory" / "hallazgos" / "pending"
 EXCLUDED_PARTS = {".git", ".venv", "__pycache__"}
@@ -93,7 +92,10 @@ def candidate_files(repo_path: Path, max_files: int, modulo_objetivo: str) -> li
             continue
 
         lowered = str(path).lower()
-        if any(token in lowered for token in ("workflow.py", "rules.py", "route", "adapter", "profiling", "smoke")):
+        if any(
+            token in lowered
+            for token in ("workflow.py", "rules.py", "route", "adapter", "profiling", "smoke")
+        ):
             continue
         if any(keyword in lowered for keyword in keywords):
             candidates.append(path)
@@ -124,9 +126,7 @@ def build_prompt(config: AuditConfig, repo_path: Path, files: list[Path]) -> str
         rel = file_path.relative_to(repo_path)
         content = read_text_file(file_path, config.max_chars_per_file)
         file_sections.append(
-            f"\n### ARCHIVO: {file_path}\n"
-            f"### RUTA_RELATIVA: {rel}\n"
-            f"```text\n{content}\n```\n"
+            f"\n### ARCHIVO: {file_path}\n### RUTA_RELATIVA: {rel}\n```text\n{content}\n```\n"
         )
 
     joined_files = "\n".join(file_sections)
@@ -178,8 +178,10 @@ REGLAS ESTRICTAS DE SALIDA (OBLIGATORIAS)
 - NO proponer nada que contenga: {forbidden_hints_text}
 - Máximo 3 archivos en `## PROPUESTA_DE_PORTADO`.
 - Priorizar slices de lógica pura y determinística (funciones/modelos/core).
-- Evitar documentos extensos, snapshots, glue code de framework y código de infraestructura como TOP_SLICES.
-- Si no hay slices adecuados para ese alcance mínimo: dejarlo explícitamente bloqueado en el hallazgo.
+- Evitar documentos extensos, snapshots, glue code de framework
+  y código de infraestructura como TOP_SLICES.
+- Si no hay slices adecuados para ese alcance mínimo:
+  dejarlo explícitamente bloqueado en el hallazgo.
 - No inventar rutas: usar solo rutas reales observadas o rutas permitidas exactas de portado.
 
 FORMATO OBLIGATORIO
@@ -606,15 +608,9 @@ def main() -> None:
         model=args.model,
     )
 
-    missing_env = [
-        name
-        for name in ("GOOGLE_CLOUD_PROJECT",)
-        if not os.environ.get(name)
-    ]
+    missing_env = [name for name in ("GOOGLE_CLOUD_PROJECT",) if not os.environ.get(name)]
     if missing_env:
-        raise SystemExit(
-            f"Faltan variables de entorno obligatorias: {', '.join(missing_env)}"
-        )
+        raise SystemExit(f"Faltan variables de entorno obligatorias: {', '.join(missing_env)}")
 
     print("=== GEMINI SLICE AUDITOR ===")
     print(f"Modulo objetivo: {config.modulo_objetivo}")

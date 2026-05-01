@@ -1,9 +1,8 @@
-from pathlib import Path
 
-from app.mcp.tools.jobs_read_tool import get_jobs, get_findings
-from app.repositories.job_repository import JobRepository
-from app.repositories.finding_repository import FindingRepository
 from app.contracts.job_contract import Job
+from app.mcp.tools.jobs_read_tool import get_findings, get_jobs
+from app.repositories.finding_repository import FindingRepository
+from app.repositories.job_repository import JobRepository
 from app.services.findings_service import Finding
 
 

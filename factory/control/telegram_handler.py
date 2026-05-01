@@ -27,10 +27,17 @@ def _conn(path: str | Path = DB_PATH) -> sqlite3.Connection:
     conn = sqlite3.connect(str(db_path))
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS processed_updates (update_id INTEGER PRIMARY KEY, command TEXT, processed_at TEXT NOT NULL)"
+        (
+            "CREATE TABLE IF NOT EXISTS processed_updates "
+            "(update_id INTEGER PRIMARY KEY, command TEXT, processed_at TEXT NOT NULL)"
+        )
     )
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS callback_tokens (callback_id TEXT PRIMARY KEY, cycle_id TEXT NOT NULL, action TEXT NOT NULL, expires_at TEXT NOT NULL)"
+        (
+            "CREATE TABLE IF NOT EXISTS callback_tokens "
+            "(callback_id TEXT PRIMARY KEY, cycle_id TEXT NOT NULL, "
+            "action TEXT NOT NULL, expires_at TEXT NOT NULL)"
+        )
     )
     conn.commit()
     return conn
@@ -52,8 +59,16 @@ def load_allowed_user_ids(path: str | Path = ALLOWLIST_PATH) -> list[int]:
     return sorted(set(ids))
 
 
-def is_allowed_user(from_user_id: int, allowed_user_ids: list[int] | None = None, allowlist_path: str | Path = ALLOWLIST_PATH) -> bool:
-    ids = allowed_user_ids if allowed_user_ids is not None else load_allowed_user_ids(allowlist_path)
+def is_allowed_user(
+    from_user_id: int,
+    allowed_user_ids: list[int] | None = None,
+    allowlist_path: str | Path = ALLOWLIST_PATH,
+) -> bool:
+    ids = (
+        allowed_user_ids
+        if allowed_user_ids is not None
+        else load_allowed_user_ids(allowlist_path)
+    )
     return int(from_user_id) in {int(item) for item in ids}
 
 
@@ -72,14 +87,22 @@ def mark_update_processed(update_id: int, command: str = "", db_path: str | Path
         conn.close()
 
 
-def create_callback_token(cycle_id: str, action: str, ttl_seconds: int = 300, db_path: str | Path = DB_PATH) -> str:
+def create_callback_token(
+    cycle_id: str,
+    action: str,
+    ttl_seconds: int = 300,
+    db_path: str | Path = DB_PATH,
+) -> str:
     callback_id = secrets.token_urlsafe(16)
     if len(callback_id.encode("utf-8")) > 64:
         raise ValueError("callback_data exceeds Telegram 64-byte limit")
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
     conn = _conn(db_path)
     conn.execute(
-        "INSERT INTO callback_tokens(callback_id, cycle_id, action, expires_at) VALUES (?, ?, ?, ?)",
+        (
+            "INSERT INTO callback_tokens(callback_id, cycle_id, action, expires_at) "
+            "VALUES (?, ?, ?, ?)"
+        ),
         (callback_id, cycle_id, action, expires_at.isoformat()),
     )
     conn.commit()
@@ -87,7 +110,10 @@ def create_callback_token(cycle_id: str, action: str, ttl_seconds: int = 300, db
     return callback_id
 
 
-def resolve_callback_token(callback_id: str, db_path: str | Path = DB_PATH) -> dict[str, Any] | None:
+def resolve_callback_token(
+    callback_id: str,
+    db_path: str | Path = DB_PATH,
+) -> dict[str, Any] | None:
     conn = _conn(db_path)
     row = conn.execute(
         "SELECT cycle_id, action, expires_at FROM callback_tokens WHERE callback_id = ?",
@@ -102,16 +128,34 @@ def resolve_callback_token(callback_id: str, db_path: str | Path = DB_PATH) -> d
     return {"cycle_id": row[0], "action": row[1], "expires_at": row[2]}
 
 
-def validate_update(update: dict[str, Any], db_path: str | Path = DB_PATH, allowlist_path: str | Path = ALLOWLIST_PATH) -> dict[str, Any]:
+def validate_update(
+    update: dict[str, Any],
+    db_path: str | Path = DB_PATH,
+    allowlist_path: str | Path = ALLOWLIST_PATH,
+) -> dict[str, Any]:
     """Validate a Telegram update without executing side effects beyond dedup storage."""
     update_id = int(update.get("update_id", -1))
     message = update.get("message") or update.get("callback_query", {}).get("message") or {}
-    from_user = update.get("message", {}).get("from") or update.get("callback_query", {}).get("from") or {}
+    from_user = (
+        update.get("message", {}).get("from")
+        or update.get("callback_query", {}).get("from")
+        or {}
+    )
     user_id = int(from_user.get("id", 0) or 0)
-    text = str(update.get("message", {}).get("text") or update.get("callback_query", {}).get("data") or "")
+    text = str(
+        update.get("message", {}).get("text")
+        or update.get("callback_query", {}).get("data")
+        or ""
+    )
 
     if not is_allowed_user(user_id, allowlist_path=allowlist_path):
         return {"status": "error", "code": "UNAUTHORIZED", "message": "Usuario no autorizado"}
     if not mark_update_processed(update_id, text, db_path=db_path):
         return {"status": "ignored", "code": "DUPLICATE_UPDATE", "message": "Update ya procesado"}
-    return {"status": "ok", "code": "ACCEPTED", "message": "Update aceptado", "command": text, "chat_id": message.get("chat", {}).get("id")}
+    return {
+        "status": "ok",
+        "code": "ACCEPTED",
+        "message": "Update aceptado",
+        "command": text,
+        "chat_id": message.get("chat", {}).get("id"),
+    }

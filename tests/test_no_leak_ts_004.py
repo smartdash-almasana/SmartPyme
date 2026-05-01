@@ -1,9 +1,8 @@
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.process import router, get_pipeline_db_paths, PipelineDbPaths
+from app.api.v1.endpoints.process import PipelineDbPaths, get_pipeline_db_paths, router
 
 
 def create_app(db_paths: PipelineDbPaths):

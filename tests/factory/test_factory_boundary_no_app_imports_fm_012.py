@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 FORBIDDEN_IMPORTS = (
     "from app.",
     "import app.",

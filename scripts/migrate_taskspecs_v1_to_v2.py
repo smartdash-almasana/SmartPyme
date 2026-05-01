@@ -17,8 +17,33 @@ TASK_DIR = ROOT / "factory" / "ai_governance" / "tasks"
 SCHEMA_PATH = ROOT / "factory" / "ai_governance" / "schemas" / "taskspec.schema.json"
 TASK_ID_RE = re.compile(r"^TASK-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{3}$")
 SAFE_PATH_RE = re.compile(r"^[a-zA-Z0-9_./-]+$")
-VALID_STATUSES = {"PENDING", "ASSIGNED", "BUILDING", "WAITING_AUDIT", "AUDITING", "AUDIT_PASSED", "AUDIT_REJECTED", "AUDIT_BLOCKED", "BACK_TO_BUILD", "ESCALATED", "AWAITING_HUMAN_MERGE", "MERGED", "CLOSED", "ABANDONED", "CANCELLED"}
-STATUS_ALIASES = {"DONE": "CLOSED", "VALIDADO": "AUDIT_PASSED", "CORRECTO": "AUDIT_PASSED", "NO_VALIDADO": "AUDIT_REJECTED", "BLOCKED": "ESCALATED", "IN_PROGRESS": "BUILDING", "INPROGRESS": "BUILDING", "OPEN": "PENDING"}
+VALID_STATUSES = {
+    "PENDING",
+    "ASSIGNED",
+    "BUILDING",
+    "WAITING_AUDIT",
+    "AUDITING",
+    "AUDIT_PASSED",
+    "AUDIT_REJECTED",
+    "AUDIT_BLOCKED",
+    "BACK_TO_BUILD",
+    "ESCALATED",
+    "AWAITING_HUMAN_MERGE",
+    "MERGED",
+    "CLOSED",
+    "ABANDONED",
+    "CANCELLED",
+}
+STATUS_ALIASES = {
+    "DONE": "CLOSED",
+    "VALIDADO": "AUDIT_PASSED",
+    "CORRECTO": "AUDIT_PASSED",
+    "NO_VALIDADO": "AUDIT_REJECTED",
+    "BLOCKED": "ESCALATED",
+    "IN_PROGRESS": "BUILDING",
+    "INPROGRESS": "BUILDING",
+    "OPEN": "PENDING",
+}
 
 
 def git_head() -> str:
@@ -40,7 +65,9 @@ def as_list(value: Any) -> list[Any]:
 
 def replace_tenant(value: Any) -> Any:
     if isinstance(value, dict):
-        return {("cliente_id" if k == "tenant_id" else k): replace_tenant(v) for k, v in value.items()}
+        return {
+            ("cliente_id" if k == "tenant_id" else k): replace_tenant(v) for k, v in value.items()
+        }
     if isinstance(value, list):
         return [replace_tenant(v) for v in value]
     if isinstance(value, str):
@@ -87,7 +114,9 @@ def acceptance_items(value: Any) -> list[dict[str, Any]]:
     out = []
     for item in raw:
         if isinstance(item, dict):
-            desc = str(item.get("description") or item.get("criterion") or "Criterio legacy migrado")
+            desc = str(
+                item.get("description") or item.get("criterion") or "Criterio legacy migrado"
+            )
             cmd = str(item.get("verification_command") or "true")
             pattern = str(item.get("expected_output_pattern") or ".*")
             required = [str(x) for x in as_list(item.get("required_files"))]
@@ -98,7 +127,14 @@ def acceptance_items(value: Any) -> list[dict[str, Any]]:
             required = []
         if len(desc) < 10:
             desc = f"{desc} — criterio legacy migrado"
-        out.append({"description": desc, "verification_command": cmd, "expected_output_pattern": pattern, "required_files": required})
+        out.append(
+            {
+                "description": desc,
+                "verification_command": cmd,
+                "expected_output_pattern": pattern,
+                "required_files": required,
+            }
+        )
     return out
 
 
@@ -132,12 +168,38 @@ def migrate_one(path: Path, seq: int, head_sha: str) -> dict[str, Any]:
         "created_by": created_by,
         "priority": priority,
         "cliente_id": str(original.get("cliente_id") or "smartpyme-core"),
-        "runtime": {"target_skill": str(runtime.get("target_skill") or "factory_bounded_builder"), "target_agent": agent, "max_retries": int(runtime.get("max_retries", 3)), "timeout_minutes": int(runtime.get("timeout_minutes", 45))},
-        "context": {"repo_ref": str(context.get("repo_ref") or "main"), "base_commit": base_commit, "canonical_docs": [str(x) for x in as_list(context.get("canonical_docs"))]},
-        "scope": {"allowed_files": safe_allowed(original.get("allowed_files"), f"factory/ai_governance/tasks/{path.name}"), "forbidden_files": safe_forbidden(original.get("forbidden_files"))},
-        "commands": {"preflight": command_items(commands.get("preflight") or original.get("preflight_commands")), "post": command_items(commands.get("post") or original.get("post_commands"))},
-        "acceptance_criteria": acceptance_items(original.get("acceptance_criteria") or original.get("criterios_aceptacion") or original.get("validation")),
-        "gate": {"required_audit": bool(gate.get("required_audit", True)), "auto_merge": bool(gate.get("auto_merge", False))},
+        "runtime": {
+            "target_skill": str(runtime.get("target_skill") or "factory_bounded_builder"),
+            "target_agent": agent,
+            "max_retries": int(runtime.get("max_retries", 3)),
+            "timeout_minutes": int(runtime.get("timeout_minutes", 45)),
+        },
+        "context": {
+            "repo_ref": str(context.get("repo_ref") or "main"),
+            "base_commit": base_commit,
+            "canonical_docs": [str(x) for x in as_list(context.get("canonical_docs"))],
+        },
+        "scope": {
+            "allowed_files": safe_allowed(
+                original.get("allowed_files"), f"factory/ai_governance/tasks/{path.name}"
+            ),
+            "forbidden_files": safe_forbidden(original.get("forbidden_files")),
+        },
+        "commands": {
+            "preflight": command_items(
+                commands.get("preflight") or original.get("preflight_commands")
+            ),
+            "post": command_items(commands.get("post") or original.get("post_commands")),
+        },
+        "acceptance_criteria": acceptance_items(
+            original.get("acceptance_criteria")
+            or original.get("criterios_aceptacion")
+            or original.get("validation")
+        ),
+        "gate": {
+            "required_audit": bool(gate.get("required_audit", True)),
+            "auto_merge": bool(gate.get("auto_merge", False)),
+        },
         "status": normalize_status(original.get("status")),
         "retry_count": int(original.get("retry_count") or 0),
         "evidence_path": str(original.get("evidence_path") or ""),
@@ -170,7 +232,9 @@ def main() -> int:
                 backup = path.with_suffix(path.suffix + ".v1.bak")
                 if not backup.exists():
                     backup.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
-                path.write_text(yaml.safe_dump(migrated, sort_keys=False, allow_unicode=True), encoding="utf-8")
+                path.write_text(
+                    yaml.safe_dump(migrated, sort_keys=False, allow_unicode=True), encoding="utf-8"
+                )
         except Exception as exc:
             errors += 1
             print(f"  ✗ {path.name}: {exc}")

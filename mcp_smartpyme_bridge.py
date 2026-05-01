@@ -1,9 +1,9 @@
-import asyncio
+import json
 import os
 import uuid
-import json
 from dataclasses import asdict
 from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
 
 # Inicialización del servidor MCP para SmartPyme
@@ -30,7 +30,7 @@ async def create_job(
     Crea un Job real desde un OperationalPlanContract minimo.
     """
     from app.contracts.operational_plan_contract import create_operational_plan
-    from app.factory.orchestrator.models import Job, STATE_CREATED
+    from app.factory.orchestrator.models import STATE_CREATED, Job
     from app.factory.orchestrator.persistence import save_job
 
     try:
@@ -158,8 +158,8 @@ async def save_clarification(description: str, type: str = "clarification") -> d
     """
     Crea una nueva clarificación pendiente para ser atendida.
     """
-    from app.core.clarification.persistence import save_clarification as save_in_db
     from app.core.clarification.models import ClarificationRequest
+    from app.core.clarification.persistence import save_clarification as save_in_db
 
     try:
         clarification_id = f"CL-MANUAL-{uuid.uuid4().hex[:8]}"
@@ -228,8 +228,8 @@ async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
     """
     Ingesta un documento local en el EvidenceStore de SmartPyme.
     """
-    from services.document_ingestion_service import DocumentIngestionService
     from app.repositories.raw_document_registry import register_raw_document
+    from services.document_ingestion_service import DocumentIngestionService
 
     # The service expects an absolute path
     abs_file_path = Path(file_path).resolve()

@@ -33,4 +33,6 @@ def _run_git(args: list[str], repo_dir: Path) -> list[str]:
     )
     if completed.returncode != 0:
         return []
-    return [line.strip().replace("\\", "/") for line in completed.stdout.splitlines() if line.strip()]
+    return [
+        line.strip().replace("\\", "/") for line in completed.stdout.splitlines() if line.strip()
+    ]

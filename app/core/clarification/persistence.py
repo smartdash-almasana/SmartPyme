@@ -77,7 +77,15 @@ def list_pending_clarifications() -> list[ClarificationRecord]:
     with _get_connection() as connection:
         rows = connection.execute(
             """
-            SELECT clarification_id, entity_type, value_a, value_b, reason, blocking, status, resolution
+            SELECT
+                clarification_id,
+                entity_type,
+                value_a,
+                value_b,
+                reason,
+                blocking,
+                status,
+                resolution
             FROM clarifications
             WHERE status = 'pending'
             ORDER BY rowid ASC

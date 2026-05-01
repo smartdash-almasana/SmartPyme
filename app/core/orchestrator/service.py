@@ -1,13 +1,15 @@
-from typing import Any, Optional
+from typing import Any
+
+from app.core.hallazgos.service import HallazgoEngine
 from app.core.orchestrator.models import OrchestrationResult
 from app.core.reconciliation.service import reconcile_records
-from app.core.hallazgos.service import HallazgoEngine
 from app.core.repositories.hallazgo_repository import HallazgoRepository, MemoryHallazgoRepository
+
 
 class Orchestrator:
     """Orquestador central del flujo de SmartPyme con persistencia integrada."""
 
-    def __init__(self, repository: Optional[HallazgoRepository] = None):
+    def __init__(self, repository: HallazgoRepository | None = None):
         self.hallazgo_engine = HallazgoEngine()
         self.repository = repository or MemoryHallazgoRepository()
 

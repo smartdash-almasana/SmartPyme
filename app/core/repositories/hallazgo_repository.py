@@ -1,5 +1,7 @@
-from typing import Protocol, Optional, runtime_checkable, List
-from app.core.hallazgos.models import Hallazgo, FindingStatus, FindingSeverity, FindingType
+from typing import Protocol, runtime_checkable
+
+from app.core.hallazgos.models import FindingSeverity, FindingStatus, FindingType, Hallazgo
+
 
 @runtime_checkable
 class HallazgoRepository(Protocol):
@@ -9,20 +11,20 @@ class HallazgoRepository(Protocol):
         """Guarda o actualiza un hallazgo."""
         ...
 
-    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
+    def get_by_id(self, hallazgo_id: str) -> Hallazgo | None:
         """Busca un hallazgo por su ID único."""
         ...
 
-    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
+    def get_by_dedupe_key(self, dedupe_key: str) -> Hallazgo | None:
         """Busca un hallazgo por su clave de deduplicación."""
         ...
 
     def list_all(
         self, 
-        status: Optional[FindingStatus] = None,
-        severity: Optional[FindingSeverity] = None,
-        tipo: Optional[FindingType] = None
-    ) -> List[Hallazgo]:
+        status: FindingStatus | None = None,
+        severity: FindingSeverity | None = None,
+        tipo: FindingType | None = None
+    ) -> list[Hallazgo]:
         """Lista hallazgos aplicando filtros opcionales."""
         ...
 
@@ -37,10 +39,10 @@ class MemoryHallazgoRepository:
         self._storage[hallazgo.id] = hallazgo
         self._dedupe_index[hallazgo.dedupe_key] = hallazgo.id
 
-    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
+    def get_by_id(self, hallazgo_id: str) -> Hallazgo | None:
         return self._storage.get(hallazgo_id)
 
-    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
+    def get_by_dedupe_key(self, dedupe_key: str) -> Hallazgo | None:
         hallazgo_id = self._dedupe_index.get(dedupe_key)
         if not hallazgo_id:
             return None
@@ -48,10 +50,10 @@ class MemoryHallazgoRepository:
 
     def list_all(
         self, 
-        status: Optional[FindingStatus] = None,
-        severity: Optional[FindingSeverity] = None,
-        tipo: Optional[FindingType] = None
-    ) -> List[Hallazgo]:
+        status: FindingStatus | None = None,
+        severity: FindingSeverity | None = None,
+        tipo: FindingType | None = None
+    ) -> list[Hallazgo]:
         findings = list(self._storage.values())
         
         if status:

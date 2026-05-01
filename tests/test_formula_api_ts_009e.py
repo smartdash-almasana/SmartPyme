@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.formulas import router, get_formula_db_path, FormulaDbPath
+from app.api.v1.endpoints.formulas import FormulaDbPath, get_formula_db_path, router
 from app.repositories.formula_result_repository import FormulaResultRepository
 
 

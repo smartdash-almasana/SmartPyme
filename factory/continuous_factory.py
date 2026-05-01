@@ -29,7 +29,12 @@ def _new_metrics() -> dict[str, int]:
     }
 
 
-def _bump_metrics(container: dict[str, dict[str, int]], key: str, field: str, amount: int = 1) -> None:
+def _bump_metrics(
+    container: dict[str, dict[str, int]],
+    key: str,
+    field: str,
+    amount: int = 1,
+) -> None:
     bucket = container.setdefault(key, _new_metrics())
     bucket[field] += amount
 
@@ -99,7 +104,9 @@ def _load_manifest(manifest_path: Path) -> dict[str, list[str]]:
 
 
 def _apply_topology_order(modulos: list[str], topology_manifest_path: Path) -> list[str]:
-    catalog = load_topology_catalog(topology_manifest_path.parent / "factory" / "topology_catalog.json")
+    catalog = load_topology_catalog(
+        topology_manifest_path.parent / "factory" / "topology_catalog.json"
+    )
     if catalog is None:
         return modulos
 
@@ -209,10 +216,16 @@ def run_continuous_factory(
                 processed_units.add(unit_id)
 
                 if _is_unit_suspended(state, unit_id):
-                    _append_log(log_path, f"UNIT_SUSPENDIDA_SALTADA|cycle={cycle_id}|unit={unit_id}")
+                    _append_log(
+                        log_path,
+                        f"UNIT_SUSPENDIDA_SALTADA|cycle={cycle_id}|unit={unit_id}",
+                    )
                     continue
 
-                if max_hallazgos_per_cycle is not None and cycle_hallazgos >= max_hallazgos_per_cycle:
+                if (
+                    max_hallazgos_per_cycle is not None
+                    and cycle_hallazgos >= max_hallazgos_per_cycle
+                ):
                     _append_log(log_path, f"HALLAZGO_BUDGET_ALCANZADO|cycle={cycle_id}")
                     break
 
@@ -265,7 +278,10 @@ def run_continuous_factory(
                     state["execution_failures"] += 1
                     _bump_metrics(state["metrics_by_cantera"], cantera, "execution_failures")
                     _bump_metrics(state["metrics_by_modulo"], modulo, "execution_failures")
-                    err = f"RUN_FACTORY_ERROR|cycle={cycle_id}|cantera={cantera}|modulo={modulo}|error={exc}"
+                    err = (
+                        f"RUN_FACTORY_ERROR|cycle={cycle_id}|cantera={cantera}|"
+                        f"modulo={modulo}|error={exc}"
+                    )
                     state["errores"].append(err)
                     _append_log(log_path, err)
                     if "AUDITOR_ENV_MISSING" in str(exc):

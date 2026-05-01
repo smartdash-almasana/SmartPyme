@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from app.services.findings_service import Finding
 from app.contracts.communication_contract import FindingMessage, build_message_id
+from app.services.findings_service import Finding
 
 # Severity labels in Spanish for human-facing messages.
 _SEVERITY_LABEL: dict[str, str] = {

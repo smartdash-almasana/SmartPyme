@@ -3,7 +3,9 @@ from __future__ import annotations
 from models.document_models import DocumentAnswer, DocumentQuery, EvidenceRef
 from services.retrieval_service import RetrievalService
 
-INSUFFICIENT_EVIDENCE_MESSAGE = "No tengo evidencia documental suficiente para responder con certeza."
+INSUFFICIENT_EVIDENCE_MESSAGE = (
+    "No tengo evidencia documental suficiente para responder con certeza."
+)
 
 
 class DocumentQueryService:

@@ -1,6 +1,8 @@
-import pytest
 import decimal
+
+import pytest
 from pydantic import ValidationError
+
 from app.core.entities import HallazgoOperativo
 
 
@@ -71,12 +73,32 @@ def test_hallazgo_operativo_rechaza_strings_invalidos():
     invalid_inputs = ["abc", "", "   ", "NaN", "Infinity", "-Infinity"]
     for inv in invalid_inputs:
         with pytest.raises(ValueError):
-            HallazgoOperativo(**_hallazgo_payload(monto_detectado=inv, diferencia="0", alicuota_iva="0"))
+            HallazgoOperativo(
+                **_hallazgo_payload(
+                    monto_detectado=inv,
+                    diferencia="0",
+                    alicuota_iva="0",
+                )
+            )
 
 
 def test_hallazgo_operativo_normaliza_severidad():
-    h = HallazgoOperativo(**_hallazgo_payload(nivel_severidad="ALTO", monto_detectado="0", diferencia="0", alicuota_iva="0"))
+    h = HallazgoOperativo(
+        **_hallazgo_payload(
+            nivel_severidad="ALTO",
+            monto_detectado="0",
+            diferencia="0",
+            alicuota_iva="0",
+        )
+    )
     assert h.nivel_severidad == "alto"
     
-    h2 = HallazgoOperativo(**_hallazgo_payload(nivel_severidad="Critico", monto_detectado="0", diferencia="0", alicuota_iva="0"))
+    h2 = HallazgoOperativo(
+        **_hallazgo_payload(
+            nivel_severidad="Critico",
+            monto_detectado="0",
+            diferencia="0",
+            alicuota_iva="0",
+        )
+    )
     assert h2.nivel_severidad == "critico"

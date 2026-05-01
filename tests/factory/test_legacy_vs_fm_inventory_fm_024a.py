@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 INVENTORY_PATH = Path("docs/factory_legacy_vs_fm_inventory.md")
 
 

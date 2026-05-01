@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -83,7 +83,7 @@ def test_expires_at_is_calculated_from_expires_in() -> None:
     async def handler(_: httpx.Request) -> httpx.Response:
         return httpx.Response(status_code=200, json=_token_payload(90))
 
-    now_before = datetime.now(timezone.utc)
+    now_before = datetime.now(UTC)
     client = MeliOAuthClient(
         app_id="app-3",
         client_secret="secret-3",
@@ -92,9 +92,9 @@ def test_expires_at_is_calculated_from_expires_in() -> None:
     )
 
     result = asyncio.run(client.exchange_code_for_tokens("code-90"))
-    now_after = datetime.now(timezone.utc)
+    now_after = datetime.now(UTC)
 
-    assert result.expires_at.tzinfo is timezone.utc
+    assert result.expires_at.tzinfo is UTC
     lower_bound = now_before.timestamp() + 90
     upper_bound = now_after.timestamp() + 90
     assert lower_bound <= result.expires_at.timestamp() <= upper_bound

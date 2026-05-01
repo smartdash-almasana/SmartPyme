@@ -63,7 +63,7 @@ def test_action_proposal_is_frozen():
     )
     try:
         object.__setattr__(proposal, "status", "approved")
-        assert False, "Should have raised FrozenInstanceError"
+        raise AssertionError("Should have raised FrozenInstanceError")
     except Exception:
         pass
 

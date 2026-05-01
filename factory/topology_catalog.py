@@ -40,7 +40,11 @@ class TopologyCatalog:
         target_files = layer_data.get("target_files", [])
         if not isinstance(target_files, list):
             return set()
-        return {str(item).replace("\\", "/").lower() for item in target_files if isinstance(item, str)}
+        return {
+            str(item).replace("\\", "/").lower()
+            for item in target_files
+            if isinstance(item, str)
+        }
 
     def can_excavate(self, cantera_path: str, layer: str) -> bool:
         normalized = cantera_path.replace("\\", "/").lower()

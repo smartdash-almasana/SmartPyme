@@ -1,8 +1,8 @@
 from app.contracts.formula_contract import FormulaInput
+from app.contracts.job_contract import Job
 from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.mcp.tools.owner_status_tool import get_owner_status
 from app.repositories.job_repository import JobRepository
-from app.contracts.job_contract import Job
 
 
 def test_owner_status_includes_formula_results(tmp_path):
@@ -19,8 +19,8 @@ def test_owner_status_includes_formula_results(tmp_path):
         result_id="r1",
     )
 
-    import app.mcp.tools.jobs_read_tool as jobs_tool
     import app.mcp.tools.formula_results_tool as formula_tool
+    import app.mcp.tools.jobs_read_tool as jobs_tool
 
     jobs_tool.Path = lambda p: jobs_db if "jobs" in p else tmp_path / "findings.db"
     formula_tool.Path = lambda p: formula_db
@@ -44,8 +44,8 @@ def test_owner_status_formula_results_are_isolated(tmp_path):
         result_id="r1",
     )
 
-    import app.mcp.tools.jobs_read_tool as jobs_tool
     import app.mcp.tools.formula_results_tool as formula_tool
+    import app.mcp.tools.jobs_read_tool as jobs_tool
 
     jobs_tool.Path = lambda p: tmp_path / "empty.db"
     formula_tool.Path = lambda p: formula_db

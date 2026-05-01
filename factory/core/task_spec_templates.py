@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from factory.core.task_spec import TaskSpec
 
-
 TaskIdFactory = Callable[[str], str]
 
 

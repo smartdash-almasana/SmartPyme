@@ -1,7 +1,8 @@
 # This is a standalone script to seed the jobs database for validation.
 
-from app.factory.orchestrator.models import Job, STATE_CREATED
-from app.factory.orchestrator.persistence import save_job, init_jobs_db
+from app.factory.orchestrator.models import STATE_CREATED, Job
+from app.factory.orchestrator.persistence import init_jobs_db, save_job
+
 
 def seed():
     print("Initializing jobs database...")

@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-
 REPO_SMARTPYME = Path(
     os.getenv(
         "SMARTPYME_REPO",

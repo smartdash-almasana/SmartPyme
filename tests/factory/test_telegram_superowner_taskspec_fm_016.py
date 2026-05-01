@@ -23,7 +23,9 @@ def test_superowner_enqueue_dev_creates_real_taskspec(tmp_path):
         runner=runner,
     )
 
-    response = adapter.handle_update(_update(111, "/enqueue_dev Crear TaskSpec real desde Telegram"))
+    response = adapter.handle_update(
+        _update(111, "/enqueue_dev Crear TaskSpec real desde Telegram")
+    )
 
     assert response["status"] == "queued"
     assert response["task"]["task_type"] == "taskspec_dev"

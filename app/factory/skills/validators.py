@@ -1,6 +1,5 @@
 from typing import Any
 
-
 _TYPE_MAP = {
     "string": str,
     "number": (int, float),
@@ -64,7 +63,11 @@ def _validate_array(value: Any, schema: dict[str, Any], path: str) -> tuple[bool
     return True, None
 
 
-def validate_schema(value: Any, schema: dict[str, Any], path: str = "payload") -> tuple[bool, str | None]:
+def validate_schema(
+    value: Any,
+    schema: dict[str, Any],
+    path: str = "payload",
+) -> tuple[bool, str | None]:
     if not isinstance(schema, dict):
         return False, f"{path} schema must be object"
 

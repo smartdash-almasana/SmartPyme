@@ -101,7 +101,12 @@ def run_one_cycle(repo_root: str | Path, agent_runner: Any | None = None) -> dic
         return _result("blocked", hallazgo_id, blocked, evidence)
 
 
-def _result(status: str, hallazgo_id: str, final_path: Path, evidence: EvidenceStore) -> dict[str, Any]:
+def _result(
+    status: str,
+    hallazgo_id: str,
+    final_path: Path,
+    evidence: EvidenceStore,
+) -> dict[str, Any]:
     return {
         "status": status,
         "hallazgo_id": hallazgo_id,

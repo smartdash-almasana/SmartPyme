@@ -9,7 +9,6 @@ from app.contracts.pathology_contract import PathologyFinding
 from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
 from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
 
-
 AUDIT_VENTA_BAJO_COSTO = "audit_venta_bajo_costo"
 
 

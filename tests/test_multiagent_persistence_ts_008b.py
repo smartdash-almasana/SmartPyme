@@ -1,8 +1,8 @@
 from app.factory.agent_loop.multiagent_task_loop import (
     MultiagentTask,
-    save_task,
     load_task,
     run_persisted_multiagent_task_cycle,
+    save_task,
 )
 
 

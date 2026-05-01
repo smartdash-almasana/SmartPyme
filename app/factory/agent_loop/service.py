@@ -95,7 +95,10 @@ def run_agent_loop(
                 final_state=current_state,
                 final_output=last_output,
                 error_code="STATE_TRANSITION_NOT_FOUND",
-                error_message=f"No existe transicion de estado para skill: {decision.next_skill_id}",
+                error_message=(
+                    "No existe transicion de estado para skill: "
+                    f"{decision.next_skill_id}"
+                ),
             )
         current_state = next_state
 

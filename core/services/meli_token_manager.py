@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from core.adapters.meli_oauth_client import MeliOAuthClient, MeliOAuthError, MeliTokenResponse
@@ -77,14 +77,18 @@ class MeliTokenManager:
             return lock
 
     def _needs_refresh(self, token: MeliOAuthToken) -> bool:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return token.expires_at <= (now + self._refresh_margin)
 
     def _is_invalid_grant(self, error: MeliOAuthError) -> bool:
         details = (error.details or "").lower()
         return "invalid_grant" in details
 
-    def _token_from_response(self, account_id: str, token_response: MeliTokenResponse) -> MeliOAuthToken:
+    def _token_from_response(
+        self,
+        account_id: str,
+        token_response: MeliTokenResponse,
+    ) -> MeliOAuthToken:
         return MeliOAuthToken(
             account_id=account_id,
             access_token=token_response.access_token,

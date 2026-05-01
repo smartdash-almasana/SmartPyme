@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
 from factory.core.run_report import build_factory_run_report, write_factory_run_report
@@ -123,7 +122,10 @@ def test_diff_command_reports_missing_task(tmp_path):
 
 
 def test_diff_command_rejects_invalid_command(tmp_path):
-    adapter = TelegramSuperownerAdapter(superowner_telegram_user_id=111, store=TaskSpecStore(tmp_path / "taskspecs"))
+    adapter = TelegramSuperownerAdapter(
+        superowner_telegram_user_id=111,
+        store=TaskSpecStore(tmp_path / "taskspecs"),
+    )
 
     response = adapter.handle_update(_update(111, "/diff"))
 
@@ -131,7 +133,10 @@ def test_diff_command_rejects_invalid_command(tmp_path):
 
 
 def test_diff_command_rejects_non_superowner(tmp_path):
-    adapter = TelegramSuperownerAdapter(superowner_telegram_user_id=111, store=TaskSpecStore(tmp_path / "taskspecs"))
+    adapter = TelegramSuperownerAdapter(
+        superowner_telegram_user_id=111,
+        store=TaskSpecStore(tmp_path / "taskspecs"),
+    )
 
     response = adapter.handle_update(_update(999, "/diff FM_026"))
 

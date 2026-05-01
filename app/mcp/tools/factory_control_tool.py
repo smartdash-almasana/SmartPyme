@@ -7,7 +7,6 @@ from app.factory.agent_loop.multiagent_task_loop import (
 )
 from app.factory.agent_loop.queue_runner import run_one_queued_task
 
-
 DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
 DEFAULT_EVIDENCE_DIR = Path("factory/multiagent/evidence")
 

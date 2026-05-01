@@ -39,7 +39,13 @@ def test_blocking_difference_becomes_critica():
 
 
 def test_valor_distinto_becomes_alta():
-    differences = [_difference(field_name="direccion", difference_type="valor_distinto", blocking=False)]
+    differences = [
+        _difference(
+            field_name="direccion",
+            difference_type="valor_distinto",
+            blocking=False,
+        )
+    ]
 
     findings = build_findings(differences)
 
@@ -48,21 +54,39 @@ def test_valor_distinto_becomes_alta():
 
 
 def test_faltante_en_a_becomes_media_with_correct_action():
-    differences = [_difference(field_name="telefono", difference_type="faltante_en_a", value_a=None, value_b="1234")]
+    differences = [
+        _difference(
+            field_name="telefono",
+            difference_type="faltante_en_a",
+            value_a=None,
+            value_b="1234",
+        )
+    ]
 
     findings = build_findings(differences)
 
     assert findings[0].severity == "media"
-    assert findings[0].suggested_action == "Completar el dato faltante en la fuente A o validar ausencia."
+    assert findings[0].suggested_action == (
+        "Completar el dato faltante en la fuente A o validar ausencia."
+    )
 
 
 def test_faltante_en_b_becomes_media_with_correct_action():
-    differences = [_difference(field_name="email", difference_type="faltante_en_b", value_a="a@b.com", value_b=None)]
+    differences = [
+        _difference(
+            field_name="email",
+            difference_type="faltante_en_b",
+            value_a="a@b.com",
+            value_b=None,
+        )
+    ]
 
     findings = build_findings(differences)
 
     assert findings[0].severity == "media"
-    assert findings[0].suggested_action == "Completar el dato faltante en la fuente B o validar ausencia."
+    assert findings[0].suggested_action == (
+        "Completar el dato faltante en la fuente B o validar ausencia."
+    )
 
 
 def test_title_is_correct_and_deterministic():

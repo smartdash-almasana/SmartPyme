@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import subprocess
 import urllib.parse
 import urllib.request
@@ -104,7 +103,9 @@ def _pick(data: dict[str, str], *keys: str, default: str = "dato no informado") 
 
 
 def _infer_product_area(task: str, evidence: str, task_data: dict[str, str]) -> str:
-    declared = _pick(task_data, "product_area", "area", "module", "modulo", "layer", "capa", default="")
+    declared = _pick(
+        task_data, "product_area", "area", "module", "modulo", "layer", "capa", default=""
+    )
     if declared:
         return declared
     text = f"{task} {evidence} {_pick(task_data, 'objective', default='')}".lower()
@@ -168,12 +169,36 @@ def _audit_card(event_status: str) -> str:
     last_commit = _git(["log", "--oneline", "-1"])
     changed = "no" if not git_status else "si"
 
-    objective = _pick(task_data, "product_goal", "business_goal", "objective", default="dato no informado en la tarea")
-    product_outcome = _pick(task_data, "product_outcome", "expected_product_outcome", "resultado_producto", "impacto_producto", default="dato no informado en la tarea")
-    roadmap_ref = _pick(task_data, "roadmap_ref", "roadmap_step", "roadmap", "fase", default="dato no informado en la tarea")
+    objective = _pick(
+        task_data,
+        "product_goal",
+        "business_goal",
+        "objective",
+        default="dato no informado en la tarea",
+    )
+    product_outcome = _pick(
+        task_data,
+        "product_outcome",
+        "expected_product_outcome",
+        "resultado_producto",
+        "impacto_producto",
+        default="dato no informado en la tarea",
+    )
+    roadmap_ref = _pick(
+        task_data,
+        "roadmap_ref",
+        "roadmap_step",
+        "roadmap",
+        "fase",
+        default="dato no informado en la tarea",
+    )
     progress = _progress_label(event_status, gate, task_data)
 
-    if "fallido" in progress or "FAIL" in last_result or last_error not in {"none", "cycle closed", ""}:
+    if (
+        "fallido" in progress
+        or "FAIL" in last_result
+        or last_error not in {"none", "cycle closed", ""}
+    ):
         decision = "No aprobar sin revisar. Usar Ver estado o Rechazar y corregir."
     elif progress.startswith("100%"):
         decision = "Se puede aprobar si la evidencia coincide con el objetivo declarado."
@@ -247,7 +272,8 @@ def format_cycle_message(status: str, details: str = "") -> str:
             "SmartPyme Factory esta pausada para auditoria del producto.\n\n"
             f"{_audit_card(status_key)}\n\n"
             "Botones:\n"
-            "✅ Seguir: aceptar el ciclo si la evidencia coincide con el objetivo y ejecutar una sola vuelta.\n"
+            "✅ Seguir: aceptar el ciclo si la evidencia coincide con el "
+            "objetivo y ejecutar una sola vuelta.\n"
             "🔁 Rechazar y corregir: reabrir la tarea si el resultado no cumple.\n"
             "⏸️ Pausar: no ejecutar nada por ahora.\n"
             "📊 Ver estado: pedir mas informacion antes de decidir."
@@ -308,7 +334,9 @@ def send_telegram_message(text: str, reply_markup: str | None = None) -> bool:
         payload["reply_markup"] = reply_markup
 
     data = urllib.parse.urlencode(payload).encode("utf-8")
-    req = urllib.request.Request("https://api.telegram.org/bot" + token + "/sendMessage", data=data, method="POST")
+    req = urllib.request.Request(
+        "https://api.telegram.org/bot" + token + "/sendMessage", data=data, method="POST"
+    )
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             print(f"TELEGRAM_NOTIFY_STATUS {resp.status}")

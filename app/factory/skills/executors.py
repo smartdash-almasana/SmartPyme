@@ -1,5 +1,5 @@
-from typing import Any, Callable
-
+from collections.abc import Callable
+from typing import Any
 
 Executor = Callable[[dict[str, Any]], dict[str, Any]]
 

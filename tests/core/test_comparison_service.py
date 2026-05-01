@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from app.contracts.entity_contract import Entity
-from app.services.comparison_service import ComparisonService, ComparisonResult
+from app.services.comparison_service import ComparisonService
 
 
 def _entity(

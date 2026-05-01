@@ -3,7 +3,6 @@ from pathlib import Path
 from factory.core.queue_runner import run_one_queued_task
 from factory.core.task_loop import MultiagentTask, load_task, save_task
 
-
 DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
 DEFAULT_EVIDENCE_DIR = Path("factory/multiagent/evidence")
 

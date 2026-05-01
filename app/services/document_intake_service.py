@@ -10,7 +10,6 @@ from app.contracts.bem_evidence_contract import (
 )
 from app.repositories.evidence_candidate_repository import EvidenceCandidateRepository
 
-
 DEFAULT_EVIDENCE_CANDIDATES_DB = Path("data/evidence_candidates.db")
 DOCUMENT_TYPE_BY_EXTENSION: dict[str, BemDocumentType] = {
     ".pdf": BemDocumentType.UNKNOWN,

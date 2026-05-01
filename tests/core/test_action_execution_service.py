@@ -1,13 +1,21 @@
 import sys
+import uuid
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.contracts.action_contract import ActionProposal
-from app.services.action_execution_service import ActionExecutionService, NotApprovedError
+from app.repositories.action_execution_repository import ActionExecutionRepository
 
+from app.contracts.action_contract import ActionProposal
+from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+from app.services.action_execution_service import (
+    ActionExecutionService,
+    AdapterExecutionError,
+    NotApprovedError,
+)
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -140,10 +148,6 @@ def test_full_lifecycle_propose_reject_cannot_execute():
 
 # ── adapter integration ───────────────────────────────────────────────────────
 
-from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
-from app.services.action_execution_service import AdapterExecutionError
-from typing import Any as _Any
-
 
 class _MockAdapter(ExecutionAdapter):
     def __init__(self, status: str = "executed", message: str = "OK") -> None:
@@ -154,7 +158,7 @@ class _MockAdapter(ExecutionAdapter):
     def adapter_id(self) -> str:
         return "mock"
 
-    def execute(self, proposal: _Any) -> ExecutionAdapterResult:
+    def execute(self, proposal: Any) -> ExecutionAdapterResult:
         return ExecutionAdapterResult(
             adapter_id=self.adapter_id,
             action_id=proposal.action_id,
@@ -212,7 +216,7 @@ def test_execute_guard_fires_before_adapter_call():
         def adapter_id(self) -> str:
             return "tracking"
 
-        def execute(self, proposal: _Any) -> ExecutionAdapterResult:
+        def execute(self, proposal: Any) -> ExecutionAdapterResult:
             called.append(True)
             return ExecutionAdapterResult(
                 adapter_id=self.adapter_id,
@@ -230,13 +234,9 @@ def test_execute_guard_fires_before_adapter_call():
 
 # ── execution_repository integration ─────────────────────────────────────────
 
-import uuid
-from pathlib import Path as _Path
-from app.repositories.action_execution_repository import ActionExecutionRepository
 
-
-def _repo_path() -> _Path:
-    base = _Path(__file__).resolve().parents[1] / "fixtures" / "tmp_exec_service_repo"
+def _repo_path() -> Path:
+    base = Path(__file__).resolve().parents[1] / "fixtures" / "tmp_exec_service_repo"
     base.mkdir(parents=True, exist_ok=True)
     return base / f"exec-{uuid.uuid4().hex[:8]}.db"
 

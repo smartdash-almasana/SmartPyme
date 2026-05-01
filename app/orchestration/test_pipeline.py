@@ -1,5 +1,5 @@
-import pytest
 from app.orchestration.pipeline import ejecutar_pipeline_extraccion
+
 
 def test_pipeline_flujo_feliz():
     input_data = [{

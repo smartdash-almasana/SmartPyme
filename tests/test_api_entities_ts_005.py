@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.api.v1.endpoints.entities import router, get_entities_db_path, EntitiesDbPath
+from app.api.v1.endpoints.entities import EntitiesDbPath, get_entities_db_path, router
 from app.contracts.entity_contract import Entity
 from app.repositories.entity_repository import EntityRepository
 

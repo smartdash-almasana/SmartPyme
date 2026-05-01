@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import shutil
 import subprocess
 import sys
@@ -11,7 +10,6 @@ from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
 from typing import Callable
-
 
 ALLOWED_HALLAZGO_STATES = {"pending", "in_progress", "done", "blocked"}
 
@@ -51,7 +49,9 @@ def register_tools(
                 ok = True
                 error = None
                 safe_params = json.dumps(kwargs, ensure_ascii=False, default=str)
-                logger.info("[%s] CALLING TOOL: %s | PARAMS: %s", client_name, tool_name, safe_params)
+                logger.info(
+                    "[%s] CALLING TOOL: %s | PARAMS: %s", client_name, tool_name, safe_params
+                )
                 try:
                     result = fn(*args, **kwargs)
                     return result
@@ -63,7 +63,9 @@ def register_tools(
                 finally:
                     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
                     if ok:
-                        logger.info("[%s] SUCCESS: %s | ELAPSED_MS: %s", client_name, tool_name, elapsed_ms)
+                        logger.info(
+                            "[%s] SUCCESS: %s | ELAPSED_MS: %s", client_name, tool_name, elapsed_ms
+                        )
                     _log(
                         {
                             "ts": utc_ts,

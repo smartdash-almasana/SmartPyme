@@ -129,4 +129,7 @@ def _build_fact_id(evidence_id: str, fact_type: str, value: str, index: int) -> 
 
 def _overlaps_any(span: tuple[int, int], blocked_spans: list[tuple[int, int]]) -> bool:
     start, end = span
-    return any(start < blocked_end and end > blocked_start for blocked_start, blocked_end in blocked_spans)
+    return any(
+        start < blocked_end and end > blocked_start
+        for blocked_start, blocked_end in blocked_spans
+    )

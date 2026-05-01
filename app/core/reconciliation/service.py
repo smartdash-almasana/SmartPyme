@@ -1,7 +1,7 @@
 import csv
 from collections.abc import Callable
 from dataclasses import asdict, replace
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from math import isfinite
 from pathlib import Path
@@ -29,13 +29,13 @@ from app.core.reconciliation.models import (
     ReconciliationJob,
     ReconciliationJobScope,
     ReconciliationJobStatus,
-    ReconciliationRow,
     ReconciliationResult,
+    ReconciliationRow,
     ReconciliationStateMachineResult,
     SimpleReconciliationFinding,
     SimpleReconciliationResult,
-    UncertaintyRecord,
     UncertaintyLevel,
+    UncertaintyRecord,
     WarningItem,
     WorkflowDecision,
 )
@@ -95,7 +95,7 @@ def _to_float_or_zero(value: Any) -> float:
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _validate_aware_datetime(value: datetime, field_name: str) -> None:
@@ -303,7 +303,10 @@ def _normalize_reconciliation_status(job_state: Any) -> str:
     return normalized_status
 
 
-def compare_records(record_a: ComparableRecord, record_b: ComparableRecord) -> list[DifferenceRecord]:
+def compare_records(
+    record_a: ComparableRecord,
+    record_b: ComparableRecord,
+) -> list[DifferenceRecord]:
     if record_a.entity_id != record_b.entity_id:
         raise ValueError(
             "ENTITY_ID_MISMATCH: los records comparables deben tener el mismo entity_id."
@@ -1258,21 +1261,25 @@ def apply_human_review_decision(
     )
     if normalized_persisted_status != resolved_status:
         raise ValueError(
-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede reabrir ni alterar el estado resuelto."
+            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
+            "la persistencia no puede reabrir ni alterar el estado resuelto."
         )
     persisted_actor = persisted_state.get("human_review_actor")
     if persisted_actor != actor:
         raise ValueError(
-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar el actor de la decision humana."
+            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
+            "la persistencia no puede alterar el actor de la decision humana."
         )
     persisted_verdict = persisted_state.get("human_review_verdict")
     if persisted_verdict != decision.verdict:
         raise ValueError(
-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar el veredicto humano resuelto."
+            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
+            "la persistencia no puede alterar el veredicto humano resuelto."
         )
     if persisted_state.get("human_review_note") != decision.note:
         raise ValueError(
-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar la nota de la decision humana."
+            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
+            "la persistencia no puede alterar la nota de la decision humana."
         )
     return persisted_state
 
@@ -1322,7 +1329,9 @@ def analyze_amount_reconciliation(
         try:
             record = ReconciliationRow.model_validate(raw_record).root
         except Exception as exc:
-            raise ValueError("ROW_INVALIDA: registro invalido en records. Ejecucion bloqueada.") from exc
+            raise ValueError(
+                "ROW_INVALIDA: registro invalido en records. Ejecucion bloqueada."
+            ) from exc
         if key_field not in record:
             raise ValueError(f"KEY_FIELD_FALTANTE: falta '{key_field}' en un registro.")
         key_value = record[key_field]

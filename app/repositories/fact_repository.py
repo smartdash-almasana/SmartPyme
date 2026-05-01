@@ -4,7 +4,6 @@ import json
 import os
 import sqlite3
 from pathlib import Path
-from typing import Any
 
 from app.contracts.evidence_contract import ExtractedFactCandidate
 
@@ -27,7 +26,10 @@ def _connect() -> sqlite3.Connection:
 def _ensure_cliente_id_column(conn: sqlite3.Connection) -> None:
     columns = {row[1] for row in conn.execute("PRAGMA table_info(extracted_facts)").fetchall()}
     if "cliente_id" not in columns:
-        conn.execute("ALTER TABLE extracted_facts ADD COLUMN cliente_id TEXT NOT NULL DEFAULT '__migration_pending__'")
+        conn.execute(
+            "ALTER TABLE extracted_facts "
+            "ADD COLUMN cliente_id TEXT NOT NULL DEFAULT '__migration_pending__'"
+        )
 
 
 def init_facts_db() -> None:

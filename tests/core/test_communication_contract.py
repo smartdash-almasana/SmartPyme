@@ -27,7 +27,7 @@ def test_finding_message_is_frozen():
     )
     try:
         object.__setattr__(msg, "title", "mutated")
-        assert False, "Should have raised FrozenInstanceError"
+        raise AssertionError("Should have raised FrozenInstanceError")
     except Exception:
         pass  # frozen — expected
 

@@ -1,7 +1,6 @@
-from pathlib import Path
 
 from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
-from factory.core.task_spec import TaskSpec, TaskSpecStatus
+from factory.core.task_spec import TaskSpec
 from factory.core.task_spec_store import TaskSpecStore
 
 

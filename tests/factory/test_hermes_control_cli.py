@@ -55,7 +55,11 @@ def test_estado_bloqueante_actual_ignora_bloqueos_historicos(tmp_path):
     control_dir.mkdir(parents=True)
     (control_dir / "AUDIT_GATE.md").write_text("status: OPEN\n", encoding="utf-8")
     (control_dir / "FACTORY_STATUS.md").write_text(
-        "last_cycle_result: AUDIT_GATE_BLOCKING\naudit_gate: BLOCKED\nlast_error: antiguo_bloqueo\n",
+        (
+            "last_cycle_result: AUDIT_GATE_BLOCKING\n"
+            "audit_gate: BLOCKED\n"
+            "last_error: antiguo_bloqueo\n"
+        ),
         encoding="utf-8",
     )
 

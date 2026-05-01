@@ -1,16 +1,18 @@
 import hashlib
-from typing import Any, Optional, Dict
 from dataclasses import replace
+from typing import Any
+
 from app.core.hallazgos.models import (
-    Hallazgo, 
-    FindingSeverity, 
-    FindingType, 
+    FindingSeverity,
     FindingStatus,
-    MismatchEvidence, 
-    MissingEvidence
+    FindingType,
+    Hallazgo,
+    MismatchEvidence,
+    MissingEvidence,
 )
-from app.core.reconciliation.models import ReconciliationResult, QuantifiedDiscrepancy
+from app.core.reconciliation.models import ReconciliationResult
 from app.core.repositories.hallazgo_repository import HallazgoRepository
+
 
 class HallazgoEngine:
     """Motor endurecido para la generación de hallazgos determinísticos."""
@@ -30,7 +32,11 @@ class HallazgoEngine:
             return "warning"
         return "critical" if abs(delta) >= self.CRITICAL_THRESHOLD else "warning"
 
-    def transform(self, result: ReconciliationResult, entidad_tipo: str = "order") -> list[Hallazgo]:
+    def transform(
+        self,
+        result: ReconciliationResult,
+        entidad_tipo: str = "order",
+    ) -> list[Hallazgo]:
         hallazgos = []
 
         for mismatch in result.mismatches:
@@ -98,14 +104,14 @@ class HallazgoService:
 
     def get_findings(
         self, 
-        status: Optional[FindingStatus] = None,
-        severity: Optional[FindingSeverity] = None,
-        tipo: Optional[FindingType] = None
+        status: FindingStatus | None = None,
+        severity: FindingSeverity | None = None,
+        tipo: FindingType | None = None
     ) -> list[Hallazgo]:
         """Consulta hallazgos con filtros determinísticos."""
         return self.repository.list_all(status=status, severity=severity, tipo=tipo)
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Genera un resumen estadístico de los hallazgos persistidos."""
         all_findings = self.repository.list_all()
         
@@ -124,7 +130,7 @@ class HallazgoService:
                 
         return summary
 
-    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Optional[Hallazgo]:
+    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Hallazgo | None:
         """Actualiza el estado de un hallazgo existente."""
         hallazgo = self.repository.get_by_id(hallazgo_id)
         if not hallazgo:

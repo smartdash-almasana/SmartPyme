@@ -1,7 +1,7 @@
 from app.core.pipeline import Pipeline
+from app.repositories.canonical_repository import CanonicalRepository
 from app.repositories.entity_repository import EntityRepository
 from app.repositories.fact_repository import FactRepository
-from app.repositories.canonical_repository import CanonicalRepository
 
 
 def test_pipeline_propagates_cliente_id(tmp_path):

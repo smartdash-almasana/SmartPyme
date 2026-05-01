@@ -1,0 +1,22 @@
+=== hermes gateway status after restart ===
+● hermes-gateway.service - Hermes Agent Gateway - Messaging Platform Integration
+     Loaded: loaded (/home/neoalmasana/.config/systemd/user/hermes-gateway.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-04-28 23:47:12 UTC; 59s ago
+   Main PID: 106394 (python)
+      Tasks: 4 (limit: 19175)
+     Memory: 85.1M
+        CPU: 1.933s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/hermes-gateway.service
+             └─106394 /opt/smartpyme-factory/repos/hermes-agent/.venv/bin/python -m hermes_cli.main gateway run --replace
+
+Apr 28 23:47:12 smartpyme-factory systemd[73918]: Started hermes-gateway.service - Hermes Agent Gateway - Messaging Platform Integration.
+⚠ Installed gateway service definition is outdated
+  Run: hermes gateway restart  # auto-refreshes the unit
+
+✓ User gateway service is running
+✓ Systemd linger is enabled (service survives logout)
+
+=== hermes config skills ===
+231:skills:
+232:  external_dirs:
+233:  - /opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills

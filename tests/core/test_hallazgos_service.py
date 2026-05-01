@@ -1,8 +1,8 @@
-import pytest
-from app.core.hallazgos.service import HallazgoEngine, HallazgoService
 from app.core.hallazgos.models import Hallazgo
+from app.core.hallazgos.service import HallazgoEngine, HallazgoService
+from app.core.reconciliation.models import QuantifiedDiscrepancy, ReconciliationResult
 from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
-from app.core.reconciliation.models import ReconciliationResult, QuantifiedDiscrepancy, ReconciliationRow
+
 
 def test_hallazgo_service_query_and_summary():
     repo = MemoryHallazgoRepository()

@@ -36,11 +36,15 @@ def main() -> int:
 
     # Fallback recursive cleanup: remove any dict key named smartpyme_bridge, and
     # remove list entries that explicitly reference the old broken script path.
-    recursive_changed = _recursive_remove_broken_mcp(data, path="root", disabled_entries=disabled_entries)
+    recursive_changed = _recursive_remove_broken_mcp(
+        data, path="root", disabled_entries=disabled_entries
+    )
     changed_paths.extend(recursive_changed)
 
     if changed_paths:
-        config_path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        config_path.write_text(
+            yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8"
+        )
 
     print("SMARTPYME_MCP_BRIDGE_DISABLE_DONE")
     print(f"config={config_path}")
@@ -105,7 +109,11 @@ def _recursive_remove_broken_mcp(node: Any, path: str, disabled_entries: list[st
 
 
 def _references_broken_bridge(item: Any) -> bool:
-    text = yaml.safe_dump(item, allow_unicode=True, sort_keys=False) if not isinstance(item, str) else item
+    text = (
+        yaml.safe_dump(item, allow_unicode=True, sort_keys=False)
+        if not isinstance(item, str)
+        else item
+    )
     return BROKEN_SERVER_NAME in text or BROKEN_PATH_FRAGMENT in text
 
 

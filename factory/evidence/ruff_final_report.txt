@@ -1,0 +1,1176 @@
+=== RUFF CHECK DOT ===
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/entities.py:24:31
+   |
+22 |     entity_type: str | None = None,
+23 |     cliente_id: str = Depends(get_active_client),
+24 |     db_path: EntitiesDbPath = Depends(get_entities_db_path),
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 | ):
+26 |     repo = EntityRepository(cliente_id, Path(db_path.entities))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/findings.py:24:31
+   |
+22 |     entity_type: str | None = None,
+23 |     cliente_id: str = Depends(get_active_client),
+24 |     db_path: FindingsDbPath = Depends(get_findings_db_path),
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 | ):
+26 |     repo = FindingRepository(cliente_id, Path(db_path.findings))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:36:30
+   |
+34 |     payload: FormulaCalculationRequest,
+35 |     cliente_id: str = Depends(get_active_client),
+36 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+37 | ):
+38 |     agent = FormulaCalculationAgent(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:51:30
+   |
+49 |     formula_id: str | None = None,
+50 |     cliente_id: str = Depends(get_active_client),
+51 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+52 | ):
+53 |     repo = FormulaResultRepository(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/formulas.py:67:30
+   |
+65 |     result_id: str,
+66 |     cliente_id: str = Depends(get_active_client),
+67 |     db_path: FormulaDbPath = Depends(get_formula_db_path),
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+68 | ):
+69 |     repo = FormulaResultRepository(cliente_id, Path(db_path.formula_results))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:46:27
+   |
+44 |     request: CreateJobRequest | None = None,
+45 |     cliente_id: str = Depends(get_active_client),
+46 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+47 | ):
+48 |     request = request or CreateJobRequest()
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:70:27
+   |
+68 | async def list_jobs(
+69 |     cliente_id: str = Depends(get_active_client),
+70 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+71 | ):
+72 |     repo = JobRepository(cliente_id, Path(db_path.jobs))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/jobs.py:86:27
+   |
+84 |     job_id: str,
+85 |     cliente_id: str = Depends(get_active_client),
+86 |     db_path: JobsDbPath = Depends(get_jobs_db_path),
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+87 | ):
+88 |     repo = JobRepository(cliente_id, Path(db_path.jobs))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:40:34
+   |
+38 |     payload: PathologyAuditRequest,
+39 |     cliente_id: str = Depends(get_active_client),
+40 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+41 | ):
+42 |     agent = PathologyAuditorAgent(
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:63:34
+   |
+61 |     status: PathologyStatus | None = None,
+62 |     cliente_id: str = Depends(get_active_client),
+63 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 | ):
+65 |     repo = PathologyRepository(cliente_id, Path(db_paths.pathologies))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/pathologies.py:79:34
+   |
+77 |     pathology_finding_id: str,
+78 |     cliente_id: str = Depends(get_active_client),
+79 |     db_paths: PathologyDbPaths = Depends(get_pathology_db_paths),
+   |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+80 | ):
+81 |     repo = PathologyRepository(cliente_id, Path(db_paths.pathologies))
+   |
+
+B008 Do not perform function call `Depends` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> app/api/v1/endpoints/process.py:47:33
+   |
+45 |     payload: ProcessRequest,
+46 |     cliente_id: str = Depends(get_active_client),
+47 |     db_paths: PipelineDbPaths = Depends(get_pipeline_db_paths),
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+48 | ):
+49 |     pipeline = Pipeline(
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/adapters/telegram_superowner_adapter.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from pathlib import Path
+ 4 | |
+ 5 | | from factory.core.factory_help import build_factory_help_payload, format_factory_help_message
+ 6 | | from factory.core.run_report import (
+ 7 | |     FactoryRunReport,
+ 8 | |     build_factory_run_report,
+ 9 | |     list_factory_run_reports,
+10 | |     read_factory_run_report,
+11 | |     read_factory_run_report_markdown,
+12 | |     read_last_factory_run_report,
+13 | |     write_factory_run_report,
+14 | | )
+15 | | from factory.core.run_report_summary import (
+16 | |     build_factory_health_summary,
+17 | |     build_failed_paths_summary,
+18 | |     build_run_report_summary,
+19 | |     format_factory_health_summary,
+20 | |     format_failed_paths_summary,
+21 | |     format_run_report_summary,
+22 | | )
+23 | | from factory.core.task_spec import TaskSpec, TaskSpecStatus
+24 | | from factory.core.task_spec_runner import TaskSpecRunResult, TaskSpecRunner
+25 | | from factory.core.task_spec_store import TaskSpecStore
+26 | | from factory.core.task_spec_templates import build_task_spec_from_template, list_template_names
+   | |_______________________________________________________________________________________________^
+   |
+help: Organize imports
+
+UP035 [*] Import from `collections.abc` instead: `Iterable`
+  --> factory/audit_hermes_telegram_token_sources.py:10:1
+   |
+ 8 | import urllib.request
+ 9 | from pathlib import Path
+10 | from typing import Iterable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |
+12 | import yaml
+   |
+help: Import from `collections.abc`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/configure_hermes_skills_external_dirs.py:37:26
+   |
+35 |         raise SystemExit(f"ERROR_MISSING_HERMES_CONFIG: {config}")
+36 |
+37 |     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+   |                          ^^^^^^^^^^^^
+38 |     backup = config.with_name(f"{config.name}.bak.smartpyme-skills-{stamp}")
+39 |     shutil.copy2(config, backup)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/configure_hermes_telegram.py:19:26
+   |
+17 |         raise SystemExit(f"ERROR_MISSING_HERMES_CONFIG: {config}")
+18 |
+19 |     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+   |                          ^^^^^^^^^^^^
+20 |     backup = config.with_name(f"{config.name}.bak.telegram-{stamp}")
+21 |     shutil.copy2(config, backup)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/configure_hermes_terminal_repo.py:28:26
+   |
+26 |         raise SystemExit(f"ERROR_MISSING_HERMES_CONFIG: {config}")
+27 |
+28 |     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+   |                          ^^^^^^^^^^^^
+29 |     backup = config.with_name(f"{config.name}.bak.terminal-cwd-{stamp}")
+30 |     shutil.copy2(config, backup)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> factory/continuous_factory.py:8:1
+   |
+ 6 | from datetime import datetime
+ 7 | from pathlib import Path
+ 8 | from typing import Any, Callable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 9 |
+10 | from factory.run_codex_worker import WorkerResult, run_codex_worker
+   |
+help: Import from `collections.abc`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/circuit_breaker.py:16:34
+   |
+15 |     def _now(self, at: datetime | None = None) -> datetime:
+16 |         now = at or datetime.now(timezone.utc)
+   |                                  ^^^^^^^^^^^^
+17 |         return now if now.tzinfo else now.replace(tzinfo=timezone.utc)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/circuit_breaker.py:17:58
+   |
+15 |     def _now(self, at: datetime | None = None) -> datetime:
+16 |         now = at or datetime.now(timezone.utc)
+17 |         return now if now.tzinfo else now.replace(tzinfo=timezone.utc)
+   |                                                          ^^^^^^^^^^^^
+18 |
+19 |     def record_failure(self, at: datetime | None = None) -> bool:
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/dry_run_cycle.py:58:22
+   |
+56 |     (evidence_dir / "dry_run_result.json").write_text(str(asdict(result)), encoding="utf-8")
+57 |     (evidence_dir / "completed_at.txt").write_text(
+58 |         datetime.now(timezone.utc).isoformat(), encoding="utf-8"
+   |                      ^^^^^^^^^^^^
+59 |     )
+60 |     return asdict(result)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/heartbeat.py:20:35
+   |
+18 |     target.parent.mkdir(parents=True, exist_ok=True)
+19 |     payload = {
+20 |         "timestamp": datetime.now(timezone.utc).isoformat(),
+   |                                   ^^^^^^^^^^^^
+21 |         "pid": os.getpid(),
+22 |         "status": status,
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/heartbeat.py:41:46
+   |
+39 |     timestamp = datetime.fromisoformat(payload["timestamp"])
+40 |     if timestamp.tzinfo is None:
+41 |         timestamp = timestamp.replace(tzinfo=timezone.utc)
+   |                                              ^^^^^^^^^^^^
+42 |     return datetime.now(timezone.utc) - timestamp > timedelta(seconds=max_age_seconds)
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/heartbeat.py:42:25
+   |
+40 |     if timestamp.tzinfo is None:
+41 |         timestamp = timestamp.replace(tzinfo=timezone.utc)
+42 |     return datetime.now(timezone.utc) - timestamp > timedelta(seconds=max_age_seconds)
+   |                         ^^^^^^^^^^^^
+   |
+help: Convert to `datetime.UTC` alias
+
+UP034 [*] Avoid extraneous parentheses
+  --> factory/control/telegram_handler.py:30:9
+   |
+28 |       conn.execute("PRAGMA journal_mode=WAL")
+29 |       conn.execute(
+30 | /         (
+31 | |             "CREATE TABLE IF NOT EXISTS processed_updates "
+32 | |             "(update_id INTEGER PRIMARY KEY, command TEXT, processed_at TEXT NOT NULL)"
+33 | |         )
+   | |_________^
+34 |       )
+35 |       conn.execute(
+   |
+help: Remove extraneous parentheses
+
+UP034 [*] Avoid extraneous parentheses
+  --> factory/control/telegram_handler.py:36:9
+   |
+34 |       )
+35 |       conn.execute(
+36 | /         (
+37 | |             "CREATE TABLE IF NOT EXISTS callback_tokens "
+38 | |             "(callback_id TEXT PRIMARY KEY, cycle_id TEXT NOT NULL, "
+39 | |             "action TEXT NOT NULL, expires_at TEXT NOT NULL)"
+40 | |         )
+   | |_________^
+41 |       )
+42 |       conn.commit()
+   |
+help: Remove extraneous parentheses
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/control/telegram_handler.py:80:52
+   |
+78 |         conn.execute(
+79 |             "INSERT INTO processed_updates(update_id, command, processed_at) VALUES (?, ?, ?)",
+80 |             (int(update_id), command, datetime.now(timezone.utc).isoformat()),
+   |                                                    ^^^^^^^^^^^^
+81 |         )
+82 |         conn.commit()
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+   --> factory/control/telegram_handler.py:99:31
+    |
+ 97 |     if len(callback_id.encode("utf-8")) > 64:
+ 98 |         raise ValueError("callback_data exceeds Telegram 64-byte limit")
+ 99 |     expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+    |                               ^^^^^^^^^^^^
+100 |     conn = _conn(db_path)
+101 |     conn.execute(
+    |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+   --> factory/control/telegram_handler.py:126:21
+    |
+124 |         return None
+125 |     expires_at = datetime.fromisoformat(row[2])
+126 |     if datetime.now(timezone.utc) > expires_at:
+    |                     ^^^^^^^^^^^^
+127 |         return None
+128 |     return {"cycle_id": row[0], "action": row[1], "expires_at": row[2]}
+    |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/core/factory_help.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any
+  | |______________________^
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/core/queue_runner.py:1:1
+  |
+1 | / from pathlib import Path
+2 | |
+3 | | from factory.core.task_loop import (
+4 | |     MultiagentTask,
+5 | |     load_task,
+6 | |     run_persisted_multiagent_task_cycle,
+7 | |     save_task,
+8 | | )
+  | |_^
+  |
+help: Organize imports
+
+UP017 [*] Use `datetime.UTC` alias
+   --> factory/core/run_report.py:104:33
+    |
+102 |         idle=len(summaries) == 0,
+103 |         task_results=summaries,
+104 |         created_at=datetime.now(timezone.utc).isoformat(),
+    |                                 ^^^^^^^^^^^^
+105 |         metadata=dict(metadata or {}),
+106 |     )
+    |
+help: Convert to `datetime.UTC` alias
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+ --> factory/core/task_loop.py:4:1
+  |
+2 | from dataclasses import asdict, dataclass, field
+3 | from pathlib import Path
+4 | from typing import Callable
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+help: Import from `collections.abc`
+
+UP042 Class TaskSpecStatus inherits from both `str` and `enum.Enum`
+  --> factory/core/task_spec.py:10:7
+   |
+10 | class TaskSpecStatus(str, Enum):
+   |       ^^^^^^^^^^^^^^
+11 |     PENDING = "pending"
+12 |     IN_PROGRESS = "in_progress"
+   |
+help: Inherit from `enum.StrEnum`
+
+UP037 [*] Remove quotes from type annotation
+  --> factory/core/task_spec.py:65:10
+   |
+63 |         blocking_reason: str | None = None,
+64 |         metadata: dict[str, Any] | None = None,
+65 |     ) -> "TaskSpec":
+   |          ^^^^^^^^^^
+66 |         next_status = status if isinstance(status, TaskSpecStatus) else TaskSpecStatus(status)
+67 |         return TaskSpec(
+   |
+help: Remove quotes
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/core/task_spec_runner.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import subprocess
+ 4 | | from dataclasses import dataclass, field
+ 5 | | from pathlib import Path
+ 6 | | from typing import Callable
+ 7 | |
+ 8 | | from factory.core.git_diff_detector import get_changed_paths
+ 9 | | from factory.core.task_spec import TaskSpec, TaskSpecStatus, validate_changed_paths
+10 | | from factory.core.task_spec_store import TaskSpecStore
+   | |______________________________________________________^
+   |
+help: Organize imports
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+ --> factory/core/task_spec_runner.py:6:1
+  |
+4 | from dataclasses import dataclass, field
+5 | from pathlib import Path
+6 | from typing import Callable
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7 |
+8 | from factory.core.git_diff_detector import get_changed_paths
+  |
+help: Import from `collections.abc`
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/core/task_spec_store.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from pathlib import Path
+4 | | from typing import Any
+5 | |
+6 | | from factory.core.task_spec import TaskSpec, TaskSpecStatus, read_task_spec, write_task_spec
+  | |____________________________________________________________________________________________^
+  |
+help: Organize imports
+
+F401 [*] `typing.Any` imported but unused
+ --> factory/core/task_spec_store.py:4:20
+  |
+3 | from pathlib import Path
+4 | from typing import Any
+  |                    ^^^
+5 |
+6 | from factory.core.task_spec import TaskSpec, TaskSpecStatus, read_task_spec, write_task_spec
+  |
+help: Remove unused import: `typing.Any`
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/core/task_spec_templates.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from dataclasses import dataclass, field
+4 | | from typing import Callable
+5 | | from uuid import uuid4
+6 | |
+7 | | from factory.core.task_spec import TaskSpec
+  | |___________________________________________^
+  |
+help: Organize imports
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+ --> factory/core/task_spec_templates.py:4:1
+  |
+3 | from dataclasses import dataclass, field
+4 | from typing import Callable
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5 | from uuid import uuid4
+  |
+help: Import from `collections.abc`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/disable_broken_smartpyme_mcp.py:25:26
+   |
+23 |         raise SystemExit("ERROR_INVALID_HERMES_CONFIG")
+24 |
+25 |     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+   |                          ^^^^^^^^^^^^
+26 |     backup = config_path.with_name(f"{config_path.name}.bak.disable-smartpyme-mcp-{stamp}")
+27 |     shutil.copy2(config_path, backup)
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/gemini_slice_auditor.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import argparse
+ 4 | | import os
+ 5 | | import re
+ 6 | | from dataclasses import dataclass
+ 7 | | from datetime import datetime
+ 8 | | from pathlib import Path
+ 9 | |
+10 | | from google import genai
+   | |________________________^
+   |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/hermes_control_cli.py:21:1
+   |
+19 |   """
+20 |
+21 | / from __future__ import annotations
+22 | |
+23 | | import argparse
+24 | | import json
+25 | | import os
+26 | | import re
+27 | | import subprocess
+28 | | from dataclasses import asdict, dataclass
+29 | | from datetime import datetime, timezone
+30 | | from pathlib import Path
+31 | | from typing import Iterable
+   | |___________________________^
+   |
+help: Organize imports
+
+UP035 [*] Import from `collections.abc` instead: `Iterable`
+  --> factory/hermes_control_cli.py:31:1
+   |
+29 | from datetime import datetime, timezone
+30 | from pathlib import Path
+31 | from typing import Iterable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+help: Import from `collections.abc`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/hermes_control_cli.py:58:25
+   |
+57 | def ahora_iso() -> str:
+58 |     return datetime.now(timezone.utc).isoformat()
+   |                         ^^^^^^^^^^^^
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/hermes_quick_commands_config.py:7:1
+   |
+ 5 |   """
+ 6 |
+ 7 | / from __future__ import annotations
+ 8 | |
+ 9 | | import os
+10 | | from pathlib import Path
+11 | | from typing import Any
+   | |______________________^
+   |
+help: Organize imports
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+  --> factory/install_hermes_telegram_control.py:22:5
+   |
+20 |     import yaml
+21 | except Exception as exc:  # pragma: no cover - error operativo claro
+22 |     raise SystemExit(f"ERROR: PyYAML no disponible: {exc}")
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/install_hermes_telegram_control.py:49:26
+   |
+47 |     if not path.exists():
+48 |         return None
+49 |     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+   |                          ^^^^^^^^^^^^
+50 |     target = path.with_name(f"{path.name}.bak.{stamp}")
+51 |     shutil.copy2(path, target)
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/local_mcp_server.py:1:1
+  |
+1 | / import os
+2 | | import sys
+3 | | from mcp.server.fastmcp import FastMCP
+  | |______________________________________^
+4 |
+5 |   # Creamos el servidor. 
+  |
+help: Organize imports
+
+E701 Multiple statements on one line (colon)
+  --> factory/local_mcp_server.py:22:47
+   |
+20 |     for c in capas:
+21 |         os.makedirs(f"app/{c}", exist_ok=True)
+22 |         with open(f"app/{c}/__init__.py", "a"): pass
+   |                                               ^
+23 |     return "Arquitectura SmartPyme desplegada localmente."
+   |
+
+E402 Module level import not at top of file
+  --> factory/mcp_bridge/server.py:13:1
+   |
+11 |     sys.path.insert(0, str(REPO_ROOT))
+12 |
+13 | from factory.mcp_bridge.tools import register_tools
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |
+15 | CLIENT_NAME = os.getenv("MCP_CLIENT_ID") or os.getenv("MCP_CLIENT", "unknown")
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/mcp_bridge/tools.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import logging
+ 5 | | import os
+ 6 | | import shutil
+ 7 | | import subprocess
+ 8 | | import sys
+ 9 | | import time
+10 | | from datetime import datetime, timezone
+11 | | from functools import wraps
+12 | | from pathlib import Path
+13 | | from typing import Callable
+   | |___________________________^
+   |
+help: Organize imports
+
+F401 [*] `os` imported but unused
+ --> factory/mcp_bridge/tools.py:5:8
+  |
+3 | import json
+4 | import logging
+5 | import os
+  |        ^^
+6 | import shutil
+7 | import subprocess
+  |
+help: Remove unused import: `os`
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> factory/mcp_bridge/tools.py:13:1
+   |
+11 | from functools import wraps
+12 | from pathlib import Path
+13 | from typing import Callable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+help: Import from `collections.abc`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> factory/mcp_bridge/tools.py:50:39
+   |
+48 |             def wrapper(*args, **kwargs):
+49 |                 started = time.perf_counter()
+50 |                 utc_ts = datetime.now(timezone.utc).isoformat()
+   |                                       ^^^^^^^^^^^^
+51 |                 ok = True
+52 |                 error = None
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/multiagent_runner.py:1:1
+   |
+ 1 | / import json
+ 2 | | import os
+ 3 | | import subprocess
+ 4 | | from dataclasses import asdict, dataclass
+ 5 | | from datetime import UTC, datetime
+ 6 | | from pathlib import Path
+ 7 | |
+ 8 | | from factory.atoms_catalog import resolver_atomo_por_id
+ 9 | | from factory.atoms_planner import planificar_secuencia_atomica
+   | |______________________________________________________________^
+10 |
+11 |   @dataclass(frozen=True)
+   |
+help: Organize imports
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> factory/run_codex_worker.py:9:1
+   |
+ 7 | from dataclasses import dataclass
+ 8 | from pathlib import Path
+ 9 | from typing import Callable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 |
+11 | from factory.run_factory import validate_hallazgo
+   |
+help: Import from `collections.abc`
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> factory/run_factory.py:8:1
+   |
+ 6 | import sys
+ 7 | from pathlib import Path
+ 8 | from typing import Callable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 9 |
+10 | from factory.topology_catalog import load_topology_catalog
+   |
+help: Import from `collections.abc`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> factory/run_hermes_gateway_clean.py:2:1
+   |
+ 1 |   #!/usr/bin/env python3
+ 2 | / from __future__ import annotations
+ 3 | |
+ 4 | | import json
+ 5 | | import os
+ 6 | | import shutil
+ 7 | | import signal
+ 8 | | import subprocess
+ 9 | | import urllib.error
+10 | | import urllib.request
+11 | | from pathlib import Path
+12 | |
+13 | | import yaml
+   | |___________^
+   |
+help: Organize imports
+
+F401 [*] `re` imported but unused
+ --> factory/telegram_notify.py:5:8
+  |
+3 | import json
+4 | import os
+5 | import re
+  |        ^^
+6 | import subprocess
+7 | import urllib.parse
+  |
+help: Remove unused import: `re`
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> factory/tools/factory_control.py:1:1
+  |
+1 | / from pathlib import Path
+2 | |
+3 | | from factory.core.queue_runner import run_one_queued_task
+4 | | from factory.core.task_loop import MultiagentTask, load_task, save_task
+  | |_______________________________________________________________________^
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> mcp_smartpyme_bridge.py:1:1
+  |
+1 | / import asyncio
+2 | | import os
+3 | | import uuid
+4 | | import json
+5 | | from dataclasses import asdict
+6 | | from pathlib import Path
+7 | | from mcp.server.fastmcp import FastMCP
+  | |______________________________________^
+8 |
+9 |   # Inicialización del servidor MCP para SmartPyme
+  |
+help: Organize imports
+
+F401 [*] `asyncio` imported but unused
+ --> mcp_smartpyme_bridge.py:1:8
+  |
+1 | import asyncio
+  |        ^^^^^^^
+2 | import os
+3 | import uuid
+  |
+help: Remove unused import: `asyncio`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> mcp_smartpyme_bridge.py:32:5
+   |
+30 |       Crea un Job real desde un OperationalPlanContract minimo.
+31 |       """
+32 | /     from app.contracts.operational_plan_contract import create_operational_plan
+33 | |     from app.factory.orchestrator.models import Job, STATE_CREATED
+34 | |     from app.factory.orchestrator.persistence import save_job
+   | |_____________________________________________________________^
+35 |
+36 |       try:
+   |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> mcp_smartpyme_bridge.py:161:5
+    |
+159 |       Crea una nueva clarificación pendiente para ser atendida.
+160 |       """
+161 | /     from app.core.clarification.persistence import save_clarification as save_in_db
+162 | |     from app.core.clarification.models import ClarificationRequest
+    | |__________________________________________________________________^
+163 |
+164 |       try:
+    |
+help: Organize imports
+
+UP015 [*] Unnecessary mode argument
+   --> mcp_smartpyme_bridge.py:207:30
+    |
+205 |         }
+206 |
+207 |     with open(evidence_file, "r", encoding="utf-8") as f:
+    |                              ^^^
+208 |         for line in f:
+209 |             try:
+    |
+help: Remove mode argument
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> mcp_smartpyme_bridge.py:231:5
+    |
+229 |       Ingesta un documento local en el EvidenceStore de SmartPyme.
+230 |       """
+231 | /     from services.document_ingestion_service import DocumentIngestionService
+232 | |     from app.repositories.raw_document_registry import register_raw_document
+    | |____________________________________________________________________________^
+233 |
+234 |       # The service expects an absolute path
+    |
+help: Organize imports
+
+UP015 [*] Unnecessary mode argument
+   --> mcp_smartpyme_bridge.py:266:36
+    |
+264 |         evidence_ids = []
+265 |         if chunks_file.exists():
+266 |             with open(chunks_file, "r", encoding="utf-8") as f:
+    |                                    ^^^
+267 |                 for line in f:
+268 |                     chunk = json.loads(line)
+    |
+help: Remove mode argument
+
+UP017 [*] Use `datetime.UTC` alias
+  --> models/document_models.py:23:71
+   |
+21 |     page: int = 1
+22 |     metadata: dict[str, Any] = Field(default_factory=dict)
+23 |     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+   |                                                                       ^^^^^^^^^^^^
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> scripts/build_audit_context.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import argparse
+4 | | import subprocess
+5 | | from dataclasses import dataclass
+6 | | from datetime import datetime, timezone
+7 | | from pathlib import Path
+  | |________________________^
+  |
+help: Organize imports
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/build_audit_context.py:21:25
+   |
+20 | def _utc_timestamp() -> str:
+21 |     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+   |                         ^^^^^^^^^^^^
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/build_audit_context.py:43:68
+   |
+41 |     recent: list[RecentFile] = []
+42 |     for path in files[:limit]:
+43 |         modified_at = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
+   |                                                                    ^^^^^^^^^^^^
+44 |         recent.append(
+45 |             RecentFile(
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts/codex_builder_runner.py:12:1
+   |
+10 |   """
+11 |
+12 | / from __future__ import annotations
+13 | |
+14 | | import argparse
+15 | | import json
+16 | | import shutil
+17 | | import subprocess
+18 | | import sys
+19 | | from datetime import datetime, timezone
+20 | | from pathlib import Path
+   | |________________________^
+   |
+help: Organize imports
+
+F401 [*] `sys` imported but unused
+  --> scripts/codex_builder_runner.py:18:8
+   |
+16 | import shutil
+17 | import subprocess
+18 | import sys
+   |        ^^^
+19 | from datetime import datetime, timezone
+20 | from pathlib import Path
+   |
+help: Remove unused import: `sys`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/codex_builder_runner.py:92:23
+   |
+90 |     repo: Path, task_path: str, command: list[str], output: str, returncode: int
+91 | ) -> Path:
+92 |     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+   |                       ^^^^^^^^^^^^
+93 |     safe_task = Path(task_path).stem.replace(" ", "_")
+94 |     evidence_dir = repo / "factory" / "evidence" / f"codex_{safe_task}_{ts}"
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+   --> scripts/codex_builder_runner.py:100:36
+    |
+ 98 |         "returncode": returncode,
+ 99 |         "command": command,
+100 |         "created_at": datetime.now(timezone.utc).isoformat(),
+    |                                    ^^^^^^^^^^^^
+101 |     }
+102 |     (evidence_dir / "codex_runner.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts/configure_hermes_smartpyme.py:9:1
+   |
+ 7 |   """
+ 8 |
+ 9 | / from __future__ import annotations
+10 | |
+11 | | import shutil
+12 | | import subprocess
+13 | | import sys
+14 | | from datetime import datetime, timezone
+15 | | from pathlib import Path
+16 | |
+17 | | import yaml
+   | |___________^
+   |
+help: Organize imports
+
+F401 [*] `sys` imported but unused
+  --> scripts/configure_hermes_smartpyme.py:13:8
+   |
+11 | import shutil
+12 | import subprocess
+13 | import sys
+   |        ^^^
+14 | from datetime import datetime, timezone
+15 | from pathlib import Path
+   |
+help: Remove unused import: `sys`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/configure_hermes_smartpyme.py:47:53
+   |
+46 |     backup_path = config_path.with_suffix(
+47 |         config_path.suffix + ".bak." + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+   |                                                     ^^^^^^^^^^^^
+48 |     )
+49 |     shutil.copy2(config_path, backup_path)
+   |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> scripts/dev/seed_clarifications_db.py:2:1
+  |
+1 |   # This is a standalone script to seed the clarifications database for validation.
+2 | / import os
+3 | | from app.core.clarification.models import ClarificationRequest
+4 | | from app.core.clarification.persistence import (
+5 | |     save_clarification,
+6 | |     init_clarifications_db,
+7 | |     _get_db_path,
+8 | | )
+  | |_^
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> scripts/dev/seed_evidence_store.py:3:1
+  |
+1 |   # This is a standalone script to seed the evidence store for validation.
+2 |
+3 | / import os
+4 | | import json
+5 | | from pathlib import Path
+6 | | from models.document_models import DocumentChunk
+  | |________________________________________________^
+7 |
+8 |   REPO_ROOT = Path(__file__).resolve().parents[2]
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> scripts/dev/seed_jobs_db.py:3:1
+  |
+1 |   # This is a standalone script to seed the jobs database for validation.
+2 |
+3 | / from app.factory.orchestrator.models import Job, STATE_CREATED
+4 | | from app.factory.orchestrator.persistence import save_job, init_jobs_db
+  | |_______________________________________________________________________^
+5 |
+6 |   def seed():
+  |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts/dev/validate_orchestration.py:2:1
+   |
+ 1 |   # End-to-end validation script for the orchestrator with persistence.
+ 2 | / import uuid
+ 3 | | import os
+ 4 | | import json
+ 5 | | from app.factory.orchestrator.models import Job, STATE_CREATED
+ 6 | | from app.factory.orchestrator.persistence import save_job, init_jobs_db, _get_db_path
+ 7 | | from app.factory.orchestrator.service import orchestrate_job
+ 8 | | from app.factory.skills.registry import SkillRegistry
+   | |_____________________________________________________^
+ 9 |
+10 |   # Define a dummy skill for the orchestrator to execute
+   |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> scripts/factory_disk_guard.py:2:1
+  |
+1 |   #!/usr/bin/env python3
+2 | / from shutil import disk_usage
+3 | | from pathlib import Path
+4 | | import sys
+  | |__________^
+5 |
+6 |   THRESHOLD_WARN = 80
+  |
+help: Organize imports
+
+F401 [*] `pathlib.Path` imported but unused
+ --> scripts/factory_disk_guard.py:3:21
+  |
+1 | #!/usr/bin/env python3
+2 | from shutil import disk_usage
+3 | from pathlib import Path
+  |                     ^^^^
+4 | import sys
+  |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `re` imported but unused
+ --> scripts/factory_post_cycle_control.py:5:8
+  |
+4 | import argparse
+5 | import re
+  |        ^^
+6 | import subprocess
+7 | from datetime import datetime, timezone
+  |
+help: Remove unused import: `re`
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/factory_post_cycle_control.py:38:46
+   |
+36 |     if dirs:
+37 |         return max(dirs, key=lambda p: p.stat().st_mtime)
+38 |     d = root / ("post_cycle_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
+   |                                              ^^^^^^^^^^^^
+39 |     d.mkdir(parents=True, exist_ok=True)
+40 |     return d
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+  --> scripts/factory_post_cycle_control.py:89:24
+   |
+87 |     evidence = latest_evidence(repo)
+88 |     result = infer_decision(evidence, args.codex_returncode)
+89 |     now = datetime.now(timezone.utc).isoformat()
+   |                        ^^^^^^^^^^^^
+90 |     status = run(repo, ["git", "status", "--short"])
+91 |     missing = [c for c in CONTRACTS if not (repo / c).exists()]
+   |
+help: Convert to `datetime.UTC` alias
+
+UP017 [*] Use `datetime.UTC` alias
+   --> scripts/migrate_taskspecs_v1_to_v2.py:167:70
+    |
+165 |         "task_id": task_id,
+166 |         "title": title,
+167 |         "created_at": str(original.get("created_at") or datetime.now(timezone.utc).isoformat()),
+    |                                                                      ^^^^^^^^^^^^
+168 |         "created_by": created_by,
+169 |         "priority": priority,
+    |
+help: Convert to `datetime.UTC` alias
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/core/test_action_execution_service.py:10:1
+   |
+ 8 |   sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 9 |
+10 | / from app.contracts.action_contract import ActionProposal
+11 | | from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+12 | | from app.repositories.action_execution_repository import ActionExecutionRepository
+13 | | from app.services.action_execution_service import ActionExecutionService, NotApprovedError
+14 | | from app.services.action_execution_service import AdapterExecutionError
+   | |_______________________________________________________________________^
+15 |
+16 |   # ── helpers ───────────────────────────────────────────────────────────────────
+   |
+help: Organize imports
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/test_telegram_business_task_intake_ts_015c.py:1:1
+  |
+1 | / from pathlib import Path
+2 | |
+3 | | from app.adapters.telegram_adapter import TelegramAdapter
+4 | | from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+5 | | from app.factory.agent_loop.multiagent_task_loop import load_task
+6 | | from app.services.identity_service import IdentityService
+  | |_________________________________________________________^
+  |
+help: Organize imports
+
+Found 92 errors.
+[*] 76 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+
+=== RUFF CHECK DOT E501 ===
+All checks passed!

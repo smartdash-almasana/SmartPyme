@@ -1,14 +1,15 @@
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from app.core.reconciliation.models import HumanReviewDecision, ReconciliationJob, WarningItem
 from app.core.reconciliation.service import (
-    analyze_meli_reconciliation,
     analyze_amount_reconciliation,
+    analyze_meli_reconciliation,
     apply_human_review_decision,
     build_deterministic_discrepancy_snapshot,
     build_reconciliation_summary,
@@ -17,11 +18,11 @@ from app.core.reconciliation.service import (
     complete_reconciliation_job,
     create_reconciliation_job,
     decide_next_action_from_issues,
-    detect_deterministic_ambiguity,
     detect_amount_difference,
+    detect_deterministic_ambiguity,
     evaluate_deterministic_hitl_state,
-    evaluate_warnings_fail_closed,
     evaluate_fail_closed_rules,
+    evaluate_warnings_fail_closed,
     fail_reconciliation_job,
     initialize_fail_closed_human_validation,
     raise_if_job_confirmed,
@@ -32,10 +33,8 @@ from app.core.reconciliation.service import (
     run_meli_reconciliation,
     run_reconciliation_engine,
 )
-from app.core.reconciliation.models import HumanReviewDecision, ReconciliationJob, WarningItem
 
-
-FIXED_NOW = datetime(2026, 4, 22, 12, 0, tzinfo=timezone.utc)
+FIXED_NOW = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
 
 
 def test_create_reconciliation_job_initializes_pending_job():
@@ -412,7 +411,10 @@ def test_analyze_amount_reconciliation_fails_closed_for_missing_amount_fields():
     assert all(f.reason == "monto_incierto" for f in result.findings)
     assert all(f.delta == float("inf") for f in result.findings)
     assert len(result.uncertainty_records) == 2
-    assert {u.field_name for u in result.uncertainty_records} == {"expected_amount", "actual_amount"}
+    assert {u.field_name for u in result.uncertainty_records} == {
+        "expected_amount",
+        "actual_amount",
+    }
     assert result.suggested_actions == ["solicitar_revision_humana"]
     assert len(result.human_review_questions) == 2
     assert all("Registro o-" in question for question in result.human_review_questions)
@@ -435,7 +437,10 @@ def test_analyze_amount_reconciliation_fails_closed_for_null_amount_fields():
     assert all(f.reason == "monto_incierto" for f in result.findings)
     assert all(f.delta == float("inf") for f in result.findings)
     assert len(result.uncertainty_records) == 2
-    assert {u.field_name for u in result.uncertainty_records} == {"expected_amount", "actual_amount"}
+    assert {u.field_name for u in result.uncertainty_records} == {
+        "expected_amount",
+        "actual_amount",
+    }
     assert result.suggested_actions == ["solicitar_revision_humana"]
     assert len(result.human_review_questions) == 2
     assert result.workflow_decision == "human_review_required"

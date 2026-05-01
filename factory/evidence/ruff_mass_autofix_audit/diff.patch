@@ -1,0 +1,2031 @@
+diff --git a/app/contracts/test_evidence_chunk_retrieval_cliente_id.py b/app/contracts/test_evidence_chunk_retrieval_cliente_id.py
+index 15b9ff4..9ad8e66 100644
+--- a/app/contracts/test_evidence_chunk_retrieval_cliente_id.py
++++ b/app/contracts/test_evidence_chunk_retrieval_cliente_id.py
+@@ -1,4 +1,5 @@
+ import pytest
++
+ from app.contracts.evidence_contract import EvidenceChunk, RetrievalResult
+ 
+ 
+diff --git a/app/contracts/test_raw_document_cliente_id.py b/app/contracts/test_raw_document_cliente_id.py
+index 2e703d5..cd9b3ce 100644
+--- a/app/contracts/test_raw_document_cliente_id.py
++++ b/app/contracts/test_raw_document_cliente_id.py
+@@ -1,6 +1,6 @@
+ import pytest
+ 
+-from app.contracts.evidence_contract import RawDocument, DocumentRecord
++from app.contracts.evidence_contract import DocumentRecord, RawDocument
+ 
+ 
+ def test_raw_document_requires_cliente_id():
+diff --git a/app/core/clarification/persistence.py b/app/core/clarification/persistence.py
+index 62cff2e..933a352 100644
+--- a/app/core/clarification/persistence.py
++++ b/app/core/clarification/persistence.py
+@@ -77,7 +77,15 @@ def list_pending_clarifications() -> list[ClarificationRecord]:
+     with _get_connection() as connection:
+         rows = connection.execute(
+             """
+-            SELECT clarification_id, entity_type, value_a, value_b, reason, blocking, status, resolution
++            SELECT
++                clarification_id,
++                entity_type,
++                value_a,
++                value_b,
++                reason,
++                blocking,
++                status,
++                resolution
+             FROM clarifications
+             WHERE status = 'pending'
+             ORDER BY rowid ASC
+diff --git a/app/core/clarification/service.py b/app/core/clarification/service.py
+index 20c1556..bda7fb0 100644
+--- a/app/core/clarification/service.py
++++ b/app/core/clarification/service.py
+@@ -2,9 +2,11 @@ from app.core.clarification.models import ClarificationRecord, ClarificationRequ
+ from app.core.clarification.persistence import (
+     has_blocking_pending_clarifications,
+     list_pending_clarifications,
+-    resolve_clarification as resolve_clarification_in_storage,
+     save_clarification,
+ )
++from app.core.clarification.persistence import (
++    resolve_clarification as resolve_clarification_in_storage,
++)
+ 
+ 
+ def create_clarification(
+diff --git a/app/core/findings/service.py b/app/core/findings/service.py
+index 858a6cb..b756c20 100644
+--- a/app/core/findings/service.py
++++ b/app/core/findings/service.py
+@@ -43,11 +43,17 @@ def _build_suggested_action(difference: DifferenceRecord) -> str:
+ 
+ 
+ def _build_detail(difference: DifferenceRecord) -> str:
++    entity_segment = f"Entidad {difference.entity_type} ({difference.entity_id})"
++    field_segment = f"campo '{difference.field_name}'"
++    source_segment = (
++        f"comparado entre source_a='{difference.source_a}' "
++        f"y source_b='{difference.source_b}'"
++    )
++    value_segment = f"con value_a={difference.value_a!r}, value_b={difference.value_b!r}"
++    difference_segment = f"y difference_type='{difference.difference_type}'."
+     return (
+-        f"Entidad {difference.entity_type} ({difference.entity_id}): campo '{difference.field_name}' "
+-        f"comparado entre source_a='{difference.source_a}' y source_b='{difference.source_b}', "
+-        f"con value_a={difference.value_a!r}, value_b={difference.value_b!r} "
+-        f"y difference_type='{difference.difference_type}'."
++        f"{entity_segment}: {field_segment} {source_segment}, "
++        f"{value_segment} {difference_segment}"
+     )
+ 
+ 
+diff --git a/app/core/hallazgos/service.py b/app/core/hallazgos/service.py
+index e2688f4..10fdc24 100644
+--- a/app/core/hallazgos/service.py
++++ b/app/core/hallazgos/service.py
+@@ -1,17 +1,19 @@
+ import hashlib
+-from typing import Any, Optional, Dict
+ from dataclasses import replace
++from typing import Any
++
+ from app.core.hallazgos.models import (
+-    Hallazgo, 
+-    FindingSeverity, 
+-    FindingType, 
++    FindingSeverity,
+     FindingStatus,
+-    MismatchEvidence, 
+-    MissingEvidence
++    FindingType,
++    Hallazgo,
++    MismatchEvidence,
++    MissingEvidence,
+ )
+-from app.core.reconciliation.models import ReconciliationResult, QuantifiedDiscrepancy
++from app.core.reconciliation.models import ReconciliationResult
+ from app.core.repositories.hallazgo_repository import HallazgoRepository
+ 
++
+ class HallazgoEngine:
+     """Motor endurecido para la generación de hallazgos determinísticos."""
+ 
+@@ -30,7 +32,11 @@ class HallazgoEngine:
+             return "warning"
+         return "critical" if abs(delta) >= self.CRITICAL_THRESHOLD else "warning"
+ 
+-    def transform(self, result: ReconciliationResult, entidad_tipo: str = "order") -> list[Hallazgo]:
++    def transform(
++        self,
++        result: ReconciliationResult,
++        entidad_tipo: str = "order",
++    ) -> list[Hallazgo]:
+         hallazgos = []
+ 
+         for mismatch in result.mismatches:
+@@ -98,14 +104,14 @@ class HallazgoService:
+ 
+     def get_findings(
+         self, 
+-        status: Optional[FindingStatus] = None,
+-        severity: Optional[FindingSeverity] = None,
+-        tipo: Optional[FindingType] = None
++        status: FindingStatus | None = None,
++        severity: FindingSeverity | None = None,
++        tipo: FindingType | None = None
+     ) -> list[Hallazgo]:
+         """Consulta hallazgos con filtros determinísticos."""
+         return self.repository.list_all(status=status, severity=severity, tipo=tipo)
+ 
+-    def get_summary(self) -> Dict[str, Any]:
++    def get_summary(self) -> dict[str, Any]:
+         """Genera un resumen estadístico de los hallazgos persistidos."""
+         all_findings = self.repository.list_all()
+         
+@@ -124,7 +130,7 @@ class HallazgoService:
+                 
+         return summary
+ 
+-    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Optional[Hallazgo]:
++    def update_status(self, hallazgo_id: str, new_status: FindingStatus) -> Hallazgo | None:
+         """Actualiza el estado de un hallazgo existente."""
+         hallazgo = self.repository.get_by_id(hallazgo_id)
+         if not hallazgo:
+diff --git a/app/core/orchestrator/models.py b/app/core/orchestrator/models.py
+index 58d4474..f8a6a9e 100644
+--- a/app/core/orchestrator/models.py
++++ b/app/core/orchestrator/models.py
+@@ -1,7 +1,8 @@
+ from dataclasses import dataclass, field
+-from typing import Any
+-from app.core.reconciliation.models import ReconciliationResult
++
+ from app.core.hallazgos.models import Hallazgo
++from app.core.reconciliation.models import ReconciliationResult
++
+ 
+ @dataclass(frozen=True, slots=True)
+ class OrchestrationResult:
+diff --git a/app/core/orchestrator/pipeline.py b/app/core/orchestrator/pipeline.py
+index 8a2e015..679bb49 100644
+--- a/app/core/orchestrator/pipeline.py
++++ b/app/core/orchestrator/pipeline.py
+@@ -1,4 +1,5 @@
+-from typing import Any, Callable
++from collections.abc import Callable
++from typing import Any
+ 
+ StepFn = Callable[[Any], Any]
+ 
+diff --git a/app/core/orchestrator/service.py b/app/core/orchestrator/service.py
+index 11f62b8..57d6b12 100644
+--- a/app/core/orchestrator/service.py
++++ b/app/core/orchestrator/service.py
+@@ -1,13 +1,15 @@
+-from typing import Any, Optional
++from typing import Any
++
++from app.core.hallazgos.service import HallazgoEngine
+ from app.core.orchestrator.models import OrchestrationResult
+ from app.core.reconciliation.service import reconcile_records
+-from app.core.hallazgos.service import HallazgoEngine
+ from app.core.repositories.hallazgo_repository import HallazgoRepository, MemoryHallazgoRepository
+ 
++
+ class Orchestrator:
+     """Orquestador central del flujo de SmartPyme con persistencia integrada."""
+ 
+-    def __init__(self, repository: Optional[HallazgoRepository] = None):
++    def __init__(self, repository: HallazgoRepository | None = None):
+         self.hallazgo_engine = HallazgoEngine()
+         self.repository = repository or MemoryHallazgoRepository()
+ 
+diff --git a/app/core/pipeline.py b/app/core/pipeline.py
+index ddeae9a..5844751 100644
+--- a/app/core/pipeline.py
++++ b/app/core/pipeline.py
+@@ -1,21 +1,22 @@
+ from __future__ import annotations
+ 
+-from app.services.fact_extraction_service import FactExtractionService
++from typing import TYPE_CHECKING
++
++from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
++from app.repositories.canonical_repository import CanonicalRepository
++from app.repositories.entity_repository import EntityRepository
++from app.repositories.fact_repository import FactRepository
+ from app.services.canonicalization_service import CanonicalizationService
+-from app.services.entity_resolution_service import EntityResolutionService
+ from app.services.comparison_service import ComparisonService
++from app.services.entity_resolution_service import EntityResolutionService
++from app.services.fact_extraction_service import FactExtractionService
+ from app.services.findings_service import FindingsService
+-from app.repositories.fact_repository import FactRepository
+-from app.repositories.canonical_repository import CanonicalRepository
+-from app.repositories.entity_repository import EntityRepository
+-from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
+ 
+-from typing import TYPE_CHECKING
+ if TYPE_CHECKING:
+     from app.repositories.finding_repository import FindingRepository
+-    from app.services.finding_communication_service import FindingCommunicationService
+-    from app.services.clarification_service import ClarificationService
+     from app.services.action_proposal_service import ActionProposalService
++    from app.services.clarification_service import ClarificationService
++    from app.services.finding_communication_service import FindingCommunicationService
+ 
+ _BLOCKED_COUNTS = PipelineCounts(
+     facts=0, canonical=0, entities=0, validated_entities=0,
+@@ -30,10 +31,10 @@ class Pipeline:
+         fact_repo: FactRepository,
+         canonical_repo: CanonicalRepository,
+         entity_repo: EntityRepository,
+-        finding_repo: "FindingRepository | None" = None,
+-        communication_service: "FindingCommunicationService | None" = None,
+-        clarification_service: "ClarificationService | None" = None,
+-        action_proposal_service: "ActionProposalService | None" = None,
++        finding_repo: FindingRepository | None = None,
++        communication_service: FindingCommunicationService | None = None,
++        clarification_service: ClarificationService | None = None,
++        action_proposal_service: ActionProposalService | None = None,
+     ) -> None:
+         if not cliente_id:
+             raise ValueError("cliente_id is required for Pipeline")
+@@ -63,13 +64,25 @@ class Pipeline:
+             plan_id=plan_id
+         )
+         facts = self.fact_repo.list_facts(evidence_id=evidence_id)
+-        self.canonicalization_service.canonicalize_facts(facts=facts, job_id=job_id, plan_id=plan_id)
++        self.canonicalization_service.canonicalize_facts(
++            facts=facts,
++            job_id=job_id,
++            plan_id=plan_id,
++        )
+         canonical_rows = self.canonical_repo.list_canonical_rows(evidence_id=evidence_id)
+         self.entity_resolution_service.resolve_entities(
+             canonical_rows=canonical_rows, job_id=job_id, plan_id=plan_id
+         )
+ 
+-    def process_texts(self, evidence_id_a, text_a, evidence_id_b, text_b, job_id=None, plan_id=None):
++    def process_texts(
++        self,
++        evidence_id_a,
++        text_a,
++        evidence_id_b,
++        text_b,
++        job_id=None,
++        plan_id=None,
++    ):
+         errors = []
+ 
+         if (
+@@ -82,7 +95,13 @@ class Pipeline:
+                 status="BLOCKED",
+                 job_id=job_id,
+                 plan_id=plan_id,
+-                facts=[], canonical=[], entities=[], comparison=[], findings=[], messages=[], action_proposals=[],
++                facts=[],
++                canonical=[],
++                entities=[],
++                comparison=[],
++                findings=[],
++                messages=[],
++                action_proposals=[],
+                 counts=_BLOCKED_COUNTS,
+                 errors=[blocking_reason],
+                 blocking_reason=blocking_reason,
+@@ -91,8 +110,12 @@ class Pipeline:
+         self._process_one_text(evidence_id_a, text_a, job_id, plan_id)
+         self._process_one_text(evidence_id_b, text_b, job_id, plan_id)
+ 
+-        facts = self.fact_repo.list_facts(evidence_id=evidence_id_a) + self.fact_repo.list_facts(evidence_id=evidence_id_b)
+-        canonical = self.canonical_repo.list_canonical_rows(evidence_id=evidence_id_a) + self.canonical_repo.list_canonical_rows(evidence_id=evidence_id_b)
++        facts = self.fact_repo.list_facts(
++            evidence_id=evidence_id_a
++        ) + self.fact_repo.list_facts(evidence_id=evidence_id_b)
++        canonical = self.canonical_repo.list_canonical_rows(
++            evidence_id=evidence_id_a
++        ) + self.canonical_repo.list_canonical_rows(evidence_id=evidence_id_b)
+         entities = self.entity_repo.list_entities()
+         validated_entities = [e for e in entities if e.validation_status == "validated"]
+ 
+@@ -102,12 +125,26 @@ class Pipeline:
+         if self.finding_repo and findings:
+             self.finding_repo.save_batch(findings)
+ 
+-        messages = self.communication_service.build_messages(findings) if self.communication_service else []
+-        action_proposals = self.action_proposal_service.propose_batch_from_messages(messages) if self.action_proposal_service and messages else []
++        messages = (
++            self.communication_service.build_messages(findings)
++            if self.communication_service
++            else []
++        )
++        action_proposals = (
++            self.action_proposal_service.propose_batch_from_messages(messages)
++            if self.action_proposal_service and messages
++            else []
++        )
+ 
+         counts = PipelineCounts(
+-            facts=len(facts), canonical=len(canonical), entities=len(entities), validated_entities=len(validated_entities),
+-            comparison=len(comparison_results), findings=len(findings), messages=len(messages), action_proposals=len(action_proposals)
++            facts=len(facts),
++            canonical=len(canonical),
++            entities=len(entities),
++            validated_entities=len(validated_entities),
++            comparison=len(comparison_results),
++            findings=len(findings),
++            messages=len(messages),
++            action_proposals=len(action_proposals),
+         )
+ 
+         return PipelineResult(
+diff --git a/app/core/reconciliation/models.py b/app/core/reconciliation/models.py
+index 56166ea..3164c14 100644
+--- a/app/core/reconciliation/models.py
++++ b/app/core/reconciliation/models.py
+@@ -1,5 +1,5 @@
+ from dataclasses import dataclass, field
+-from datetime import datetime, timezone
++from datetime import UTC, datetime
+ from typing import Any, Literal, TypeAlias
+ 
+ ReconciliationFieldValue: TypeAlias = str | int | float | bool | None
+@@ -58,7 +58,7 @@ ReconciliationJobScope: TypeAlias = Literal["orders"]
+ 
+ 
+ def _utc_now() -> datetime:
+-    return datetime.now(timezone.utc)
++    return datetime.now(UTC)
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+diff --git a/app/core/reconciliation/service.py b/app/core/reconciliation/service.py
+index 4aa2e9f..15492c4 100644
+--- a/app/core/reconciliation/service.py
++++ b/app/core/reconciliation/service.py
+@@ -1,7 +1,7 @@
+ import csv
+ from collections.abc import Callable
+ from dataclasses import asdict, replace
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from decimal import Decimal
+ from math import isfinite
+ from pathlib import Path
+@@ -29,13 +29,13 @@ from app.core.reconciliation.models import (
+     ReconciliationJob,
+     ReconciliationJobScope,
+     ReconciliationJobStatus,
+-    ReconciliationRow,
+     ReconciliationResult,
++    ReconciliationRow,
+     ReconciliationStateMachineResult,
+     SimpleReconciliationFinding,
+     SimpleReconciliationResult,
+-    UncertaintyRecord,
+     UncertaintyLevel,
++    UncertaintyRecord,
+     WarningItem,
+     WorkflowDecision,
+ )
+@@ -95,7 +95,7 @@ def _to_float_or_zero(value: Any) -> float:
+ 
+ 
+ def _utc_now() -> datetime:
+-    return datetime.now(timezone.utc)
++    return datetime.now(UTC)
+ 
+ 
+ def _validate_aware_datetime(value: datetime, field_name: str) -> None:
+@@ -303,7 +303,10 @@ def _normalize_reconciliation_status(job_state: Any) -> str:
+     return normalized_status
+ 
+ 
+-def compare_records(record_a: ComparableRecord, record_b: ComparableRecord) -> list[DifferenceRecord]:
++def compare_records(
++    record_a: ComparableRecord,
++    record_b: ComparableRecord,
++) -> list[DifferenceRecord]:
+     if record_a.entity_id != record_b.entity_id:
+         raise ValueError(
+             "ENTITY_ID_MISMATCH: los records comparables deben tener el mismo entity_id."
+@@ -1258,21 +1261,25 @@ def apply_human_review_decision(
+     )
+     if normalized_persisted_status != resolved_status:
+         raise ValueError(
+-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede reabrir ni alterar el estado resuelto."
++            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
++            "la persistencia no puede reabrir ni alterar el estado resuelto."
+         )
+     persisted_actor = persisted_state.get("human_review_actor")
+     if persisted_actor != actor:
+         raise ValueError(
+-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar el actor de la decision humana."
++            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
++            "la persistencia no puede alterar el actor de la decision humana."
+         )
+     persisted_verdict = persisted_state.get("human_review_verdict")
+     if persisted_verdict != decision.verdict:
+         raise ValueError(
+-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar el veredicto humano resuelto."
++            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
++            "la persistencia no puede alterar el veredicto humano resuelto."
+         )
+     if persisted_state.get("human_review_note") != decision.note:
+         raise ValueError(
+-            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: la persistencia no puede alterar la nota de la decision humana."
++            "HUMAN_REVIEW_PERSISTENCE_MUTATION_DENEGADA: "
++            "la persistencia no puede alterar la nota de la decision humana."
+         )
+     return persisted_state
+ 
+@@ -1322,7 +1329,9 @@ def analyze_amount_reconciliation(
+         try:
+             record = ReconciliationRow.model_validate(raw_record).root
+         except Exception as exc:
+-            raise ValueError("ROW_INVALIDA: registro invalido en records. Ejecucion bloqueada.") from exc
++            raise ValueError(
++                "ROW_INVALIDA: registro invalido en records. Ejecucion bloqueada."
++            ) from exc
+         if key_field not in record:
+             raise ValueError(f"KEY_FIELD_FALTANTE: falta '{key_field}' en un registro.")
+         key_value = record[key_field]
+diff --git a/app/core/repositories/hallazgo_repository.py b/app/core/repositories/hallazgo_repository.py
+index 5997e78..b0e8b66 100644
+--- a/app/core/repositories/hallazgo_repository.py
++++ b/app/core/repositories/hallazgo_repository.py
+@@ -1,5 +1,7 @@
+-from typing import Protocol, Optional, runtime_checkable, List
+-from app.core.hallazgos.models import Hallazgo, FindingStatus, FindingSeverity, FindingType
++from typing import Protocol, runtime_checkable
++
++from app.core.hallazgos.models import FindingSeverity, FindingStatus, FindingType, Hallazgo
++
+ 
+ @runtime_checkable
+ class HallazgoRepository(Protocol):
+@@ -9,20 +11,20 @@ class HallazgoRepository(Protocol):
+         """Guarda o actualiza un hallazgo."""
+         ...
+ 
+-    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
++    def get_by_id(self, hallazgo_id: str) -> Hallazgo | None:
+         """Busca un hallazgo por su ID único."""
+         ...
+ 
+-    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
++    def get_by_dedupe_key(self, dedupe_key: str) -> Hallazgo | None:
+         """Busca un hallazgo por su clave de deduplicación."""
+         ...
+ 
+     def list_all(
+         self, 
+-        status: Optional[FindingStatus] = None,
+-        severity: Optional[FindingSeverity] = None,
+-        tipo: Optional[FindingType] = None
+-    ) -> List[Hallazgo]:
++        status: FindingStatus | None = None,
++        severity: FindingSeverity | None = None,
++        tipo: FindingType | None = None
++    ) -> list[Hallazgo]:
+         """Lista hallazgos aplicando filtros opcionales."""
+         ...
+ 
+@@ -37,10 +39,10 @@ class MemoryHallazgoRepository:
+         self._storage[hallazgo.id] = hallazgo
+         self._dedupe_index[hallazgo.dedupe_key] = hallazgo.id
+ 
+-    def get_by_id(self, hallazgo_id: str) -> Optional[Hallazgo]:
++    def get_by_id(self, hallazgo_id: str) -> Hallazgo | None:
+         return self._storage.get(hallazgo_id)
+ 
+-    def get_by_dedupe_key(self, dedupe_key: str) -> Optional[Hallazgo]:
++    def get_by_dedupe_key(self, dedupe_key: str) -> Hallazgo | None:
+         hallazgo_id = self._dedupe_index.get(dedupe_key)
+         if not hallazgo_id:
+             return None
+@@ -48,10 +50,10 @@ class MemoryHallazgoRepository:
+ 
+     def list_all(
+         self, 
+-        status: Optional[FindingStatus] = None,
+-        severity: Optional[FindingSeverity] = None,
+-        tipo: Optional[FindingType] = None
+-    ) -> List[Hallazgo]:
++        status: FindingStatus | None = None,
++        severity: FindingSeverity | None = None,
++        tipo: FindingType | None = None
++    ) -> list[Hallazgo]:
+         findings = list(self._storage.values())
+         
+         if status:
+diff --git a/app/core/test_calculators.py b/app/core/test_calculators.py
+index 7b1655c..9763d29 100644
+--- a/app/core/test_calculators.py
++++ b/app/core/test_calculators.py
+@@ -1,7 +1,10 @@
+-import pytest
+ import decimal
++
++import pytest
++
+ from app.core.calculators import calcular_diferencia_absoluta
+ 
++
+ def test_calculadora_diferencia_positiva():
+     res = calcular_diferencia_absoluta("15.55", "10.00")
+     assert isinstance(res, decimal.Decimal)
+diff --git a/app/core/test_entities.py b/app/core/test_entities.py
+index 1c64548..aac7d2c 100644
+--- a/app/core/test_entities.py
++++ b/app/core/test_entities.py
+@@ -1,6 +1,8 @@
+-import pytest
+ import decimal
++
++import pytest
+ from pydantic import ValidationError
++
+ from app.core.entities import HallazgoOperativo
+ 
+ 
+@@ -71,12 +73,32 @@ def test_hallazgo_operativo_rechaza_strings_invalidos():
+     invalid_inputs = ["abc", "", "   ", "NaN", "Infinity", "-Infinity"]
+     for inv in invalid_inputs:
+         with pytest.raises(ValueError):
+-            HallazgoOperativo(**_hallazgo_payload(monto_detectado=inv, diferencia="0", alicuota_iva="0"))
++            HallazgoOperativo(
++                **_hallazgo_payload(
++                    monto_detectado=inv,
++                    diferencia="0",
++                    alicuota_iva="0",
++                )
++            )
+ 
+ 
+ def test_hallazgo_operativo_normaliza_severidad():
+-    h = HallazgoOperativo(**_hallazgo_payload(nivel_severidad="ALTO", monto_detectado="0", diferencia="0", alicuota_iva="0"))
++    h = HallazgoOperativo(
++        **_hallazgo_payload(
++            nivel_severidad="ALTO",
++            monto_detectado="0",
++            diferencia="0",
++            alicuota_iva="0",
++        )
++    )
+     assert h.nivel_severidad == "alto"
+     
+-    h2 = HallazgoOperativo(**_hallazgo_payload(nivel_severidad="Critico", monto_detectado="0", diferencia="0", alicuota_iva="0"))
++    h2 = HallazgoOperativo(
++        **_hallazgo_payload(
++            nivel_severidad="Critico",
++            monto_detectado="0",
++            diferencia="0",
++            alicuota_iva="0",
++        )
++    )
+     assert h2.nivel_severidad == "critico"
+diff --git a/app/core/validation/models.py b/app/core/validation/models.py
+index a0f01f0..3979e66 100644
+--- a/app/core/validation/models.py
++++ b/app/core/validation/models.py
+@@ -1,5 +1,6 @@
+ from dataclasses import dataclass
+ 
++
+ @dataclass(frozen=True, slots=True)
+ class ValidationResult:
+     is_valid: bool
+diff --git a/app/core/validation/service.py b/app/core/validation/service.py
+index 19e61d5..64f6b48 100644
+--- a/app/core/validation/service.py
++++ b/app/core/validation/service.py
+@@ -1,5 +1,6 @@
+ from app.core.validation.models import ValidationResult
+ 
++
+ def validate_data(data: dict) -> ValidationResult:
+     if not data:
+         return ValidationResult(is_valid=False, reason="Data is empty")
+diff --git a/app/factory/agent_loop/enqueue_task.py b/app/factory/agent_loop/enqueue_task.py
+index 646fa7f..afa8b5b 100644
+--- a/app/factory/agent_loop/enqueue_task.py
++++ b/app/factory/agent_loop/enqueue_task.py
+@@ -4,7 +4,6 @@ from pathlib import Path
+ 
+ from app.factory.agent_loop.multiagent_task_loop import MultiagentTask, save_task
+ 
+-
+ DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
+ 
+ 
+diff --git a/app/factory/agent_loop/queue_runner.py b/app/factory/agent_loop/queue_runner.py
+index 777d7b4..3a926b5 100644
+--- a/app/factory/agent_loop/queue_runner.py
++++ b/app/factory/agent_loop/queue_runner.py
+@@ -8,7 +8,6 @@ from app.factory.agent_loop.multiagent_task_loop import (
+ )
+ from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO, BusinessTaskExecutor
+ 
+-
+ BUSINESS_TASK_TYPES = {AUDIT_VENTA_BAJO_COSTO}
+ 
+ 
+@@ -68,7 +67,7 @@ def run_one_business_task(
+         task.output = BusinessTaskExecutor().execute(task.task_type or "", task.payload)
+         task.audit = {"status": "passed", "reason": "BUSINESS_TASK_EXECUTED"}
+         task.status = "done"
+-    except Exception as exc:  # pragma: no cover - error path asserted by status contract when needed
++    except Exception as exc:  # pragma: no cover - error path asserted by status contract
+         task.output = None
+         task.audit = {"status": "blocked", "reason": exc.__class__.__name__}
+         task.status = "blocked"
+diff --git a/app/factory/agent_loop/run_queue_once.py b/app/factory/agent_loop/run_queue_once.py
+index 8e68100..3508fe3 100644
+--- a/app/factory/agent_loop/run_queue_once.py
++++ b/app/factory/agent_loop/run_queue_once.py
+@@ -4,7 +4,6 @@ from pathlib import Path
+ 
+ from app.factory.agent_loop.queue_runner import run_one_queued_task
+ 
+-
+ DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
+ DEFAULT_EVIDENCE_DIR = Path("factory/multiagent/evidence")
+ 
+diff --git a/app/factory/agent_loop/service.py b/app/factory/agent_loop/service.py
+index 9764587..7abab0e 100644
+--- a/app/factory/agent_loop/service.py
++++ b/app/factory/agent_loop/service.py
+@@ -95,7 +95,10 @@ def run_agent_loop(
+                 final_state=current_state,
+                 final_output=last_output,
+                 error_code="STATE_TRANSITION_NOT_FOUND",
+-                error_message=f"No existe transicion de estado para skill: {decision.next_skill_id}",
++                error_message=(
++                    "No existe transicion de estado para skill: "
++                    f"{decision.next_skill_id}"
++                ),
+             )
+         current_state = next_state
+ 
+diff --git a/app/factory/business_task_executor.py b/app/factory/business_task_executor.py
+index 8439a63..5520ab0 100644
+--- a/app/factory/business_task_executor.py
++++ b/app/factory/business_task_executor.py
+@@ -9,7 +9,6 @@ from app.contracts.pathology_contract import PathologyFinding
+ from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+ from app.factory.agents.pathology_auditor_agent import PathologyAuditorAgent
+ 
+-
+ AUDIT_VENTA_BAJO_COSTO = "audit_venta_bajo_costo"
+ 
+ 
+diff --git a/app/factory/orchestrator/persistence.py b/app/factory/orchestrator/persistence.py
+index 986dc28..dd095f2 100644
+--- a/app/factory/orchestrator/persistence.py
++++ b/app/factory/orchestrator/persistence.py
+@@ -1,8 +1,8 @@
+-import os
+ import json
++import os
+ import sqlite3
+-from pathlib import Path
+ from datetime import datetime
++from pathlib import Path
+ 
+ from app.factory.orchestrator.models import Job
+ 
+diff --git a/app/factory/skills/executors.py b/app/factory/skills/executors.py
+index c3d5106..7dbfe24 100644
+--- a/app/factory/skills/executors.py
++++ b/app/factory/skills/executors.py
+@@ -1,5 +1,5 @@
+-from typing import Any, Callable
+-
++from collections.abc import Callable
++from typing import Any
+ 
+ Executor = Callable[[dict[str, Any]], dict[str, Any]]
+ 
+diff --git a/app/factory/skills/runner.py b/app/factory/skills/runner.py
+index 8b975ac..af252db 100644
+--- a/app/factory/skills/runner.py
++++ b/app/factory/skills/runner.py
+@@ -15,7 +15,11 @@ def _error_result(skill_id: str, error_code: str, error_message: str) -> dict[st
+     }
+ 
+ 
+-def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry | None = None) -> dict[str, Any]:
++def run_skill(
++    skill_id: str,
++    payload: dict[str, Any],
++    registry: SkillRegistry | None = None,
++) -> dict[str, Any]:
+     active_registry = registry or SkillRegistry.load_builtin()
+ 
+     try:
+@@ -27,7 +31,11 @@ def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry |
+ 
+     valid_input, input_error = validate_schema(payload, skill.input_schema, path="input")
+     if not valid_input:
+-        return _error_result(skill_id, "INPUT_SCHEMA_INVALID", input_error or "input schema invalid")
++        return _error_result(
++            skill_id,
++            "INPUT_SCHEMA_INVALID",
++            input_error or "input schema invalid",
++        )
+ 
+     try:
+         executor = get_executor(skill.executor_ref)
+@@ -37,7 +45,11 @@ def run_skill(skill_id: str, payload: dict[str, Any], registry: SkillRegistry |
+ 
+     valid_output, output_error = validate_schema(output, skill.output_schema, path="output")
+     if not valid_output:
+-        return _error_result(skill_id, "OUTPUT_SCHEMA_INVALID", output_error or "output schema invalid")
++        return _error_result(
++            skill_id,
++            "OUTPUT_SCHEMA_INVALID",
++            output_error or "output schema invalid",
++        )
+ 
+     return {
+         "status": "ok",
+diff --git a/app/factory/skills/validators.py b/app/factory/skills/validators.py
+index 9bc00b1..101ea0c 100644
+--- a/app/factory/skills/validators.py
++++ b/app/factory/skills/validators.py
+@@ -1,6 +1,5 @@
+ from typing import Any
+ 
+-
+ _TYPE_MAP = {
+     "string": str,
+     "number": (int, float),
+@@ -64,7 +63,11 @@ def _validate_array(value: Any, schema: dict[str, Any], path: str) -> tuple[bool
+     return True, None
+ 
+ 
+-def validate_schema(value: Any, schema: dict[str, Any], path: str = "payload") -> tuple[bool, str | None]:
++def validate_schema(
++    value: Any,
++    schema: dict[str, Any],
++    path: str = "payload",
++) -> tuple[bool, str | None]:
+     if not isinstance(schema, dict):
+         return False, f"{path} schema must be object"
+ 
+diff --git a/app/mcp/tools/factory_control_tool.py b/app/mcp/tools/factory_control_tool.py
+index 6ec93b2..bb02f50 100644
+--- a/app/mcp/tools/factory_control_tool.py
++++ b/app/mcp/tools/factory_control_tool.py
+@@ -7,7 +7,6 @@ from app.factory.agent_loop.multiagent_task_loop import (
+ )
+ from app.factory.agent_loop.queue_runner import run_one_queued_task
+ 
+-
+ DEFAULT_TASKS_DIR = Path("factory/multiagent/tasks")
+ DEFAULT_EVIDENCE_DIR = Path("factory/multiagent/evidence")
+ 
+diff --git a/app/mcp/tools/jobs_read_tool.py b/app/mcp/tools/jobs_read_tool.py
+index 8858ba3..40aef1c 100644
+--- a/app/mcp/tools/jobs_read_tool.py
++++ b/app/mcp/tools/jobs_read_tool.py
+@@ -1,7 +1,7 @@
+ from pathlib import Path
+ 
+-from app.repositories.job_repository import JobRepository
+ from app.repositories.finding_repository import FindingRepository
++from app.repositories.job_repository import JobRepository
+ 
+ 
+ def get_jobs(cliente_id: str):
+diff --git a/app/modules/findings_engine.py b/app/modules/findings_engine.py
+index 942e6e4..29d4b09 100644
+--- a/app/modules/findings_engine.py
++++ b/app/modules/findings_engine.py
+@@ -1,9 +1,11 @@
+-from typing import List, Dict, Any
+-from app.core.entities import HallazgoOperativo
++from typing import Any
++
+ from app.catalog.patologias import CATALOGO_PATOLOGIAS
+ from app.core.calculators import calcular_diferencia_absoluta
++from app.core.entities import HallazgoOperativo
++
+ 
+-def procesar_extraccion_bruta(datos_crudos: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
++def procesar_extraccion_bruta(datos_crudos: list[dict[str, Any]]) -> list[dict[str, Any]]:
+     """
+     Engine mínimo para evaluar datos crudos y emitir hallazgos validados.
+     Aplica el contrato determinístico bloqueando floats o datos corruptos
+@@ -23,10 +25,15 @@ def procesar_extraccion_bruta(datos_crudos: List[Dict[str, Any]]) -> List[Dict[s
+             raise ValueError(f"Patología no reconocida por el sistema auditado: {pid}")
+ 
+         # Integración Determinística de Diferencia
+-        # Si la ráfaga de datos crudos aporta los contrapesos (monto detectado y monto de contraste o esperado),
+-        # anula/asigna la diferencia matemáticamente de modo local, rechazando pre-cálculos de la capa integradora si fuera el caso.
++        # Si la ráfaga de datos crudos aporta los contrapesos
++        # (monto detectado y monto de contraste o esperado),
++        # anula/asigna la diferencia matemáticamente de modo local,
++        # rechazando pre-cálculos de la capa integradora si fuera el caso.
+         if "monto_detectado" in payload and "monto_esperado" in payload:
+-            diferencia_rigor = calcular_diferencia_absoluta(payload["monto_detectado"], payload["monto_esperado"])
++            diferencia_rigor = calcular_diferencia_absoluta(
++                payload["monto_detectado"],
++                payload["monto_esperado"],
++            )
+             payload["diferencia"] = diferencia_rigor
+             
+         # Inyectamos el nivel de severidad por asunción determinística si no se provee nada
+diff --git a/app/modules/test_findings_engine.py b/app/modules/test_findings_engine.py
+index 1249f30..915f18e 100644
+--- a/app/modules/test_findings_engine.py
++++ b/app/modules/test_findings_engine.py
+@@ -1,4 +1,5 @@
+ import pytest
++
+ from app.modules.findings_engine import procesar_extraccion_bruta
+ 
+ 
+diff --git a/app/orchestration/pipeline.py b/app/orchestration/pipeline.py
+index 8677bf5..87d45c5 100644
+--- a/app/orchestration/pipeline.py
++++ b/app/orchestration/pipeline.py
+@@ -1,8 +1,11 @@
+-from typing import List, Dict, Any
+-from app.modules.findings_engine import procesar_extraccion_bruta
++from typing import Any
++
+ from pydantic import ValidationError
+ 
+-def ejecutar_pipeline_extraccion(datos_entrada: List[Dict[str, Any]]) -> Dict[str, Any]:
++from app.modules.findings_engine import procesar_extraccion_bruta
++
++
++def ejecutar_pipeline_extraccion(datos_entrada: list[dict[str, Any]]) -> dict[str, Any]:
+     """
+     Punto de entrada mínimo al pipeline orquestador en SmartPyme.
+     Recibe la extracción simulada en bruto, direcciona los hallazgos al engine puro
+@@ -21,7 +24,10 @@ def ejecutar_pipeline_extraccion(datos_entrada: List[Dict[str, Any]]) -> Dict[st
+     
+     if not isinstance(datos_entrada, list):
+         estado_pipeline["status"] = "error"
+-        estado_pipeline["errores"].append("El payload de entrada debe ser obligatoriamente una lista de diccionarios.")
++        estado_pipeline["errores"].append(
++            "El payload de entrada debe ser obligatoriamente "
++            "una lista de diccionarios."
++        )
+         return estado_pipeline
+ 
+     try:
+diff --git a/app/orchestration/test_pipeline.py b/app/orchestration/test_pipeline.py
+index 853adf4..56350b6 100644
+--- a/app/orchestration/test_pipeline.py
++++ b/app/orchestration/test_pipeline.py
+@@ -1,6 +1,6 @@
+-import pytest
+ from app.orchestration.pipeline import ejecutar_pipeline_extraccion
+ 
++
+ def test_pipeline_flujo_feliz():
+     input_data = [{
+         "entidad_origen": "FACTURA_001",
+diff --git a/app/repositories/canonical_repository.py b/app/repositories/canonical_repository.py
+index 5044bd6..4875909 100644
+--- a/app/repositories/canonical_repository.py
++++ b/app/repositories/canonical_repository.py
+@@ -4,7 +4,6 @@ import json
+ import os
+ import sqlite3
+ from pathlib import Path
+-from typing import Any
+ 
+ from app.contracts.evidence_contract import CanonicalRowCandidate
+ 
+diff --git a/app/repositories/clarification_repository.py b/app/repositories/clarification_repository.py
+index fd9b0df..d931eba 100644
+--- a/app/repositories/clarification_repository.py
++++ b/app/repositories/clarification_repository.py
+@@ -3,7 +3,6 @@ from __future__ import annotations
+ import json
+ import sqlite3
+ from pathlib import Path
+-from typing import Any
+ 
+ from app.contracts.clarification_contract import Clarification
+ 
+diff --git a/app/repositories/fact_repository.py b/app/repositories/fact_repository.py
+index bd92415..db47ae4 100644
+--- a/app/repositories/fact_repository.py
++++ b/app/repositories/fact_repository.py
+@@ -4,7 +4,6 @@ import json
+ import os
+ import sqlite3
+ from pathlib import Path
+-from typing import Any
+ 
+ from app.contracts.evidence_contract import ExtractedFactCandidate
+ 
+diff --git a/app/repositories/finding_repository.py b/app/repositories/finding_repository.py
+index 291222b..427624f 100644
+--- a/app/repositories/finding_repository.py
++++ b/app/repositories/finding_repository.py
+@@ -3,7 +3,6 @@ from __future__ import annotations
+ import json
+ import sqlite3
+ from pathlib import Path
+-from typing import Any
+ 
+ from app.services.findings_service import Finding
+ 
+diff --git a/app/repositories/raw_document_registry.py b/app/repositories/raw_document_registry.py
+index 4886517..9c11cf8 100644
+--- a/app/repositories/raw_document_registry.py
++++ b/app/repositories/raw_document_registry.py
+@@ -5,7 +5,7 @@ import json
+ import mimetypes
+ import os
+ import sqlite3
+-from datetime import datetime, timezone
++from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -84,7 +84,7 @@ def register_raw_document(
+ 
+     raw_document_id = f"raw_{file_hash[:16]}"
+     metadata_json = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
+-    created_at = datetime.now(timezone.utc).isoformat()
++    created_at = datetime.now(UTC).isoformat()
+     mime_type = mimetypes.guess_type(path.name)[0]
+ 
+     try:
+diff --git a/app/runtime/hermes_smartpyme_runtime.py b/app/runtime/hermes_smartpyme_runtime.py
+index 65a1396..d4a06cd 100644
+--- a/app/runtime/hermes_smartpyme_runtime.py
++++ b/app/runtime/hermes_smartpyme_runtime.py
+@@ -12,7 +12,7 @@ class HermesSmartPymeRuntime:
+         self.hermes_repo_path = Path(hermes_repo_path)
+ 
+     @classmethod
+-    def from_env(cls) -> "HermesSmartPymeRuntime":
++    def from_env(cls) -> HermesSmartPymeRuntime:
+         hermes_repo_path = os.environ.get("HERMES_REPO_PATH")
+         return cls(hermes_repo_path or cls.DEFAULT_HERMES_REPO_PATH)
+ 
+diff --git a/app/services/action_execution_service.py b/app/services/action_execution_service.py
+index 3e7fc55..23c3dcd 100644
+--- a/app/services/action_execution_service.py
++++ b/app/services/action_execution_service.py
+@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
+ from app.contracts.action_contract import ActionProposal
+ 
+ if TYPE_CHECKING:
+-    from app.contracts.execution_adapter_contract import ExecutionAdapter
+     from app.repositories.action_execution_repository import ActionExecutionRepository
+ 
++    from app.contracts.execution_adapter_contract import ExecutionAdapter
++
+ 
+ class NotApprovedError(Exception):
+     """Raised when execute() is called on a proposal that is not approved."""
+@@ -37,8 +38,8 @@ class ActionExecutionService:
+ 
+     def __init__(
+         self,
+-        adapter: "ExecutionAdapter | None" = None,
+-        execution_repository: "ActionExecutionRepository | None" = None,
++        adapter: ExecutionAdapter | None = None,
++        execution_repository: ActionExecutionRepository | None = None,
+     ) -> None:
+         self.adapter = adapter
+         self.execution_repository = execution_repository
+diff --git a/app/services/action_proposal_service.py b/app/services/action_proposal_service.py
+index a414310..194f585 100644
+--- a/app/services/action_proposal_service.py
++++ b/app/services/action_proposal_service.py
+@@ -1,7 +1,6 @@
+ from __future__ import annotations
+ 
+ import hashlib
+-from typing import Any
+ 
+ from app.contracts.action_contract import ActionProposal
+ from app.contracts.communication_contract import FindingMessage
+diff --git a/app/services/canonicalization_service.py b/app/services/canonicalization_service.py
+index d4d3767..1cd9df0 100644
+--- a/app/services/canonicalization_service.py
++++ b/app/services/canonicalization_service.py
+@@ -3,7 +3,7 @@ from __future__ import annotations
+ import hashlib
+ from typing import Any
+ 
+-from app.contracts.evidence_contract import ExtractedFactCandidate, CanonicalRowCandidate
++from app.contracts.evidence_contract import CanonicalRowCandidate, ExtractedFactCandidate
+ from app.repositories.canonical_repository import CanonicalRepository
+ 
+ 
+diff --git a/app/services/comparison_service.py b/app/services/comparison_service.py
+index f899101..8922ebf 100644
+--- a/app/services/comparison_service.py
++++ b/app/services/comparison_service.py
+@@ -1,11 +1,12 @@
+ from __future__ import annotations
+ 
+-from dataclasses import dataclass, field
+-from typing import Any
++from dataclasses import dataclass
+ from itertools import combinations
++from typing import Any
+ 
+ from app.contracts.entity_contract import Entity
+ 
++
+ @dataclass(frozen=True, slots=True)
+ class ComparisonResult:
+     entity_id_a: str
+diff --git a/app/services/document_intake_service.py b/app/services/document_intake_service.py
+index 78dd475..31411c3 100644
+--- a/app/services/document_intake_service.py
++++ b/app/services/document_intake_service.py
+@@ -10,7 +10,6 @@ from app.contracts.bem_evidence_contract import (
+ )
+ from app.repositories.evidence_candidate_repository import EvidenceCandidateRepository
+ 
+-
+ DEFAULT_EVIDENCE_CANDIDATES_DB = Path("data/evidence_candidates.db")
+ DOCUMENT_TYPE_BY_EXTENSION: dict[str, BemDocumentType] = {
+     ".pdf": BemDocumentType.UNKNOWN,
+diff --git a/app/services/entity_resolution_service.py b/app/services/entity_resolution_service.py
+index d10552a..60b35e3 100644
+--- a/app/services/entity_resolution_service.py
++++ b/app/services/entity_resolution_service.py
+@@ -3,8 +3,8 @@ from __future__ import annotations
+ import hashlib
+ from typing import Any
+ 
+-from app.contracts.evidence_contract import CanonicalRowCandidate
+ from app.contracts.entity_contract import Entity
++from app.contracts.evidence_contract import CanonicalRowCandidate
+ from app.repositories.entity_repository import EntityRepository
+ 
+ 
+diff --git a/app/services/finding_communication_service.py b/app/services/finding_communication_service.py
+index cfc051d..6529740 100644
+--- a/app/services/finding_communication_service.py
++++ b/app/services/finding_communication_service.py
+@@ -1,7 +1,7 @@
+ from __future__ import annotations
+ 
+-from app.services.findings_service import Finding
+ from app.contracts.communication_contract import FindingMessage, build_message_id
++from app.services.findings_service import Finding
+ 
+ # Severity labels in Spanish for human-facing messages.
+ _SEVERITY_LABEL: dict[str, str] = {
+diff --git a/app/services/findings_service.py b/app/services/findings_service.py
+index a31c471..3913e17 100644
+--- a/app/services/findings_service.py
++++ b/app/services/findings_service.py
+@@ -1,11 +1,12 @@
+ from __future__ import annotations
+ 
+ import hashlib
+-from dataclasses import dataclass, field, asdict
++from dataclasses import asdict, dataclass, field
+ from typing import Any
+ 
+ from app.services.comparison_service import ComparisonResult
+ 
++
+ @dataclass(frozen=True, slots=True)
+ class Finding:
+     finding_id: str
+diff --git a/core/adapters/meli_oauth_client.py b/core/adapters/meli_oauth_client.py
+index 5b64c93..c0273ea 100644
+--- a/core/adapters/meli_oauth_client.py
++++ b/core/adapters/meli_oauth_client.py
+@@ -1,7 +1,7 @@
+ from __future__ import annotations
+ 
+ from dataclasses import dataclass
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from typing import Any
+ 
+ import httpx
+@@ -90,7 +90,7 @@ class MeliOAuthClient:
+ 
+     def _build_token_response(self, payload: dict[str, Any]) -> MeliTokenResponse:
+         expires_in = int(payload["expires_in"])
+-        expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
++        expires_at = datetime.now(UTC) + timedelta(seconds=expires_in)
+         return MeliTokenResponse(
+             access_token=str(payload["access_token"]),
+             refresh_token=str(payload["refresh_token"]),
+diff --git a/core/repositories/meli_oauth_token_repository.py b/core/repositories/meli_oauth_token_repository.py
+index 6ec23b9..a403111 100644
+--- a/core/repositories/meli_oauth_token_repository.py
++++ b/core/repositories/meli_oauth_token_repository.py
+@@ -1,13 +1,12 @@
+ from __future__ import annotations
+ 
+-from datetime import datetime, timezone
++from datetime import UTC, datetime
+ 
+ from sqlalchemy import Boolean, DateTime, Integer, String
+ from sqlalchemy.orm import Mapped, Session, declarative_base, mapped_column, sessionmaker
+ 
+ from core.models.meli_oauth_token import MeliOAuthToken
+ 
+-
+ Base = declarative_base()
+ 
+ 
+@@ -96,5 +95,5 @@ class MeliOAuthTokenRepository:
+ 
+     def _normalize_utc_datetime(self, value: datetime) -> datetime:
+         if value.tzinfo is None:
+-            return value.replace(tzinfo=timezone.utc)
+-        return value.astimezone(timezone.utc)
++            return value.replace(tzinfo=UTC)
++        return value.astimezone(UTC)
+diff --git a/core/services/meli_token_manager.py b/core/services/meli_token_manager.py
+index ddaaab5..0c644b8 100644
+--- a/core/services/meli_token_manager.py
++++ b/core/services/meli_token_manager.py
+@@ -1,7 +1,7 @@
+ from __future__ import annotations
+ 
+ import asyncio
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from typing import Protocol
+ 
+ from core.adapters.meli_oauth_client import MeliOAuthClient, MeliOAuthError, MeliTokenResponse
+@@ -77,7 +77,7 @@ class MeliTokenManager:
+             return lock
+ 
+     def _needs_refresh(self, token: MeliOAuthToken) -> bool:
+-        now = datetime.now(timezone.utc)
++        now = datetime.now(UTC)
+         return token.expires_at <= (now + self._refresh_margin)
+ 
+     def _is_invalid_grant(self, error: MeliOAuthError) -> bool:
+diff --git a/tests/core/adapters/test_meli_oauth_client.py b/tests/core/adapters/test_meli_oauth_client.py
+index e86108e..90d5c91 100644
+--- a/tests/core/adapters/test_meli_oauth_client.py
++++ b/tests/core/adapters/test_meli_oauth_client.py
+@@ -1,6 +1,6 @@
+ import asyncio
+ import sys
+-from datetime import datetime, timezone
++from datetime import UTC, datetime
+ from pathlib import Path
+ 
+ import httpx
+@@ -83,7 +83,7 @@ def test_expires_at_is_calculated_from_expires_in() -> None:
+     async def handler(_: httpx.Request) -> httpx.Response:
+         return httpx.Response(status_code=200, json=_token_payload(90))
+ 
+-    now_before = datetime.now(timezone.utc)
++    now_before = datetime.now(UTC)
+     client = MeliOAuthClient(
+         app_id="app-3",
+         client_secret="secret-3",
+@@ -92,9 +92,9 @@ def test_expires_at_is_calculated_from_expires_in() -> None:
+     )
+ 
+     result = asyncio.run(client.exchange_code_for_tokens("code-90"))
+-    now_after = datetime.now(timezone.utc)
++    now_after = datetime.now(UTC)
+ 
+-    assert result.expires_at.tzinfo is timezone.utc
++    assert result.expires_at.tzinfo is UTC
+     lower_bound = now_before.timestamp() + 90
+     upper_bound = now_after.timestamp() + 90
+     assert lower_bound <= result.expires_at.timestamp() <= upper_bound
+diff --git a/tests/core/repositories/test_hallazgo_repository.py b/tests/core/repositories/test_hallazgo_repository.py
+index db5052f..aa17cfe 100644
+--- a/tests/core/repositories/test_hallazgo_repository.py
++++ b/tests/core/repositories/test_hallazgo_repository.py
+@@ -1,7 +1,7 @@
+-import pytest
+ from app.core.hallazgos.models import Hallazgo
+ from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
+ 
++
+ def test_memory_repository_filtering():
+     repo = MemoryHallazgoRepository()
+     
+diff --git a/tests/core/repositories/test_meli_oauth_token_repository.py b/tests/core/repositories/test_meli_oauth_token_repository.py
+index 263a35b..f38b27e 100644
+--- a/tests/core/repositories/test_meli_oauth_token_repository.py
++++ b/tests/core/repositories/test_meli_oauth_token_repository.py
+@@ -1,6 +1,6 @@
+ import asyncio
+ import sys
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from pathlib import Path
+ 
+ import pytest
+@@ -43,7 +43,7 @@ def _token(account_id: str, suffix: str, expires_in_seconds: int) -> MeliOAuthTo
+         token_type="bearer",
+         scope="offline_access",
+         user_id=101,
+-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=expires_in_seconds),
++        expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
+     )
+ 
+ 
+@@ -85,7 +85,7 @@ def test_upsert_updates_access_refresh_and_expires_at() -> None:
+     assert loaded is not None
+     assert loaded.access_token == "access-v2"
+     assert loaded.refresh_token == "refresh-v2"
+-    assert loaded.expires_at.tzinfo == timezone.utc
++    assert loaded.expires_at.tzinfo == UTC
+     assert loaded.expires_at == second.expires_at
+ 
+ 
+diff --git a/tests/core/services/test_meli_token_manager.py b/tests/core/services/test_meli_token_manager.py
+index e7c698a..b9d109e 100644
+--- a/tests/core/services/test_meli_token_manager.py
++++ b/tests/core/services/test_meli_token_manager.py
+@@ -1,7 +1,7 @@
+ import asyncio
+ import sys
+ from dataclasses import replace
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from pathlib import Path
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+@@ -53,7 +53,7 @@ def _token_response(access: str, refresh: str, expires_in_seconds: int) -> MeliT
+         expires_in=expires_in_seconds,
+         scope="offline_access",
+         user_id=99,
+-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=expires_in_seconds),
++        expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
+     )
+ 
+ 
+@@ -80,7 +80,7 @@ def test_get_valid_token_refreshes_when_expiring_in_less_than_two_minutes() -> N
+         token_type="bearer",
+         scope="offline_access",
+         user_id=5,
+-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=60),
++        expires_at=datetime.now(UTC) + timedelta(seconds=60),
+     )
+     asyncio.run(repo.upsert(expiring))
+ 
+@@ -108,7 +108,7 @@ def test_get_valid_token_marks_invalid_on_invalid_grant() -> None:
+         token_type="bearer",
+         scope="offline_access",
+         user_id=5,
+-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=30),
++        expires_at=datetime.now(UTC) + timedelta(seconds=30),
+     )
+     asyncio.run(repo.upsert(expiring))
+ 
+@@ -143,7 +143,7 @@ def test_single_flight_refresh_avoids_duplicate_concurrent_calls() -> None:
+         token_type="bearer",
+         scope="offline_access",
+         user_id=5,
+-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=10),
++        expires_at=datetime.now(UTC) + timedelta(seconds=10),
+     )
+     asyncio.run(repo.upsert(expiring))
+ 
+diff --git a/tests/core/test_action_decision_service.py b/tests/core/test_action_decision_service.py
+index c868f07..7fa5f63 100644
+--- a/tests/core/test_action_decision_service.py
++++ b/tests/core/test_action_decision_service.py
+@@ -8,7 +8,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ from app.contracts.action_contract import ActionProposal
+ from app.services.action_decision_service import ActionDecisionService, InvalidDecisionError
+ 
+-
+ # ── helpers ──────────────────────────────────────────────────────────────────
+ 
+ def _proposal(
+diff --git a/tests/core/test_action_execution_service.py b/tests/core/test_action_execution_service.py
+index 6a23dde..2700434 100644
+--- a/tests/core/test_action_execution_service.py
++++ b/tests/core/test_action_execution_service.py
+@@ -8,7 +8,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ from app.contracts.action_contract import ActionProposal
+ from app.services.action_execution_service import ActionExecutionService, NotApprovedError
+ 
+-
+ # ── helpers ───────────────────────────────────────────────────────────────────
+ 
+ def _proposal(
+@@ -140,9 +139,10 @@ def test_full_lifecycle_propose_reject_cannot_execute():
+ 
+ # ── adapter integration ───────────────────────────────────────────────────────
+ 
++from typing import Any as _Any
++
+ from app.contracts.execution_adapter_contract import ExecutionAdapter, ExecutionAdapterResult
+ from app.services.action_execution_service import AdapterExecutionError
+-from typing import Any as _Any
+ 
+ 
+ class _MockAdapter(ExecutionAdapter):
+@@ -232,6 +232,7 @@ def test_execute_guard_fires_before_adapter_call():
+ 
+ import uuid
+ from pathlib import Path as _Path
++
+ from app.repositories.action_execution_repository import ActionExecutionRepository
+ 
+ 
+diff --git a/tests/core/test_action_proposal_service.py b/tests/core/test_action_proposal_service.py
+index 681132b..7ff0c95 100644
+--- a/tests/core/test_action_proposal_service.py
++++ b/tests/core/test_action_proposal_service.py
+@@ -6,9 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+ from app.contracts.action_contract import ActionProposal
+ from app.contracts.communication_contract import FindingMessage, build_message_id
+-from app.services.findings_service import Finding
+ from app.services.action_proposal_service import ActionProposalService
+-
++from app.services.findings_service import Finding
+ 
+ # ── helpers ──────────────────────────────────────────────────────────────────
+ 
+diff --git a/tests/core/test_comparison_service.py b/tests/core/test_comparison_service.py
+index 5a58529..60701eb 100644
+--- a/tests/core/test_comparison_service.py
++++ b/tests/core/test_comparison_service.py
+@@ -4,7 +4,7 @@ from pathlib import Path
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+ from app.contracts.entity_contract import Entity
+-from app.services.comparison_service import ComparisonService, ComparisonResult
++from app.services.comparison_service import ComparisonService
+ 
+ 
+ def _entity(
+diff --git a/tests/core/test_execution_adapter_contract.py b/tests/core/test_execution_adapter_contract.py
+index d2db5c8..bfd5018 100644
+--- a/tests/core/test_execution_adapter_contract.py
++++ b/tests/core/test_execution_adapter_contract.py
+@@ -4,12 +4,11 @@ from typing import Any
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
++from app.contracts.action_contract import ActionProposal
+ from app.contracts.execution_adapter_contract import (
+     ExecutionAdapter,
+     ExecutionAdapterResult,
+ )
+-from app.contracts.action_contract import ActionProposal
+-
+ 
+ # ── minimal concrete adapter for testing ─────────────────────────────────────
+ 
+diff --git a/tests/core/test_finding_communication_service.py b/tests/core/test_finding_communication_service.py
+index b432cd6..ed986d1 100644
+--- a/tests/core/test_finding_communication_service.py
++++ b/tests/core/test_finding_communication_service.py
+@@ -4,9 +4,9 @@ from typing import Any
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+-from app.services.findings_service import Finding
+-from app.services.finding_communication_service import FindingCommunicationService
+ from app.contracts.communication_contract import FindingMessage
++from app.services.finding_communication_service import FindingCommunicationService
++from app.services.findings_service import Finding
+ 
+ 
+ def _finding(
+diff --git a/tests/core/test_hallazgos_service.py b/tests/core/test_hallazgos_service.py
+index b0921bb..3b94e6e 100644
+--- a/tests/core/test_hallazgos_service.py
++++ b/tests/core/test_hallazgos_service.py
+@@ -1,8 +1,8 @@
+-import pytest
+-from app.core.hallazgos.service import HallazgoEngine, HallazgoService
+ from app.core.hallazgos.models import Hallazgo
++from app.core.hallazgos.service import HallazgoEngine, HallazgoService
++from app.core.reconciliation.models import QuantifiedDiscrepancy, ReconciliationResult
+ from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
+-from app.core.reconciliation.models import ReconciliationResult, QuantifiedDiscrepancy, ReconciliationRow
++
+ 
+ def test_hallazgo_service_query_and_summary():
+     repo = MemoryHallazgoRepository()
+diff --git a/tests/core/test_orchestrator.py b/tests/core/test_orchestrator.py
+index 054af51..877fdda 100644
+--- a/tests/core/test_orchestrator.py
++++ b/tests/core/test_orchestrator.py
+@@ -1,7 +1,7 @@
+-import pytest
+ from app.core.orchestrator.service import Orchestrator
+ from app.core.repositories.hallazgo_repository import MemoryHallazgoRepository
+ 
++
+ def test_orchestrator_persistence_integration():
+     repo = MemoryHallazgoRepository()
+     orchestrator = Orchestrator(repository=repo)
+diff --git a/tests/core/test_pipeline.py b/tests/core/test_pipeline.py
+index c9b3675..3397c90 100644
+--- a/tests/core/test_pipeline.py
++++ b/tests/core/test_pipeline.py
+@@ -4,12 +4,11 @@ from pathlib import Path
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+-from app.core.pipeline import Pipeline
+ from app.contracts.entity_contract import Entity
+-from app.contracts.pipeline_contract import PipelineResult
+-from app.repositories.fact_repository import FactRepository
++from app.core.pipeline import Pipeline
+ from app.repositories.canonical_repository import CanonicalRepository
+ from app.repositories.entity_repository import EntityRepository
++from app.repositories.fact_repository import FactRepository
+ 
+ TEST_TENANT_ID = "test_cliente"
+ 
+@@ -151,8 +150,8 @@ def test_pipeline_persists_findings_when_finding_repo_configured():
+ 
+ 
+ def test_pipeline_generates_messages_when_communication_service_configured():
+-    from app.services.finding_communication_service import FindingCommunicationService
+     from app.contracts.communication_contract import FindingMessage
++    from app.services.finding_communication_service import FindingCommunicationService
+ 
+     fact_repo = FactRepository(_db_path("facts"))
+     canonical_repo = CanonicalRepository(_db_path("canonical"))
+@@ -279,9 +278,9 @@ def test_pipeline_not_blocked_when_clarification_answered():
+ 
+ 
+ def test_pipeline_generates_action_proposals_when_service_configured():
+-    from app.services.finding_communication_service import FindingCommunicationService
+-    from app.services.action_proposal_service import ActionProposalService
+     from app.contracts.action_contract import ActionProposal
++    from app.services.action_proposal_service import ActionProposalService
++    from app.services.finding_communication_service import FindingCommunicationService
+ 
+     fact_repo = FactRepository(_db_path("facts"))
+     canonical_repo = CanonicalRepository(_db_path("canonical"))
+diff --git a/tests/core/test_pipeline_contract.py b/tests/core/test_pipeline_contract.py
+index dfeff26..8823e3f 100644
+--- a/tests/core/test_pipeline_contract.py
++++ b/tests/core/test_pipeline_contract.py
+@@ -9,12 +9,12 @@ from pathlib import Path
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+-from app.core.pipeline import Pipeline
+ from app.contracts.entity_contract import Entity
+ from app.contracts.pipeline_contract import PipelineCounts, PipelineResult
+-from app.repositories.fact_repository import FactRepository
++from app.core.pipeline import Pipeline
+ from app.repositories.canonical_repository import CanonicalRepository
+ from app.repositories.entity_repository import EntityRepository
++from app.repositories.fact_repository import FactRepository
+ 
+ TEST_TENANT_ID = "test_cliente"
+ 
+diff --git a/tests/core/test_reconciliation_service.py b/tests/core/test_reconciliation_service.py
+index f73efc9..6e7e39f 100644
+--- a/tests/core/test_reconciliation_service.py
++++ b/tests/core/test_reconciliation_service.py
+@@ -1,14 +1,15 @@
+ import sys
+-from datetime import datetime, timedelta, timezone
++from datetime import UTC, datetime, timedelta
+ from pathlib import Path
+ 
+ import pytest
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
++from app.core.reconciliation.models import HumanReviewDecision, ReconciliationJob, WarningItem
+ from app.core.reconciliation.service import (
+-    analyze_meli_reconciliation,
+     analyze_amount_reconciliation,
++    analyze_meli_reconciliation,
+     apply_human_review_decision,
+     build_deterministic_discrepancy_snapshot,
+     build_reconciliation_summary,
+@@ -17,11 +18,11 @@ from app.core.reconciliation.service import (
+     complete_reconciliation_job,
+     create_reconciliation_job,
+     decide_next_action_from_issues,
+-    detect_deterministic_ambiguity,
+     detect_amount_difference,
++    detect_deterministic_ambiguity,
+     evaluate_deterministic_hitl_state,
+-    evaluate_warnings_fail_closed,
+     evaluate_fail_closed_rules,
++    evaluate_warnings_fail_closed,
+     fail_reconciliation_job,
+     initialize_fail_closed_human_validation,
+     raise_if_job_confirmed,
+@@ -32,10 +33,8 @@ from app.core.reconciliation.service import (
+     run_meli_reconciliation,
+     run_reconciliation_engine,
+ )
+-from app.core.reconciliation.models import HumanReviewDecision, ReconciliationJob, WarningItem
+-
+ 
+-FIXED_NOW = datetime(2026, 4, 22, 12, 0, tzinfo=timezone.utc)
++FIXED_NOW = datetime(2026, 4, 22, 12, 0, tzinfo=UTC)
+ 
+ 
+ def test_create_reconciliation_job_initializes_pending_job():
+diff --git a/tests/core/test_validation_service.py b/tests/core/test_validation_service.py
+index 9c4a87b..a125abc 100644
+--- a/tests/core/test_validation_service.py
++++ b/tests/core/test_validation_service.py
+@@ -1,12 +1,11 @@
+ import sys
+ from pathlib import Path
+ 
+-import pytest
+-
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+ from app.core.validation.service import validate_data
+ 
++
+ def test_validate_data_valid():
+     result = validate_data({"key": "value"})
+     assert result.is_valid is True
+diff --git a/tests/e2e/test_hermes_import_smoke_vm.py b/tests/e2e/test_hermes_import_smoke_vm.py
+index 32f6ff3..046d7f3 100644
+--- a/tests/e2e/test_hermes_import_smoke_vm.py
++++ b/tests/e2e/test_hermes_import_smoke_vm.py
+@@ -1,6 +1,6 @@
+ import os
+-from pathlib import Path
+ import sys
++from pathlib import Path
+ 
+ import pytest
+ 
+diff --git a/tests/e2e/test_hermes_runtime_import_path.py b/tests/e2e/test_hermes_runtime_import_path.py
+index 7cdbcd8..2f8c1f6 100644
+--- a/tests/e2e/test_hermes_runtime_import_path.py
++++ b/tests/e2e/test_hermes_runtime_import_path.py
+@@ -1,6 +1,6 @@
+ import os
+-from pathlib import Path
+ import sys
++from pathlib import Path
+ 
+ import pytest
+ 
+diff --git a/tests/e2e/validate_bridge_e2e.py b/tests/e2e/validate_bridge_e2e.py
+index e7e6728..86a3759 100644
+--- a/tests/e2e/validate_bridge_e2e.py
++++ b/tests/e2e/validate_bridge_e2e.py
+@@ -10,7 +10,6 @@ import uuid
+ from pathlib import Path
+ from typing import Any
+ 
+-
+ smartpyme_root = Path(__file__).resolve().parents[2]
+ hermes_agent_root = smartpyme_root.parent / "hermes-agent"
+ sys.path.insert(0, str(hermes_agent_root))
+@@ -28,7 +27,6 @@ from mcp_smartpyme_bridge import (  # noqa: E402
+     save_clarification,
+ )
+ 
+-
+ TOOL_FUNCTIONS = {
+     "create_job": create_job,
+     "get_job_status": get_job_status,
+diff --git a/tests/factory/test_agent_min.py b/tests/factory/test_agent_min.py
+index 34b2ecb..bc30a44 100644
+--- a/tests/factory/test_agent_min.py
++++ b/tests/factory/test_agent_min.py
+@@ -1,7 +1,8 @@
+-import pytest
+ import sys
+ from pathlib import Path
+ 
++import pytest
++
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ 
+ from factory.agent_min import vertex_entrypoint
+diff --git a/tests/factory/test_agent_min_runtime.py b/tests/factory/test_agent_min_runtime.py
+index 56d5145..5c57556 100644
+--- a/tests/factory/test_agent_min_runtime.py
++++ b/tests/factory/test_agent_min_runtime.py
+@@ -1,6 +1,6 @@
+-import sys
+ import json
+ import logging
++import sys
+ from pathlib import Path
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+diff --git a/tests/factory/test_build_audit_context.py b/tests/factory/test_build_audit_context.py
+index 83ed0b2..c3c2f4a 100644
+--- a/tests/factory/test_build_audit_context.py
++++ b/tests/factory/test_build_audit_context.py
+@@ -4,7 +4,6 @@ import importlib.util
+ import sys
+ from pathlib import Path
+ 
+-
+ REPO_ROOT = Path(__file__).resolve().parents[2]
+ SCRIPT_PATH = REPO_ROOT / "scripts" / "build_audit_context.py"
+ 
+diff --git a/tests/factory/test_continuous_factory.py b/tests/factory/test_continuous_factory.py
+index d8586d5..1663ed2 100644
+--- a/tests/factory/test_continuous_factory.py
++++ b/tests/factory/test_continuous_factory.py
+@@ -1,7 +1,6 @@
++import io
+ import json
+-import re
+ import shutil
+-import io
+ import sys
+ import unittest
+ import uuid
+@@ -719,7 +718,7 @@ class ContinuousFactoryTests(unittest.TestCase):
+             )
+ 
+             log_content = Path(result["log_path"]).read_text(encoding="utf-8")
+-            self.assertIn(f"HEARTBEAT cycle=1", log_content)
++            self.assertIn("HEARTBEAT cycle=1", log_content)
+             self.assertIn(f"cantera={cantera_a}", log_content)
+             self.assertNotIn(f"cantera={cantera_c}", log_content)
+         finally:
+diff --git a/tests/factory/test_factory_boundary_no_app_imports_fm_012.py b/tests/factory/test_factory_boundary_no_app_imports_fm_012.py
+index a8408c6..4fbdb9e 100644
+--- a/tests/factory/test_factory_boundary_no_app_imports_fm_012.py
++++ b/tests/factory/test_factory_boundary_no_app_imports_fm_012.py
+@@ -1,6 +1,5 @@
+ from pathlib import Path
+ 
+-
+ FORBIDDEN_IMPORTS = (
+     "from app.",
+     "import app.",
+diff --git a/tests/factory/test_factory_health_fm_029.py b/tests/factory/test_factory_health_fm_029.py
+index 1fee621..769f265 100644
+--- a/tests/factory/test_factory_health_fm_029.py
++++ b/tests/factory/test_factory_health_fm_029.py
+@@ -1,6 +1,9 @@
+ from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
+ from factory.core.run_report import build_factory_run_report, write_factory_run_report
+-from factory.core.run_report_summary import build_factory_health_summary, format_factory_health_summary
++from factory.core.run_report_summary import (
++    build_factory_health_summary,
++    format_factory_health_summary,
++)
+ from factory.core.task_spec import TaskSpec, TaskSpecStatus
+ from factory.core.task_spec_runner import CommandResult, TaskSpecRunResult
+ from factory.core.task_spec_store import TaskSpecStore
+diff --git a/tests/factory/test_factory_run_report_fm_020.py b/tests/factory/test_factory_run_report_fm_020.py
+index 32c30f0..c37e873 100644
+--- a/tests/factory/test_factory_run_report_fm_020.py
++++ b/tests/factory/test_factory_run_report_fm_020.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
+ from factory.core.run_report import build_factory_run_report, write_factory_run_report
+ from factory.core.task_spec import TaskSpec, TaskSpecStatus
+-from factory.core.task_spec_runner import CommandResult, TaskSpecRunResult, TaskSpecRunner
++from factory.core.task_spec_runner import CommandResult, TaskSpecRunner, TaskSpecRunResult
+ from factory.core.task_spec_store import TaskSpecStore
+ 
+ 
+diff --git a/tests/factory/test_legacy_vs_fm_inventory_fm_024a.py b/tests/factory/test_legacy_vs_fm_inventory_fm_024a.py
+index f3ebea0..95b179f 100644
+--- a/tests/factory/test_legacy_vs_fm_inventory_fm_024a.py
++++ b/tests/factory/test_legacy_vs_fm_inventory_fm_024a.py
+@@ -1,6 +1,5 @@
+ from pathlib import Path
+ 
+-
+ INVENTORY_PATH = Path("docs/factory_legacy_vs_fm_inventory.md")
+ 
+ 
+diff --git a/tests/factory/test_run_report_changed_paths_fm_025.py b/tests/factory/test_run_report_changed_paths_fm_025.py
+index c9487c2..82d42fc 100644
+--- a/tests/factory/test_run_report_changed_paths_fm_025.py
++++ b/tests/factory/test_run_report_changed_paths_fm_025.py
+@@ -6,7 +6,7 @@ from factory.core.run_report import (
+     write_factory_run_report,
+ )
+ from factory.core.task_spec import TaskSpec, TaskSpecStatus
+-from factory.core.task_spec_runner import CommandResult, TaskSpecRunResult, TaskSpecRunner
++from factory.core.task_spec_runner import CommandResult, TaskSpecRunner, TaskSpecRunResult
+ from factory.core.task_spec_store import TaskSpecStore
+ 
+ 
+diff --git a/tests/factory/test_telegram_diff_fm_026.py b/tests/factory/test_telegram_diff_fm_026.py
+index 5fe4073..99ce1ea 100644
+--- a/tests/factory/test_telegram_diff_fm_026.py
++++ b/tests/factory/test_telegram_diff_fm_026.py
+@@ -1,4 +1,3 @@
+-from pathlib import Path
+ 
+ from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
+ from factory.core.run_report import build_factory_run_report, write_factory_run_report
+diff --git a/tests/factory/test_telegram_factory_commands_smoke_fm_031.py b/tests/factory/test_telegram_factory_commands_smoke_fm_031.py
+index 5919fda..4ebd9cc 100644
+--- a/tests/factory/test_telegram_factory_commands_smoke_fm_031.py
++++ b/tests/factory/test_telegram_factory_commands_smoke_fm_031.py
+@@ -3,7 +3,6 @@ from factory.core.task_spec import TaskSpec
+ from factory.core.task_spec_runner import CommandResult
+ from factory.core.task_spec_store import TaskSpecStore
+ 
+-
+ SUPEROWNER_ID = 111
+ 
+ 
+diff --git a/tests/factory/test_telegram_handler.py b/tests/factory/test_telegram_handler.py
+index 55d9cad..25fbba3 100644
+--- a/tests/factory/test_telegram_handler.py
++++ b/tests/factory/test_telegram_handler.py
+@@ -1,4 +1,9 @@
+-from factory.control.telegram_handler import create_callback_token, load_allowed_user_ids, resolve_callback_token, validate_update
++from factory.control.telegram_handler import (
++    create_callback_token,
++    load_allowed_user_ids,
++    resolve_callback_token,
++    validate_update,
++)
+ 
+ 
+ def test_allowlist_and_dedup(tmp_path):
+diff --git a/tests/factory/test_telegram_superowner_inspection_fm_017.py b/tests/factory/test_telegram_superowner_inspection_fm_017.py
+index dec197a..6c414df 100644
+--- a/tests/factory/test_telegram_superowner_inspection_fm_017.py
++++ b/tests/factory/test_telegram_superowner_inspection_fm_017.py
+@@ -1,7 +1,6 @@
+-from pathlib import Path
+ 
+ from factory.adapters.telegram_superowner_adapter import TelegramSuperownerAdapter
+-from factory.core.task_spec import TaskSpec, TaskSpecStatus
++from factory.core.task_spec import TaskSpec
+ from factory.core.task_spec_store import TaskSpecStore
+ 
+ 
+diff --git a/tests/test_api_entities_ts_005.py b/tests/test_api_entities_ts_005.py
+index 39fca26..9a394b1 100644
+--- a/tests/test_api_entities_ts_005.py
++++ b/tests/test_api_entities_ts_005.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.entities import router, get_entities_db_path, EntitiesDbPath
++from app.api.v1.endpoints.entities import EntitiesDbPath, get_entities_db_path, router
+ from app.contracts.entity_contract import Entity
+ from app.repositories.entity_repository import EntityRepository
+ 
+diff --git a/tests/test_api_findings_ts_005.py b/tests/test_api_findings_ts_005.py
+index ef9a4a6..47ea156 100644
+--- a/tests/test_api_findings_ts_005.py
++++ b/tests/test_api_findings_ts_005.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.findings import router, get_findings_db_path, FindingsDbPath
++from app.api.v1.endpoints.findings import FindingsDbPath, get_findings_db_path, router
+ from app.repositories.finding_repository import FindingRepository
+ from app.services.findings_service import Finding
+ 
+diff --git a/tests/test_api_jobs_ts_006.py b/tests/test_api_jobs_ts_006.py
+index a6cec04..84db395 100644
+--- a/tests/test_api_jobs_ts_006.py
++++ b/tests/test_api_jobs_ts_006.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.jobs import router, get_jobs_db_path, JobsDbPath
++from app.api.v1.endpoints.jobs import JobsDbPath, get_jobs_db_path, router
+ 
+ 
+ def create_app(db_jobs: Path):
+diff --git a/tests/test_cli_queue_runner_ts_008d.py b/tests/test_cli_queue_runner_ts_008d.py
+index 828c4e9..b2e05cf 100644
+--- a/tests/test_cli_queue_runner_ts_008d.py
++++ b/tests/test_cli_queue_runner_ts_008d.py
+@@ -1,5 +1,4 @@
+ import subprocess
+-from pathlib import Path
+ 
+ from app.factory.agent_loop.multiagent_task_loop import MultiagentTask, save_task
+ 
+diff --git a/tests/test_document_ingestion_service.py b/tests/test_document_ingestion_service.py
+index 3734b3b..7b3e26f 100644
+--- a/tests/test_document_ingestion_service.py
++++ b/tests/test_document_ingestion_service.py
+@@ -1,5 +1,5 @@
+-import sys
+ import shutil
++import sys
+ import uuid
+ from pathlib import Path
+ 
+diff --git a/tests/test_formula_api_ts_009e.py b/tests/test_formula_api_ts_009e.py
+index e2071bb..50a3092 100644
+--- a/tests/test_formula_api_ts_009e.py
++++ b/tests/test_formula_api_ts_009e.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.formulas import router, get_formula_db_path, FormulaDbPath
++from app.api.v1.endpoints.formulas import FormulaDbPath, get_formula_db_path, router
+ from app.repositories.formula_result_repository import FormulaResultRepository
+ 
+ 
+diff --git a/tests/test_formula_results_api_ts_009f.py b/tests/test_formula_results_api_ts_009f.py
+index 2a72a98..45cf280 100644
+--- a/tests/test_formula_results_api_ts_009f.py
++++ b/tests/test_formula_results_api_ts_009f.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.formulas import router, get_formula_db_path, FormulaDbPath
++from app.api.v1.endpoints.formulas import FormulaDbPath, get_formula_db_path, router
+ 
+ 
+ def create_app(db_formula_results: Path):
+diff --git a/tests/test_hermes_pathology_ts_010f.py b/tests/test_hermes_pathology_ts_010f.py
+index 2ffb5c1..f41efaf 100644
+--- a/tests/test_hermes_pathology_ts_010f.py
++++ b/tests/test_hermes_pathology_ts_010f.py
+@@ -56,8 +56,8 @@ def test_hermes_pathology_tool_hides_cross_client(tmp_path):
+ def test_owner_status_includes_pathologies(tmp_path):
+     formula_db, pathology_db = _seed_active_pathology(tmp_path)
+ 
+-    import app.mcp.tools.jobs_read_tool as jobs_tool
+     import app.mcp.tools.formula_results_tool as formula_tool
++    import app.mcp.tools.jobs_read_tool as jobs_tool
+     import app.mcp.tools.pathology_explanation_tool as pathology_tool
+ 
+     jobs_tool.Path = lambda p: tmp_path / "empty.db"
+diff --git a/tests/test_hermes_readonly_ts_007a.py b/tests/test_hermes_readonly_ts_007a.py
+index c031ecf..15ca1fc 100644
+--- a/tests/test_hermes_readonly_ts_007a.py
++++ b/tests/test_hermes_readonly_ts_007a.py
+@@ -1,9 +1,8 @@
+-from pathlib import Path
+ 
+-from app.mcp.tools.jobs_read_tool import get_jobs, get_findings
+-from app.repositories.job_repository import JobRepository
+-from app.repositories.finding_repository import FindingRepository
+ from app.contracts.job_contract import Job
++from app.mcp.tools.jobs_read_tool import get_findings, get_jobs
++from app.repositories.finding_repository import FindingRepository
++from app.repositories.job_repository import JobRepository
+ from app.services.findings_service import Finding
+ 
+ 
+diff --git a/tests/test_job_worker_ts_006c.py b/tests/test_job_worker_ts_006c.py
+index 51e09af..72952b0 100644
+--- a/tests/test_job_worker_ts_006c.py
++++ b/tests/test_job_worker_ts_006c.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.jobs import router, get_jobs_db_path, JobsDbPath
++from app.api.v1.endpoints.jobs import JobsDbPath, get_jobs_db_path, router
+ 
+ 
+ def create_app(db_jobs: Path):
+diff --git a/tests/test_multiagent_persistence_ts_008b.py b/tests/test_multiagent_persistence_ts_008b.py
+index 8156da5..7085c80 100644
+--- a/tests/test_multiagent_persistence_ts_008b.py
++++ b/tests/test_multiagent_persistence_ts_008b.py
+@@ -1,8 +1,8 @@
+ from app.factory.agent_loop.multiagent_task_loop import (
+     MultiagentTask,
+-    save_task,
+     load_task,
+     run_persisted_multiagent_task_cycle,
++    save_task,
+ )
+ 
+ 
+diff --git a/tests/test_no_leak_ts_004.py b/tests/test_no_leak_ts_004.py
+index 9ccbe9e..e5fe506 100644
+--- a/tests/test_no_leak_ts_004.py
++++ b/tests/test_no_leak_ts_004.py
+@@ -1,9 +1,8 @@
+-from pathlib import Path
+ 
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.process import router, get_pipeline_db_paths, PipelineDbPaths
++from app.api.v1.endpoints.process import PipelineDbPaths, get_pipeline_db_paths, router
+ 
+ 
+ def create_app(db_paths: PipelineDbPaths):
+diff --git a/tests/test_owner_status_extended_ts_009h.py b/tests/test_owner_status_extended_ts_009h.py
+index 0279532..87da111 100644
+--- a/tests/test_owner_status_extended_ts_009h.py
++++ b/tests/test_owner_status_extended_ts_009h.py
+@@ -1,8 +1,8 @@
+ from app.contracts.formula_contract import FormulaInput
++from app.contracts.job_contract import Job
+ from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+ from app.mcp.tools.owner_status_tool import get_owner_status
+ from app.repositories.job_repository import JobRepository
+-from app.contracts.job_contract import Job
+ 
+ 
+ def test_owner_status_includes_formula_results(tmp_path):
+@@ -19,8 +19,8 @@ def test_owner_status_includes_formula_results(tmp_path):
+         result_id="r1",
+     )
+ 
+-    import app.mcp.tools.jobs_read_tool as jobs_tool
+     import app.mcp.tools.formula_results_tool as formula_tool
++    import app.mcp.tools.jobs_read_tool as jobs_tool
+ 
+     jobs_tool.Path = lambda p: jobs_db if "jobs" in p else tmp_path / "findings.db"
+     formula_tool.Path = lambda p: formula_db
+@@ -44,8 +44,8 @@ def test_owner_status_formula_results_are_isolated(tmp_path):
+         result_id="r1",
+     )
+ 
+-    import app.mcp.tools.jobs_read_tool as jobs_tool
+     import app.mcp.tools.formula_results_tool as formula_tool
++    import app.mcp.tools.jobs_read_tool as jobs_tool
+ 
+     jobs_tool.Path = lambda p: tmp_path / "empty.db"
+     formula_tool.Path = lambda p: formula_db
+diff --git a/tests/test_owner_status_ts_007c.py b/tests/test_owner_status_ts_007c.py
+index 3fec4ad..ecf7695 100644
+--- a/tests/test_owner_status_ts_007c.py
++++ b/tests/test_owner_status_ts_007c.py
+@@ -1,9 +1,8 @@
+-from pathlib import Path
+ 
++from app.contracts.job_contract import Job
+ from app.mcp.tools.owner_status_tool import get_owner_status
+-from app.repositories.job_repository import JobRepository
+ from app.repositories.finding_repository import FindingRepository
+-from app.contracts.job_contract import Job
++from app.repositories.job_repository import JobRepository
+ from app.services.findings_service import Finding
+ 
+ 
+diff --git a/tests/test_pathology_api_ts_010e.py b/tests/test_pathology_api_ts_010e.py
+index 28ec782..6181c0d 100644
+--- a/tests/test_pathology_api_ts_010e.py
++++ b/tests/test_pathology_api_ts_010e.py
+@@ -3,7 +3,7 @@ from pathlib import Path
+ from fastapi import FastAPI
+ from fastapi.testclient import TestClient
+ 
+-from app.api.v1.endpoints.pathologies import router, get_pathology_db_paths, PathologyDbPaths
++from app.api.v1.endpoints.pathologies import PathologyDbPaths, get_pathology_db_paths, router
+ from app.contracts.formula_contract import FormulaInput
+ from app.factory.agents.formula_calculation_agent import FormulaCalculationAgent
+ 
+diff --git a/tests/test_pipeline_identity_ts_002.py b/tests/test_pipeline_identity_ts_002.py
+index 3fe438b..ab6de34 100644
+--- a/tests/test_pipeline_identity_ts_002.py
++++ b/tests/test_pipeline_identity_ts_002.py
+@@ -1,7 +1,7 @@
+ from app.core.pipeline import Pipeline
++from app.repositories.canonical_repository import CanonicalRepository
+ from app.repositories.entity_repository import EntityRepository
+ from app.repositories.fact_repository import FactRepository
+-from app.repositories.canonical_repository import CanonicalRepository
+ 
+ 
+ def test_pipeline_propagates_cliente_id(tmp_path):
+diff --git a/tests/test_telegram_business_task_intake_ts_015c.py b/tests/test_telegram_business_task_intake_ts_015c.py
+index edb1fb7..6e0d4a0 100644
+--- a/tests/test_telegram_business_task_intake_ts_015c.py
++++ b/tests/test_telegram_business_task_intake_ts_015c.py
+@@ -1,8 +1,8 @@
+ from pathlib import Path
+ 
+ from app.adapters.telegram_adapter import TelegramAdapter
+-from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+ from app.factory.agent_loop.multiagent_task_loop import load_task
++from app.factory.business_task_executor import AUDIT_VENTA_BAJO_COSTO
+ from app.services.identity_service import IdentityService
+ 
+ 
