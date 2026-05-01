@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from app.ai.agents import owner_message_interpreter_agent as agent_module
 from app.ai.schemas.owner_message_interpretation import OwnerMessageInterpretation
