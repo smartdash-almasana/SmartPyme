@@ -22,8 +22,8 @@ def test_operational_taxonomy_gets_item_questions_and_data():
 
     assert item is not None
     assert item["tipo_operativo"] == "tienda_minorista_familiar"
-    assert "¿Qué vendés principalmente?" in service.get_questions("TAX_COM_001")
-    assert "ventas_mensuales" in service.get_minimum_data("TAX_COM_001")
+    assert "¿Cómo determinás precios?" in service.get_questions("TAX_COM_001")
+    assert "ticket_promedio" in service.get_minimum_data("TAX_COM_001")
 
 
 def test_operational_taxonomy_lists_by_family():
