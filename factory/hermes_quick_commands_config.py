@@ -6,11 +6,17 @@ que Hermes Gateway debe leer en /home/neoalmasana/.hermes/config.yaml.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 
-REPO_SMARTPYME = Path("/opt/smartpyme-factory/repos/SmartPyme")
+REPO_SMARTPYME = Path(
+    os.getenv(
+        "SMARTPYME_REPO",
+        "/home/neoalmasana/smartpyme-factory/repos/SmartPyme",
+    )
+)
 PYTHON = "/usr/bin/python3"
 CONTROL_CLI = REPO_SMARTPYME / "factory/hermes_control_cli.py"
 COMANDOS = ("estado", "actualizar", "pausar", "reanudar", "avanzar", "auditar")
