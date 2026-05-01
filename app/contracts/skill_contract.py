@@ -15,7 +15,7 @@ class SkillContract:
     """Declarative contract for a SmartPyme skill.
 
     This contract is not a runtime registry entry. The current executable
-    factory model remains app.factory.skills.models.SkillSpec.
+    factory model remains app.orchestrator.skills.models.SkillSpec.
     """
 
     skill_id: str
