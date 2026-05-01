@@ -24,10 +24,12 @@ def _entity_repo() -> EntityRepository:
 def _canonical_row(
     canonical_row_id: str,
     *,
+    cliente_id: str = TEST_TENANT_ID,
     entity_type: str,
     value: str
 ) -> CanonicalRowCandidate:
     return CanonicalRowCandidate(
+        cliente_id=cliente_id,
         canonical_row_id=canonical_row_id,
         fact_candidate_id="fact-1",
         evidence_id="ev-1",
