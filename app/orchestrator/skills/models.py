@@ -3,7 +3,7 @@ from typing import Any
 
 
 @dataclass(frozen=True)
-class OrchestratorSkill:
+class SkillSpec:
     skill_id: str
     name: str
     version: str
@@ -13,6 +13,3 @@ class OrchestratorSkill:
     executor_ref: str
     accuracy_score: float
     enabled: bool
-
-
-SkillSpec = OrchestratorSkill
