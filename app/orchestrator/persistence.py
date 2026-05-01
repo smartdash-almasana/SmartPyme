@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-from app.factory.orchestrator.models import Job
+from app.orchestrator.models import Job
 
 # Consistent pattern with clarifications persistence
 DEFAULT_DB_PATH = Path(__file__).resolve().parents[3] / "data" / "jobs.db"

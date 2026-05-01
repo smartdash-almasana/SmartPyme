@@ -1,4 +1,4 @@
-from app.factory.orchestrator.models import (
+from app.orchestrator.models import (
     STATE_BLOCKED,
     STATE_COMPLETED,
     STATE_CREATED,

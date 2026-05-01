@@ -1,12 +1,12 @@
-from app.factory.orchestrator.models import (
+from app.orchestrator.models import (
     STATE_BLOCKED,
     STATE_COMPLETED,
     STATE_CREATED,
     STATE_RUNNING,
     Job,
 )
-from app.factory.orchestrator.persistence import save_job
-from app.factory.orchestrator.transitions import ensure_transition_allowed
+from app.orchestrator.persistence import save_job
+from app.orchestrator.transitions import ensure_transition_allowed
 from app.factory.skills.registry import SkillRegistry
 from app.factory.skills.runner import run_skill
 

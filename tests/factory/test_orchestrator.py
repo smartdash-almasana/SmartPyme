@@ -5,14 +5,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.factory.orchestrator.models import (
+from app.orchestrator.models import (
     STATE_BLOCKED,
     STATE_COMPLETED,
     STATE_CREATED,
     Job,
 )
-from app.factory.orchestrator.service import OrchestrationStateError, orchestrate_job
-from app.factory.orchestrator.transitions import InvalidTransitionError, ensure_transition_allowed
+from app.orchestrator.service import OrchestrationStateError, orchestrate_job
+from app.orchestrator.transitions import InvalidTransitionError, ensure_transition_allowed
 
 
 def test_orchestrate_created_job_completes_with_valid_skill():
