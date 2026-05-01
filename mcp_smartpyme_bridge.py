@@ -300,6 +300,22 @@ async def factory_get_queue_details(tasks_dir: str | None = None, include_done: 
     from app.mcp.tools.factory_control_tool import get_factory_queue_details
     return get_factory_queue_details(tasks_dir, include_done=include_done)
 
+@mcp.tool()
+async def factory_preview_next_task(tasks_dir: str | None = None) -> dict:
+    """
+    Obtiene una vista previa de la próxima tarea pendiente en la cola de la factoría sin ejecutarla.
+    """
+    from app.mcp.tools.factory_control_tool import get_next_task_preview
+    return get_next_task_preview(tasks_dir)
+
+@mcp.tool()
+async def factory_execute_task(task_id: str, tasks_dir: str | None = None) -> dict:
+    """
+    Ejecuta exactamente la tarea con el task_id proporcionado de la cola de la factoría.
+    """
+    from app.mcp.tools.factory_control_tool import execute_one_task_by_id
+    return execute_one_task_by_id(task_id, tasks_dir)
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()

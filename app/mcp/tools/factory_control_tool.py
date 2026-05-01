@@ -39,6 +39,83 @@ def get_factory_queue_details(
     return list_factory_queue(path, include_done=include_done)
 
 
+def get_next_task_preview(tasks_dir: str | Path | None = None) -> dict:
+    """
+    Obtiene una vista previa de la próxima tarea pendiente sin ejecutarla.
+    """
+    from factory.adapters.app_bridge.agent_loop.queue_runner import find_next_pending_task
+    
+    path = Path(tasks_dir) if tasks_dir else DEFAULT_TASKS_DIR
+    task = find_next_pending_task(path)
+    
+    if task is None:
+        return {"status": "idle", "task": None}
+    
+    return {
+        "status": "ok",
+        "task": {
+            "task_id": task.task_id,
+            "objective": task.objective,
+            "task_type": task.task_type,
+            "status": task.status
+        }
+    }
+
+
+def execute_one_task_by_id(
+    task_id: str, 
+    tasks_dir: str | Path | None = None,
+    evidence_dir: str | Path | None = None
+) -> dict:
+    """
+    Ejecuta exactamente la tarea con el ID proporcionado si está pendiente.
+    """
+    from factory.adapters.app_bridge.agent_loop.queue_runner import (
+        BUSINESS_TASK_TYPES,
+        run_one_business_task,
+    )
+    from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import (
+        load_task,
+        run_persisted_multiagent_task_cycle
+    )
+
+    tasks_path = Path(tasks_dir) if tasks_dir else DEFAULT_TASKS_DIR
+    evidence_path = Path(evidence_dir) if evidence_dir else DEFAULT_EVIDENCE_DIR
+    
+    task = load_task(task_id, tasks_path)
+    if task is None:
+        return {
+            "status": "error",
+            "task_id": task_id,
+            "reason": f"Task {task_id} not found"
+        }
+    
+    if task.status != "pending":
+        return {
+            "status": "error",
+            "task_id": task_id,
+            "reason": f"Task {task_id} is in status {task.status}, expected pending"
+        }
+
+    if task.task_type in BUSINESS_TASK_TYPES:
+        return run_one_business_task(task, tasks_path, evidence_path)
+
+    result = run_persisted_multiagent_task_cycle(task.task_id, tasks_path, evidence_path)
+    if result is None:
+        return {
+            "status": "error",
+            "task_id": task_id,
+            "reason": "TASK_LOAD_FAILED"
+        }
+
+    return {
+        "status": result.status,
+        "task_id": result.task_id,
+        "report_path": result.report_path,
+        "blocking_reason": result.blocking_reason,
+    }
+
+
 def enqueue_factory_task(
     task_id: str,
     objective: str,
