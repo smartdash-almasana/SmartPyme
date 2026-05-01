@@ -49,14 +49,22 @@ def init_canonical_db() -> None:
             ON canonical_rows(cliente_id)
             """
         )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_canonical_rows_cliente_id_evidence_id
+            ON canonical_rows(cliente_id, evidence_id)
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_canonical_rows_cliente_id_entity_type
+            ON canonical_rows(cliente_id, entity_type)
+            """
+        )
 
 
 class CanonicalRepository:
-    def __init__(self, cliente_id: str, db_path: str | Path | None = None) -> None:
-        if not cliente_id or not cliente_id.strip():
-            raise ValueError("cliente_id is required for CanonicalRepository isolation")
-
-        self.cliente_id = cliente_id
+    def __init__(self, db_path: str | Path | None = None) -> None:
         self.db_path = Path(db_path) if db_path is not None else _get_db_path()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.init_db()
@@ -120,15 +128,37 @@ class CanonicalRepository:
         for row in canonical_rows:
             self.save(row)
 
-    def list_canonical_rows(self, *, evidence_id: str | None = None) -> list[CanonicalRowCandidate]:
+    def list_canonical_rows(
+        self,
+        *,
+        cliente_id: str | None = None,
+        evidence_id: str | None = None,
+        entity_type: str | None = None,
+    ) -> list[CanonicalRowCandidate]:
         query = """
-            SELECT * FROM canonical_rows
-            WHERE cliente_id = ?
+            SELECT
+                cliente_id,
+                canonical_row_id,
+                fact_candidate_id,
+                evidence_id,
+                job_id,
+                plan_id,
+                entity_type,
+                row_json,
+                validation_status,
+                errors_json
+            FROM canonical_rows
+            WHERE (? IS NULL OR cliente_id = ?)
               AND (? IS NULL OR evidence_id = ?)
+              AND (? IS NULL OR entity_type = ?)
+            ORDER BY canonical_row_id
         """
         with self._connect() as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute(query, (self.cliente_id, evidence_id, evidence_id)).fetchall()
+            rows = conn.execute(
+                query,
+                (cliente_id, cliente_id, evidence_id, evidence_id, entity_type, entity_type),
+            ).fetchall()
         return [_row_to_canonical_row(row) for row in rows]
 
     def _connect(self) -> sqlite3.Connection:
