@@ -21,6 +21,7 @@ def _fact(
     fact_type: str = "amount",
 ) -> ExtractedFactCandidate:
     return ExtractedFactCandidate(
+        cliente_id="test_cliente",
         fact_candidate_id=fact_candidate_id,
         evidence_id=evidence_id,
         job_id=None,
