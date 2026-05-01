@@ -17,43 +17,99 @@ Docker workspace:
 ## Separación obligatoria
 
 `factory/**` es la factoría externa / Hermes dev system.
+
 `app/**` es el runtime producto SmartPyme.
-`app/factory/**` es nombre incorrecto legacy. Debe migrar a `app/orchestrator/**` (o `app/agents/` según corresponda).
+
+`app/factory/**` fue eliminado. No debe volver a crearse.
 
 ## Reglas críticas
 
-1. `app/**` no debe importar `factory/**` (top-level).
+1. `app/**` no debe importar `factory/**` como lógica de producto.
 2. Ningún código nuevo debe escribirse bajo `app/factory/**`.
 3. `factory/**` queda reservado exclusivamente a Hermes/dev system.
+4. Única excepción permitida: `app/mcp/tools/factory_control_tool.py` puede importar `factory.adapters.app_bridge/**` como puente explícito de control MCP hacia la factoría externa.
 
-## Inventario app/factory/
+## Estado final de migración runtime
 
-Subcarpetas detectadas y clasificación:
+Estado: `BOUNDARY_CLEAN_WITH_EXPLICIT_MCP_BRIDGE`
 
-- `app/factory/orchestrator/` -> **ORCHESTRATOR_RUNTIME**
-- `app/factory/router/` -> **ORCHESTRATOR_RUNTIME**
-- `app/factory/chain/` -> **ORCHESTRATOR_RUNTIME**
-- `app/factory/skills/` -> **ORCHESTRATOR_RUNTIME**
-- `app/factory/multiagent/` -> **ORCHESTRATOR_RUNTIME**
-- `app/factory/agents/` -> **PRODUCT_RUNTIME** (Destino futuro: `app/agents/`)
-- `app/factory/agent_loop/` -> **CONTAMINATED_BOUNDARY** (Requiere aislamiento)
+Resultado confirmado:
 
-## Estado de contaminación
+- `app/factory/` eliminado.
+- `app/orchestrator/` soberano.
+- `app/agents/` soberano.
+- `factory/adapters/app_bridge/` centraliza el puente explícito hacia la factoría externa.
+- `app/mcp/tools/factory_control_tool.py` es el único punto de contacto permitido desde `app/**` hacia `factory/**`.
 
-Estado: `BOUNDARY_NOT_CLEAN`
+## Migración ejecutada
 
-Contaminación arquitectónica detectada (imports runtime desde `app/` a `factory/` top-level):
-- `app/factory/agent_loop/multiagent_task_loop.py`
-- `app/adapters/factory_superowner_telegram_adapter.py`
-
-## Plan de migración controlada
-
-Se ejecutará en batches seguros:
+Batches completados:
 
 - **Batch 1:** `app/factory/orchestrator/` -> `app/orchestrator/`
 - **Batch 2:** `app/factory/router/`, `chain/`, `skills/`, `multiagent/` -> `app/orchestrator/`
 - **Batch 3:** `app/factory/agents/` -> `app/agents/`
-- **Batch 4:** `app/factory/agent_loop/` (Aislar imports a `factory/` y migrar a `app/orchestrator/boundary/` o equivalente).
+- **Batch 4:** `app/factory/agent_loop/` aislado en `factory/adapters/app_bridge/agent_loop/` y eliminado de `app/factory/`.
+- **Batch 5:** motor soberano `agent_loop/models.py` y `agent_loop/service.py` movido a `app/orchestrator/agent_loop/`.
+
+## Estructura vigente
+
+Producto SmartPyme:
+
+```text
+app/api/**
+app/core/**
+app/services/**
+app/repositories/**
+app/adapters/**
+app/mcp/**
+app/orchestrator/**
+app/agents/**
+```
+
+Factoría externa / Hermes dev system:
+
+```text
+factory/**
+```
+
+Puente permitido:
+
+```text
+factory/adapters/app_bridge/**
+```
+
+Uso permitido desde `app/**`:
+
+```text
+app/mcp/tools/factory_control_tool.py -> factory.adapters.app_bridge/**
+```
+
+Todo otro import desde `app/**` hacia `factory/**` debe considerarse contaminación arquitectónica.
+
+## Validación final registrada
+
+Última validación reportada:
+
+```text
+app/factory: eliminado
+app/orchestrator: sin dependencia de factory/**
+app/agents: sin dependencia de factory/**
+pytest tests/factory/test_agent_loop.py \
+  tests/factory/test_multiagent_min.py \
+  tests/factory/test_skill_router.py \
+  tests/factory/test_skill_registry.py \
+  tests/factory/test_skill_chain.py \
+  tests/factory/test_orchestrator.py -q
+36 passed
+```
+
+Import `factory/**` restante en `app/**`:
+
+```text
+app/mcp/tools/factory_control_tool.py
+```
+
+Estado: excepción aceptada como puente explícito de control.
 
 ## Estado provider Hermes
 
@@ -84,7 +140,10 @@ Ir al repo Hermes:
 Ver estado:
 `git status --short`
 
-Buscar contaminación:
+Buscar imports legacy eliminados:
+`grep -R --exclude-dir='__pycache__' "app.factory" app tests scripts -n || true`
+
+Buscar imports `factory/**` en runtime:
 `grep -R --exclude-dir='__pycache__' "from factory\|import factory" app -n || true`
 
 Diagnóstico provider Hermes:
