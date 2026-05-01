@@ -1,8 +1,8 @@
 from app.factory.agent_loop.models import AgentLoopContext, AgentLoopResult
-from app.factory.router.models import RouterContext
-from app.factory.router.service import decide_next_skill
-from app.factory.skills.registry import SkillRegistry
-from app.factory.skills.runner import run_skill
+from app.orchestrator.router.models import RouterContext
+from app.orchestrator.router.service import decide_next_skill
+from app.orchestrator.skills.registry import SkillRegistry
+from app.orchestrator.skills.runner import run_skill
 
 MAX_STEPS = 10
 
