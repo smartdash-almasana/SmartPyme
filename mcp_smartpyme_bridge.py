@@ -415,6 +415,41 @@ async def factory_record_decision(
             "reason": str(e)
         }
 
+@mcp.tool()
+async def factory_start_authorized_job(cliente_id: str, job_id: str) -> dict:
+    """
+    Inicia la ejecución de un Job que ya cuenta con autorización formal del dueño.
+    Solo realiza la transición a estado RUNNING.
+    """
+    from app.services.job_executor_service import JobExecutorService
+    from app.repositories.decision_repository import DecisionRepository
+    import app.orchestrator.persistence as job_repo_module
+    import os
+
+    class JobRepoWrapper:
+        def get_job(self, jid): return job_repo_module.get_job(jid)
+        def save_job(self, job): return job_repo_module.save_job(job)
+
+    try:
+        executor = JobExecutorService()
+        
+        # Resolver ruta de DB de decisiones
+        decisions_db = os.getenv("SMARTPYME_DECISIONS_DB") or "decisions.db"
+        decision_repo = DecisionRepository(cliente_id=cliente_id, db_path=decisions_db)
+        
+        return executor.start_authorized_job(
+            cliente_id=cliente_id,
+            job_id=job_id,
+            job_repository=JobRepoWrapper(),
+            decision_repository=decision_repo
+        )
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e)
+        }
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()
