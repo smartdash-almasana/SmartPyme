@@ -7,15 +7,14 @@ class CaseClosureService:
     def __init__(self, repo: OperationalCaseRepository):
         self.repo = repo
 
-    def close_case(self, case_id: str, report_id: str) -> str | None:
+    def close_case(self, case_id: str, report_id: str | None = None) -> str | None:
         case = self.repo.get_case(case_id)
-        report = self.repo.get_report(report_id)
-
-        if not case or not report:
+        if not case:
             return None
         
-        # Validar aislamiento (asegurado por el repo, pero validamos consistencia)
-        if case.cliente_id != self.repo.cliente_id or report.cliente_id != self.repo.cliente_id:
+        report = self.repo.get_report(report_id) if report_id else self.repo.get_diagnostic_report_by_case(case_id)
+        
+        if not report or report.cliente_id != self.repo.cliente_id or not report.findings:
             return None
 
         # Construir record
