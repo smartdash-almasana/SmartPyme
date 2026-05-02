@@ -73,3 +73,70 @@ def test_no_llm_or_external_calls(service):
     # Should be very fast (under 100ms) as it's just a lookup
     assert (end - start) < 0.1
     assert res["status"] == "NEEDS_MORE_CONTEXT"
+
+
+def test_validate_operational_conditions_complete_ok(service):
+    # Testing with skill_reconcile_bank_vs_pos
+    variables = {"pos_total": 1000, "bank_total": 950, "periodo": "2026-04"}
+    evidence = ["pos_report", "bank_statement"]
+    
+    res = service.validate_operational_conditions(
+        skill_id="skill_reconcile_bank_vs_pos",
+        variables=variables,
+        evidence=evidence
+    )
+    
+    assert res["status"] == "CONDITIONS_OK"
+    assert res["skill_id"] == "skill_reconcile_bank_vs_pos"
+
+
+def test_validate_operational_conditions_missing_variable(service):
+    variables = {"pos_total": 1000} # missing bank_total and periodo
+    evidence = ["pos_report", "bank_statement"]
+    
+    res = service.validate_operational_conditions(
+        skill_id="skill_reconcile_bank_vs_pos",
+        variables=variables,
+        evidence=evidence
+    )
+    
+    assert res["status"] == "CONDITIONS_MISSING"
+    assert "bank_total" in res["missing_variables"]
+    assert "periodo" in res["missing_variables"]
+    assert res["missing_evidence"] == []
+
+
+def test_validate_operational_conditions_missing_evidence(service):
+    variables = {"pos_total": 1000, "bank_total": 950, "periodo": "2026-04"}
+    evidence = ["pos_report"] # missing bank_statement
+    
+    res = service.validate_operational_conditions(
+        skill_id="skill_reconcile_bank_vs_pos",
+        variables=variables,
+        evidence=evidence
+    )
+    
+    assert res["status"] == "CONDITIONS_MISSING"
+    assert res["missing_variables"] == []
+    assert "bank_statement" in res["missing_evidence"]
+
+
+def test_validate_operational_conditions_invalid_types(service):
+    res = service.validate_operational_conditions(
+        skill_id="skill_reconcile_bank_vs_pos",
+        variables=["not-a-dict"], # type: ignore
+        evidence={"not-a-list": True} # type: ignore
+    )
+    
+    assert res["status"] == "CONDITIONS_INVALID"
+    assert res["reason"] == "INVALID_INPUT_TYPES"
+
+
+def test_validate_operational_conditions_unknown_skill(service):
+    res = service.validate_operational_conditions(
+        skill_id="skill_non_existent",
+        variables={},
+        evidence=[]
+    )
+    
+    assert res["status"] == "UNKNOWN_SKILL"

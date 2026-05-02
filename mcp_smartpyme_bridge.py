@@ -316,6 +316,105 @@ async def factory_execute_task(task_id: str, tasks_dir: str | None = None) -> di
     from app.mcp.tools.factory_control_tool import execute_one_task_by_id
     return execute_one_task_by_id(task_id, tasks_dir)
 
+@mcp.tool()
+async def factory_process_intake(message: str, cliente_id: str) -> dict:
+    """
+    Procesa un mensaje del dueño usando IA para interpretar la intención y validar condiciones operativas.
+    """
+    from app.ai.orchestrators.ai_intake_orchestrator import AIIntakeOrchestrator
+    
+    try:
+        orchestrator = AIIntakeOrchestrator()
+        return orchestrator.process_owner_message(message, cliente_id)
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "skill_id": None,
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e)
+        }
+
+@mcp.tool()
+async def factory_confirm_intake(
+    cliente_id: str,
+    skill_id: str,
+    action: str,
+    overrides: dict | None = None
+) -> dict:
+    """
+    Confirma la creación de un Job real tras la propuesta del intake (CONFIRM o REJECT).
+    """
+    from app.ai.orchestrators.owner_confirmation_orchestrator import OwnerConfirmationOrchestrator
+    
+    try:
+        orchestrator = OwnerConfirmationOrchestrator()
+        # Note: We pass raw data; orchestrator handles validation.
+        # TypedDict and Literal are for internal use.
+        return orchestrator.confirm_job({
+            "cliente_id": cliente_id,
+            "skill_id": skill_id,
+            "action": action, # type: ignore
+            "overrides": overrides or {} # type: ignore
+        })
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "skill_id": skill_id,
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e)
+        }
+
+@mcp.tool()
+async def factory_record_decision(
+    cliente_id: str,
+    tipo_decision: str,
+    mensaje_original: str,
+    propuesta: dict,
+    accion: str,
+    overrides: dict | None = None,
+    job_id: str | None = None,
+    db_path: str | None = None
+) -> dict:
+    """
+    Registra formalmente una decisión del dueño (INFORMAR, EJECUTAR, RECHAZAR) en el DecisionRepository.
+    """
+    from app.ai.orchestrators.decision_orchestrator import record_owner_decision
+    import os
+
+    # Determinar ruta de DB por defecto si no se provee
+    target_db = db_path or os.getenv("SMARTPYME_DECISIONS_DB") or "decisions.db"
+
+    try:
+        input_data = {
+            "tipo_decision": tipo_decision,
+            "mensaje_original": mensaje_original,
+            "propuesta": propuesta,
+            "accion": accion,
+            "overrides": overrides,
+            "job_id": job_id
+        }
+        
+        result = record_owner_decision(input_data, cliente_id, target_db)
+        
+        if result["status"] == "REJECTED":
+            error_type = result.get("error_type", "INVALID_DECISION_INPUT")
+            if error_type == "INVALID_INPUT":
+                error_type = "INVALID_DECISION_INPUT"
+                
+            return {
+                "status": "REJECTED",
+                "error_type": error_type,
+                "reason": result["reason"]
+            }
+            
+        return result
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e)
+        }
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()
