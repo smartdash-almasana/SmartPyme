@@ -24,17 +24,15 @@ Skill principal auditada:
 factory/ai_governance/skills/hermes_smartpyme_factory/SKILL.md
 ```
 
-## Gap operativo
+## Estado actual
+Estado: HERMES_SKILLS_VISIBLE_WITH_SYNC_RISK
+Fecha: 2026-04-28
 
-Hermes Gateway puede operar solo si la skill versionada es visible para Hermes en la configuracion real de la VM.
+## Gap operativo (P0-4)
+Cerrado. Se ha verificado que `external_dirs` permite la carga de skills. La fuente de verdad es `factory/ai_governance/skills/`.
 
-Hasta que exista evidencia, el estado es:
-
-```text
-HERMES_SKILLS_NOT_VERIFIED
-```
-
-No se debe declarar que Hermes puede ejecutar SmartPyme Factory por skills hasta probar una de las opciones de integracion.
+No se deben editar skills SmartPyme directamente en `~/.hermes/skills/` para evitar `drift` de versiones.
+La sincronización manual de skills debe ser tratada únicamente como fallback controlado.
 
 ## Opcion A — instalar/copiar skills al directorio Hermes
 

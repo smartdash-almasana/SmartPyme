@@ -1,8 +1,10 @@
 ---
 name: hermes_smartpyme_factory
-description: Skill Hermes para operar SmartPyme Factory con TaskSpec YAML, evidencia y gate humano.
-version: 1.2.0
-status: CANONICO v1.2
+description: Skill Hermes para operar SmartPyme Factory con TaskSpec YAML.
+
+Esta skill se versiona en el repositorio de SmartPyme y debe ser cargada por Hermes mediante el mecanismo `external_dirs` configurado en `~/.hermes/config.yaml`.
+---
+
 remediation: P0-2 — TaskSpec YAML reemplaza hallazgos markdown como cola operativa
 platforms: [linux]
 metadata:
