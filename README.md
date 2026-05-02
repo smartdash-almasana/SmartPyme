@@ -37,6 +37,7 @@ Advertencia: este E2E puede limpiar `jobs.db`, `clarifications.db` y `evidence_s
 
 - `docs/architecture/SMARTPYME_OBJECTIVE_MODEL.md` (Mapa Rector)
 - `docs/architecture/PYME_OPERATIONAL_MODELS_SYMPTOMS_AND_CASES.md` (Modelos operativos, síntomas y casos PyME)
+- `docs/architecture/PYME_SYMPTOM_PATHOLOGY_ATLAS.md` (Atlas clínico-operativo de síntomas y patologías PyME)
 - `docs/SMARTPYME_OS_ACTUAL.md`
 - `docs/HERMES_MCP_RUNTIME.md`
 - `docs/ROADMAP_IMPLEMENTACION.md`
