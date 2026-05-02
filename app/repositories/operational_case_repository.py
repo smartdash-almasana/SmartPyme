@@ -107,6 +107,28 @@ class OperationalCaseRepository:
                 return OperationalCase(**data)
         return None
 
+    def update_case_status(self, case_id: str, new_status: str) -> bool:
+        if new_status not in ["OPEN", "IN_PROGRESS", "CLOSED"]:
+            return False
+        with sqlite3.connect(self.db_path) as conn:
+            # We must fetch first to ensure isolation check via get_case or verify here
+            case = self.get_case(case_id)
+            if not case:
+                return False
+            
+            # Re-verify isolation explicitly as safety measure
+            self._verify_isolation(case.cliente_id)
+            
+            # Update payload to reflect new status
+            updated_payload = asdict(case)
+            updated_payload["status"] = new_status
+            
+            conn.execute(
+                "UPDATE operational_cases SET status = ?, payload = ? WHERE cliente_id = ? AND case_id = ?",
+                (new_status, json.dumps(updated_payload, ensure_ascii=False), self.cliente_id, case_id),
+            )
+            return conn.total_changes > 0
+
     def list_cases(self) -> list[OperationalCase]:
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -115,8 +137,6 @@ class OperationalCaseRepository:
                 (self.cliente_id,),
             )
             return [OperationalCase(**json.loads(row["payload"])) for row in cursor.fetchall()]
-
-    # --- DiagnosticReport ---
 
     def create_report(self, report: DiagnosticReport) -> None:
         self._verify_isolation(report.cliente_id)

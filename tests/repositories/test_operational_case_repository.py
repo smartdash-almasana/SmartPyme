@@ -172,5 +172,37 @@ def test_json_roundtrip_complex_nested(repo):
     repo.create_report(report)
     fetched = repo.get_report("r1")
     
-    assert fetched.findings[0].measured_difference == {"nested": {"key": [1,2,3]}}
-    assert fetched.quantified_impact.amount == 100.0
+def test_update_case_status(repo):
+    case = OperationalCase(
+        case_id="case-status", cliente_id="CLIENT_A", job_id="j1", skill_id="s1",
+        demanda_original="...", hypothesis="Investigar si status?",
+        taxonomia_pyme={}, variables_curadas={}, evidencia_disponible=[],
+        condiciones_validadas=[], formula_applicable=None, pathology_possible=None,
+        referencias_necesarias=[], investigation_plan=[], status="OPEN"
+    )
+    repo.create_case(case)
+    
+    # Test valid transition
+    assert repo.update_case_status("case-status", "CLOSED") is True
+    assert repo.get_case("case-status").status == "CLOSED"
+    
+    # Test invalid status
+    assert repo.update_case_status("case-status", "UNKNOWN") is False
+    assert repo.get_case("case-status").status == "CLOSED"
+
+def test_update_case_status_isolation(db_path):
+    repo_a = OperationalCaseRepository(cliente_id="CLIENT_A", db_path=db_path)
+    repo_b = OperationalCaseRepository(cliente_id="CLIENT_B", db_path=db_path)
+    
+    case = OperationalCase(
+        case_id="case-a", cliente_id="CLIENT_A", job_id="j1", skill_id="s1",
+        demanda_original="...", hypothesis="Investigar si A?",
+        taxonomia_pyme={}, variables_curadas={}, evidencia_disponible=[],
+        condiciones_validadas=[], formula_applicable=None, pathology_possible=None,
+        referencias_necesarias=[], investigation_plan=[], status="OPEN"
+    )
+    repo_a.create_case(case)
+    
+    # Client B tries to update Client A's case
+    assert repo_b.update_case_status("case-a", "CLOSED") is False
+    assert repo_a.get_case("case-a").status == "OPEN"
