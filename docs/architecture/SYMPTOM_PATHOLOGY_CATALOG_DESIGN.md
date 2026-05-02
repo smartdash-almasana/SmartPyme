@@ -148,7 +148,7 @@ Cuando lo tengas, me lo mandás y seguimos.”
 El catálogo también alimenta el razonamiento interno del sistema.
 
 La conversación externa es mayéutica.  
-La conversación interna es hipotético-deductivo.
+La conversación interna es hipotético-deductiva.
 
 ```text
 Mayéutica → ayuda al dueño a formular.
@@ -193,7 +193,7 @@ patologias_posibles
 hipotesis_template
 skills_candidatas
 variables_necesarias
-evidencia_requerida
+evidenica_requerida
 preguntas_mayeuticas
 criterios_para_avanzar
 criterios_de_bloqueo
@@ -377,7 +377,7 @@ variables_necesarias:
   - precio_venta_real
   - costo_reposicion
 
-evidencia_requerida:
+evidenica_requerida:
   - ventas_pos
   - excel_ventas
   - facturas_proveedor
@@ -444,7 +444,7 @@ variables_necesarias:
   - stock_fisico
   - ajuste_merma
 
-evidencia_requerida:
+evidenica_requerida:
   - inventario_fisico
   - ventas_pos
   - compras
@@ -507,7 +507,7 @@ variables_necesarias:
   - bank_total
   - medios_de_pago
 
-evidencia_requerida:
+evidenica_requerida:
   - extracto_bancario
   - reporte_pos
   - caja_diaria
@@ -571,7 +571,7 @@ variables_necesarias:
   - archivos_usados
   - flujo_operativo
 
-evidencia_requerida:
+evidenica_requerida:
   - descripcion_flujo
   - archivos_excel
   - capturas_pantalla
@@ -639,7 +639,7 @@ variables_necesarias:
   - merma
   - precio_final
 
-evidencia_requerida:
+evidenica_requerida:
   - receta_o_BOM
   - facturas_materia_prima
   - lista_costos
@@ -769,7 +769,7 @@ match_symptoms_from_owner_message(message)
 get_candidate_pathologies(symptom_id)
 get_candidate_skills(symptom_id)
 get_required_variables(symptom_id)
-get_required_evidence(symptom_id)
+get_required_evidenice(symptom_id)
 get_mayeutic_questions(symptom_id)
 ```
 
@@ -784,7 +784,7 @@ catálogo estático + tests
 Después:
 
 ```text
-matcher
+macher
 ```
 
 Después:
@@ -830,7 +830,7 @@ Mitigación:
 ```text
 castellano operativo
 dolores reales
-evidencia concreta
+evidenica concreta
 skills accionables
 ```
 

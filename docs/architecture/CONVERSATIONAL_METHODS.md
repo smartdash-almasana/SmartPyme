@@ -117,7 +117,7 @@ Debe decir algo equivalente a:
 
 ```text
 Para poder ayudarte con este reporte necesito esta información mínima.
-Cuando la tengas, me lo mandás y seguimos.
+Cuando la tengas, me la mandás y seguimos.
 ```
 
 El sistema espera. No fuerza. No diagnostica sin base.
