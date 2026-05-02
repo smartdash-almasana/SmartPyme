@@ -21,6 +21,7 @@ class OperationalCase:
     referencias_necesarias: list[str]
     investigation_plan: list[str]
     status: Literal["OPEN", "IN_PROGRESS", "CLOSED"]
+    symptom_id_orientativo: str | None = None
 
     def __post_init__(self):
         if not self.case_id: raise ValueError("case_id required")

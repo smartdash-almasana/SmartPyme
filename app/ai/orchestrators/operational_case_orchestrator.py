@@ -60,6 +60,8 @@ class OperationalCaseOrchestrator:
             
             variables = payload.get("variables") or payload.get("operational_plan", {}).get("variables") or {}
             evidence = payload.get("evidence") or payload.get("operational_plan", {}).get("required_sources") or []
+            
+            symptom_id_from_job = payload.get("symptom_id") or payload.get("operational_plan", {}).get("symptom_id")
 
             # Principio de interacción: Aclaraciones precisas
             if not demanda_original:
@@ -117,6 +119,7 @@ class OperationalCaseOrchestrator:
                 referencias_necesarias=payload.get("referencias_necesarias") or [],
                 investigation_plan=plan,
                 status="OPEN",
+                symptom_id_orientativo=symptom_id_from_job,
             )
 
             # 6. Persistence

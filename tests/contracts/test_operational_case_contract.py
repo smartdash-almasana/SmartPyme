@@ -19,9 +19,32 @@ def test_operational_case_valid():
         pathology_possible=None,
         referencias_necesarias=[],
         investigation_plan=[],
-        status="OPEN"
+        status="OPEN",
+        symptom_id_orientativo="symptom-001"
     )
     assert case.case_id == "case-123"
+    assert case.symptom_id_orientativo == "symptom-001"
+
+def test_operational_case_valid_no_symptom_id():
+    case = OperationalCase(
+        case_id="case-123-no-symptom",
+        cliente_id="C1",
+        job_id="job-abc-no-symptom",
+        skill_id="skill-1",
+        demanda_original="Revisar stock sin síntoma",
+        hypothesis="Investigar si existe perdida de stock en deposito A sin síntoma?",
+        taxonomia_pyme={},
+        variables_curadas={},
+        evidencia_disponible=[],
+        condiciones_validadas=[],
+        formula_applicable=None,
+        pathology_possible=None,
+        referencias_necesarias=[],
+        investigation_plan=[],
+        status="OPEN"
+    )
+    assert case.case_id == "case-123-no-symptom"
+    assert case.symptom_id_orientativo is None
 
 def test_operational_case_invalid_hypothesis():
     with pytest.raises(ValueError, match="HYPOTHESIS_INVALIDA"):

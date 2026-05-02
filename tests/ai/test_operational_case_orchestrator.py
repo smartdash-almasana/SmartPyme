@@ -32,7 +32,8 @@ def test_build_case_success(orchestrator, mock_job_repo, mock_case_repo):
             "objective": "existe duplicidad en facturas",
             "owner_request": "Revisar duplicados",
             "variables": {"period": "2024"},
-            "evidence": ["ev-1"]
+            "evidence": ["ev-1"],
+            "symptom_id": "SYMPTOM-DUP"
         }
     }
     
@@ -49,6 +50,41 @@ def test_build_case_success(orchestrator, mock_job_repo, mock_case_repo):
     assert case.hypothesis == "Investigar si existe duplicidad en facturas?"
     assert case.status == "OPEN"
     assert "Fetch Sources" in case.investigation_plan
+    assert case.symptom_id_orientativo == "SYMPTOM-DUP"
+
+
+def test_build_case_success_no_symptom(orchestrator, mock_job_repo, mock_case_repo):
+    cliente_id = "C1"
+    job_id = "job-124"
+    
+    mock_job_repo.get_job.return_value = {
+        "job_id": job_id,
+        "current_state": STATE_RUNNING,
+        "skill_id": "skill_reconciliation_v1",
+        "payload": {
+            "cliente_id": cliente_id,
+            "objective": "existe duplicidad en facturas",
+            "owner_request": "Revisar duplicados",
+            "variables": {"period": "2024"},
+            "evidence": ["ev-1"]
+            # No symptom_id in payload
+        }
+    }
+    
+    res = orchestrator.build_operational_case(cliente_id, job_id, mock_job_repo, mock_case_repo)
+    
+    assert res["status"] == "OPERATIONAL_CASE_CREATED"
+    assert "case_id" in res
+    
+    # Verify persistence call
+    args, _ = mock_case_repo.create_case.call_args
+    case = args[0]
+    assert case.cliente_id == cliente_id
+    assert case.job_id == job_id
+    assert case.hypothesis == "Investigar si existe duplicidad en facturas?"
+    assert case.status == "OPEN"
+    assert "Fetch Sources" in case.investigation_plan
+    assert case.symptom_id_orientativo is None
 
 
 def test_build_case_clarification_missing_demanda(orchestrator, mock_job_repo, mock_case_repo):
