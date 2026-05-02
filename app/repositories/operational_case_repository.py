@@ -138,6 +138,26 @@ class OperationalCaseRepository:
             )
             return [OperationalCase(**json.loads(row["payload"])) for row in cursor.fetchall()]
 
+    def save_diagnostic_report(self, report: DiagnosticReport) -> DiagnosticReport:
+        self.create_report(report)
+        return report
+
+    def get_diagnostic_report(self, report_id: str) -> DiagnosticReport | None:
+        return self.get_report(report_id)
+
+    def get_diagnostic_report_by_case(self, case_id: str) -> DiagnosticReport | None:
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute(
+                "SELECT payload FROM diagnostic_reports WHERE cliente_id = ? AND case_id = ?",
+                (self.cliente_id, case_id),
+            )
+            row = cursor.fetchone()
+            if row:
+                data = json.loads(row["payload"])
+                return self._inflate_report(data)
+        return None
+
     def create_report(self, report: DiagnosticReport) -> None:
         self._verify_isolation(report.cliente_id)
         with sqlite3.connect(self.db_path) as conn:
@@ -168,15 +188,6 @@ class OperationalCaseRepository:
                 data = json.loads(row["payload"])
                 return self._inflate_report(data)
         return None
-
-    def list_reports(self) -> list[DiagnosticReport]:
-        with sqlite3.connect(self.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.execute(
-                "SELECT payload FROM diagnostic_reports WHERE cliente_id = ?",
-                (self.cliente_id,),
-            )
-            return [self._inflate_report(json.loads(row["payload"])) for row in cursor.fetchall()]
 
     def _inflate_report(self, data: dict[str, Any]) -> DiagnosticReport:
         # Pydantic would handle this automatically, but with pure dataclasses we need to inflate nested objects
