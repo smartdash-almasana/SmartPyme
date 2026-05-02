@@ -5,8 +5,12 @@ from app.services.case_closure_service import CaseClosureService
 from app.contracts.operational_case_contract import OperationalCase, DiagnosticReport, QuantifiedImpact, FindingRecord
 
 @pytest.fixture
-def repo(tmp_path):
-    return OperationalCaseRepository(cliente_id="CLIENT_A", db_path=tmp_path / "test.db")
+def db_path(tmp_path):
+    return tmp_path / "test.db"
+
+@pytest.fixture
+def repo(db_path):
+    return OperationalCaseRepository(cliente_id="CLIENT_A", db_path=db_path)
 
 @pytest.fixture
 def closure_service(repo):
