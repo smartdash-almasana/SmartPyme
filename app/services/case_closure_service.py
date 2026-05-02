@@ -3,10 +3,12 @@ from datetime import datetime
 from dataclasses import asdict
 from app.repositories.operational_case_repository import OperationalCaseRepository
 from app.contracts.operational_case_contract import ValidatedCaseRecord, QuantifiedImpact
+from app.contracts.action_contract import ActionProposal
 
 class CaseClosureService:
-    def __init__(self, repo: OperationalCaseRepository):
+    def __init__(self, repo: OperationalCaseRepository, action_repo=None):
         self.repo = repo
+        self.action_repo = action_repo
 
     def close_case(self, case_id: str, report_id: str | None = None) -> str | None:
         case = self.repo.get_case(case_id)
@@ -45,5 +47,21 @@ class CaseClosureService:
 
         self.repo.create_validated_case(record)
         self.repo.update_case_status(case_id, "CLOSED")
+
+        if self.action_repo:
+            proposal = ActionProposal(
+                action_id=f"act-close-{case_id}",
+                source_id=case_id,
+                source_type="case",
+                title="Cierre de caso",
+                description=f"Caso {case_id} cerrado correctamente.",
+                recommended_action="Cierre de caso",
+                status="approved", # Auto-aprobado para emisión
+                action_type="CASE_CLOSED",
+                case_id=case_id,
+                report_id=report.report_id,
+                validated_case_id=record.validated_case_id
+            )
+            self.action_repo.save(proposal)
 
         return record.validated_case_id
