@@ -44,6 +44,7 @@ Advertencia: este E2E puede limpiar `jobs.db`, `clarifications.db` y `evidence_s
 - Motor de abastecimiento externo de conocimiento
    apuntando a:
    docs/architecture/EXTERNAL_KNOWLEDGE_INTAKE_ENGINE.md
+- [Principios aprovechables de Palantir para SmartPyme](docs/architecture/PALANTIR_PRINCIPLES_FOR_SMARTPYME.md)
 - `docs/architecture/SPECIFIC_KNOWLEDGE_TANKS_AND_SOURCE_ENGINE.md` (Tanques específicos y motor de fuentes idóneas)
 - `docs/SMARTPYME_OS_ACTUAL.md`
 - `docs/HERMES_MCP_RUNTIME.md`
