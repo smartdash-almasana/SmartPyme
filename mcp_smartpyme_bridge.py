@@ -450,6 +450,37 @@ async def factory_start_authorized_job(cliente_id: str, job_id: str) -> dict:
             "reason": str(e)
         }
 
+@mcp.tool()
+async def factory_build_operational_case(cliente_id: str, job_id: str) -> dict:
+    """
+    Construye un OperationalCase (expediente investigativo) desde un Job en estado RUNNING.
+    """
+    from app.ai.orchestrators.operational_case_orchestrator import build_operational_case
+    from app.repositories.operational_case_repository import OperationalCaseRepository
+    import app.orchestrator.persistence as job_repo_module
+    import os
+
+    class JobRepoWrapper:
+        def get_job(self, jid): return job_repo_module.get_job(jid)
+
+    try:
+        # Resolver ruta de DB de casos operativos
+        target_db = os.getenv("SMARTPYME_CASES_DB") or "operational_cases.db"
+        case_repo = OperationalCaseRepository(cliente_id=cliente_id, db_path=target_db)
+        
+        return build_operational_case(
+            cliente_id=cliente_id,
+            job_id=job_id,
+            job_repository=JobRepoWrapper(),
+            operational_case_repository=case_repo
+        )
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e)
+        }
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()
