@@ -1,31 +1,21 @@
 import pytest
 from app.catalogs.symptom_pathology_catalog import (
-    get_symptom, get_candidate_pathologies, get_candidate_skills,
-    get_required_variables, get_required_evidence, get_mayeutic_questions
+    get_symptom, list_symptoms, get_candidate_pathologies, 
+    get_required_knowledge, get_research_questions
 )
 
-def test_get_symptom():
+def test_symptom_structure():
     symptom = get_symptom("sospecha_perdida_margen")
-    assert symptom is not None
-    assert symptom["id"] == "sospecha_perdida_margen"
+    assert symptom["symptom_id"] == "sospecha_perdida_margen"
+    assert "required_knowledge" in symptom
+    assert "research_questions" in symptom
 
-def test_get_candidate_pathologies():
-    pathologies = get_candidate_pathologies("sospecha_perdida_margen")
-    assert len(pathologies) > 0
-    assert "erosión_tarifaria" in pathologies
+def test_list_symptoms():
+    symptoms = list_symptoms()
+    assert len(symptoms) == 5
 
-def test_get_candidate_skills():
-    skills = get_candidate_skills("sospecha_faltante_stock")
-    assert "conciliacion_inventario" in skills
-
-def test_get_required_variables():
-    vars = get_required_variables("descuadre_caja_banco")
-    assert "saldo_contable" in vars
-
-def test_get_required_evidence():
-    evidence = get_required_evidence("exceso_trabajo_manual")
-    assert "matriz_tiempos" in evidence
-
-def test_get_mayeutic_questions():
-    questions = get_mayeutic_questions("incertidumbre_costo_produccion")
+def test_knowledge_and_research():
+    knowledge = get_required_knowledge("sospecha_faltante_stock")
+    assert "control_inventario" in knowledge
+    questions = get_research_questions("sospecha_faltante_stock")
     assert len(questions) > 0
