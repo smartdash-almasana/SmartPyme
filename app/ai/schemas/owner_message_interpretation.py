@@ -11,15 +11,14 @@ class OwnerMessageInterpretation(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    # TS_016-019 normalized fields.
     intent: str | None = None
     entities: list[str] = Field(default_factory=list)
     variables: list[str] = Field(default_factory=list)
     evidence: list[str] = Field(default_factory=list)
     doubts: list[str] = Field(default_factory=list)
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    symptom_id: str | None = None
 
-    # TS_015 backward-compatible scaffold fields.
     rubro_posible: str | None = None
     dolores_detectados: tuple[str, ...] = ()
     fuentes_mencionadas: tuple[str, ...] = ()
