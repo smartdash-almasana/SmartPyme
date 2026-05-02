@@ -36,6 +36,7 @@ Advertencia: este E2E puede limpiar `jobs.db`, `clarifications.db` y `evidence_s
 ## Documentacion canonica
 
 - `docs/architecture/SMARTPYME_OBJECTIVE_MODEL.md` (Mapa Rector)
+- `docs/architecture/PYME_OPERATIONAL_MODELS_SYMPTOMS_AND_CASES.md` (Modelos operativos, síntomas y casos PyME)
 - `docs/SMARTPYME_OS_ACTUAL.md`
 - `docs/HERMES_MCP_RUNTIME.md`
 - `docs/ROADMAP_IMPLEMENTACION.md`
