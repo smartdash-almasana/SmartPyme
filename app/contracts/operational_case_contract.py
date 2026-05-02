@@ -82,6 +82,7 @@ class DiagnosticReport:
     reasoning_summary: str
     proposed_next_actions: list[str]
     owner_question: str
+    references_used: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         if self.diagnosis_status == "CONFIRMED":

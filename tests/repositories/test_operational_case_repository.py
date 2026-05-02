@@ -65,6 +65,7 @@ def test_create_and_get_diagnostic_report(repo):
         diagnosis_status="CONFIRMED",
         findings=[finding],
         evidence_used=["ev-1"],
+        references_used=["http://example.com/ref1", "manual_agro_v2"],
         formulas_used=["sum()"],
         quantified_impact=impact,
         reasoning_summary="Deteccion automatica",
@@ -78,6 +79,7 @@ def test_create_and_get_diagnostic_report(repo):
     assert fetched == report
     assert fetched.quantified_impact.amount == 1500.0
     assert fetched.findings[0].entity == "factura-001"
+    assert fetched.references_used == ["http://example.com/ref1", "manual_agro_v2"]
 
 def test_create_and_get_validated_case(repo):
     impact = QuantifiedImpact(percentage=15.5)

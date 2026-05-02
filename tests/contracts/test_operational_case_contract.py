@@ -124,6 +124,54 @@ def test_diagnostic_report_confirmed_no_evidence():
             owner_question="?"
         )
 
+def test_diagnostic_report_with_empty_references_used():
+    impact = QuantifiedImpact(amount=100.0)
+    finding = FindingRecord(
+        entity="e", finding_type="t", measured_difference={},
+        compared_sources=[], evidence_used=["ev-1"], severity="LOW", recommendation="r"
+    )
+    report = DiagnosticReport(
+        report_id="rep-empty-ref",
+        case_id="case-1",
+        cliente_id="C1",
+        job_id="job-1",
+        hypothesis="Investigar si...?",
+        diagnosis_status="NOT_CONFIRMED",
+        findings=[finding],
+        evidence_used=["ev-1"],
+        references_used=[], # Empty
+        formulas_used=[],
+        quantified_impact=impact,
+        reasoning_summary="...",
+        proposed_next_actions=[],
+        owner_question="?"
+    )
+    assert report.references_used == []
+
+def test_diagnostic_report_with_references_used():
+    impact = QuantifiedImpact(amount=100.0)
+    finding = FindingRecord(
+        entity="e", finding_type="t", measured_difference={},
+        compared_sources=[], evidence_used=["ev-1"], severity="LOW", recommendation="r"
+    )
+    report = DiagnosticReport(
+        report_id="rep-with-ref",
+        case_id="case-1",
+        cliente_id="C1",
+        job_id="job-1",
+        hypothesis="Investigar si...?",
+        diagnosis_status="NOT_CONFIRMED",
+        findings=[finding],
+        evidence_used=["ev-1"],
+        references_used=["ref-1", "ref-2"], # With values
+        formulas_used=[],
+        quantified_impact=impact,
+        reasoning_summary="...",
+        proposed_next_actions=[],
+        owner_question="?"
+    )
+    assert report.references_used == ["ref-1", "ref-2"]
+
 def test_validated_case_record_valid():
     impact = QuantifiedImpact(amount=500.0, currency="USD")
     record = ValidatedCaseRecord(

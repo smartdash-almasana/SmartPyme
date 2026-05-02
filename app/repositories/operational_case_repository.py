@@ -163,7 +163,8 @@ class OperationalCaseRepository:
         findings = [FindingRecord(**f) for f in data.pop("findings", [])]
         impact_data = data.pop("quantified_impact")
         impact = QuantifiedImpact(**impact_data)
-        return DiagnosticReport(findings=findings, quantified_impact=impact, **data)
+        references_used = data.pop("references_used", [])
+        return DiagnosticReport(findings=findings, quantified_impact=impact, references_used=references_used, **data)
 
     # --- ValidatedCaseRecord ---
 
