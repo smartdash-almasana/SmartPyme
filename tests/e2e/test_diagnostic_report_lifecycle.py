@@ -52,7 +52,7 @@ def test_happy_path_lifecycle(repo_a, closure_service_a):
     record = repo_a.get_validated_case(validated_case_id)
     assert record is not None
     assert record.report_id == report.report_id
-    assert record.quantified_impact.percentage == 15.0
+    assert record.quantified_impact['percentage'] == 15.0
 
 def test_tenant_isolation(repo_a, repo_b):
     case = create_case_fixture(repo_a, "c1")

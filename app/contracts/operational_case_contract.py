@@ -1,8 +1,6 @@
 from __future__ import annotations
-
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Any, Literal
-
 
 @dataclass(frozen=True, slots=True)
 class OperationalCase:
@@ -74,7 +72,7 @@ class DiagnosticReport:
     cliente_id: str
     job_id: str
     hypothesis: str
-    diagnosis_status: Literal["CONFIRMED", "NOT_CONFIRMED", "INSUFFICIENT_EVIDENCE"]
+    diagnosis_status: Literal["PENDING", "CONFIRMED", "INSUFFICIENT_EVIDENCE", "DISPROVED"]
     findings: list[FindingRecord]
     evidence_used: list[str]
     formulas_used: list[str]
@@ -92,7 +90,7 @@ class DiagnosticReport:
                 raise ValueError("EVIDENCE_REQUERIDA: Un diagnostico CONFIRMED requiere evidencia vinculante.")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass
 class ValidatedCaseRecord:
     validated_case_id: str
     cliente_id: str
@@ -100,12 +98,15 @@ class ValidatedCaseRecord:
     case_id: str
     report_id: str
     timestamp: str
-    hypothesis: str
+    payload: Any
     diagnosis_status: str
-    evidence_used: list[str]
-    formulas_used: list[str]
-    findings_summary: str
-    quantified_impact: QuantifiedImpact
-    owner_visible_report: str
-    next_question: str
+    audit_id: str
+    decision_id: str | None = None
+    closed_by: str | None = None
+    audit_created_at: str | None = None
+    formulas_used: list[str] = field(default_factory=list)
+    findings_summary: str = ""
+    quantified_impact: Any = None
+    owner_visible_report: str = ""
+    next_question: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)

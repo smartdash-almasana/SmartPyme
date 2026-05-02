@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from dataclasses import asdict
 from app.repositories.operational_case_repository import OperationalCaseRepository
 from app.contracts.operational_case_contract import ValidatedCaseRecord, QuantifiedImpact
 
@@ -25,14 +26,21 @@ class CaseClosureService:
             case_id=case.case_id,
             report_id=report.report_id,
             timestamp=datetime.utcnow().isoformat(),
-            hypothesis=report.hypothesis,
+            payload={
+                "hypothesis": report.hypothesis,
+                "evidence_used": report.evidence_used,
+                "formulas_used": report.formulas_used,
+                "findings_summary": report.reasoning_summary,
+                "quantified_impact": asdict(report.quantified_impact),
+                "owner_visible_report": f"Caso cerrado con diagnóstico {report.diagnosis_status}.",
+                "next_question": report.owner_question
+            },
             diagnosis_status=report.diagnosis_status,
-            evidence_used=report.evidence_used,
+            audit_id=str(uuid.uuid4()),
+            audit_created_at=datetime.utcnow().isoformat(),
             formulas_used=report.formulas_used,
             findings_summary=report.reasoning_summary,
-            quantified_impact=report.quantified_impact,
-            owner_visible_report=f"Caso cerrado con diagnóstico {report.diagnosis_status}.",
-            next_question=report.owner_question
+            quantified_impact=report.quantified_impact
         )
 
         self.repo.create_validated_case(record)
