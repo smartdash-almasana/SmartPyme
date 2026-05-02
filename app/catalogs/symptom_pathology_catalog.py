@@ -324,3 +324,14 @@ def get_required_evidence(symptom_id: str) -> Tuple[str, ...]:
 def get_mayeutic_questions(symptom_id: str) -> Tuple[str, ...]:
     entry = get_symptom(symptom_id)
     return entry.preguntas_mayeuticas if entry else ()
+
+
+def match_symptom_from_dolores(dolores: Tuple[str, ...]) -> Optional[str]:
+    normalized_input_dolores = tuple(d.lower().strip() for d in dolores)
+    for symptom_id, entry in SYMPTOM_PATHOLOGY_CATALOG.items():
+        normalized_associated_dolores_list = [d.lower().strip() for d in entry.dolores_asociados]
+        for input_dolor in normalized_input_dolores:
+            for associated_dolor_in_catalog in normalized_associated_dolores_list:
+                if input_dolor in associated_dolor_in_catalog: # Substring check
+                    return symptom_id
+    return None

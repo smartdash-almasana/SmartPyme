@@ -104,3 +104,29 @@ def test_get_list_functions_return_empty_tuple_for_unknown_id():
     assert get_required_variables(unknown_id) == ()
     assert get_required_evidence(unknown_id) == ()
     assert get_mayeutic_questions(unknown_id) == ()
+
+from app.catalogs.symptom_pathology_catalog import match_symptom_from_dolores
+
+def test_match_symptom_from_dolores_specific_matches():
+    assert match_symptom_from_dolores(("pierdo plata",)) == "sospecha_perdida_margen"
+    assert match_symptom_from_dolores(("no sé si me falta stock",)) == "sospecha_faltante_stock"
+    assert match_symptom_from_dolores(("no me cierra la caja",)) == "descuadre_caja_banco"
+    assert match_symptom_from_dolores(("trabajo demasiado manual",)) == "exceso_trabajo_manual"
+    assert match_symptom_from_dolores(("no sé cuánto me cuesta fabricar",)) == "incertidumbre_costo_produccion"
+
+def test_match_symptom_from_dolores_no_match():
+    assert match_symptom_from_dolores(("dolor inexistente",)) is None
+    assert match_symptom_from_dolores(("otro dolor cualquiera", "nada que ver")) is None
+
+def test_match_symptom_from_dolores_tolerance_case_and_spaces():
+    assert match_symptom_from_dolores(("  PIERDO plata  ",)) == "sospecha_perdida_margen"
+    assert match_symptom_from_dolores(("  NO sé SI me FALTA stock ",)) == "sospecha_faltante_stock"
+
+def test_match_symptom_from_dolores_respects_catalog_order():
+    # Adding a dolor that exists in multiple symptoms, but
+    # 'sospecha_perdida_margen' appears first in the catalog for "no sé" related phrases
+    assert match_symptom_from_dolores(("no sé",)) == "sospecha_perdida_margen"
+
+def test_match_symptom_from_dolores_multiple_input_dolores():
+    assert match_symptom_from_dolores(("dolor inexistente", "pierdo plata")) == "sospecha_perdida_margen"
+    assert match_symptom_from_dolores(("no me cierra la caja", "no sé si me falta stock")) == "sospecha_faltante_stock"
