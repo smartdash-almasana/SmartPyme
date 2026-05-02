@@ -40,6 +40,7 @@ Advertencia: este E2E puede limpiar `jobs.db`, `clarifications.db` y `evidence_s
 - `docs/architecture/PYME_SYMPTOM_PATHOLOGY_ATLAS.md` (Atlas clínico-operativo de síntomas y patologías PyME)
 - `docs/architecture/HYPOTHETICO_DEDUCTIVE_METHOD.md` (Método hipotético-deductivo aplicado a PyMEs)
 - `docs/architecture/CONVERSATIONAL_METHODS.md` (Métodos conversacionales e investigativos)
+- `docs/architecture/SYMPTOM_PATHOLOGY_CATALOG_DESIGN.md` (Diseño del catálogo síntoma-patología-skill)
 - `docs/SMARTPYME_OS_ACTUAL.md`
 - `docs/HERMES_MCP_RUNTIME.md`
 - `docs/ROADMAP_IMPLEMENTACION.md`
