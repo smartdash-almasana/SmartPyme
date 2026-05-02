@@ -1,9 +1,12 @@
----
-name: hermes_smartpyme_factory
-description: Skill Hermes para operar SmartPyme Factory con TaskSpec YAML.
+## Automatización de Calidad (Lifecycle)
 
-Esta skill se versiona en el repositorio de SmartPyme y debe ser cargada por Hermes mediante el mecanismo `external_dirs` configurado en `~/.hermes/config.yaml`.
----
+Cada TaskSpec ejecutada por esta skill debe garantizar el cumplimiento de los estándares de código de SmartPyme:
+
+1. TESTS_RUN: Toda ejecución debe concluir con un suite de pruebas (pytest) sobre los archivos tocados.
+2. RUFF_RUN: Se debe aplicar `ruff check` sobre los archivos modificados.
+3. El resultado del análisis de código debe persistirse en `factory/evidence/<task_id>/ruff.txt`.
+4. REGLA: Ninguna TaskSpec Python puede ser cerrada sin haber pasado pytest y ruff check.
+5. REGLA: `ruff --fix` solo debe ejecutarse si la TaskSpec contiene la autorización expresa.
 
 remediation: P0-2 — TaskSpec YAML reemplaza hallazgos markdown como cola operativa
 platforms: [linux]
