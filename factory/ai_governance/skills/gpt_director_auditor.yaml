@@ -14,6 +14,7 @@ inputs:
   - CODEX.md
   - GEMINI.md
   - docs/factory/GPT_DIRECTOR_AUDITOR.md
+  - docs/factory/AI_PROVIDER_ROUTING_CONTRACT.md
   - prompts/GPT_DIRECTOR_AUDITOR_PROMPT.md
   - factory/control/AUDIT_GATE.md
   - factory/control/FACTORY_STATUS.md
@@ -35,6 +36,10 @@ outputs:
 
 rules:
   - Arrancar siempre desde GPT.md y archivos canonicos versionados.
+  - Verificar cumplimiento del AI_PROVIDER_ROUTING_CONTRACT:
+      a) Vertex Gemini debe ser default operativo;
+      b) gpt-5.3-codex y gemma4:e2b NO deben ser default en Hermes;
+      c) ollama-local debe estar definido como fallback.
   - No aprobar sin evidencia reproducible.
   - No validar trabajo propio de Builder.
   - No desbloquear gate sin revisar objetivo, diff, tests y evidencia.

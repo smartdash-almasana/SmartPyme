@@ -3,6 +3,7 @@ audit_rules:
     - touched_forbidden_files
     - touched_locked_files
     - changed_contract_without_governance_task
+    - provider_routing_violation
     - tests_not_run
     - tests_failed
     - missing_evidence
