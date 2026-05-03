@@ -7,7 +7,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "factory" / "evidence" / "deepseek_audit"
-DEFAULT_MODEL = "deepseek-r1:8b"
+DEFAULT_MODEL = "gemma4:e2b"
 
 
 def _safe_relative_path(raw_path: str) -> Path:
