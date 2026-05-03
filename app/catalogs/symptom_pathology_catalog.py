@@ -90,3 +90,7 @@ def get_required_knowledge(sid): return get_symptom(sid).get("required_knowledge
 def get_source_candidates(sid): return get_symptom(sid).get("source_candidates", [])
 def get_research_questions(sid): return get_symptom(sid).get("research_questions", [])
 def get_mayeutic_questions(sid): return get_symptom(sid).get("mayeutic_questions", [])
+
+class SymptomPathologyCatalog:
+    def __init__(self):
+        pass

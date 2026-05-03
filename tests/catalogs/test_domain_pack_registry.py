@@ -1,5 +1,6 @@
 import pytest
 from app.catalogs.domain_pack_registry import DomainPackRegistry
+from unittest.mock import patch
 
 def test_domain_pack_registry_pyme_latam():
     registry = DomainPackRegistry()
@@ -12,3 +13,9 @@ def test_invalid_pack():
     registry = DomainPackRegistry()
     with pytest.raises(ValueError):
         registry.get_pack("non_existent")
+
+def test_missing_skill_validation():
+    # Mocking SkillRegistry.has_skill to return False for a skill present in the definition
+    with patch('app.catalogs.skill_registry.SkillRegistry.has_skill', return_value=False):
+        with pytest.raises(ValueError, match="not found in SkillRegistry"):
+            DomainPackRegistry()
