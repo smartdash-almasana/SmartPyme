@@ -1,0 +1,22 @@
+task_id: routing_gemini_default_deepseek_audit_001
+mode: governance
+status: pending
+human_required: false
+objective: >
+  Dejar Gemini Vertex como builder default de codigo y DeepSeek local como auditor.
+allowed_files:
+  - factory/ai_governance/tasks/routing_gemini_default_deepseek_audit_001.yaml
+forbidden_files:
+  - app
+  - tests
+required_tests:
+  - test -f factory/ai_governance/tasks/routing_gemini_default_deepseek_audit_001.yaml
+acceptance_criteria:
+  - Gemini Vertex es builder default para codigo.
+  - DeepSeek local es auditor y lector largo.
+  - Gemma local queda como runtime del bot.
+  - Ante rate limit de Gemini se devuelve BLOCKED_RATE_LIMIT_VERTEX.
+preflight_commands:
+  - git status --short
+post_commands:
+  - git status --short
