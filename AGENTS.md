@@ -343,3 +343,10 @@ No contrato → BLOCKED
 No test → INCOMPLETO
 No trazabilidad → RECHAZADO
 ```
+
+## Guardarraíl anti-stubs
+
+PROHIBIDO:
+- Crear clases o funciones vacías para satisfacer imports o tests.
+- Crear símbolos falsos.
+- Si falta un símbolo real → BLOCKED_MISSING_CONTRACT.
