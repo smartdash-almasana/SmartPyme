@@ -55,6 +55,14 @@ class AIIntakeOrchestrator:
 
         symptom_id = interpretation.symptom_id
         symptom_entry = get_symptom(symptom_id) if symptom_id else None
+        
+        if symptom_id and symptom_entry is None:
+            return {
+                "status": "CLARIFICATION_REQUIRED",
+                "skill_id": skill_id,
+                "reason": "INVALID_SYMPTOM",
+                "owner_message": f"No pude identificar el síntoma '{symptom_id}'. ¿Podrías describirlo de otra forma?",
+            }
 
         # 2. Data Curation
         # For now, interpretation only has names. We pass them as markers.
