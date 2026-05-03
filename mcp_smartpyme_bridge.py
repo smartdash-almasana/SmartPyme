@@ -481,6 +481,35 @@ async def factory_build_operational_case(cliente_id: str, job_id: str) -> dict:
             "reason": str(e)
         }
 
+@mcp.tool()
+async def factory_run_deepseek_audit(
+    task_id: str,
+    files: list[str],
+    objective: str,
+    model: str | None = None,
+    timeout_seconds: int = 900,
+) -> dict:
+    """
+    Ejecuta una auditoria local con DeepSeek via Ollama y escribe evidencia en factory/evidence/deepseek_audit/<task_id>/.
+    """
+    from app.mcp.tools.deepseek_audit_tool import DEFAULT_MODEL, run_deepseek_audit
+
+    try:
+        return run_deepseek_audit(
+            task_id=task_id,
+            files=files,
+            objective=objective,
+            model=model or DEFAULT_MODEL,
+            timeout_seconds=timeout_seconds,
+        )
+    except Exception as e:
+        return {
+            "status": "AUDIT_BLOCKED",
+            "source": "deepseek_local",
+            "task_id": task_id,
+            "reason": str(e),
+        }
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()
