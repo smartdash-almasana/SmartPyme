@@ -76,9 +76,6 @@ class OperationalCaseOrchestrator:
             
             variables = payload.get("variables") or payload.get("operational_plan", {}).get("variables") or {}
             evidence = payload.get("evidence") or payload.get("operational_plan", {}).get("required_sources") or []
-            # Asegurar que al menos haya variables o evidencia para tests
-            if not variables and not evidence:
-                variables = {"test": "val"}
             
             symptom_id_from_job = payload.get("symptom_id") or payload.get("operational_plan", {}).get("symptom_id")
             symptom_info = get_symptom(symptom_id_from_job) if symptom_id_from_job else None
@@ -140,11 +137,6 @@ class OperationalCaseOrchestrator:
             plan = ["Load Evidence", "Apply Formula", "Generate Findings"]
             if skill_id and "reconciliation" in skill_id:
                 plan = ["Fetch Sources", "Execute Cross-Match", "Detect Discrepancies"]
-            
-            # Asegurar que evidencias y variables no estén vacías si el caso requiere procesamiento
-            if not variables and not evidence:
-                 # Esta parte ya existía, pero verificamos que no bloquee injustificadamente
-                 variables = {"test": "val"}
             
             case = OperationalCaseCapa03(
                 cliente_id=cliente_id,

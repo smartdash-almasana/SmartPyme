@@ -136,9 +136,11 @@ def test_build_case_clarification_missing_context(orchestrator, mock_job_repo, m
         }
     }
     res = orchestrator.build_operational_case("C1", "j1", mock_job_repo, mock_case_repo)
-    # Now the orchestrator creates a case with default variables
-    assert res["status"] == "OPERATIONAL_CASE_CREATED"
-    mock_case_repo.create_case.assert_called_once()
+    assert res["status"] == "CLARIFICATION_REQUIRED"
+    assert "variables_curadas" in res["missing"]
+    assert "evidencia_disponible" in res["missing"]
+    assert "al menos datos concretos" in res["owner_message"]
+    mock_case_repo.create_case.assert_not_called()
 
 
 def test_build_case_rejected_not_running(orchestrator, mock_job_repo, mock_case_repo):
