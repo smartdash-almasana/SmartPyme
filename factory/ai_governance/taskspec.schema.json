@@ -12,7 +12,10 @@
     "preflight_commands",
     "post_commands",
     "status",
-    "mode"
+    "mode",
+    "layer",
+    "phase",
+    "model_target"
   ],
   "properties": {
     "task_id": {
@@ -27,6 +30,40 @@
         "governance",
         "product"
       ]
+    },
+    "layer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "DEFINIR",
+        "CONTRATAR",
+        "IMPLEMENTAR",
+        "INTEGRAR",
+        "AUDITAR",
+        "CERRAR",
+        "DOCUMENTAR"
+      ]
+    },
+    "model_target": {
+      "type": "string",
+      "enum": [
+        "CODEX",
+        "DEEPSEEK_4_PRO",
+        "DEEPSEEK_3_2"
+      ]
+    },
+    "max_files_read": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "max_searches": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10
     },
     "objective": {
       "type": "string",
