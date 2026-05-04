@@ -39,6 +39,10 @@ BLOCKED_SCOPE_VIOLATION
 BLOCKED_CONTRACT_UNCERTAINTY
 BLOCKED_MODEL_TARGET_MISSING
 BLOCKED_MODEL_TARGET_INVALID
+BLOCKED_MODE_MISSING
+BLOCKED_MODE_INVALID
+BLOCKED_MODE_PHASE_CONFLICT
+BLOCKED_SCOPE_VIOLATION
 BLOCKED_TESTS_FAIL
 BLOCKED_LOOP_DETECTED
 BLOCKED_CLOSE_DECISION_MISSING
@@ -58,13 +62,15 @@ No modificar después de entrar en cierre salvo una corrección mínima.
 ## Procedimiento obligatorio
 
 1. Confirmar rama y estado de trabajo.
-2. Leer solo archivos directamente necesarios.
-3. Declarar punto de integración antes del patch.
-4. Aplicar cambio mínimo.
-5. Ejecutar test puntual.
-6. Mostrar diff acotado de archivos tocados.
-7. Decidir cierre.
-8. Parar.
+2. Verificar que `MODO: WRITE_AUTHORIZED` está presente y válido.
+3. Si `MODO` no es `WRITE_AUTHORIZED`, responder `BLOCKED_MODE_INVALID`.
+4. Leer solo archivos directamente necesarios.
+5. Declarar punto de integración antes del patch.
+6. Aplicar cambio mínimo.
+7. Ejecutar test puntual.
+8. Mostrar diff acotado de archivos tocados.
+9. Decidir cierre.
+10. Parar.
 
 ## Cierre transaccional obligatorio
 

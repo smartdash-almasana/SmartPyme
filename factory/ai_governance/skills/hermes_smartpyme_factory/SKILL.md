@@ -37,7 +37,7 @@ factory/ai_governance/tasks/<task_id>.yaml
 
 Los hallazgos markdown en `factory/hallazgos/**` quedan como **legacy / cantera / insumo historico**. No son cola operativa vigente.
 
-## Regla obligatoria de fase
+## Regla obligatoria de fase y modo
 
 Toda TaskSpec o prompt operativo debe declarar:
 
@@ -45,6 +45,7 @@ Toda TaskSpec o prompt operativo debe declarar:
 layer
 phase
 model_target
+operational_mode
 ```
 
 Equivalente en prompts:
@@ -53,6 +54,7 @@ Equivalente en prompts:
 CAPA:
 FASE:
 MODEL_TARGET:
+MODO:
 ```
 
 Si falta capa/fase:
@@ -67,31 +69,42 @@ Si falta modelo destino:
 BLOCKED_MODEL_TARGET_MISSING
 ```
 
+Si falta modo operativo:
+
+```text
+BLOCKED_MODE_MISSING
+```
+
 Si el modelo destino no es válido:
 
 ```text
 BLOCKED_MODEL_TARGET_INVALID
 ```
 
-Valores permitidos:
+Si el modo operativo no es válido:
 
 ```text
-CODEX
-DEEPSEEK_4_PRO
-DEEPSEEK_3_2
+BLOCKED_MODE_INVALID
 ```
 
-Fases permitidas:
+Si modo y fase se contradicen:
 
 ```text
-DEFINIR
-CONTRATAR
-IMPLEMENTAR
-INTEGRAR
-AUDITAR
-CERRAR
-DOCUMENTAR
+BLOCKED_MODE_PHASE_CONFLICT
 ```
+
+Valores permitidos de `operational_mode`:
+
+```text
+ANALYSIS_ONLY
+WRITE_AUTHORIZED
+TEST_ONLY
+CLOSE_ONLY
+DOC_ONLY
+BLOCKED_REVIEW
+```
+
+**Importante:** `ARCHIVOS_PERMITIDOS` no autoriza escritura sin `MODO: WRITE_AUTHORIZED`. `ANALYSIS_ONLY` nunca puede escribir, parchear, copiar, commiter ni pushear.
 
 ## Ruteo operativo
 
@@ -160,6 +173,7 @@ Campos minimos vigentes:
 ```yaml
 task_id: string
 mode: create_only | patch_only | governance | product
+operational_mode: ANALYSIS_ONLY | WRITE_AUTHORIZED | TEST_ONLY | CLOSE_ONLY | DOC_ONLY | BLOCKED_REVIEW
 layer: string
 phase: DEFINIR | CONTRATAR | IMPLEMENTAR | INTEGRAR | AUDITAR | CERRAR | DOCUMENTAR
 model_target: CODEX | DEEPSEEK_4_PRO | DEEPSEEK_3_2
@@ -181,14 +195,15 @@ Mientras el schema mantenga `additionalProperties: false`, no se deben introduci
 
 1. Confirmar workspace, rama y estado.
 2. Validar TaskSpec contra schema.
-3. Verificar `layer`, `phase` y `model_target`.
-4. Seleccionar una sola TaskSpec `pending`.
-5. Validar `allowed_files`, `forbidden_files`, tests y criterios.
-6. Si la fase es INTEGRAR, aplicar `smartpyme_minimal_code_integration`.
-7. Ejecutar solo el alcance permitido.
-8. Exigir evidencia reproducible.
-9. Cerrar con tests, diff, status y decisión.
-10. No abrir otra fase sin cierre explícito.
+3. Verificar `layer`, `phase`, `model_target` y `operational_mode`.
+4. Validar coherencia `operational_mode` + `phase`.
+5. Seleccionar una sola TaskSpec `pending`.
+6. Validar `allowed_files`, `forbidden_files`, tests y criterios.
+7. Si la fase es INTEGRAR, aplicar `smartpyme_minimal_code_integration`.
+8. Ejecutar solo el alcance permitido según `operational_mode`.
+9. Exigir evidencia reproducible.
+10. Cerrar con tests, diff, status y decisión.
+11. No abrir otra fase sin cierre explícito.
 
 ## Reglas específicas para INTEGRAR
 

@@ -13,6 +13,7 @@
     "post_commands",
     "status",
     "mode",
+    "operational_mode",
     "layer",
     "phase",
     "model_target"
@@ -29,6 +30,17 @@
         "patch_only",
         "governance",
         "product"
+      ]
+    },
+    "operational_mode": {
+      "type": "string",
+      "enum": [
+        "ANALYSIS_ONLY",
+        "WRITE_AUTHORIZED",
+        "TEST_ONLY",
+        "CLOSE_ONLY",
+        "DOC_ONLY",
+        "BLOCKED_REVIEW"
       ]
     },
     "layer": {

@@ -25,6 +25,27 @@ Lista canónica (no agregar otros sin autorización explícita):
 
 ---
 
+### DECISIÓN 3 – Modos operativos obligatorios
+
+Toda tarea debe declarar obligatoriamente `MODO:` con uno de los siguientes valores:
+
+- **ANALYSIS_ONLY** – solo lectura, búsqueda, inspección, diff. No escribe, no parchea, no commitea, no pushea.
+- **WRITE_AUTHORIZED** – lectura + escritura permitida solo en `ARCHIVOS_PERMITIDOS`. Requiere test y cierre transaccional.
+- **TEST_ONLY** – solo ejecuta tests/comandos de verificación. No modifica código fuente.
+- **CLOSE_ONLY** – solo commit/push/status, sin cambiar lógica.
+- **DOC_ONLY** – solo toca documentación autorizada (`.md`, `.rst`, `.txt` dentro de `docs/`).
+- **BLOCKED_REVIEW** – explica bloqueo, no corrige.
+
+**Reglas clave:**
+1. **ARCHIVOS_PERMITIDOS no equivale a autorización de escritura.** Solo `WRITE_AUTHORIZED` permite escribir.
+2. **FASE no define permisos.** `INTEGRAR` puede ejecutarse con `ANALYSIS_ONLY` para diseño/revisión previa.
+3. **Si falta MODO → `BLOCKED_MODE_MISSING`.** No se asume modo por defecto.
+4. **Si MODO no válido → `BLOCKED_MODE_INVALID`.**
+5. **Si FASE y MODO se contradicen → `BLOCKED_MODE_PHASE_CONFLICT`** (ej: `INTEGRAR` + `CLOSE_ONLY`).
+6. **ANALYSIS_ONLY nunca puede escribir.** Cualquier `write_file`, `patch`, `cp` activa `BLOCKED_SCOPE_VIOLATION`.
+
+---
+
 ## Fases del workflow completo
 
 Cada fase tiene:
@@ -304,6 +325,7 @@ Todo prompt operativo debe declarar:
 ```text
 CAPA:
 FASE:
+MODO:
 MODEL_TARGET:
 OBJETIVO:
 ENTRADA:
@@ -315,6 +337,10 @@ TESTS:
 GATES:
 SALIDA_OBLIGATORIA:
 ```
+
+**MODO:** obligatorio. Valores: `ANALYSIS_ONLY`, `WRITE_AUTHORIZED`, `TEST_ONLY`, `CLOSE_ONLY`, `DOC_ONLY`, `BLOCKED_REVIEW`.
+
+**Regla:** `ARCHIVOS_PERMITIDOS` no autoriza escritura. Solo `WRITE_AUTHORIZED` permite escribir. `FASE` no define permisos.
 
 **Nota:** Si falta `CAPA`, `FASE` o `MODEL_TARGET`, responder con el bloqueo correspondiente.
 
