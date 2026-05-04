@@ -1,6 +1,6 @@
 # SmartPyme Factory – Protocolo Operativo de Agentes
 
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Capa:** FACTORY_PROTOCOL  
 **Fase:** DEFINIR  
 **Modelo Target:** DEEPSEEK_4_PRO  
@@ -71,11 +71,11 @@ Cada fase tiene:
 
 **Agente:** GPT arquitecto.
 
-**Salida:** TaskSpec o prompt con **CAPA, FASE, MODEL_TARGET, objetivo, archivos permitidos, prohibidos, tests y salida obligatoria**.
+**Salida:** TaskSpec o prompt con **CAPA, FASE, MODO, MODEL_TARGET, objetivo, archivos permitidos, prohibidos, tests y salida obligatoria**.
 
 **Tests:** No aplica.
 
-**Gate:** Si falta CAPA / FASE / MODEL_TARGET → `BLOCKED_LAYER_PHASE_MISSING` / `BLOCKED_MODEL_TARGET_MISSING`.
+**Gate:** Si falta CAPA / FASE / MODO / MODEL_TARGET → `BLOCKED_LAYER_PHASE_MISSING` / `BLOCKED_MODE_MISSING` / `BLOCKED_MODEL_TARGET_MISSING`.
 
 ---
 
@@ -342,23 +342,26 @@ SALIDA_OBLIGATORIA:
 
 **Regla:** `ARCHIVOS_PERMITIDOS` no autoriza escritura. Solo `WRITE_AUTHORIZED` permite escribir. `FASE` no define permisos.
 
-**Nota:** Si falta `CAPA`, `FASE` o `MODEL_TARGET`, responder con el bloqueo correspondiente.
+**Nota:** Si falta `CAPA`, `FASE`, `MODO` o `MODEL_TARGET`, responder con el bloqueo correspondiente.
 
 ---
 
 ## Bloqueos obligatorios
 
 1. `BLOCKED_LAYER_PHASE_MISSING` – falta CAPA o FASE.
-2. `BLOCKED_MODEL_TARGET_MISSING` – falta MODEL_TARGET.
-3. `BLOCKED_MODEL_TARGET_INVALID` – MODEL_TARGET no autorizado.
-4. `BLOCKED_DIRTY_WORKTREE` – git status no clean sin justificación.
-5. `BLOCKED_WRONG_BRANCH` – no está en la rama autorizada.
-6. `BLOCKED_SCOPE_VIOLATION` – toca archivos no permitidos.
-7. `BLOCKED_CONTRACT_UNCERTAINTY` – contrato no claro o no testado.
-8. `BLOCKED_INTEGRATION_POINT` – no hay punto de integración declarado.
-9. `BLOCKED_AUTHORIZATION_LEAK` – agente puede ejecutar sin autorización.
-10. `BLOCKED_TESTS_FAIL` – tests no pasan.
-11. `BLOCKED_SCHEMA_INVALID` – esquema TaskSpec no cumple formato.
+2. `BLOCKED_MODE_MISSING` – falta MODO.
+3. `BLOCKED_MODE_INVALID` – MODO no autorizado.
+4. `BLOCKED_MODE_PHASE_CONFLICT` – MODO contradice FASE.
+5. `BLOCKED_MODEL_TARGET_MISSING` – falta MODEL_TARGET.
+6. `BLOCKED_MODEL_TARGET_INVALID` – MODEL_TARGET no autorizado.
+7. `BLOCKED_DIRTY_WORKTREE` – git status no clean sin justificación.
+8. `BLOCKED_WRONG_BRANCH` – no está en la rama autorizada.
+9. `BLOCKED_SCOPE_VIOLATION` – toca archivos no permitidos o escribe sin WRITE_AUTHORIZED.
+10. `BLOCKED_CONTRACT_UNCERTAINTY` – contrato no claro o no testado.
+11. `BLOCKED_INTEGRATION_POINT` – no hay punto de integración declarado.
+12. `BLOCKED_AUTHORIZATION_LEAK` – agente puede ejecutar sin autorización.
+13. `BLOCKED_TESTS_FAIL` – tests no pasan.
+14. `BLOCKED_SCHEMA_INVALID` – esquema TaskSpec no cumple formato.
 
 ---
 
