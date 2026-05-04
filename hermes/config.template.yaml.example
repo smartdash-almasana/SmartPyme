@@ -13,16 +13,16 @@ hermes:
 
   skills:
     search_paths:
-      - "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills"
+      - "/opt/smartpyme-factory/repos/SmartPyme/factory/ai_governance/skills"
 
   mcp:
     servers:
       smartpyme:
         transport: "stdio"
-        command: "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/.venv/bin/python"
+        command: "/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python"
         args:
-          - "/home/neoalmasana/smartpyme-factory/repos/SmartPyme/mcp_smartpyme_bridge.py"
+          - "/opt/smartpyme-factory/repos/SmartPyme/mcp_smartpyme_bridge.py"
         env:
-          SMARTPYME_REPO: "/home/neoalmasana/smartpyme-factory/repos/SmartPyme"
+          SMARTPYME_REPO: "/opt/smartpyme-factory/repos/SmartPyme"
         timeout_seconds: 30
         restart_on_crash: true
