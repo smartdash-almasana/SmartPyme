@@ -1,7 +1,7 @@
 # AI Provider Routing Contract — SmartPyme Factory
 
 **Estado:** CANONICO v2
-**Reemplaza:** CANONICO v1 (obsolescencia por migración de runtime a DeepSeek v4 Pro)
+**Reemplaza:** CANONICO v1 (obsolescencia por migración de runtime a DeepSeek v3.2)
 
 ---
 
@@ -21,7 +21,7 @@ No asumir proveedores ni modelos sin leer ese archivo.
 
 | Rol | Provider | Modelo | Estado |
 | :--- | :--- | :--- | :--- |
-| **Default / Orquestador** | `openrouter` | `deepseek/deepseek-v4-pro` | ACTIVO |
+| **Default / Orquestador** | `openrouter` | `deepseek/deepseek-v3.2` | ACTIVO |
 | **Fallback automático** | `openrouter` | `google/gemini-2.5-pro` | ACTIVO |
 | **Gemini vía Google directo** | `vertex` o `google` | (no activo como provider Hermes) | OBJETIVO |
 | **Codex** | `openai-codex` | `gpt-5.3-codex` (externo) | BAJO DEMANDA |
@@ -31,7 +31,7 @@ No asumir proveedores ni modelos sin leer ese archivo.
 
 ## Regla Rectora
 
-- **DeepSeek v4 Pro** es el modelo operativo primario (lectura, auditoría, construcción, orquestación).
+- **DeepSeek v3.2** es el modelo operativo primario (lectura, auditoría, construcción, orquestación).
 - **Gemini 2.5 Pro** es fallback automático si DeepSeek no responde (rate limit, timeout, 529).
 - **Gemini vía Google directo** (Vertex AI o Google AI Studio) es el **camino objetivo** para independizar el fallback de OpenRouter.
 - **Codex** se invoca explícitamente desde fuera de Hermes para refactors delicados o migraciones con suite de tests.
@@ -43,7 +43,7 @@ No asumir proveedores ni modelos sin leer ese archivo.
 
 | Escenario | Provider | Modelo |
 | :--- | :--- | :--- |
-| Ciclo normal Hermes (default) | `openrouter` | `deepseek/deepseek-v4-pro` |
+| Ciclo normal Hermes (default) | `openrouter` | `deepseek/deepseek-v3.2` |
 | Fallback automático | `openrouter` | `google/gemini-2.5-pro` |
 | Gemini directo (objetivo, no activo) | `vertex` / `google` | (a definir al activar) |
 | Codex (bajo demanda externa) | `openai-codex` | (invocado fuera de Hermes) |
@@ -64,7 +64,7 @@ OpenRouter es el **único provider** para el modelo principal y su fallback. Si 
 
 ## Reglas Operativas
 
-1. **Default**: `deepseek/deepseek-v4-pro` vía OpenRouter. No modificar sin TaskSpec.
+1. **Default**: `deepseek/deepseek-v3.2` vía OpenRouter. No modificar sin TaskSpec.
 2. **Fallback**: `google/gemini-2.5-pro` vía OpenRouter. Automático ante 429, 529, 503 o timeout.
 3. **Gemini directo**: objetivo profesional para eliminar el punto único de falla. No está activo como provider Hermes hoy.
 4. **Codex**: solo bajo demanda explícita del Owner para refactors delicados o migraciones. No es provider activo de Hermes.
@@ -84,5 +84,5 @@ grep -A4 "^fallback_model:" /home/neoalmasana/.hermes/config.yaml
 
 ## Historial de Cambios
 
-- **2026-05-04** — CANONICO v2: refleja runtime real (DeepSeek v4 Pro + Gemini 2.5 Pro vía OpenRouter). Documenta OpenRouter como punto único de falla. Marca Gemini directo como objetivo. Retira gemma4:e2b, gemini-3.1-flash-lite-preview, custom:vertex-gemini y ollama-local del contrato.
+- **2026-05-04 (actualización)** — CANONICO v2: refleja runtime real (DeepSeek v3.2 + Gemini 2.5 Pro vía OpenRouter). Documenta OpenRouter como punto único de falla. Marca Gemini directo como objetivo. Retira gemma4:e2b, gemini-3.1-flash-lite-preview, custom:vertex-gemini y ollama-local del contrato.
 - **2026-04-28** — CANONICO v1 (original, obsoleto).

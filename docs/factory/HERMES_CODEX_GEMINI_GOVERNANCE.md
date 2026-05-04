@@ -3,11 +3,11 @@
 ## Estado
 CANONICO v2
 
-**Actualizado:** 2026-05-04 — refleja runtime real con DeepSeek v4 Pro como agente operativo primario.
+**Actualizado:** 2026-05-04 — refleja runtime real con DeepSeek v3.2 como agente operativo primario.
 
 ## Objetivo
 
-Definir la gobernanza multiagente de SmartPyme Factory con **DeepSeek v4 Pro** como agente operativo primario (orquestación, lectura, construcción, auditoría), **Gemini 2.5 Pro** como fallback automático, y **Codex** como builder externo bajo demanda explícita.
+Definir la gobernanza multiagente de SmartPyme Factory con **DeepSeek v3.2** como agente operativo primario (orquestación, lectura, construcción, auditoría), **Gemini 2.5 Pro** como fallback automático, y **Codex** como builder externo bajo demanda explícita.
 
 **Nota:** Este documento define la gobernanza conceptual de roles. El runtime real de modelos está en `AI_PROVIDER_ROUTING_CONTRACT.md` (CANONICO v2).
 
@@ -15,7 +15,7 @@ Definir la gobernanza multiagente de SmartPyme Factory con **DeepSeek v4 Pro** c
 
 ## 1. Principio rector
 
-**DeepSeek v4 Pro** es el agente operativo primario. **Gemini 2.5 Pro** es fallback automático. **Codex** es builder externo bajo demanda.
+**DeepSeek v3.2** es el agente operativo primario. **Gemini 2.5 Pro** es fallback automático. **Codex** es builder externo bajo demanda.
 
 Ningún agente decide solo el cierre de un ciclo.
 
@@ -23,7 +23,7 @@ Ningún agente decide solo el cierre de un ciclo.
 
 ## 2. Roles
 
-### DeepSeek v4 Pro — Agente operativo primario (vía Hermes)
+### DeepSeek v3.2 — Agente operativo primario (vía Hermes)
 Responsabilidades:
 - lectura, auditoría, construcción y orquestación de tareas
 - elegir una unidad pequeña por ciclo
@@ -87,12 +87,12 @@ No debe:
 
 ### Hermes Gateway — Runtime / Plataforma
 Responsabilidades:
-- ejecutar el modelo configurado (DeepSeek v4 Pro o fallback)
+- ejecutar el modelo configurado (DeepSeek v3.2 o fallback)
 - leer tasks, hallazgos pending, roadmap y TECH_SPEC_QUEUE
 - exigir evidencia
 - consolidar resultado final
 
-Hermes es la **plataforma**, no el modelo. El modelo activo es DeepSeek v4 Pro.
+Hermes es la **plataforma**, no el modelo. El modelo activo es DeepSeek v3.2.
 
 ---
 
@@ -101,9 +101,9 @@ Hermes es la **plataforma**, no el modelo. El modelo activo es DeepSeek v4 Pro.
 ```text
 TECH_SPEC_QUEUE / TASK / HALLAZGO
         ↓
-DeepSeek v4 Pro selecciona unidad (vía Hermes)
+DeepSeek v3.2 selecciona unidad (vía Hermes)
         ↓
-DeepSeek v4 Pro ejecuta (lectura / auditoría / construcción)
+DeepSeek v3.2 ejecuta (lectura / auditoría / construcción)
         ↓
         └── (si falla) → Gemini 2.5 Pro (fallback automático)
         ↓
@@ -120,14 +120,14 @@ Commit / push si corresponde
 
 | Tipo de trabajo | Agente primario | Agente secundario |
 |---|---|---|
-| Ciclo normal Hermes | DeepSeek v4 Pro | Gemini 2.5 Pro (fallback) |
-| Código Python | DeepSeek v4 Pro | Codex (bajo demanda) |
-| Tests | DeepSeek v4 Pro | — |
-| Specs técnicas | DeepSeek v4 Pro | Gemini 2.5 Pro (revisión) |
-| Refactor delicado | Codex (externo) | DeepSeek v4 Pro (supervisión) |
-| Auditoría documental | DeepSeek v4 Pro | — |
-| Priorización / Backlog | DeepSeek v4 Pro | Gemini 2.5 Pro |
-| Runners / Scripts | DeepSeek v4 Pro | — |
+| Ciclo normal Hermes | DeepSeek v3.2 | Gemini 2.5 Pro (fallback) |
+| Código Python | DeepSeek v3.2 | Codex (bajo demanda) |
+| Tests | DeepSeek v3.2 | — |
+| Specs técnicas | DeepSeek v3.2 | Gemini 2.5 Pro (revisión) |
+| Refactor delicado | Codex (externo) | DeepSeek v3.2 (supervisión) |
+| Auditoría documental | DeepSeek v3.2 | — |
+| Priorización / Backlog | DeepSeek v3.2 | Gemini 2.5 Pro |
+| Runners / Scripts | DeepSeek v3.2 | — |
 
 ---
 
@@ -147,7 +147,7 @@ Todo cambio debe terminar en:
 
 ## 6. Integración con TECH_SPEC_QUEUE
 
-DeepSeek v4 Pro debe leer `docs/factory/TECH_SPEC_QUEUE.md` en cada ciclo.
+DeepSeek v3.2 debe leer `docs/factory/TECH_SPEC_QUEUE.md` en cada ciclo.
 Gemini 2.5 Pro debe convertir ideas nuevas en specs o tasks.
 Codex solo implementa tasks ya delimitadas (bajo demanda externa).
 
@@ -167,7 +167,7 @@ Todo output de negocio debe respetar:
 
 ## 8. Criterios de aceptación de la gobernanza
 
-- DeepSeek v4 Pro es el agente operativo primario para todas las tareas.
+- DeepSeek v3.2 es el agente operativo primario para todas las tareas.
 - Gemini 2.5 Pro es fallback automático vía OpenRouter.
 - Codex es builder externo bajo demanda explícita.
 - Existe ruta documental para specs emergentes.
