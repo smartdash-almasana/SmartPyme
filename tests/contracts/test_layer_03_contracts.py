@@ -21,6 +21,37 @@ def test_create_valid_operational_case() -> None:
 
 
 @pytest.mark.parametrize(
+    "hypothesis",
+    [
+        "Investigar si existe pérdida de margen.",
+        "Analizar si existe descuadre entre caja y banco.",
+        "¿Existe pérdida de stock en el período revisado?",
+    ],
+)
+def test_operational_case_accepts_investigable_hypothesis(hypothesis: str) -> None:
+    case = OperationalCase(
+        cliente_id="cliente_1",
+        case_id="case_1",
+        job_id="job_1",
+        skill_id="skill_margin_leak_audit",
+        hypothesis=hypothesis,
+    )
+
+    assert case.model_dump()["hypothesis"] == hypothesis
+
+
+def test_operational_case_rejects_affirmative_non_investigable_hypothesis() -> None:
+    with pytest.raises(ValueError, match="HYPOTHESIS_INVALIDA"):
+        OperationalCase(
+            cliente_id="cliente_1",
+            case_id="case_1",
+            job_id="job_1",
+            skill_id="skill_margin_leak_audit",
+            hypothesis="Hay pérdida de margen.",
+        )
+
+
+@pytest.mark.parametrize(
     "diagnosis_status",
     ["CONFIRMED", "NOT_CONFIRMED", "INSUFFICIENT_EVIDENCE"],
 )
