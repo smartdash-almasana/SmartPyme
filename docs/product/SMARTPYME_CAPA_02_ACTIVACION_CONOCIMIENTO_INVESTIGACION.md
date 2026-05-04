@@ -4,9 +4,10 @@
 
 DOCUMENTO RECTOR — ACTUALIZADO
 
-**Versión:** 2.0  
+**Versión:** 3.0  
 **Fecha:** Mayo 2026  
-**Cambios v2:** Incorporación del Núcleo Entrópico Principal, Unidad Cuántica de Resolución, Cuadro Sintomático Priorizado, Roadmap de Transformación Inicial y ejemplo conversacional Mario/Perales.
+**Cambios v2:** Incorporación del Núcleo Entrópico Principal, Unidad Cuántica de Resolución, Cuadro Sintomático Priorizado, Roadmap de Transformación Inicial y ejemplo conversacional Mario/Perales.  
+**Cambios v3:** Incorporación de Herramientas y Flujos de Trabajo, HumanKnowledgeNode, ToolNode, WorkflowStepNode, WorkflowTrace, EpistemicPrintCycle, dimensión temporal en flujos y actores, investigación forense-operativa y relación entre workflow roto y Núcleo Entrópico Principal.
 
 Este documento define la Capa 2 de SmartPyme: la capa que transforma una admisión validada y evidencia normalizada en un grafo investigativo **contraído en un núcleo atacable**.
 
@@ -44,6 +45,8 @@ InvestigationGraph
 InvestigationPlan
 PrincipalEntropicCore
 InitialTransformationRoadmap
+WorkflowTrace
+EpistemicPrintCycle
 ```
 
 ---
@@ -134,12 +137,17 @@ Capa 2:
 - identifica variables requeridas;
 - cruza variables requeridas contra variables disponibles;
 - detecta brechas de evidencia;
+- **mapea actores humanos como HumanKnowledgeNode**;
+- **mapea herramientas operativas como ToolNode**;
+- **reconstruye flujos de trabajo como WorkflowStepNode**;
+- **detecta puntos de fricción y pérdida en los flujos**;
 - arma un grafo de investigación;
 - **contrae el grafo en un Núcleo Entrópico Principal**;
 - **identifica la Unidad Cuántica de Resolución**;
 - **produce un Cuadro Sintomático Priorizado**;
 - prioriza rutas por ROI, riesgo, evidencia disponible y costo;
 - **genera un Roadmap de Transformación Inicial**;
+- **registra el ciclo epistémico de impresión progresiva**;
 - produce un candidato de caso operativo.
 
 ---
@@ -314,6 +322,109 @@ inventory_reconciliation
 
 ---
 
+### HumanKnowledgeNode
+
+Representa un actor humano de la PyME como nodo de conocimiento operativo.
+
+Cada persona es un testigo parcial de la realidad del negocio.
+
+Tiene conocimiento fragmentado, sesgado y temporalmente acotado.
+
+Ejemplos:
+
+```text
+Mario (dueño): visión general, decisiones, caja negra, contexto informal
+Paulita (administración): stock, precios, ventas operativas, Excel
+Andrés (contador): gastos blancos, caja formal, declaraciones
+Ana (compras): proveedores, costos, condiciones comerciales
+```
+
+Estructura:
+
+```text
+HumanKnowledgeNode:
+  person_id
+  name
+  role
+  knowledge_domains       qué sabe esta persona
+  tools_used              herramientas que usa
+  information_owned       qué información gestiona
+  information_format      en qué formato la tiene
+  availability            cuándo está disponible
+  reliability             confianza en su información
+  temporal_scope          de qué período tiene información
+  contact_channel         cómo se le pide información
+```
+
+---
+
+### ToolNode
+
+Representa una herramienta operativa real usada en el negocio.
+
+No es una herramienta conceptual o matemática.
+
+Es el instrumento concreto con el que el negocio opera, registra y comunica.
+
+Ejemplos:
+
+```text
+WhatsApp
+Excel
+PDF
+banco
+sistema contable
+facturador
+cuaderno
+memoria del dueño
+```
+
+Estructura:
+
+```text
+ToolNode:
+  tool_id
+  tool_name
+  tool_type               digital / físico / humano
+  used_by_person_ids      personas que lo usan
+  stores_information      qué información almacena
+  information_format      formato de la información
+  reliability             confianza en la información que produce
+  temporal_coverage       de qué período tiene datos
+  access_difficulty       qué tan fácil es acceder a la información
+  loss_risk               riesgo de pérdida de información
+```
+
+---
+
+### WorkflowStepNode
+
+Representa un paso operativo concreto en el flujo de trabajo del negocio.
+
+Cada paso tiene un actor, una herramienta, una acción, una entrada, una salida y una dimensión temporal.
+
+Estructura:
+
+```text
+WorkflowStepNode:
+  step_id
+  step_name
+  actor_person_id         quién ejecuta el paso
+  tool_id                 herramienta que usa
+  action                  qué hace exactamente
+  input                   qué recibe como entrada
+  output                  qué produce como salida
+  next_step_id            siguiente paso en el flujo
+  friction_point          dónde se traba o demora
+  loss_point              dónde se pierde información o valor
+  evidence_generated      qué evidencia produce este paso
+  operational_risk        riesgo operativo del paso
+  estimated_duration      tiempo estimado del paso
+  temporal_window         ventana temporal del paso
+```
+
+---
+
 ## 9. Tipos de relaciones
 
 ```text
@@ -385,6 +496,38 @@ Una ruta investigativa requiere una herramienta auxiliar.
 
 ```text
 red_de_dependencias → USES_TOOL → graph_theory
+```
+
+### OPERATED_BY
+
+Una herramienta es operada por un actor humano.
+
+```text
+excel_paulita → OPERATED_BY → paulita
+```
+
+### FEEDS_INTO
+
+Un paso de workflow alimenta al siguiente.
+
+```text
+whatsapp_mario → FEEDS_INTO → excel_paulita
+```
+
+### HAS_FRICTION
+
+Un paso de workflow tiene un punto de fricción documentado.
+
+```text
+paso_registro_venta → HAS_FRICTION → intermediario_paulita
+```
+
+### HAS_LOSS
+
+Un paso de workflow tiene un punto de pérdida de información o valor.
+
+```text
+paso_caja_negra → HAS_LOSS → gap_gastos_informales
 ```
 
 ---
@@ -803,6 +946,14 @@ ruta prioritaria aprobada
 18. **El Roadmap de Transformación Inicial debe tener al menos tres fases temporales.**
 19. **La Unidad Cuántica de Resolución es el mínimo foco causal atacable en el primer ciclo.**
 20. **El Cuadro Sintomático Priorizado ordena síntomas por impacto sistémico, no por urgencia declarada.**
+21. **No hay diagnóstico operativo sin mapa de herramientas y flujos.**
+22. **El núcleo entrópico suele estar en la unión entre herramienta, persona y flujo.**
+23. **Cada actor humano es un HumanKnowledgeNode con conocimiento parcial y temporalmente acotado.**
+24. **Cada herramienta operativa es un ToolNode con riesgo de pérdida de información.**
+25. **Cada paso operativo es un WorkflowStepNode con dimensión temporal obligatoria.**
+26. **La realidad operativa se imprime progresivamente por ciclos epistémicos trazables.**
+27. **Toda entidad, herramienta, flujo y paso debe tener dimensión temporal.**
+28. **Un workflow roto es evidencia de un núcleo entrópico activo.**
 
 ---
 
@@ -1384,7 +1535,7 @@ El Roadmap es la secuencia de ataque.
 
 ---
 
-## 30. Objetos conceptuales completos (v2)
+## 30. Objetos conceptuales completos (v3)
 
 ```text
 KnowledgeDomain
@@ -1403,6 +1554,11 @@ PrincipalEntropicCore
 QuantumResolutionUnit
 PrioritizedSymptomTable
 InitialTransformationRoadmap
+HumanKnowledgeNode
+ToolNode
+WorkflowStepNode
+WorkflowTrace
+EpistemicPrintCycle
 ```
 
 ---
@@ -1438,4 +1594,786 @@ class PrioritizedSymptomEntry(BaseModel): ...
 class PrioritizedSymptomTable(BaseModel): ...
 class TransformationPhase(BaseModel): ...
 class InitialTransformationRoadmap(BaseModel): ...
+```
+
+---
+
+## 32. Herramientas y flujos de trabajo como dimensión faltante
+
+### El problema
+
+El grafo investigativo de Capa 2 puede modelar síntomas, patologías, fórmulas y variables.
+
+Pero hay una dimensión que falta en la mayoría de los análisis operativos de PyMEs:
+
+> ¿Cómo fluye realmente la información en este negocio?
+
+Sin ese mapa, el sistema puede identificar que falta una variable pero no puede explicar por qué falta ni dónde se pierde.
+
+### La dimensión faltante
+
+Las PyMEs no operan con sistemas integrados.
+
+Operan con:
+
+- personas que recuerdan cosas;
+- WhatsApps que se pierden;
+- Excels que no se actualizan;
+- cuadernos que solo entiende una persona;
+- contadores que ven solo la parte blanca;
+- dueños que toman decisiones sin datos.
+
+Cada uno de estos elementos es un nodo del grafo operativo real.
+
+Y las relaciones entre ellos son los flujos de trabajo reales.
+
+### Regla central
+
+```text
+No hay diagnóstico operativo sin mapa de herramientas y flujos.
+```
+
+Un sistema que no entiende cómo fluye la información en el negocio no puede:
+
+- explicar por qué falta una variable;
+- identificar dónde se pierde el dato;
+- proponer una intervención que funcione en la práctica;
+- entender por qué el dueño no tiene los números.
+
+### Consecuencia para el grafo
+
+El `InvestigationGraph` debe poder incluir:
+
+- `HumanKnowledgeNode` para cada actor humano relevante;
+- `ToolNode` para cada herramienta operativa;
+- `WorkflowStepNode` para cada paso del flujo;
+- relaciones `OPERATED_BY`, `FEEDS_INTO`, `HAS_FRICTION`, `HAS_LOSS`.
+
+---
+
+## 33. HumanKnowledgeNode — Actores humanos como nodos de conocimiento
+
+### Principio
+
+Cada persona en la PyME es un nodo de conocimiento parcial.
+
+No es un obstáculo.
+
+No es un recurso.
+
+Es un testigo parcial de la realidad operativa del negocio.
+
+Tiene información fragmentada, sesgada y temporalmente acotada.
+
+### Por qué es un nodo del grafo
+
+Porque la información no vive en sistemas.
+
+Vive en personas.
+
+Y para investigar correctamente, el sistema necesita saber:
+
+- quién sabe qué;
+- en qué formato lo tiene;
+- de qué período tiene información;
+- qué tan confiable es esa información;
+- cómo se le puede pedir.
+
+### Actores en Perales
+
+```text
+Mario (dueño):
+  knowledge_domains: visión general, decisiones, caja negra, contexto informal
+  tools_used: WhatsApp, memoria
+  information_owned: ventas informales, decisiones de precio, relaciones con revendedores
+  information_format: oral, WhatsApp
+  reliability: alta en contexto, baja en números exactos
+  temporal_scope: presente y reciente
+  contact_channel: conversación directa
+
+Paulita (administración):
+  knowledge_domains: stock, precios, ventas operativas
+  tools_used: Excel, WhatsApp
+  information_owned: Excel de stock y precios, registro de ventas
+  information_format: Excel (.xlsx)
+  reliability: media-alta (depende de actualización)
+  temporal_scope: últimos meses
+  contact_channel: WhatsApp de Mario
+
+Andrés (contador):
+  knowledge_domains: gastos blancos, caja formal, declaraciones fiscales
+  tools_used: sistema contable, PDF
+  information_owned: gastos blancos del mes, declaraciones
+  information_format: PDF, Excel
+  reliability: alta en parte blanca, no ve parte negra
+  temporal_scope: mes anterior
+  contact_channel: email o reunión mensual
+
+Ana (compras):
+  knowledge_domains: proveedores, costos, condiciones comerciales
+  tools_used: WhatsApp, cuaderno, facturas
+  information_owned: precios de proveedor, condiciones de pago
+  information_format: facturas físicas, cuaderno
+  reliability: alta en costos actuales
+  temporal_scope: presente
+  contact_channel: WhatsApp o presencial
+```
+
+### Dimensión temporal de los actores
+
+Cada actor tiene una ventana temporal de conocimiento:
+
+```text
+Mario:
+  observed_at: continuo (presente)
+  temporal_scope: últimas semanas
+
+Paulita:
+  observed_at: última actualización del Excel
+  temporal_scope: últimos 3–6 meses
+
+Andrés:
+  observed_at: cierre del mes anterior
+  temporal_scope: mes anterior
+
+Ana:
+  observed_at: última compra
+  temporal_scope: últimas semanas
+```
+
+Sin esta dimensión temporal, el sistema puede pedir información que ya no existe o que está desactualizada.
+
+---
+
+## 34. ToolNode — Herramientas operativas como nodos del grafo
+
+### Principio
+
+Cada herramienta operativa es un nodo del grafo investigativo.
+
+No es solo un canal de comunicación.
+
+Es un repositorio de información con:
+
+- formato propio;
+- riesgo de pérdida;
+- cobertura temporal;
+- dificultad de acceso;
+- confiabilidad variable.
+
+### Herramientas en Perales
+
+```text
+WhatsApp (Mario → Paulita):
+  tool_type: digital
+  used_by: Mario, Paulita
+  stores_information: órdenes de venta informales
+  information_format: texto libre
+  reliability: baja (no estructurado, se pierde)
+  temporal_coverage: últimas semanas (historial limitado)
+  access_difficulty: media (hay que buscar en el chat)
+  loss_risk: alto (mensajes se borran, no hay backup)
+
+Excel de Paulita:
+  tool_type: digital
+  used_by: Paulita
+  stores_information: stock, precios, ventas
+  information_format: xlsx
+  reliability: media (depende de actualización manual)
+  temporal_coverage: últimos meses
+  access_difficulty: baja (archivo compartible)
+  loss_risk: medio (puede estar desactualizado)
+
+Sistema contable (Andrés):
+  tool_type: digital
+  used_by: Andrés
+  stores_information: gastos blancos, declaraciones
+  information_format: PDF, exportación
+  reliability: alta en parte blanca
+  temporal_coverage: mes anterior
+  access_difficulty: alta (requiere pedido al contador)
+  loss_risk: bajo
+
+Banco:
+  tool_type: digital
+  used_by: Mario
+  stores_information: movimientos bancarios
+  information_format: extracto PDF o CSV
+  reliability: alta
+  temporal_coverage: últimos 3 meses online
+  access_difficulty: baja (descargable)
+  loss_risk: bajo
+
+Cuaderno (Ana):
+  tool_type: físico
+  used_by: Ana
+  stores_information: precios de proveedor, condiciones
+  information_format: manuscrito
+  reliability: alta en contexto, baja en exactitud
+  temporal_coverage: presente
+  access_difficulty: alta (requiere presencia física)
+  loss_risk: muy alto (único ejemplar)
+
+Memoria del dueño:
+  tool_type: humano
+  used_by: Mario
+  stores_information: contexto, decisiones, relaciones
+  information_format: oral
+  reliability: alta en contexto, baja en números
+  temporal_coverage: variable
+  access_difficulty: baja (conversación)
+  loss_risk: muy alto (no trazable)
+```
+
+---
+
+## 35. WorkflowStepNode — Pasos operativos con dimensión temporal
+
+### Principio
+
+Cada paso del flujo operativo es un nodo del grafo investigativo.
+
+Tiene un actor, una herramienta, una acción, una entrada, una salida y una dimensión temporal.
+
+Los puntos de fricción y pérdida son los lugares donde el desorden se genera.
+
+### Flujo de ventas en Perales
+
+```text
+Paso 1: Revendedor llega o llama
+  actor: revendedor
+  herramienta: presencial / teléfono
+  acción: solicita productos
+  entrada: necesidad de compra
+  salida: pedido verbal
+  siguiente_paso: Mario recibe pedido
+  punto_de_fricción: no hay registro formal del pedido
+  punto_de_pérdida: si Mario no está, la venta se pierde
+  evidencia_generada: ninguna
+  riesgo_operativo: venta no registrada
+  duración_estimada: 5–15 minutos
+  temporal_window:
+    observed_at: momento de la visita
+
+Paso 2: Mario recibe pedido y manda WhatsApp a Paulita
+  actor: Mario
+  herramienta: WhatsApp
+  acción: comunica la venta a Paulita
+  entrada: pedido verbal del revendedor
+  salida: mensaje de WhatsApp
+  siguiente_paso: Paulita anota en Excel
+  punto_de_fricción: Mario puede olvidar mandar el mensaje
+  punto_de_pérdida: si el mensaje no llega, la venta no se registra
+  evidencia_generada: mensaje de WhatsApp (no estructurado)
+  riesgo_operativo: venta no registrada, stock no actualizado
+  duración_estimada: 1–5 minutos
+  temporal_window:
+    observed_at: momento del mensaje
+
+Paso 3: Paulita anota en Excel
+  actor: Paulita
+  herramienta: Excel
+  acción: registra la venta en el Excel de stock
+  entrada: mensaje de WhatsApp de Mario
+  salida: fila en Excel con producto, cantidad, precio
+  siguiente_paso: stock actualizado
+  punto_de_fricción: Paulita puede no estar disponible
+  punto_de_pérdida: si Paulita no anota, el stock queda desactualizado
+  evidencia_generada: fila en Excel (estructurada pero manual)
+  riesgo_operativo: stock incorrecto, precio desactualizado
+  duración_estimada: 2–10 minutos
+  temporal_window:
+    observed_at: momento de la anotación (puede ser horas después)
+
+Paso 4: Cobro y caja
+  actor: Mario
+  herramienta: caja negra / efectivo
+  acción: cobra al revendedor
+  entrada: venta acordada
+  salida: dinero en caja negra
+  siguiente_paso: ninguno (no hay registro)
+  punto_de_fricción: no hay comprobante
+  punto_de_pérdida: el cobro no llega al contador ni al sistema
+  evidencia_generada: ninguna trazable
+  riesgo_operativo: resultado real no calculable
+  duración_estimada: 1–5 minutos
+  temporal_window:
+    observed_at: momento del cobro
+```
+
+### Qué revela este flujo
+
+```text
+El flujo tiene 4 pasos.
+Solo 1 genera evidencia estructurada (Excel de Paulita).
+Los otros 3 generan evidencia no trazable o ninguna.
+Hay 3 puntos de pérdida activos.
+El contador no ve ninguno de estos pasos.
+```
+
+Esto explica por qué Mario no tiene los números.
+
+No es un problema de voluntad.
+
+Es un problema de diseño del flujo.
+
+---
+
+## 36. WorkflowTrace — Trazado del flujo completo
+
+### Definición
+
+El `WorkflowTrace` es la representación completa del flujo operativo de un proceso de negocio, incluyendo todos los pasos, actores, herramientas, puntos de fricción y pérdida.
+
+### Estructura conceptual
+
+```text
+WorkflowTrace:
+  trace_id
+  cliente_id
+  process_name              nombre del proceso: "venta a revendedor"
+  steps                     lista de WorkflowStepNode en orden
+  actors_involved           lista de HumanKnowledgeNode
+  tools_involved            lista de ToolNode
+  friction_points           lista de pasos con fricción
+  loss_points               lista de pasos con pérdida
+  evidence_generated        evidencia total generada por el flujo
+  evidence_gaps             información que el flujo no captura
+  temporal_coverage         período que cubre el flujo
+  workflow_health           HEALTHY / FRAGILE / BROKEN
+  notes
+```
+
+### Estados de salud del flujo
+
+```text
+HEALTHY → el flujo genera evidencia trazable en todos los pasos críticos.
+FRAGILE → el flujo tiene puntos de fricción o pérdida pero sigue funcionando.
+BROKEN  → el flujo tiene pérdidas críticas que impiden la investigación.
+```
+
+---
+
+## 37. EpistemicPrintCycle — Ciclo de impresión epistémica
+
+### Definición
+
+La realidad operativa de la PyME no se captura de una vez.
+
+Se imprime progresivamente por ciclos trazables de aportes humanos, evidencia cruda, curación, contraste y actualización del grafo.
+
+Cada ciclo agrega una capa de conocimiento al caso.
+
+### Principio rector
+
+```text
+La realidad operativa se imprime progresivamente.
+Cada ciclo epistémico agrega una capa de conocimiento trazable.
+El grafo se actualiza con cada ciclo.
+```
+
+### Por qué existe este concepto
+
+El dueño no puede dar toda la información en una sola conversación.
+
+La evidencia llega en partes.
+
+Paulita manda el Excel esta semana.
+
+El contador manda el reporte el mes que viene.
+
+Ana trae las facturas cuando puede.
+
+El sistema debe poder:
+
+- registrar qué se sabe en cada ciclo;
+- actualizar el grafo con cada nuevo aporte;
+- detectar contradicciones entre ciclos;
+- mantener trazabilidad de cuándo llegó cada dato;
+- saber qué cambió entre ciclos.
+
+### Estructura conceptual
+
+```text
+EpistemicPrintCycle:
+  cycle_id
+  cliente_id
+  case_id
+  cycle_number              número de ciclo (1, 2, 3...)
+  cycle_date                fecha del ciclo
+  contributions:
+    - contributor_person_id
+      contribution_type     EVIDENCE / CLARIFICATION / CORRECTION / VALIDATION
+      evidence_items        lista de evidencias aportadas
+      new_variables         variables nuevas detectadas
+      resolved_gaps         brechas resueltas en este ciclo
+      new_gaps              brechas nuevas detectadas
+      contradictions        contradicciones con ciclos anteriores
+  graph_updates             cambios al InvestigationGraph en este ciclo
+  epistemic_state_before    estado del conocimiento antes del ciclo
+  epistemic_state_after     estado del conocimiento después del ciclo
+  next_cycle_tasks          tareas para el próximo ciclo
+```
+
+### Ejemplo: Perales — ciclos epistémicos
+
+```text
+Ciclo 1 (semana 1):
+  contributor: Mario
+  contribution_type: EVIDENCE
+  new_variables: stock_aproximado, precio_desactualizado
+  resolved_gaps: ninguno
+  new_gaps: stock_exacto, costo_reposicion, ventas_periodo
+  epistemic_state_after: CERTEZA parcial, muchas DUDAS
+
+Ciclo 2 (semana 2):
+  contributor: Paulita
+  contribution_type: EVIDENCE
+  evidence_items: Excel de stock y precios
+  new_variables: stock_por_modelo_talle, precio_lista
+  resolved_gaps: stock_aproximado → stock_por_modelo_talle
+  new_gaps: costo_reposicion (no está en el Excel)
+  contradictions: precio en Excel difiere del precio que Mario recordaba
+
+Ciclo 3 (semana 3):
+  contributor: Andrés (contador)
+  contribution_type: EVIDENCE
+  evidence_items: reporte de gastos blancos
+  new_variables: gastos_blancos_mes
+  resolved_gaps: gastos_blancos
+  new_gaps: gastos_informales (el contador no los ve)
+  contradictions: ninguna
+
+Ciclo 4 (semana 4):
+  contributor: Mario
+  contribution_type: CLARIFICATION
+  clarification: confirma que los gastos informales son ~30% del total
+  new_variables: gastos_informales_estimados
+  resolved_gaps: gastos_informales (estimado)
+  contradictions: ninguna
+```
+
+---
+
+## 38. Tiempo en flujos, actores y herramientas
+
+### Principio
+
+Toda entidad, objeto, herramienta, flujo y paso debe tener dimensión temporal.
+
+No alcanza con saber qué existe.
+
+Hay que saber cuándo existe, cuándo fue actualizado y de qué período tiene información.
+
+### Dimensiones temporales por tipo de objeto
+
+```text
+HumanKnowledgeNode:
+  observed_at: cuándo se habló con esta persona
+  temporal_scope: de qué período tiene información
+  last_updated: cuándo fue la última vez que actualizó su información
+
+ToolNode:
+  observed_at: cuándo se accedió a la herramienta
+  temporal_coverage: de qué período tiene datos
+  last_updated: cuándo fue la última actualización
+
+WorkflowStepNode:
+  observed_at: cuándo ocurrió este paso
+  duration: cuánto tardó
+  period_start / period_end: si el paso cubre un período
+
+WorkflowTrace:
+  period_start: inicio del período que cubre el flujo
+  period_end: fin del período que cubre el flujo
+
+EpistemicPrintCycle:
+  cycle_date: fecha del ciclo
+  valid_from: desde cuándo es válido el conocimiento de este ciclo
+  valid_to: hasta cuándo es válido (puede ser null si sigue vigente)
+```
+
+### Regla
+
+```text
+Sin dimensión temporal, un actor, herramienta o flujo no puede usarse en investigación.
+```
+
+Un Excel de Paulita sin fecha de última actualización no es evidencia confiable.
+
+Un reporte del contador sin período de cobertura no es evidencia usable.
+
+Un WhatsApp sin timestamp no es evidencia trazable.
+
+---
+
+## 39. Investigación forense-operativa
+
+### Analogía
+
+La investigación operativa de una PyME es análoga a una investigación forense.
+
+```text
+Cada dato es una huella.
+Cada humano es un testigo parcial.
+Cada documento es una escena.
+Cada contradicción es una pista.
+```
+
+### Por qué esta analogía es útil
+
+Un investigador forense no acepta el primer relato como verdad.
+
+Busca huellas.
+
+Contrasta testimonios.
+
+Detecta contradicciones.
+
+Reconstruye la secuencia de eventos.
+
+SmartPyme hace lo mismo con la operación de la PyME:
+
+- no acepta el relato del dueño como verdad completa;
+- busca evidencia documental;
+- contrasta fuentes;
+- detecta contradicciones entre lo que el dueño dice y lo que los documentos muestran;
+- reconstruye el flujo operativo real.
+
+### Aplicación en Perales
+
+```text
+Huella 1: Excel de Paulita muestra precio de $5.500 para PJ-AZ-42.
+Huella 2: Mario dice que el precio es $6.000.
+Contradicción: ¿cuál es el precio real?
+Pista: el Excel no fue actualizado en 6 meses.
+Conclusión provisional: el precio real puede ser $6.000 pero el Excel está desactualizado.
+Tarea: confirmar precio actual con Mario y actualizar Excel.
+```
+
+```text
+Huella 1: Excel muestra 120 unidades de PJ-AZ-42.
+Huella 2: Mario dice que tiene "entre 15.000 y 20.000 pantalones en total".
+Contradicción: ¿el Excel tiene todo el stock o solo parte?
+Pista: el Excel tiene 87 filas pero Mario habla de 4 modelos × 5 talles = 20 combinaciones.
+Conclusión provisional: el Excel puede estar incompleto.
+Tarea: verificar si el Excel tiene todas las combinaciones de modelo/talle.
+```
+
+### Regla forense-operativa
+
+```text
+Toda contradicción entre fuentes es una pista, no un error.
+Toda brecha de evidencia es una escena sin investigar.
+Todo actor humano es un testigo parcial con su propia versión.
+```
+
+---
+
+## 40. Relación entre workflow roto y Núcleo Entrópico Principal
+
+### Principio
+
+El Núcleo Entrópico Principal suele estar en la unión entre herramienta, persona y flujo.
+
+No es solo una patología operativa.
+
+Es el punto donde el flujo de información se rompe, se pierde o se distorsiona.
+
+### Regla
+
+```text
+El núcleo entrópico suele estar en la unión entre herramienta, persona y flujo.
+```
+
+### Ejemplo: Perales
+
+El Núcleo Entrópico Principal de Perales no es solo `inventario_no_confiable`.
+
+Es la unión de:
+
+```text
+Mario (dueño) + WhatsApp + Paulita + Excel
+```
+
+Porque:
+
+- Mario no registra directamente;
+- usa WhatsApp como canal informal;
+- Paulita es el único punto de registro;
+- el Excel es la única fuente de verdad;
+- si Paulita no está o no actualiza, todo el sistema falla.
+
+Esta unión es el núcleo porque:
+
+- concentra el mayor riesgo operativo;
+- es el punto de mayor pérdida de información;
+- su resolución (formalizar el registro) desbloquea todas las demás patologías;
+- el costo de intervención es bajo (cambiar el proceso de registro).
+
+### Cómo se detecta
+
+```text
+1. Identificar el WorkflowStep con más puntos de pérdida.
+2. Identificar el HumanKnowledgeNode con más dependencias.
+3. Identificar el ToolNode con mayor riesgo de pérdida.
+4. Cruzar los tres: el nodo que aparece en los tres es el núcleo.
+```
+
+### Implicancia para el Roadmap
+
+Si el núcleo está en el workflow, la Fase 1 del Roadmap debe atacar el workflow, no solo la patología.
+
+Ejemplo:
+
+```text
+Fase 1 — Mes 1: Formalizar el registro de ventas
+  objetivo: reemplazar WhatsApp → Paulita → Excel por registro directo
+  acción: Mario registra la venta en el momento, no después
+  herramienta: formulario simple o app de registro
+  resultado esperado: stock actualizado en tiempo real
+```
+
+Esto es más efectivo que simplemente "ordenar el Excel".
+
+---
+
+## 41. Ejemplo Perales — Flujo completo con tiempo
+
+### Flujo de venta a revendedor (WorkflowTrace)
+
+```text
+WorkflowTrace:
+  process_name: "venta a revendedor"
+  workflow_health: BROKEN
+
+  Paso 1: Revendedor llega
+    actor: revendedor
+    herramienta: presencial
+    temporal_window: observed_at = momento de visita
+    evidencia_generada: ninguna
+    pérdida: si Mario no está, venta perdida
+
+  Paso 2: Mario manda WhatsApp a Paulita
+    actor: Mario
+    herramienta: WhatsApp
+    temporal_window: observed_at = momento del mensaje
+    evidencia_generada: mensaje no estructurado
+    pérdida: si Paulita no lee, venta no registrada
+
+  Paso 3: Paulita anota en Excel
+    actor: Paulita
+    herramienta: Excel
+    temporal_window: observed_at = momento de anotación (puede ser horas después)
+    evidencia_generada: fila en Excel
+    pérdida: si Paulita no está, stock desactualizado
+
+  Paso 4: Mario cobra en efectivo
+    actor: Mario
+    herramienta: caja negra
+    temporal_window: observed_at = momento del cobro
+    evidencia_generada: ninguna trazable
+    pérdida: cobro no llega al contador
+
+  friction_points: Paso 2 (Mario puede olvidar), Paso 3 (Paulita puede no estar)
+  loss_points: Paso 1 (venta perdida), Paso 4 (cobro no trazable)
+  evidence_generated: solo Paso 3 (Excel)
+  evidence_gaps: ventas no registradas, cobros no trazables
+```
+
+### Ciclo epistémico 1 (semana 1)
+
+```text
+EpistemicPrintCycle:
+  cycle_number: 1
+  cycle_date: 2026-05-03
+  contributor: Mario
+  new_variables:
+    - stock_aproximado (CERTEZA baja, observed_at: 2026-05-03)
+    - precio_desactualizado (CERTEZA, valid_from: 2025-11-01, valid_to: null)
+  resolved_gaps: ninguno
+  new_gaps:
+    - stock_exacto (DUDA, responsable: Paulita)
+    - costo_reposicion (DESCONOCIMIENTO)
+    - ventas_periodo (DUDA, responsable: Paulita)
+  epistemic_state_after: CERTEZA parcial, muchas DUDAS
+  next_cycle_tasks:
+    - pedir Excel a Paulita
+    - pedir lista de costos al proveedor
+```
+
+### Ciclo epistémico 2 (semana 2)
+
+```text
+EpistemicPrintCycle:
+  cycle_number: 2
+  cycle_date: 2026-05-10
+  contributor: Paulita
+  evidence_items: Excel stock_mayo_paulita.xlsx
+  new_variables:
+    - stock_por_modelo_talle (CERTEZA media, observed_at: 2026-05-10)
+    - precio_lista (CERTEZA media, valid_from: 2025-11-01)
+  resolved_gaps:
+    - stock_aproximado → stock_por_modelo_talle
+  new_gaps:
+    - costo_reposicion (no está en el Excel)
+  contradictions:
+    - precio en Excel ($5.500) difiere del precio que Mario recordaba ($6.000)
+  epistemic_state_after: stock conocido, precio contradictorio, costo desconocido
+  next_cycle_tasks:
+    - confirmar precio real con Mario
+    - pedir lista de costos al proveedor
+```
+
+---
+
+## 42. Objetos conceptuales completos (v3 — final)
+
+```text
+KnowledgeDomain
+KnowledgeToolCandidate
+FormulaCandidate
+RequiredVariable
+AvailableVariableMatch
+EvidenceGap
+InvestigationNode
+InvestigationEdge
+InvestigationGraph
+InvestigationRoute
+InvestigationPlan
+OperationalCaseCandidate
+PrincipalEntropicCore
+QuantumResolutionUnit
+PrioritizedSymptomTable
+InitialTransformationRoadmap
+HumanKnowledgeNode
+ToolNode
+WorkflowStepNode
+WorkflowTrace
+EpistemicPrintCycle
+```
+
+---
+
+## 43. Próximos pasos (v3)
+
+### Contratos ya implementados
+
+```text
+TS_020_001_CONTRATOS_ACTIVACION_INVESTIGATIVA
+app/contracts/investigation_contract.py
+```
+
+### Próximas tareas sugeridas
+
+```text
+TS_020_002_CONTRATOS_NUCLEO_ENTROPICO
+  app/contracts/entropic_core_contract.py
+  → PrincipalEntropicCore, QuantumResolutionUnit,
+    PrioritizedSymptomTable, InitialTransformationRoadmap
+
+TS_020_003_CONTRATOS_WORKFLOW
+  app/contracts/workflow_contract.py
+  → HumanKnowledgeNode, ToolNode, WorkflowStepNode,
+    WorkflowTrace, EpistemicPrintCycle
 ```
