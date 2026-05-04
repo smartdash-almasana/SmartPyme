@@ -494,7 +494,7 @@ class RawDocument(BaseModel):
     )
     evidence_item_id: Optional[str] = Field(
         default=None,
-        description="ID del EvidenceItem de Capa 1 que originó la solicitud de este documento.",
+        description="ID del EvidenceItem de Capa 01 que originó la solicitud de este documento.",
     )
     filename: str = Field(..., description="Nombre original del archivo.")
     file_type: FileType = Field(..., description="Tipo de archivo.")
@@ -711,5 +711,5 @@ class NormalizedEvidencePackage(BaseModel):
     )
     next_step: str = Field(
         ...,
-        description="Instrucción para Capa 2 o pregunta mayéutica para el dueño.",
+        description="Instrucción técnica para Capa 02 o para el sistema.",
     )

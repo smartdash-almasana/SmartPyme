@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -577,6 +577,23 @@ class OperationalCaseCandidate(BaseModel):
         ...,
         description="ID o nombre de la patología principal candidata.",
     )
+    hypothesis: str = Field(
+        ...,
+        description=(
+            "Hipótesis investigable formulada por Capa 02. "
+            "No afirma: investiga. "
+            "Ejemplo: 'Investigar si existe pérdida de margen por desalineación "
+            "entre costos reales y precios de venta durante el período mayo 2026.'"
+        ),
+    )
+
+    @field_validator("hypothesis")
+    @classmethod
+    def hypothesis_not_empty(cls, v: str) -> str:
+        """hypothesis no puede estar vacía."""
+        if not v or not v.strip():
+            raise ValueError("hypothesis no puede estar vacía.")
+        return v
     related_pathologies: list[str] = Field(
         default_factory=list,
         description="IDs o nombres de patologías relacionadas.",

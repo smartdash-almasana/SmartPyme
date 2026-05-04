@@ -328,6 +328,7 @@ def test_operational_case_candidate_required_fields():
         candidate_id="cand_001",
         cliente_id="cliente_perales",
         primary_pathology="inventario_no_confiable",
+        hypothesis="Investigar si existe diferencia entre stock declarado y stock real.",
         next_step="Confirmar stock físico con Paulita antes de calcular capital inmovilizado.",
         status="PARTIAL_EVIDENCE",
     )
@@ -344,11 +345,12 @@ def test_operational_case_candidate_is_not_operational_case():
         candidate_id="cand_002",
         cliente_id="cliente_x",
         primary_pathology="caja_fragmentada",
+        hypothesis="Investigar si existe sangría económica por caja fragmentada.",
         next_step="Pedir reporte del contador.",
         status="BLOCKED_MISSING_VARIABLES",
     )
 
-    assert not hasattr(candidate, "hypothesis")
+    assert not hasattr(candidate, "hypothesis_confirmed")
     assert not hasattr(candidate, "job_id")
     assert not hasattr(candidate, "diagnosis_status")
     assert not hasattr(candidate, "skill_id")
@@ -549,3 +551,72 @@ def test_temporal_variable_node_has_temporal_window_and_evidence_ref():
     assert len(evidence_nodes) == 1
     assert evidence_nodes[0].temporal_window_id is not None
     assert evidence_nodes[0].evidence_ref_id is not None
+
+
+# ---------------------------------------------------------------------------
+# Tests TS_020_002_PATCH_HYPOTHESIS_FIELD
+# ---------------------------------------------------------------------------
+
+
+def test_operational_case_candidate_requires_hypothesis():
+    """OperationalCaseCandidate válido debe incluir hypothesis no vacía."""
+    candidate = OperationalCaseCandidate(
+        candidate_id="cand_hyp_001",
+        cliente_id="cliente_perales",
+        primary_pathology="inventario_no_confiable",
+        hypothesis=(
+            "Investigar si existe diferencia entre stock declarado y stock real "
+            "para pantalones jean azul, comparando Excel_Paulita_2026_05 "
+            "contra conteo físico, período mayo 2026."
+        ),
+        next_step="Capa 03: evaluar si el candidato tiene suficiencia para abrir el caso.",
+        status="PARTIAL_EVIDENCE",
+    )
+
+    assert candidate.hypothesis != ""
+    assert "Investigar" in candidate.hypothesis
+    assert candidate.primary_pathology == "inventario_no_confiable"
+
+
+def test_operational_case_candidate_hypothesis_empty_fails():
+    """hypothesis vacía debe lanzar ValidationError."""
+    with pytest.raises(ValidationError, match="vacía"):
+        OperationalCaseCandidate(
+            candidate_id="cand_bad",
+            cliente_id="cliente_x",
+            primary_pathology="inventario_no_confiable",
+            hypothesis="",
+            next_step="Siguiente paso.",
+            status="PARTIAL_EVIDENCE",
+        )
+
+
+def test_operational_case_candidate_hypothesis_whitespace_fails():
+    """hypothesis con solo espacios debe lanzar ValidationError."""
+    with pytest.raises(ValidationError, match="vacía"):
+        OperationalCaseCandidate(
+            candidate_id="cand_bad",
+            cliente_id="cliente_x",
+            primary_pathology="inventario_no_confiable",
+            hypothesis="   ",
+            next_step="Siguiente paso.",
+            status="PARTIAL_EVIDENCE",
+        )
+
+
+def test_operational_case_candidate_existing_test_still_passes():
+    """Regresión: el test original de OperationalCaseCandidate sigue pasando con hypothesis."""
+    candidate = OperationalCaseCandidate(
+        candidate_id="cand_001",
+        cliente_id="cliente_perales",
+        primary_pathology="inventario_no_confiable",
+        hypothesis="Investigar si existe diferencia entre stock declarado y stock real.",
+        next_step="Confirmar stock físico con Paulita antes de calcular capital inmovilizado.",
+        status="PARTIAL_EVIDENCE",
+    )
+
+    assert candidate.candidate_id == "cand_001"
+    assert candidate.cliente_id == "cliente_perales"
+    assert candidate.primary_pathology == "inventario_no_confiable"
+    assert candidate.next_step != ""
+    assert candidate.hypothesis != ""
