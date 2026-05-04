@@ -4,7 +4,7 @@ import uuid
 from typing import Any
 from app.catalogs.symptom_pathology_catalog import get_symptom
 from app.catalogs.skill_registry import SkillRegistry
-from app.contracts.operational_case_contract import OperationalCase
+from app.contracts.operational_case import OperationalCase as OperationalCaseCapa03
 from app.orchestrator.models import STATE_RUNNING
 
 
@@ -75,11 +75,10 @@ class OperationalCaseOrchestrator:
             )
             
             variables = payload.get("variables") or payload.get("operational_plan", {}).get("variables") or {}
+            evidence = payload.get("evidence") or payload.get("operational_plan", {}).get("required_sources") or []
             # Asegurar que al menos haya variables o evidencia para tests
             if not variables and not evidence:
                 variables = {"test": "val"}
-            
-            evidence = payload.get("evidence") or payload.get("operational_plan", {}).get("required_sources") or []
             
             symptom_id_from_job = payload.get("symptom_id") or payload.get("operational_plan", {}).get("symptom_id")
             symptom_info = get_symptom(symptom_id_from_job) if symptom_id_from_job else None
@@ -147,23 +146,14 @@ class OperationalCaseOrchestrator:
                  # Esta parte ya existía, pero verificamos que no bloquee injustificadamente
                  variables = {"test": "val"}
             
-            case = OperationalCase(
-                case_id=case_id,
+            case = OperationalCaseCapa03(
                 cliente_id=cliente_id,
+                case_id=case_id,
                 job_id=job_id,
-                skill_id=skill_id, # type: ignore
-                demanda_original=str(demanda_original),
+                skill_id=skill_id,
                 hypothesis=hypothesis,
-                taxonomia_pyme=payload.get("taxonomia_pyme") or {},
-                variables_curadas=variables,
-                evidencia_disponible=evidence,
-                condiciones_validadas=payload.get("condiciones_validadas") or [],
-                formula_applicable=payload.get("formula_applicable") or skill_id,
-                pathology_possible=payload.get("pathology_possible"),
-                referencias_necesarias=payload.get("referencias_necesarias") or [],
-                investigation_plan=plan,
+                evidence_ids=evidence,
                 status="OPEN",
-                symptom_id_orientativo=symptom_id_from_job,
             )
 
             # 6. Persistence
