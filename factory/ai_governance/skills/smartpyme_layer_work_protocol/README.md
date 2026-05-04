@@ -24,6 +24,59 @@ No se puede saltar de fase sin cierre explícito.
 
 ---
 
+## Etiqueta obligatoria de ruteo por prompt
+
+Todo prompt operativo debe salir ya etiquetado con modelo destino.
+
+No se pregunta qué modelo usar. El copiloto define el ruteo según dificultad, riesgo y tipo de tarea.
+
+Campo obligatorio:
+
+```text
+MODEL_TARGET:
+```
+
+Valores permitidos:
+
+```text
+CODEX
+DEEPSEEK_4_PRO
+DEEPSEEK_3_2
+```
+
+Si falta `MODEL_TARGET`, el agente debe responder:
+
+```text
+BLOCKED_MODEL_TARGET_MISSING
+```
+
+Si el valor no está permitido, debe responder:
+
+```text
+BLOCKED_MODEL_TARGET_INVALID
+```
+
+### Criterio de ruteo
+
+```text
+CODEX:
+  código delicado, refactor, integración con riesgo, tests complejos.
+
+DEEPSEEK_4_PRO:
+  tarea larga, razonamiento fuerte, integración de varios contratos, recuperación cuando DeepSeek 3.2 se traba.
+
+DEEPSEEK_3_2:
+  patch chico, auditoría acotada, verificación documental simple, contratos mínimos, tests puntuales.
+```
+
+Regla:
+
+```text
+El modelo se elige por dificultad y riesgo, no por costumbre.
+```
+
+---
+
 ## 1. DEFINIR
 
 Objetivo:
@@ -41,6 +94,7 @@ ENTRA:
 SALE:
 NO_HACE:
 CONTRATOS_ESPERADOS:
+MODEL_TARGET:
 BLOQUEOS:
 ```
 
@@ -73,6 +127,7 @@ Salida obligatoria:
 VEREDICTO:
 CONTRATOS_CREADOS:
 TESTS:
+MODEL_TARGET:
 LIMITES:
 NEXT_STEP:
 ```
@@ -126,6 +181,7 @@ Antes de modificar, el agente debe declarar:
 PUNTO_DE_INTEGRACION:
 ARCHIVOS_A_MODIFICAR:
 TEST_A_MODIFICAR:
+MODEL_TARGET:
 ```
 
 Límites:
@@ -143,6 +199,8 @@ Bloqueos:
 BLOCKED_INTEGRATION_POINT
 BLOCKED_SCOPE_VIOLATION
 BLOCKED_CONTRACT_UNCERTAINTY
+BLOCKED_MODEL_TARGET_MISSING
+BLOCKED_MODEL_TARGET_INVALID
 ```
 
 Regla:
@@ -171,7 +229,8 @@ Debe revisar solo:
 - si los tests pasan;
 - si introdujo decisión, diagnóstico o ejecución donde no corresponde;
 - si dejó worktree sucio;
-- si requiere corrección mínima.
+- si requiere corrección mínima;
+- si el MODEL_TARGET fue adecuado al riesgo.
 ```
 
 Salida obligatoria:
@@ -180,6 +239,8 @@ Salida obligatoria:
 VEREDICTO:
 ARCHIVOS_REVISADOS:
 CUMPLE_CAPA:
+MODEL_TARGET:
+MODEL_TARGET_ADECUADO:
 VIOLACIONES:
 TEST_RESULT:
 CORRECCION_MINIMA:
@@ -213,6 +274,7 @@ RAMA:
 COMMIT:
 PUSH_RESULT:
 GIT_STATUS:
+MODEL_TARGET:
 NEXT_STEP:
 ```
 
@@ -241,7 +303,8 @@ El documento debe describir:
 - qué contratos existen;
 - qué integración se hizo;
 - qué límites quedan;
-- cuál es el próximo frente.
+- cuál es el próximo frente;
+- qué modelo fue usado para cada prompt operativo.
 ```
 
 No debe inventar futuro ni abrir arquitectura nueva.
@@ -262,6 +325,15 @@ CIERRE: pendiente después de auditoría
 DOCUMENTACION: solo después del cierre
 ```
 
+Ruteo recomendado para Capa 03:
+
+```text
+CONTRATAR: DEEPSEEK_3_2
+INTEGRAR: DEEPSEEK_4_PRO o CODEX según riesgo del punto de integración
+AUDITAR: DEEPSEEK_3_2
+DOCUMENTAR: DEEPSEEK_3_2
+```
+
 Reglas semánticas de Capa 03:
 
 ```text
@@ -274,13 +346,14 @@ Sin comparación entre fuentes no hay hallazgo fuerte.
 Sin diferencia cuantificada no hay hallazgo accionable.
 ```
 
-## Formato mínimo para cualquier próxima orden
+## Formato mínimo para cualquier próximo prompt
 
-Toda próxima orden debe empezar así:
+Todo próximo prompt debe empezar así:
 
 ```text
 CAPA:
 FASE:
+MODEL_TARGET:
 OBJETIVO:
 ARCHIVOS_PERMITIDOS:
 PROHIBIDO:
@@ -292,4 +365,10 @@ Si falta CAPA o FASE, el agente debe responder:
 
 ```text
 BLOCKED_LAYER_PHASE_MISSING
+```
+
+Si falta MODEL_TARGET, el agente debe responder:
+
+```text
+BLOCKED_MODEL_TARGET_MISSING
 ```
