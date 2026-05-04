@@ -1,19 +1,27 @@
 """
-Contratos Pydantic — Capa 1: Admisión Epistemológica
+Contratos Pydantic — Capa 01: Admisión e Interpretación de Intención
 TS_ADM_001_CONTRATOS_ADMISION
+TS_ADM_003_OWNER_DEMAND_CANDIDATE
 
-Modelos de datos mínimos para representar InitialCaseAdmission y sus objetos
-componentes. Sin lógica de servicio, sin diagnóstico, sin OperationalCase.
+Modelos de datos mínimos para representar InitialCaseAdmission,
+OwnerDemandCandidate y sus objetos componentes.
+Sin lógica de servicio, sin diagnóstico, sin OperationalCase.
+
+Nota de evolución:
+  ClinicalPhase como Literal se mantiene por compatibilidad con V1.
+  En evolución futura debe migrar a catálogo externo.
+  Los campos *_hint son candidatos conversacionales, no hechos confirmados.
 
 Documento rector: docs/product/SMARTPYME_CAPA_01_ADMISION_EPISTEMOLOGICA.md
 """
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +74,23 @@ Area = Literal[
 ]
 """
 Área operativa principal de la demanda del dueño.
+"""
+
+IntentType = Literal[
+    "QUIERE_ENTENDER",
+    "QUIERE_ACTUAR",
+    "QUIERE_SUBIR_EVIDENCIA",
+    "QUIERE_AUTORIZAR",
+    "QUIERE_CONSULTAR_ESTADO",
+]
+"""
+Tipo de intención del dueño detectado en Capa 01.
+
+QUIERE_ENTENDER         → expresa dolor o confusión, quiere entender qué pasa.
+QUIERE_ACTUAR           → quiere hacer algo concreto.
+QUIERE_SUBIR_EVIDENCIA  → envía un archivo, imagen, audio o documento.
+QUIERE_AUTORIZAR        → responde a una propuesta o solicitud del sistema.
+QUIERE_CONSULTAR_ESTADO → pregunta por el estado de algo.
 """
 
 
@@ -236,6 +261,92 @@ class PathologyCandidate(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# OwnerDemandCandidate — nuevo en TS_ADM_003
+# ---------------------------------------------------------------------------
+
+
+class OwnerDemandCandidate(BaseModel):
+    """
+    Demanda del dueño como candidato interpretado por Capa 01.
+
+    Representa la intención detectada, el objetivo explícito y los candidatos
+    conversacionales de área y urgencia.
+
+    NO es un diagnóstico.
+    NO confirma patologías ni fases clínicas.
+    Los campos *_hint son candidatos conversacionales, no hechos.
+    """
+
+    demand_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="UUID único de la demanda. Se autogenera si no se pasa.",
+    )
+    case_id: str = Field(
+        ..., description="ID del InitialCaseAdmission al que pertenece esta demanda."
+    )
+    raw_text: str = Field(
+        ..., description="Texto original del dueño, sin modificar."
+    )
+    explicit_objective: Optional[str] = Field(
+        default=None, description="Objetivo explícito extraído del planteo."
+    )
+    inferred_objectives: list[str] = Field(
+        default_factory=list,
+        description="Objetivos inferidos. No habilitan acción sin validación del dueño.",
+    )
+    intent_type: IntentType = Field(
+        ..., description="Tipo de intención detectado."
+    )
+    area_hint: Optional[str] = Field(
+        default=None,
+        description="Área operativa candidata: caja, stock, ventas, admin, produccion, mixto.",
+    )
+    urgency: Optional[int] = Field(
+        default=None,
+        description="Urgencia percibida de la demanda. Rango [1, 5] si se informa.",
+    )
+    clarification_needed: bool = Field(
+        default=False,
+        description="Si se necesita aclaración antes de avanzar.",
+    )
+    clarification_question: Optional[str] = Field(
+        default=None,
+        description="Pregunta mayéutica si clarification_needed=True.",
+    )
+
+    @model_validator(mode="after")
+    def validate_demand_candidate(self) -> "OwnerDemandCandidate":
+        """
+        Valida:
+        - raw_text no puede estar vacío.
+        - Si clarification_needed=True, clarification_question debe existir.
+        - Si urgency existe, debe estar entre 1 y 5.
+        - demand_id debe ser UUID válido.
+        """
+        if not self.raw_text or not self.raw_text.strip():
+            raise ValueError("raw_text no puede estar vacío.")
+
+        if self.clarification_needed and not self.clarification_question:
+            raise ValueError(
+                "clarification_question es obligatorio cuando clarification_needed=True."
+            )
+
+        if self.urgency is not None and not (1 <= self.urgency <= 5):
+            raise ValueError(
+                f"urgency debe estar entre 1 y 5. Recibido: {self.urgency}"
+            )
+
+        try:
+            uuid.UUID(self.demand_id)
+        except ValueError as exc:
+            raise ValueError(
+                f"demand_id debe ser un UUID válido. Recibido: {self.demand_id}"
+            ) from exc
+
+        return self
+
+
+# ---------------------------------------------------------------------------
 # Objeto de salida de la Capa 1
 # ---------------------------------------------------------------------------
 
@@ -285,4 +396,33 @@ class InitialCaseAdmission(BaseModel):
     next_step: str = Field(
         ...,
         description="Próximo paso sugerido para el dueño o el sistema.",
+    )
+    # -----------------------------------------------------------------------
+    # Campos nuevos v2 — candidatos conversacionales (no hechos confirmados)
+    # -----------------------------------------------------------------------
+    clinical_phase_hint: Optional[str] = Field(
+        default=None,
+        description=(
+            "Candidato conversacional de fase clínica. "
+            "No es hecho confirmado. Vive en catálogos/Domain Packs. "
+            "Capa 02 lo valida contra el Knowledge Tank activo."
+        ),
+    )
+    symptoms_hint: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Síntomas candidatos conversacionales. "
+            "No son síntomas confirmados. Orientativos para Capa 1.5 y Capa 02."
+        ),
+    )
+    pathologies_hint: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Patologías candidatas conversacionales. "
+            "No son patologías confirmadas. Orientativas para Capa 02."
+        ),
+    )
+    owner_demand_candidate: Optional["OwnerDemandCandidate"] = Field(
+        default=None,
+        description="Candidato de demanda interpretado por Capa 01.",
     )
