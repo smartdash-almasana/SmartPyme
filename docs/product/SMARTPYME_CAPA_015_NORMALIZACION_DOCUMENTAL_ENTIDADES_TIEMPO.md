@@ -4,21 +4,22 @@
 
 DOCUMENTO RECTOR — CANÓNICO
 
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Fecha:** Mayo 2026  
-**Origen:** Derivado y expandido desde `SMARTPYME_CAPA_015_CONCEPTO_CLAVE_NORMALIZACION_ENTIDADES_TIEMPO.md`  
-**Uso:** Interno — Equipo de Producto SmartPyme
+**Cambios v1.1:** Actualización de frontera con Capa 00/01/02/03 reescritas. Aclaración de entradas, candidatos conversacionales y comportamiento de BLOCKED.
 
 ---
 
 ## Posición en la arquitectura
 
 ```text
-Capa 1   → Admisión Epistemológica       → produce InitialCaseAdmission
+Capa 00  → Canal y Entrada Cruda         → produce RawInboundEvent
+Capa 01  → Admisión e Interpretación     → produce InitialCaseAdmission
+                                            + OwnerDemandCandidate
 Capa 1.5 → Normalización Documental,
            Entidades y Tiempo            → produce NormalizedEvidencePackage
-Capa 2   → Activación de Conocimiento
-           e Investigación               → consume variables limpias
+Capa 02  → Activación de Conocimiento   → produce OperationalCaseCandidate
+Capa 03  → Apertura del Caso Operativo  → produce OperationalCase
 ```
 
 La Capa 1.5 es la frontera entre el mundo humano y el mundo investigable.
@@ -35,18 +36,17 @@ Sin entidad canónica no hay comparación confiable.
 Sin fuente trazable no hay hallazgo.
 La evidencia cruda no se investiga directamente.
 Capa 1.5 no diagnostica: prepara evidencia.
-Capa 2 no debe operar sobre documentos crudos.
+Capa 02 no debe operar sobre documentos crudos.
 ```
 
 ---
 
 ## 1. Problema que resuelve
 
-Después de la admisión, SmartPyme ya sabe:
+Después de Capa 01, SmartPyme ya sabe:
 
 - qué dijo el dueño;
-- qué duele;
-- qué fase clínica corresponde;
+- qué tipo de intención tiene (QUIERE_ENTENDER, QUIERE_ACTUAR, QUIERE_SUBIR_EVIDENCIA, etc.);
 - qué evidencia existe, falta o está en duda;
 - quién podría tener esa evidencia;
 - qué tareas hay que generar.
@@ -75,22 +75,55 @@ La Capa 1.5 resuelve ese problema antes de que llegue a la investigación.
 
 ---
 
-## 2. Qué entra desde Capa 1
+## 2. Qué entra a Capa 1.5
 
-La Capa 1 produce un `InitialCaseAdmission` que contiene:
+Capa 1.5 puede recibir entradas desde dos vías:
 
-- demanda ordenada del dueño;
-- personas detectadas como nodos de acceso;
-- fuentes probables identificadas;
-- evidencias clasificadas como CERTEZA, DUDA o DESCONOCIMIENTO;
-- tareas de evidencia pendientes;
-- fase clínica detectada;
-- síntomas candidatos;
-- patologías candidatas.
+### Vía A — Evidencia cruda derivada por Capa 01
 
-Cuando las tareas de evidencia se ejecutan y los documentos empiezan a llegar, la Capa 1.5 los recibe.
+Cuando el dueño sube un archivo, imagen o audio, Capa 01 lo registra como evidencia pendiente y lo deriva a Capa 1.5 como `RawInboundEvent` con `raw_content_type = file | image | audio`.
 
-El `InitialCaseAdmission` actúa como contexto de referencia: dice qué se esperaba, de quién y para qué hipótesis.
+Capa 1.5 lo convierte en `RawDocument` y lo procesa.
+
+### Vía B — Contexto de demanda de Capa 01
+
+Capa 01 produce `InitialCaseAdmission` y `OwnerDemandCandidate` que actúan como contexto de referencia para Capa 1.5.
+
+Estos objetos dicen qué se esperaba, de quién y para qué hipótesis candidata.
+
+**Importante:** Los campos `clinical_phase_hint`, `symptoms_hint` y `pathologies_hint` que vienen de Capa 01 son **candidatos conversacionales**, no hechos detectados.
+
+```text
+clinical_phase_hint   → candidato conversacional, no fase clínica confirmada
+symptoms_hint         → candidatos conversacionales, no síntomas confirmados
+pathologies_hint      → candidatos conversacionales, no patologías confirmadas
+```
+
+Capa 1.5 no confirma ni descarta estos candidatos.  
+Los usa como orientación para priorizar qué evidencia normalizar primero.  
+La confirmación de síntomas y patologías pertenece a Capa 02.
+
+### Frontera EvidenceItem / EvidenceTask
+
+```text
+Capa 01 identifica y registra:
+  EvidenceItem  → evidencia esperada o mencionada por el dueño
+  EvidenceTask  → tarea para obtener esa evidencia
+
+Capa 1.5 transforma:
+  evidencia recibida → variables normalizadas con entidad y tiempo
+
+Capa 1.5 puede declarar:
+  evidencia faltante → NormalizationAlert con tipo MISSING_EVIDENCE
+  evidencia ambigua  → NormalizationAlert con tipo COLUMN_AMBIGUOUS o ENTITY_UNRESOLVED
+
+Capa 1.5 NO formula:
+  la pregunta mayéutica de negocio al dueño
+  (eso lo hace Capa 01 o Capa 02 según corresponda)
+```
+
+Cuando Capa 1.5 detecta una brecha o ambigüedad, produce una `NormalizationAlert` con `next_step` técnico.  
+La pregunta al dueño en lenguaje de negocio la formula Capa 01 o Capa 02.
 
 ---
 
@@ -551,7 +584,7 @@ NormalizedEvidencePackage:
   ambiguity_alerts      lista de alertas de ambigüedad pendientes
   package_status        READY / PARTIAL / BLOCKED
   blocking_reasons      lista de razones de bloqueo si aplica
-  next_step             instrucción para Capa 2 o para el dueño
+  next_step             instrucción técnica para Capa 02 o para el sistema
 ```
 
 ---
@@ -566,38 +599,54 @@ Este paquete puede tener tres estados:
 
 Todos los documentos fueron procesados, las entidades resueltas, las columnas mapeadas y las variables tienen ventana temporal.
 
-Capa 2 puede operar.
+Capa 02 puede operar.
 
 ### PARTIAL
 
 Algunos documentos fueron procesados pero quedan ambigüedades o variables sin tiempo.
 
-Capa 2 puede operar sobre las variables limpias disponibles, con alcance limitado.
+Capa 02 puede operar sobre las variables limpias disponibles, con alcance limitado.
 
-Las ambigüedades se registran como alertas y se devuelven al dueño para confirmación.
+Las ambigüedades se registran como `NormalizationAlert` y se incluyen en el paquete.
 
 ### BLOCKED
 
-No hay suficiente evidencia normalizada para investigar.
+No hay suficiente evidencia normalizada para que Capa 02 pueda operar.
 
-El sistema devuelve al dueño con una pregunta mayéutica concreta sobre qué falta.
+Capa 1.5 produce `BLOCKED` con:
+
+```text
+blocking_reasons  lista de razones técnicas del bloqueo
+next_step         instrucción técnica: qué evidencia falta o qué ambigüedad bloquea
+```
+
+**Importante:** El `next_step` de Capa 1.5 es una instrucción técnica, no una pregunta al dueño.
+
+La pregunta al dueño en lenguaje de negocio la formula:
+
+```text
+Capa 01  → si la brecha es de intención o contexto inicial
+Capa 02  → si la brecha es de evidencia para verificar una hipótesis
+```
+
+Capa 1.5 no habla directamente con el dueño.
 
 ---
 
-## 9. Relación con Capa 2
+## 9. Relación con Capa 02
 
-La Capa 2 — Activación de Conocimiento e Investigación — necesita variables limpias para:
+La Capa 02 — Activación de Conocimiento e Hipótesis Candidata — necesita variables limpias para:
 
 - activar fórmulas del Knowledge Tank;
-- comparar valores contra referencias o benchmarks;
-- detectar diferencias cuantificadas;
-- producir hallazgos trazables.
+- formular hipótesis investigables;
+- identificar variables requeridas vs disponibles;
+- detectar brechas de evidencia.
 
-La Capa 2 no debe recibir documentos crudos.
+La Capa 02 no debe recibir documentos crudos.
 
-La Capa 2 no debe resolver entidades ni columnas.
+La Capa 02 no debe resolver entidades ni columnas.
 
-La Capa 2 no debe inferir períodos.
+La Capa 02 no debe inferir períodos.
 
 Todo eso es responsabilidad de la Capa 1.5.
 
@@ -605,7 +654,7 @@ La interfaz entre capas es el `NormalizedEvidencePackage`.
 
 ```text
 Capa 1.5 produce:  NormalizedEvidencePackage
-Capa 2 consume:    NormalizedEvidencePackage.clean_variables
+Capa 02 consume:   NormalizedEvidencePackage.clean_variables
                    NormalizedEvidencePackage.canonical_entities
                    NormalizedEvidencePackage.temporal_windows
 ```
@@ -616,7 +665,7 @@ Capa 2 consume:    NormalizedEvidencePackage.clean_variables
 
 ### Contexto
 
-Capa 1 detectó:
+Capa 01 detectó:
 
 ```text
 EvidenceItem:
@@ -625,7 +674,7 @@ EvidenceItem:
   responsible_person_id: person_paulita
 ```
 
-El dueño envió el archivo. Llega a Capa 1.5.
+El dueño envió el archivo. Capa 01 lo derivó a Capa 1.5 como `RawInboundEvent` con `raw_content_type = file`.
 
 ---
 
@@ -786,11 +835,13 @@ NormalizedEvidencePackage:
 8. Sin entidad canónica no hay comparación confiable.
 9. Sin tiempo no hay variable investigable.
 10. Sin fuente trazable no hay hallazgo.
-11. La ambigüedad no se oculta: se registra como alerta y se devuelve al dueño.
+11. La ambigüedad no se oculta: se registra como `NormalizationAlert` en el paquete.
 12. Capa 1.5 no diagnostica: prepara evidencia.
-13. Capa 2 no debe operar sobre documentos crudos.
+13. Capa 02 no debe operar sobre documentos crudos.
 14. Un `NormalizedEvidencePackage` en estado `BLOCKED` no habilita investigación.
 15. La confirmación manual de entidades y columnas es válida y trazable.
+16. Capa 1.5 no formula preguntas mayéuticas al dueño: produce `next_step` técnico.
+17. Los candidatos `clinical_phase_hint`, `symptoms_hint` y `pathologies_hint` de Capa 01 son orientativos, no hechos confirmados.
 
 ---
 
@@ -834,7 +885,7 @@ Variables investigables
 
 ```text
 NormalizedEvidencePackage (READY o PARTIAL)
-→ habilita Capa 2
+→ habilita Capa 02
 ```
 
 ---
