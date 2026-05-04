@@ -1,165 +1,182 @@
 # HERMES + CODEX + GEMINI GOVERNANCE — SmartPyme Factory
 
 ## Estado
-CANONICO v1
+CANONICO v2
+
+**Actualizado:** 2026-05-04 — refleja runtime real con DeepSeek v4 Pro como agente operativo primario.
 
 ## Objetivo
-Definir la gobernanza multiagente de SmartPyme Factory con Hermes como orquestador, Codex como Builder de codigo y Gemini como Architect/Auditor semantico-documental.
+
+Definir la gobernanza multiagente de SmartPyme Factory con **DeepSeek v4 Pro** como agente operativo primario (orquestación, lectura, construcción, auditoría), **Gemini 2.5 Pro** como fallback automático, y **Codex** como builder externo bajo demanda explícita.
+
+**Nota:** Este documento define la gobernanza conceptual de roles. El runtime real de modelos está en `AI_PROVIDER_ROUTING_CONTRACT.md` (CANONICO v2).
 
 ---
 
 ## 1. Principio rector
 
-Hermes orquesta. Codex construye. Gemini razona, audita y estructura.
+**DeepSeek v4 Pro** es el agente operativo primario. **Gemini 2.5 Pro** es fallback automático. **Codex** es builder externo bajo demanda.
 
-Ningun agente decide solo el cierre de un ciclo.
+Ningún agente decide solo el cierre de un ciclo.
 
 ---
 
 ## 2. Roles
 
-### Hermes — Orquestador
+### DeepSeek v4 Pro — Agente operativo primario (vía Hermes)
 Responsabilidades:
-- leer tasks, hallazgos pending, roadmap y TECH_SPEC_QUEUE
-- elegir una unidad pequena por ciclo
-- asignar rol a Codex o Gemini
+- lectura, auditoría, construcción y orquestación de tareas
+- elegir una unidad pequeña por ciclo
 - exigir evidencia
-- bloquear si falta validacion
+- bloquear si falta validación
 - consolidar resultado final
 
+Uso preferente:
+- ciclo normal Hermes (default)
+- lectura corta y larga
+- auditoría documental
+- construcción de código y tests
+- resumen de salida operativa
+
 No debe:
-- escribir logica core directamente
-- declarar exito sin evidencia
+- declarar éxito sin evidencia
 - depender de memoria conversacional
+- decidir cierre de ciclo sin evidencia trazable
 
 ---
 
-### Codex — Builder tecnico
+### Gemini 2.5 Pro — Fallback automático / Architect
 Responsabilidades:
-- modificar codigo
-- crear tests
-- ejecutar validaciones locales
-- producir diff verificable
-- generar evidencia tecnica
-
-Uso preferente:
-- Python
-- scripts
-- tests
-- schemas
-- validadores
-- runners
-
-No debe:
-- inventar arquitectura de negocio
-- cambiar contratos canonicos sin task explicita
-- cerrar ciclos sin tests cuando toca codigo
-
----
-
-### Gemini — Architect / Auditor semantico
-Responsabilidades:
-- analizar coherencia arquitectonica
-- revisar specs
-- convertir ideas en documentos tecnicos
-- auditar que outputs respeten SmartPyme Core
+- tomar el control si DeepSeek falla (rate limit, timeout, error 529/503)
+- analizar coherencia arquitectónica
+- revisar specs y contratos
 - detectar deriva conceptual
-- proponer priorizacion
+- proponer priorización
 
-Uso preferente:
-- documentacion tecnica
-- QA semantico
-- revision de contratos
-- priorizacion de backlog
-- analisis de riesgos
+**Objetivo profesional:** migrar el fallback de Gemini vía OpenRouter a Gemini directo para eliminar el punto único de falla en OpenRouter.
+
+- **Camino preferido:** Gemini vía **Vertex AI** con ADC (`gcloud auth application-default print-access-token`).
+- **Camino alternativo:** Gemini vía **Google AI Studio / Gemini API** (`GEMINI_API_KEY` o `GOOGLE_API_KEY`).
+- **Estado actual:** ninguno de los dos caminos está activo como provider Hermes. Son el objetivo profesional.
 
 No debe:
-- tocar codigo core sin builder
+- tocar código core sin builder
 - validar su propia propuesta sin evidencia externa
 - reemplazar tests deterministas
 
 ---
 
-## 3. Flujo canonico por ciclo
+### Codex — Builder externo (bajo demanda)
+Responsabilidades:
+- modificar código en refactors delicados
+- crear tests con suite automatizada
+- producir diff verificable
+- generar evidencia técnica
+
+Uso:
+- solo bajo demanda explícita del Owner
+- no es provider activo de Hermes
+- se invoca desde fuera del runtime Hermes
+
+No debe:
+- inventar arquitectura de negocio
+- cambiar contratos canónicos sin task explícita
+- cerrar ciclos sin tests cuando toca código
+
+---
+
+### Hermes Gateway — Runtime / Plataforma
+Responsabilidades:
+- ejecutar el modelo configurado (DeepSeek v4 Pro o fallback)
+- leer tasks, hallazgos pending, roadmap y TECH_SPEC_QUEUE
+- exigir evidencia
+- consolidar resultado final
+
+Hermes es la **plataforma**, no el modelo. El modelo activo es DeepSeek v4 Pro.
+
+---
+
+## 3. Flujo canónico por ciclo
 
 ```text
 TECH_SPEC_QUEUE / TASK / HALLAZGO
         ↓
-Hermes selecciona unidad
+DeepSeek v4 Pro selecciona unidad (vía Hermes)
         ↓
-Gemini estructura o audita si hay ambiguedad
+DeepSeek v4 Pro ejecuta (lectura / auditoría / construcción)
         ↓
-Codex implementa si hay cambio tecnico
+        └── (si falla) → Gemini 2.5 Pro (fallback automático)
         ↓
 Tests + evidencia
         ↓
-Gemini puede auditar coherencia final
-        ↓
-Hermes consolida decision
+Hermes Gateway consolida decisión
         ↓
 Commit / push si corresponde
 ```
 
 ---
 
-## 4. Matriz de decision
+## 4. Matriz de decisión
 
 | Tipo de trabajo | Agente primario | Agente secundario |
 |---|---|---|
-| Codigo Python | Codex | Gemini audita contrato |
-| Tests | Codex | Hermes verifica evidencia |
-| Specs tecnicas | Gemini | Codex materializa archivo |
-| Priorizacion | Gemini | Hermes aplica |
-| Refactor | Gemini disena | Codex ejecuta |
-| Hallazgos de negocio | Gemini audita semantica | Codex valida schema |
-| Runners / systemd / scripts | Codex | Hermes valida ejecucion |
+| Ciclo normal Hermes | DeepSeek v4 Pro | Gemini 2.5 Pro (fallback) |
+| Código Python | DeepSeek v4 Pro | Codex (bajo demanda) |
+| Tests | DeepSeek v4 Pro | — |
+| Specs técnicas | DeepSeek v4 Pro | Gemini 2.5 Pro (revisión) |
+| Refactor delicado | Codex (externo) | DeepSeek v4 Pro (supervisión) |
+| Auditoría documental | DeepSeek v4 Pro | — |
+| Priorización / Backlog | DeepSeek v4 Pro | Gemini 2.5 Pro |
+| Runners / Scripts | DeepSeek v4 Pro | — |
 
 ---
 
 ## 5. Regla de no deriva
 
-Codex no define negocio.
-Gemini no ejecuta codigo critico sin verificacion.
-Hermes no inventa estado.
+DeepSeek no inventa estado.
+Codex no define negocio (solo bajo demanda externa).
+Gemini no ejecuta código crítico sin verificación.
 
 Todo cambio debe terminar en:
 - evidencia
 - diff
 - tests o criterio equivalente
-- decision: CORRECTO / BLOCKED / NO_VALIDADO
+- decisión: CORRECTO / BLOCKED / NO_VALIDADO
 
 ---
 
-## 6. Integracion con TECH_SPEC_QUEUE
+## 6. Integración con TECH_SPEC_QUEUE
 
-Hermes debe leer `docs/factory/TECH_SPEC_QUEUE.md` en cada ciclo.
-Gemini debe convertir ideas nuevas en specs o tasks.
-Codex solo implementa tasks ya delimitadas.
+DeepSeek v4 Pro debe leer `docs/factory/TECH_SPEC_QUEUE.md` en cada ciclo.
+Gemini 2.5 Pro debe convertir ideas nuevas en specs o tasks.
+Codex solo implementa tasks ya delimitadas (bajo demanda externa).
 
 ---
 
-## 7. Integracion con hallazgos
+## 7. Integración con hallazgos
 
 Todo output de negocio debe respetar:
 
 - `docs/specs/CORE_DATA_CONTRACT_AND_HALLAZGOS.md`
 - entidad
 - diferencia cuantificada
-- comparacion de fuentes
+- comparación de fuentes
 - trazabilidad
 
 ---
 
-## 8. Criterios de aceptacion de la gobernanza
+## 8. Criterios de aceptación de la gobernanza
 
-- Hermes reconoce Codex y Gemini como agentes distintos.
+- DeepSeek v4 Pro es el agente operativo primario para todas las tareas.
+- Gemini 2.5 Pro es fallback automático vía OpenRouter.
+- Codex es builder externo bajo demanda explícita.
 - Existe ruta documental para specs emergentes.
-- Existe task ejecutable para implementacion.
-- Existe auditoria semantica separada de la escritura de codigo.
-- Ningun ciclo se declara correcto sin evidencia.
+- Existe task ejecutable para implementación.
+- Existe separación entre ejecución operativa y auditoría externa.
+- Ningún ciclo se declara correcto sin evidencia.
 
 ---
 
-## 9. Proxima task sugerida
+## 9. Próxima task sugerida
 
-Crear `factory/ai_governance/tasks/hermes_codex_gemini_loop_v1.yaml` para que la factoría implemente lectura de TECH_SPEC_QUEUE y enrutamiento Codex/Gemini por tipo de trabajo.
+Migrar el fallback de Gemini de OpenRouter a Gemini directo para eliminar el punto único de falla. Camino preferido: Vertex AI con ADC. Camino alternativo: Google AI Studio / Gemini API. Crear `factory/ai_governance/tasks/gemini_direct_fallback_migration.yaml`.

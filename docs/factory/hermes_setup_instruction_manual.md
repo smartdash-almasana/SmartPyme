@@ -218,6 +218,20 @@ Si no se leyó:
 MODEL_ID_ACTIVO_LEIDO: BLOCKED_NOT_READ
 ```
 
+## Runtime vigente (última auditoría: 2026-05-04)
+
+| Campo | Valor |
+| :--- | :--- |
+| `model_id` (default) | `deepseek/deepseek-v4-pro` |
+| Provider default | `openrouter` |
+| `model_id` (fallback) | `google/gemini-2.5-pro` |
+| Provider fallback | `openrouter` |
+| `context_length` | 128000 |
+| `api_mode` | `chat` |
+
+**Atención:** Ambos modelos pasan por OpenRouter → punto único de falla actual.
+**Objetivo profesional:** Migrar Gemini a Google directo (Vertex AI / Google AI Studio).
+
 ---
 
 # 8. Ruteo operativo de modelos en SmartPyme Factory
@@ -225,6 +239,8 @@ MODEL_ID_ACTIVO_LEIDO: BLOCKED_NOT_READ
 Este ruteo es política SmartPyme, no necesariamente contrato interno oficial de Hermes.
 
 ## Hermes / DeepSeek
+
+**Runtime real:** DeepSeek v4 Pro vía OpenRouter es el modelo operativo primario para lectura, auditoría, construcción y orquestación.
 
 Uso recomendado:
 
@@ -246,6 +262,8 @@ modificaciones de configuración crítica sin revisión
 ```
 
 ## Gemini
+
+**Runtime real:** Gemini 2.5 Pro se consume actualmente vía OpenRouter (fallback automático), no vía Google directo. El objetivo profesional es migrarlo a Vertex AI (preferido) o Google AI Studio (alternativo).
 
 Uso recomendado:
 
