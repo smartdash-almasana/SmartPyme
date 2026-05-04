@@ -1,40 +1,86 @@
 # Capa 03 – Ciclo técnico cerrado
 
-**Fecha de cierre:** 2026-05-04 21:32:35
-**Rama:** factory/ts‑006‑jobs‑sovereign‑persistence
-**Commit:** $(git rev-parse HEAD)
+**Fecha de cierre:** 2026-05-04 21:32:35  
+**Rama:** factory/ts-006-jobs-sovereign-persistence  
+**Estado:** cierre técnico incremental actualizado
 
 ## Capa cerrada
-Capa 03 (OperationalCase → DiagnosticReport → ActionProposal) ha completado su ciclo técnico de integración mínima.
+
+Capa 03 cubre el tramo:
+
+```text
+OperationalCase -> DiagnosticReport -> ActionProposal
+```
+
+El ciclo técnico actual deja cerrados:
+
+1. contratos mínimos de Capa 03;
+2. integración de `OperationalCase` en repositorio;
+3. integración de `OperationalCase` en orquestador;
+4. pieza interna mínima `DiagnosticService` para generar `DiagnosticReport` desde `OperationalCase`.
 
 ## Contratos creados
-- `OperationalCase` – contrato Pydantic que define un caso operativo con campos: `cliente_id`, `case_id`, `job_id`, `skill_id`, `hypothesis`, `evidence_ids`, `status`.
-- `DiagnosticReport` – contrato Pydantic para informes de diagnóstico (existe, no integrado aún).
-- `ActionProposal` – contrato Pydantic para propuestas de acción (existe, no integrado aún).
+
+- `OperationalCase` — contrato de caso operativo con `cliente_id`, `case_id`, `job_id`, `skill_id`, `hypothesis`, `evidence_ids`, `status`.
+- `DiagnosticReport` — contrato de resultado investigativo con `cliente_id`, `report_id`, `case_id`, `hypothesis`, `diagnosis_status`, `findings`, `evidence_used`, `reasoning_summary`.
+- `ActionProposal` — contrato de propuesta posterior al diagnóstico; no representa decisión ni autorización.
 
 ## Integración realizada
-1. `OperationalCaseRepository.create_case` ahora acepta `OperationalCase` de Capa 03 y lo convierte internamente al contrato legado (`OperationalCaseContract`) para persistencia, manteniendo compatibilidad.
-2. `OperationalCaseOrchestrator` está integrado con el contrato `OperationalCase` de Capa 03 (commit `0db2184`). Ya no utiliza el contrato legado `operational_case_contract`.
-3. Corrección mínima: el orquestador no crea casos sin evidencia mínima (commit `fe91cce`). Si faltan `variables` y `evidence`, devuelve `CLARIFICATION_REQUIRED`.
+
+1. `OperationalCaseRepository.create_case` acepta `OperationalCase` de Capa 03 y lo adapta internamente al contrato legacy para persistencia.
+2. `OperationalCaseOrchestrator` está integrado con `OperationalCase` de Capa 03.
+   - Commit: `0db2184`
+3. Corrección mínima: `OperationalCaseOrchestrator` no crea casos sin variables/evidencia real mínima.
+   - Si faltan `variables` y `evidence`, devuelve `CLARIFICATION_REQUIRED`.
+   - Commit: `fe91cce`
+4. `DiagnosticService` fue creado como pieza interna mínima.
+   - Genera `DiagnosticReport` desde `OperationalCase`.
+   - Preserva `cliente_id`, `case_id` e `hypothesis`.
+   - `CONFIRMED` requiere `evidence_used` y `findings` no vacíos.
+   - `INSUFFICIENT_EVIDENCE` permite `evidence_used` y `findings` vacíos.
+   - No ejecuta acciones.
+   - No autoriza nada.
+   - No integra todavía al flujo operativo.
+   - Commit: `7d2597e`
 
 ## Tests
-- `tests/contracts/test_layer_03_contracts.py` – 11 tests PASSED (100%).
-- Incluye test de integración `test_capa03_operational_case_integration_with_repository`.
-- `tests/ai/test_operational_case_orchestrator.py` – 9 tests PASSED (100%) con validaciones actualizadas.
 
-## Límites
-1. **No hay diagnóstico técnico todavía** – Los contratos están definidos, pero no hay flujo de diagnóstico implementado.
-2. **No hay DiagnosticReport integrado todavía** – El contrato existe, pero no se usa en ningún pipeline.
-3. **No hay ActionProposal integrado todavía** – El contrato existe, pero no se genera ni valida.
-4. **No hay MCP** – No se ha expuesto ninguna herramienta MCP para Capa 03.
+- `tests/contracts/test_layer_03_contracts.py` — 11 tests PASSED.
+- `tests/ai/test_operational_case_orchestrator.py` — 9 tests PASSED.
+- `tests/services/test_diagnostic_service.py` — 7 tests PASSED.
+
+## Límites actuales
+
+1. `DiagnosticService` existe, pero todavía no está conectado al flujo operativo.
+2. No existe persistencia específica de `DiagnosticReport`.
+3. `ActionProposal` existe como contrato, pero no está integrado.
+4. No hay MCP expuesto para Capa 03.
+5. No hay ejecución de acciones ni autorización automática.
 
 ## Riesgos pendientes
-1. **Compatibilidad entre contrato nuevo y legacy** – La heurística de validación de `hypothesis` difiere: el contrato legacy exige verbo investigativo o `?`; el contrato Capa 03 solo valida no vacío. Puede causar `ValueError` en conversión.
-2. **DiagnosticReport pendiente** – La siguiente integración requiere conectar `DiagnosticReport` al flujo de diagnóstico.
 
-## Próxima fase
-**Capa 03 / FASE INTEGRAR** – Conectar `DiagnosticReport` al flujo de diagnóstico, manteniendo compatibilidad con el contrato `OperationalCase` ya integrado.
+1. `DiagnosticService` genera `report_id` con `uuid`; es aceptable para pieza interna mínima, pero al agregar persistencia puede convenir un generador inyectable o determinístico.
+2. La integración futura de `DiagnosticReport` debe preservar la regla: sin evidencia trazable y hallazgos no hay `CONFIRMED`.
+3. Cualquier futura integración con MCP debe pasar por contrato explícito, tests y autorización.
 
----
+## Próxima fase recomendada
 
-*Este documento cumple con la fase DOCUMENTAR del protocolo operativo de SmartPyme Factory (ver `docs/factory/AGENT_WORKFLOW.md`).*
+```text
+CAPA: 03
+FASE: INTEGRAR
+MODEL_TARGET: CODEX
+```
+
+Objetivo recomendado:
+
+```text
+Conectar DiagnosticService al flujo existente de Capa 03 sin exponer MCP, sin crear ActionProposal y sin ejecutar acciones.
+```
+
+## Regla de cierre
+
+Este documento cumple la fase DOCUMENTAR del workflow operativo definido en:
+
+```text
+docs/factory/AGENT_WORKFLOW.md
+```
