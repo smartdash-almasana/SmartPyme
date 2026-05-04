@@ -2,7 +2,7 @@
 
 ## Estado
 
-PROPUESTA CANONICA PENDIENTE DE VALIDACION
+PROPUESTA CANONICA — REQUIERE ALINEACION CON CAPA 1.5 Y CAPA 02
 
 ---
 
@@ -415,7 +415,12 @@ Su propósito es validar el punto de partida con el dueño.
 
 ### OperationalCase
 
-Nace después, en una capa posterior.
+Nace después, en una cadena de capas posterior.
+
+InitialCaseAdmission no pasa directamente a OperationalCase.
+Primero debe alimentar Capa 1.5 (Normalización Documental) para producir un NormalizedEvidencePackage.
+Luego Capa 02 (Activación de Conocimiento e Investigación) produce un OperationalCaseCandidate.
+El OperationalCase completo nace después de validación del dueño, evidencia suficiente y decisión arquitectónica posterior.
 
 Solo debe crearse cuando:
 
