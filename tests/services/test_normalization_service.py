@@ -258,3 +258,67 @@ def test_no_operational_case_class_imported(service: NormalizationService):
     """NormalizationService no debe importar ni retornar OperationalCase."""
     import app.services.normalization_service as svc_module
     assert not hasattr(svc_module, "OperationalCase")
+
+
+# ---------------------------------------------------------------------------
+# Tests TS_015_004: Catálogo externo y catálogo custom
+# ---------------------------------------------------------------------------
+
+
+def test_cant_detected_from_external_catalog():
+    """
+    'cant.' debe detectarse como 'cantidad' cargando el catálogo externo por defecto.
+    Confirma que NormalizationService() sin argumentos usa el JSON del catálogo.
+    """
+    # Instanciar sin argumentos → carga app/catalogs/column_mapping_catalog.json
+    service = NormalizationService()
+    result = service.process({
+        "cliente_id": "cliente_catalog_test",
+        "document_id": "doc_catalog_test",
+        "source_type": "xlsx",
+        "columns": ["cant.", "precio"],
+        "rows": [{"cant.": "50", "precio": "1000"}],
+    })
+    cant_candidates = [
+        c for c in result.column_candidates
+        if c.raw_column == "cant." and c.possible_meaning == "cantidad"
+    ]
+    assert len(cant_candidates) == 1, (
+        "El catálogo externo debe mapear 'cant.' a 'cantidad'."
+    )
+    assert cant_candidates[0].confidence > 0.9
+
+
+def test_custom_catalog_is_respected():
+    """
+    Si se instancia NormalizationService con un column_map custom,
+    debe usar ese catálogo y no el externo ni el fallback.
+    """
+    # Catálogo custom: solo reconoce "importe" como precio_unitario
+    custom_map: dict[str, tuple[str, float, str, bool]] = {
+        "importe": ("precio_unitario", 0.99, "amount", False),
+        "fecha":   ("fecha",           0.90, "date",   False),
+    }
+    service = NormalizationService(column_map=custom_map)
+    result = service.process({
+        "cliente_id": "cliente_custom",
+        "document_id": "doc_custom",
+        "source_type": "xlsx",
+        "columns": ["fecha", "importe", "cant."],
+        "rows": [{"fecha": "2026-05-01", "importe": "5500", "cant.": "10"}],
+    })
+
+    # "importe" debe mapearse a precio_unitario
+    importe_mappings = [
+        m for m in result.field_mappings if m.raw_column == "importe"
+    ]
+    assert len(importe_mappings) == 1
+    assert importe_mappings[0].canonical_field == "precio_unitario"
+
+    # "cant." NO debe reconocerse (no está en el catálogo custom)
+    cant_mappings = [
+        m for m in result.field_mappings if m.raw_column == "cant."
+    ]
+    assert len(cant_mappings) == 0, (
+        "Con catálogo custom que no incluye 'cant.', no debe generarse mapping para esa columna."
+    )

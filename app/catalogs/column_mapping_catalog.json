@@ -1,0 +1,81 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "Catálogo de mapeo de columnas crudas a campos canónicos para Capa 1.5 — Normalización Documental.",
+    "last_updated": "2026-05-03",
+    "task": "TS_015_004_COLUMN_MAPPING_CATALOG",
+    "doc_rector": "docs/product/SMARTPYME_CAPA_015_NORMALIZACION_DOCUMENTAL_ENTIDADES_TIEMPO.md"
+  },
+  "mappings": [
+    {
+      "canonical_field": "cantidad",
+      "field_type": "number",
+      "default_confidence": 0.90,
+      "aliases": [
+        { "raw": "cant.",     "confidence": 0.95 },
+        { "raw": "cantidad",  "confidence": 0.99 },
+        { "raw": "unidades",  "confidence": 0.90 },
+        { "raw": "stock",     "confidence": 0.85 },
+        { "raw": "qty",       "confidence": 0.75 },
+        { "raw": "q",         "confidence": 0.70, "ambiguous": true }
+      ]
+    },
+    {
+      "canonical_field": "precio_unitario",
+      "field_type": "amount",
+      "default_confidence": 0.80,
+      "aliases": [
+        { "raw": "precio",           "confidence": 0.95 },
+        { "raw": "precio unitario",  "confidence": 0.99 },
+        { "raw": "precio_unitario",  "confidence": 0.99 },
+        { "raw": "p.u.",             "confidence": 0.88 },
+        { "raw": "importe",          "confidence": 0.70 },
+        { "raw": "valor",            "confidence": 0.75, "ambiguous": true },
+        { "raw": "$",                "confidence": 0.72, "ambiguous": true }
+      ]
+    },
+    {
+      "canonical_field": "producto",
+      "field_type": "entity_ref",
+      "default_confidence": 0.85,
+      "aliases": [
+        { "raw": "producto",     "confidence": 0.99 },
+        { "raw": "descripcion",  "confidence": 0.88 },
+        { "raw": "descripción",  "confidence": 0.88 },
+        { "raw": "articulo",     "confidence": 0.85 },
+        { "raw": "artículo",     "confidence": 0.85 },
+        { "raw": "item",         "confidence": 0.80 },
+        { "raw": "sku",          "confidence": 0.90 }
+      ]
+    },
+    {
+      "canonical_field": "proveedor",
+      "field_type": "entity_ref",
+      "default_confidence": 0.80,
+      "aliases": [
+        { "raw": "prov.",             "confidence": 0.78 },
+        { "raw": "proveedor",         "confidence": 0.99 },
+        { "raw": "nombre proveedor",  "confidence": 0.95 },
+        { "raw": "razón social",      "confidence": 0.90 },
+        { "raw": "razon social",      "confidence": 0.90 },
+        { "raw": "vendedor",          "confidence": 0.55, "ambiguous": true }
+      ]
+    },
+    {
+      "canonical_field": "fecha",
+      "field_type": "date",
+      "default_confidence": 0.85,
+      "aliases": [
+        { "raw": "fecha",         "confidence": 0.90 },
+        { "raw": "date",          "confidence": 0.88 },
+        { "raw": "fecha venta",   "confidence": 0.95 },
+        { "raw": "fecha_venta",   "confidence": 0.95 },
+        { "raw": "fecha emisión", "confidence": 0.88 },
+        { "raw": "fecha emision", "confidence": 0.88 },
+        { "raw": "día",           "confidence": 0.75 },
+        { "raw": "dia",           "confidence": 0.75 },
+        { "raw": "f.",            "confidence": 0.65, "ambiguous": true }
+      ]
+    }
+  ]
+}

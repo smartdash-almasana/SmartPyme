@@ -1,6 +1,7 @@
 """
 NormalizationService — Capa 1.5: Normalización Documental, Entidades y Tiempo
 TS_015_002_NORMALIZATION_SERVICE_MINIMO
+TS_015_004_COLUMN_MAPPING_CATALOG
 
 Servicio mínimo determinístico que procesa un documento crudo (dict) y produce
 un NormalizedEvidencePackage.
@@ -10,10 +11,14 @@ Reglas:
 - Sin OperationalCase.
 - Sin diagnóstico.
 - Sin fórmulas de negocio.
-- Detección de columnas por tabla de keywords.
+- Detección de columnas por catálogo externo JSON (con fallback interno).
 - TemporalWindow desde columna fecha si existe; alerta si no.
 - No inventa entidades ni datos faltantes.
 - Toda variable tiene EvidenceReference trazable.
+
+Catálogo de columnas:
+  app/catalogs/column_mapping_catalog.json
+  Si el archivo no existe o está corrupto, se usa el fallback interno.
 
 Formato de entrada esperado (dict):
 {
@@ -33,8 +38,10 @@ Documento rector:
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any, Optional
 
 from app.contracts.normalization_contract import (
@@ -53,52 +60,69 @@ from app.contracts.normalization_contract import (
 )
 
 # ---------------------------------------------------------------------------
-# Tabla de mapeo de columnas crudas → campo canónico
+# Ruta por defecto del catálogo externo
 # ---------------------------------------------------------------------------
-# Cada entrada: raw_column_lower → (canonical_field, confidence, canonical_field_type)
 
-_COLUMN_MAP: dict[str, tuple[str, float, str]] = {
-    # cantidad / stock
-    "cant.":        ("cantidad",        0.95, "number"),
-    "cantidad":     ("cantidad",        0.99, "number"),
-    "unidades":     ("cantidad",        0.90, "number"),
-    "q":            ("cantidad",        0.70, "number"),
-    "qty":          ("cantidad",        0.75, "number"),
-    "stock":        ("cantidad",        0.85, "number"),
-    # precio
-    "precio":       ("precio_unitario", 0.95, "amount"),
-    "precio unitario": ("precio_unitario", 0.99, "amount"),
-    "p.u.":         ("precio_unitario", 0.88, "amount"),
-    "$":            ("precio_unitario", 0.72, "amount"),
-    "valor":        ("precio_unitario", 0.75, "amount"),
-    "importe":      ("precio_unitario", 0.70, "amount"),
-    # producto / entidad
-    "producto":     ("producto",        0.99, "entity_ref"),
-    "descripcion":  ("producto",        0.88, "entity_ref"),
-    "descripción":  ("producto",        0.88, "entity_ref"),
-    "articulo":     ("producto",        0.85, "entity_ref"),
-    "artículo":     ("producto",        0.85, "entity_ref"),
-    "item":         ("producto",        0.80, "entity_ref"),
-    "sku":          ("producto",        0.90, "entity_ref"),
-    # proveedor
-    "prov.":        ("proveedor",       0.78, "entity_ref"),
-    "proveedor":    ("proveedor",       0.99, "entity_ref"),
-    "nombre proveedor": ("proveedor",   0.95, "entity_ref"),
-    "razón social": ("proveedor",       0.90, "entity_ref"),
-    "razon social": ("proveedor",       0.90, "entity_ref"),
-    "vendedor":     ("proveedor",       0.55, "entity_ref"),  # ambiguo
-    # fecha
-    "fecha":        ("fecha",           0.90, "date"),
-    "fecha venta":  ("fecha",           0.95, "date"),
-    "fecha emisión":("fecha",           0.88, "date"),
-    "fecha emision":("fecha",           0.88, "date"),
-    "día":          ("fecha",           0.75, "date"),
-    "dia":          ("fecha",           0.75, "date"),
-    "f.":           ("fecha",           0.65, "date"),
+_DEFAULT_CATALOG_PATH = Path(__file__).parent.parent / "catalogs" / "column_mapping_catalog.json"
+
+# ---------------------------------------------------------------------------
+# Fallback interno mínimo
+# ---------------------------------------------------------------------------
+# Usado si el catálogo externo no existe o está corrupto.
+# Formato: raw_column_lower → (canonical_field, confidence, field_type, is_ambiguous)
+
+_FALLBACK_COLUMN_MAP: dict[str, tuple[str, float, str, bool]] = {
+    "cant.":    ("cantidad",        0.95, "number",     False),
+    "cantidad": ("cantidad",        0.99, "number",     False),
+    "precio":   ("precio_unitario", 0.95, "amount",     False),
+    "producto": ("producto",        0.99, "entity_ref", False),
+    "prov.":    ("proveedor",       0.78, "entity_ref", False),
+    "proveedor":("proveedor",       0.99, "entity_ref", False),
+    "fecha":    ("fecha",           0.90, "date",       False),
 }
 
-# Columnas que son ambiguas y requieren confirmación explícita
-_AMBIGUOUS_COLUMNS: frozenset[str] = frozenset(["vendedor", "$", "q", "f.", "valor"])
+# ---------------------------------------------------------------------------
+# Carga del catálogo
+# ---------------------------------------------------------------------------
+
+
+def _load_catalog(
+    catalog_path: Optional[Path] = None,
+) -> dict[str, tuple[str, float, str, bool]]:
+    """
+    Carga el catálogo de mapeo de columnas desde un archivo JSON.
+
+    Retorna un dict: raw_column_lower → (canonical_field, confidence, field_type, is_ambiguous).
+
+    Si el archivo no existe, no es JSON válido o tiene estructura incorrecta,
+    retorna el fallback interno sin lanzar excepción.
+    """
+    path = catalog_path or _DEFAULT_CATALOG_PATH
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return dict(_FALLBACK_COLUMN_MAP)
+
+    result: dict[str, tuple[str, float, str, bool]] = {}
+
+    try:
+        for entry in data.get("mappings", []):
+            canonical_field: str = entry["canonical_field"]
+            field_type: str = entry.get("field_type", "string")
+            default_confidence: float = float(entry.get("default_confidence", 0.7))
+
+            for alias in entry.get("aliases", []):
+                raw: str = alias["raw"].strip().lower()
+                confidence: float = float(alias.get("confidence", default_confidence))
+                is_ambiguous: bool = bool(alias.get("ambiguous", False))
+                result[raw] = (canonical_field, confidence, field_type, is_ambiguous)
+    except (KeyError, TypeError, ValueError):
+        # Estructura inesperada → fallback
+        return dict(_FALLBACK_COLUMN_MAP)
+
+    return result if result else dict(_FALLBACK_COLUMN_MAP)
 
 
 def _normalize_col(col: str) -> str:
@@ -134,11 +158,34 @@ class NormalizationService:
     """
     Servicio de normalización documental mínimo y determinístico.
 
-    Uso:
+    Uso por defecto (carga catálogo desde app/catalogs/column_mapping_catalog.json):
         service = NormalizationService()
         result = service.process(raw_document_dict)
-        # result es un NormalizedEvidencePackage
+
+    Uso con catálogo custom (para tests o entornos alternativos):
+        service = NormalizationService(catalog_path=Path("/ruta/custom.json"))
+        # o bien con dict directo:
+        service = NormalizationService(column_map={"cant.": ("cantidad", 0.95, "number", False)})
     """
+
+    def __init__(
+        self,
+        catalog_path: Optional[Path] = None,
+        column_map: Optional[dict[str, tuple[str, float, str, bool]]] = None,
+    ) -> None:
+        """
+        Inicializa el servicio con el catálogo de columnas.
+
+        Prioridad:
+          1. column_map explícito (para tests o inyección directa).
+          2. catalog_path explícito (archivo JSON alternativo).
+          3. Catálogo por defecto en app/catalogs/column_mapping_catalog.json.
+          4. Fallback interno si el archivo no existe o está corrupto.
+        """
+        if column_map is not None:
+            self._column_map = column_map
+        else:
+            self._column_map = _load_catalog(catalog_path)
 
     def process(
         self,
@@ -197,9 +244,8 @@ class NormalizationService:
             col_lower = _normalize_col(col)
             col_id = f"col_{document_id}_{col_lower.replace('.', '_').replace(' ', '_')}"
 
-            if col_lower in _COLUMN_MAP:
-                canonical_field, confidence, field_type = _COLUMN_MAP[col_lower]
-                is_ambiguous = col_lower in _AMBIGUOUS_COLUMNS
+            if col_lower in self._column_map:
+                canonical_field, confidence, field_type, is_ambiguous = self._column_map[col_lower]
                 status = "AMBIGUOUS" if is_ambiguous else "CANDIDATE"
 
                 candidate = ColumnCandidate(
@@ -242,7 +288,7 @@ class NormalizationService:
                         suggested_action=f"Confirmar si '{col}' representa '{canonical_field}'.",
                     ))
             else:
-                # Columna no reconocida
+                # Columna no reconocida en el catálogo
                 candidate = ColumnCandidate(
                     column_candidate_id=col_id,
                     schema_id=schema_id,
