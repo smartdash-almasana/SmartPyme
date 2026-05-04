@@ -77,6 +77,38 @@ class OperationalCaseRepository:
     # --- OperationalCase ---
 
     def create_case(self, case: OperationalCase) -> None:
+        # Permitir también OperationalCase de Capa 03
+        from app.contracts.operational_case import OperationalCase as OperationalCaseCapa03
+        if isinstance(case, OperationalCaseCapa03):
+            # Convertir Capa 03 a contrato legado
+            from app.contracts.operational_case_contract import OperationalCase as OperationalCaseLegacy
+            # Mapeo de status
+            status_map = {
+                "OPEN": "OPEN",
+                "READY_FOR_INVESTIGATION": "IN_PROGRESS",
+                "BLOCKED": "IN_PROGRESS",
+                "CLOSED": "CLOSED",
+            }
+            legacy_status = status_map.get(case.status, "OPEN")
+            legacy_case = OperationalCaseLegacy(
+                case_id=case.case_id,
+                cliente_id=case.cliente_id,
+                job_id=case.job_id,
+                skill_id=case.skill_id,
+                demanda_original="",  # vacío
+                hypothesis=case.hypothesis,
+                taxonomia_pyme={},
+                variables_curadas={},
+                evidencia_disponible=case.evidence_ids,
+                condiciones_validadas=[],
+                formula_applicable=None,
+                pathology_possible=None,
+                referencias_necesarias=[],
+                investigation_plan=[],
+                status=legacy_status,
+                symptom_id_orientativo=None,
+            )
+            case = legacy_case
         self._verify_isolation(case.cliente_id)
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
