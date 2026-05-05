@@ -187,6 +187,50 @@ def test_sovereign_runner_writes_audit_decision_json(tmp_path):
     assert audit_decision["next_gate_status"] in {"OPEN", "WAITING_AUDIT"}
 
 
+def test_sovereign_runner_writes_human_escalation_json_when_required(tmp_path):
+    tasks_dir = tmp_path / "taskspecs"
+    evidence_dir = tmp_path / "evidence"
+    gate_path = tmp_path / "AUDIT_GATE.md"
+    _open_gate(gate_path)
+    task = TaskSpec(
+        task_id="TS_TEST_ESCALATE",
+        title="Human escalation task",
+        objective="Validate human escalation file emission",
+        allowed_paths=["allowed"],
+        forbidden_paths=[],
+        acceptance_criteria=["human escalation is emitted"],
+        validation_commands=["python3 -c print(1)"],
+        metadata={
+            "operational_mode": "WRITE_AUTHORIZED",
+            "model_target": "DEEPSEEK_4_PRO",
+            "human_required": True,
+            "human_reason": "Rotate exposed key before continuing",
+            "decision_needed": "Confirm key rotation",
+            "human_options": ["ROTATE_KEY", "STOP_FACTORY"],
+            "recommended_option": "ROTATE_KEY",
+        },
+    )
+    TaskSpecStore(tasks_dir).enqueue(task)
+
+    result = run_one_queued_task(
+        tasks_dir,
+        evidence_dir,
+        use_sovereign=True,
+        gate_path=gate_path,
+        repo_root=tmp_path,
+    )
+
+    escalation_path = Path(result["human_escalation_path"])
+    escalation = json.loads(escalation_path.read_text(encoding="utf-8"))
+    assert escalation["task_id"] == "TS_TEST_ESCALATE"
+    assert escalation["escalation_type"] == "HUMAN_REQUIRED"
+    assert escalation["reason"] == "Rotate exposed key before continuing"
+    assert escalation["decision_needed"] == "Confirm key rotation"
+    assert escalation["options"] == ["ROTATE_KEY", "STOP_FACTORY"]
+    assert escalation["recommended_option"] == "ROTATE_KEY"
+    assert escalation["safe_to_continue"] is False
+
+
 def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
     tasks_dir = tmp_path / "taskspecs"
     evidence_dir = tmp_path / "evidence"
