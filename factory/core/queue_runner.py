@@ -20,6 +20,7 @@ ALLOWED_GATE_STATUSES = {"OPEN", "APPROVED", "RUN"}
 WAITING_AUDIT_STATUS = "WAITING_AUDIT"
 EVIDENCE_MANIFEST_FILENAME = "evidence_manifest.json"
 EXECUTION_RESULT_FILENAME = "execution_result.json"
+AUDIT_DECISION_FILENAME = "audit_decision.json"
 MINIMUM_EVIDENCE_FILES = (
     "cycle.md",
     "commands.txt",
@@ -147,6 +148,8 @@ def run_one_sovereign_task(
         final_task = store.mark_blocked(task.task_id, blocking_reason=blocking_reason)
         final_status = final_task.status.value
 
+    branch = _current_branch(repo_root)
+    commit_hash = _current_commit(repo_root)
     _write_decision_evidence(task_evidence_dir, final_status, blocking_reason)
     _write_cycle_evidence(task_evidence_dir, task, final_status, blocking_reason)
     _write_waiting_audit_gate(gate_path, task.task_id, final_status, blocking_reason)
@@ -158,15 +161,23 @@ def run_one_sovereign_task(
         command_results=command_results,
         started_at=started_at,
         finished_at=datetime.now(UTC),
-        branch=_current_branch(repo_root),
-        commit_hash=_current_commit(repo_root),
+        branch=branch,
+        commit_hash=commit_hash,
     )
     manifest_path = _write_evidence_manifest(
         task=task,
         task_evidence_dir=task_evidence_dir,
-        branch=_current_branch(repo_root),
-        commit_hash=_current_commit(repo_root),
+        branch=branch,
+        commit_hash=commit_hash,
         gate_status_after=WAITING_AUDIT_STATUS,
+    )
+    audit_decision_path = _write_audit_decision(
+        task=task,
+        task_evidence_dir=task_evidence_dir,
+        final_status=final_status,
+        blocking_reason=blocking_reason,
+        commit_hash=commit_hash,
+        manifest_path=manifest_path,
     )
 
     return {
@@ -175,7 +186,13 @@ def run_one_sovereign_task(
         "evidence_dir": str(task_evidence_dir),
         "execution_result_path": str(execution_result_path),
         "evidence_manifest_path": str(manifest_path),
-        "evidence_paths": [*evidence_paths, str(execution_result_path), str(manifest_path)],
+        "audit_decision_path": str(audit_decision_path),
+        "evidence_paths": [
+            *evidence_paths,
+            str(execution_result_path),
+            str(manifest_path),
+            str(audit_decision_path),
+        ],
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
     }
@@ -451,6 +468,43 @@ def _write_evidence_manifest(
         encoding="utf-8",
     )
     return manifest_path
+
+
+def _write_audit_decision(
+    *,
+    task: TaskSpec,
+    task_evidence_dir: Path,
+    final_status: str,
+    blocking_reason: str | None,
+    commit_hash: str,
+    manifest_path: Path,
+) -> Path:
+    decision = "PASS" if final_status == "done" else "BLOCKED"
+    result_path = task_evidence_dir / AUDIT_DECISION_FILENAME
+    result = {
+        "task_id": task.task_id,
+        "decision": decision,
+        "auditor": "sovereign_task_loop_v1",
+        "checked_commit": commit_hash,
+        "checked_evidence_dir": str(task_evidence_dir),
+        "checked_evidence_manifest": str(manifest_path),
+        "summary": _audit_summary(decision, blocking_reason),
+        "risks": [] if decision == "PASS" else [blocking_reason],
+        "required_human_action": False,
+        "next_gate_status": "OPEN" if decision == "PASS" else "WAITING_AUDIT",
+        "next_milestone": task.metadata.get("next_milestone"),
+    }
+    result_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return result_path
+
+
+def _audit_summary(decision: str, blocking_reason: str | None) -> str:
+    if decision == "PASS":
+        return "Sovereign TaskLoop cycle completed with required evidence."
+    return f"Sovereign TaskLoop cycle blocked: {blocking_reason}"
 
 
 def _changed_files_from_git_status(git_status_path: Path) -> list[str]:
