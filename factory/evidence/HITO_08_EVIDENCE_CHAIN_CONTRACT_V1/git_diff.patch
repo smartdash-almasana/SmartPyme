@@ -1,0 +1,15 @@
+diff --git a/factory/control/AUDIT_GATE.md b/factory/control/AUDIT_GATE.md
+index 47d4d5c..0a6cdc6 100644
+--- a/factory/control/AUDIT_GATE.md
++++ b/factory/control/AUDIT_GATE.md
+@@ -1,6 +1,7 @@
+ # AUDIT GATE
+ 
+ status: OPEN
+-updated_at: 2026-05-05T00:00:00+00:00
+-updated_by: GPT_COPILOTO_CHAT
+-reason: HITO_REAL_01_audit_pass_next_cycle_enabled
++updated_at: 2026-05-05T03:29:11.788768+00:00
++updated_by: sovereign_task_loop_v1
++task_id: HITO_08_EVIDENCE_CHAIN_CONTRACT_V1
++reason: BLOCKED_MODE_MISSING

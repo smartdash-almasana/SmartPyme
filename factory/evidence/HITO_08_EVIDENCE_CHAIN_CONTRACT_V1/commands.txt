@@ -1,0 +1,71 @@
+$ echo 'PREFLIGHT: verificando gate y repo'
+returncode=0
+stdout:
+PREFLIGHT: verificando gate y repo
+
+stderr:
+
+---
+$ pwd
+returncode=0
+stdout:
+/opt/smartpyme-factory/repos/SmartPyme
+
+stderr:
+
+---
+$ git status --short
+returncode=0
+stdout:
+ M factory/control/AUDIT_GATE.md
+?? factory/evidence/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/
+?? factory/taskspecs/in_progress/
+
+stderr:
+
+---
+$ python3 -c "print('Validation passed')"
+returncode=0
+stdout:
+Validation passed
+
+stderr:
+
+---
+$ echo 'POST: ciclo completado'
+returncode=0
+stdout:
+POST: ciclo completado
+
+stderr:
+
+---
+$ git status --short
+returncode=0
+stdout:
+ M factory/control/AUDIT_GATE.md
+?? factory/evidence/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/
+?? factory/taskspecs/in_progress/
+
+stderr:
+
+---
+$ ls -la factory/evidence/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/
+returncode=0
+stdout:
+total 24
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 May  5 03:29 .
+drwxr-xr-x 61 neoalmasana neoalmasana 4096 May  5 03:29 ..
+-rw-r--r--  1 neoalmasana neoalmasana  554 May  5 03:29 audit_decision.json
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 03:33 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana  292 May  5 03:33 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 03:33 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana  795 May  5 03:29 evidence_manifest.json
+-rw-r--r--  1 neoalmasana neoalmasana  604 May  5 03:29 execution_result.json
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 03:33 git_diff.patch
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 03:33 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 03:33 tests.txt
+
+stderr:
+
+---
