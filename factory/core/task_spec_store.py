@@ -7,6 +7,7 @@ from factory.core.task_spec import TaskSpec, TaskSpecStatus, read_task_spec, wri
 STATE_DIRS = {
     TaskSpecStatus.PENDING: "pending",
     TaskSpecStatus.IN_PROGRESS: "in_progress",
+    TaskSpecStatus.WAITING_FOR_APPROVAL: "waiting_for_approval",
     TaskSpecStatus.DONE: "done",
     TaskSpecStatus.BLOCKED: "blocked",
 }
@@ -50,6 +51,18 @@ class TaskSpecStore:
         if task.status != TaskSpecStatus.PENDING:
             raise ValueError("Only pending TaskSpec can move to in_progress")
         return self._move(task, task.with_status(TaskSpecStatus.IN_PROGRESS))
+
+    def mark_waiting_for_approval(self, task_id: str, blocking_reason: str) -> TaskSpec:
+        task = self._require(task_id)
+        if task.status != TaskSpecStatus.PENDING:
+            raise ValueError("Only pending TaskSpec can move to waiting_for_approval")
+        return self._move(
+            task,
+            task.with_status(
+                TaskSpecStatus.WAITING_FOR_APPROVAL,
+                blocking_reason=blocking_reason,
+            ),
+        )
 
     def mark_done(self, task_id: str, evidence_paths: list[str]) -> TaskSpec:
         task = self._require(task_id)
