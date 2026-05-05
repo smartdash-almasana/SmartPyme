@@ -449,3 +449,31 @@ Cada fase debe producir:
 **Estado:** Documento canónico para gobernanza operativa de SmartPyme Factory.
 
 > **Nota:** Este protocolo debe ser referido en todos los skills operativos (`hermes_smartpyme_factory`, `smartpyme_layer_work_protocol`, etc.) y en las TaskSpecs de las fases de definición y auditoría.
+flowchart TD
+    A[Dueño / Vos] --> B[GPT Copiloto]
+    B --> C{Elegir ejecutor}
+
+    C -->|Repo local / escritura cómoda| D[KIRO_LOCAL]
+    C -->|VM / runtime / config / sync| E[HERMES]
+    C -->|Lectura larga / build pesado| F[GEMINI vía GOOGLE]
+    C -->|Refactor delicado futuro| G[CODEX]
+
+    D --> H[Implementa / edita repo local]
+    H --> I[Commit local]
+    I --> J[Push a GitHub]
+
+    E --> K[Pull en VM]
+    K --> L[Valida runtime / config / providers]
+    L --> M[Smoke tests factoría]
+
+    F --> N[Auditoría larga o síntesis pesada]
+    G --> O[Refactor puntual cuando auth esté lista]
+
+    M --> P{Estado}
+    P -->|PASS| Q[Siguiente TaskSpec]
+    P -->|BLOCKED| R[Diagnóstico mínimo]
+    P -->|PARTIAL| S[Cierre acotado]
+
+    Q --> B
+    R --> B
+    S --> B
