@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shlex
 import subprocess
 from datetime import UTC, datetime
@@ -17,6 +18,7 @@ from factory.core.task_spec_store import TaskSpecStore
 BUSINESS_TASK_TYPES: set[str] = set()
 ALLOWED_GATE_STATUSES = {"OPEN", "APPROVED", "RUN"}
 WAITING_AUDIT_STATUS = "WAITING_AUDIT"
+EVIDENCE_MANIFEST_FILENAME = "evidence_manifest.json"
 MINIMUM_EVIDENCE_FILES = (
     "cycle.md",
     "commands.txt",
@@ -146,12 +148,20 @@ def run_one_sovereign_task(
     _write_decision_evidence(task_evidence_dir, final_status, blocking_reason)
     _write_cycle_evidence(task_evidence_dir, task, final_status, blocking_reason)
     _write_waiting_audit_gate(gate_path, task.task_id, final_status, blocking_reason)
+    manifest_path = _write_evidence_manifest(
+        task=task,
+        task_evidence_dir=task_evidence_dir,
+        branch=_current_branch(repo_root),
+        commit_hash=_current_commit(repo_root),
+        gate_status_after=WAITING_AUDIT_STATUS,
+    )
 
     return {
         "status": final_status,
         "task_id": task.task_id,
         "evidence_dir": str(task_evidence_dir),
-        "evidence_paths": evidence_paths,
+        "evidence_manifest_path": str(manifest_path),
+        "evidence_paths": [*evidence_paths, str(manifest_path)],
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
     }
@@ -353,6 +363,39 @@ def _write_decision_evidence(
     )
 
 
+def _write_evidence_manifest(
+    *,
+    task: TaskSpec,
+    task_evidence_dir: Path,
+    branch: str,
+    commit_hash: str,
+    gate_status_after: str,
+) -> Path:
+    required_files = {
+        "cycle": str(task_evidence_dir / "cycle.md"),
+        "commands": str(task_evidence_dir / "commands.txt"),
+        "git_status": str(task_evidence_dir / "git_status.txt"),
+        "git_diff": str(task_evidence_dir / "git_diff.patch"),
+        "tests": str(task_evidence_dir / "tests.txt"),
+        "decision": str(task_evidence_dir / "decision.txt"),
+    }
+    manifest_path = task_evidence_dir / EVIDENCE_MANIFEST_FILENAME
+    manifest = {
+        "task_id": task.task_id,
+        "evidence_dir": str(task_evidence_dir),
+        "required_files": required_files,
+        "commit_hash": commit_hash,
+        "branch": branch,
+        "gate_status_after": gate_status_after,
+        "complete": all(Path(path).exists() for path in required_files.values()),
+    }
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return manifest_path
+
+
 def _run_git(args: list[str], repo_root: Path) -> str:
     completed = subprocess.run(
         ["git", *args],
@@ -361,9 +404,17 @@ def _run_git(args: list[str], repo_root: Path) -> str:
         capture_output=True,
         check=False,
     )
-    return completed.stdout if completed.returncode == 0 else completed.stderr
+    return completed.stdout.strip() if completed.returncode == 0 else completed.stderr.strip()
 
 
 def _git_changed_paths(repo_root: Path) -> list[str]:
     output = _run_git(["diff", "--name-only"], repo_root)
     return [line.strip() for line in output.splitlines() if line.strip()]
+
+
+def _current_branch(repo_root: Path) -> str:
+    return _run_git(["branch", "--show-current"], repo_root)
+
+
+def _current_commit(repo_root: Path) -> str:
+    return _run_git(["rev-parse", "--short", "HEAD"], repo_root)
