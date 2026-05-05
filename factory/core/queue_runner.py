@@ -21,6 +21,7 @@ WAITING_AUDIT_STATUS = "WAITING_AUDIT"
 EVIDENCE_MANIFEST_FILENAME = "evidence_manifest.json"
 EXECUTION_RESULT_FILENAME = "execution_result.json"
 AUDIT_DECISION_FILENAME = "audit_decision.json"
+HUMAN_ESCALATION_FILENAME = "human_escalation.json"
 MINIMUM_EVIDENCE_FILES = (
     "cycle.md",
     "commands.txt",
@@ -179,6 +180,15 @@ def run_one_sovereign_task(
         commit_hash=commit_hash,
         manifest_path=manifest_path,
     )
+    human_escalation_path = _write_human_escalation_if_required(
+        task=task,
+        task_evidence_dir=task_evidence_dir,
+        blocking_reason=blocking_reason,
+    )
+
+    extra_evidence_paths = [str(execution_result_path), str(manifest_path), str(audit_decision_path)]
+    if human_escalation_path is not None:
+        extra_evidence_paths.append(str(human_escalation_path))
 
     return {
         "status": final_status,
@@ -187,12 +197,8 @@ def run_one_sovereign_task(
         "execution_result_path": str(execution_result_path),
         "evidence_manifest_path": str(manifest_path),
         "audit_decision_path": str(audit_decision_path),
-        "evidence_paths": [
-            *evidence_paths,
-            str(execution_result_path),
-            str(manifest_path),
-            str(audit_decision_path),
-        ],
+        "human_escalation_path": str(human_escalation_path) if human_escalation_path else None,
+        "evidence_paths": [*evidence_paths, *extra_evidence_paths],
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
     }
@@ -479,7 +485,10 @@ def _write_audit_decision(
     commit_hash: str,
     manifest_path: Path,
 ) -> Path:
+    escalation_needed = _human_escalation_required(task, blocking_reason)
     decision = "PASS" if final_status == "done" else "BLOCKED"
+    if escalation_needed:
+        decision = "HUMAN_REQUIRED"
     result_path = task_evidence_dir / AUDIT_DECISION_FILENAME
     result = {
         "task_id": task.task_id,
@@ -490,7 +499,7 @@ def _write_audit_decision(
         "checked_evidence_manifest": str(manifest_path),
         "summary": _audit_summary(decision, blocking_reason),
         "risks": [] if decision == "PASS" else [blocking_reason],
-        "required_human_action": False,
+        "required_human_action": escalation_needed,
         "next_gate_status": "OPEN" if decision == "PASS" else "WAITING_AUDIT",
         "next_milestone": task.metadata.get("next_milestone"),
     }
@@ -501,9 +510,43 @@ def _write_audit_decision(
     return result_path
 
 
+def _write_human_escalation_if_required(
+    *,
+    task: TaskSpec,
+    task_evidence_dir: Path,
+    blocking_reason: str | None,
+) -> Path | None:
+    if not _human_escalation_required(task, blocking_reason):
+        return None
+    path = task_evidence_dir / HUMAN_ESCALATION_FILENAME
+    escalation_type = str(task.metadata.get("escalation_type") or "HUMAN_REQUIRED")
+    reason = str(task.metadata.get("human_reason") or blocking_reason or "Human decision required")
+    result = {
+        "task_id": task.task_id,
+        "escalation_type": escalation_type,
+        "severity": str(task.metadata.get("human_severity") or "HIGH"),
+        "reason": reason,
+        "decision_needed": str(task.metadata.get("decision_needed") or reason),
+        "options": list(task.metadata.get("human_options") or ["APPROVE", "STOP_FACTORY"]),
+        "recommended_option": task.metadata.get("recommended_option"),
+        "safe_to_continue": bool(task.metadata.get("safe_to_continue", False)),
+    }
+    path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def _human_escalation_required(task: TaskSpec, blocking_reason: str | None) -> bool:
+    if bool(task.metadata.get("human_required")):
+        return True
+    reason = (blocking_reason or "").lower()
+    return any(token in reason for token in ("secret", "credential", "token", "key", "billing"))
+
+
 def _audit_summary(decision: str, blocking_reason: str | None) -> str:
     if decision == "PASS":
         return "Sovereign TaskLoop cycle completed with required evidence."
+    if decision == "HUMAN_REQUIRED":
+        return f"Sovereign TaskLoop cycle requires human decision: {blocking_reason}"
     return f"Sovereign TaskLoop cycle blocked: {blocking_reason}"
 
 
