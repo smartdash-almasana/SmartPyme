@@ -9,7 +9,12 @@ Uso:
     python3 -m factory.core.run_taskloop_once --mode sovereign
     python3 -m factory.core.run_taskloop_once --mode multiagent
 
-La salida es un objeto JSON compacto con el resultado del ciclo.
+Verificación post-cierre:
+
+    python3 -m factory.core.run_taskloop_once --check-remote-sync --compact
+
+La salida es un objeto JSON compacto con el resultado del ciclo o de la
+verificación remota.
 """
 
 from __future__ import annotations
@@ -41,11 +46,13 @@ def _run_git(repo_root: Path, args: list[str]) -> tuple[int, str, str]:
 def check_remote_sync(repo_root: str | Path = ".", remote: str = "origin") -> dict[str, Any]:
     """Verifica que HEAD local exista en el remoto de la rama activa.
 
+    Esta verificación es post-cierre. Debe ejecutarse después de commit/push.
+
     Regla operativa: un hito solo puede considerarse DONE real si:
     - el worktree está limpio;
     - hay rama local activa;
     - existe HEAD local;
-    - el commit remoto de origin/<branch> coincide con HEAD.
+    - el commit remoto de origin/<branch> coincide con HEAD local.
     """
     root = Path(repo_root)
 
@@ -169,12 +176,7 @@ def main() -> None:
     parser.add_argument(
         "--check-remote-sync",
         action="store_true",
-        help="Solo verifica que HEAD local esté pusheado en origin/<branch>.",
-    )
-    parser.add_argument(
-        "--require-remote-sync",
-        action="store_true",
-        help="Agrega verificación remota al resultado del ciclo. No hace push.",
+        help="Verificación post-cierre: confirma que HEAD local coincide con origin/<branch>.",
     )
 
     args = parser.parse_args()
@@ -193,11 +195,7 @@ def main() -> None:
         repo_root=args.repo_root,
     )
 
-    filtered = _filtered_result(result)
-    if args.require_remote_sync:
-        filtered.update(check_remote_sync(args.repo_root))
-
-    json.dump(filtered, sys.stdout, ensure_ascii=False, indent=indent)
+    json.dump(_filtered_result(result), sys.stdout, ensure_ascii=False, indent=indent)
     sys.stdout.write("\n")
 
 
