@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from factory.core.queue_runner import run_one_queued_task
@@ -16,6 +17,15 @@ def _open_gate(path: Path) -> None:
 def _closed_gate(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("# AUDIT GATE\n\nstatus: CLOSED\n", encoding="utf-8")
+
+
+def _init_git_repo(path: Path) -> None:
+    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=path, check=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=path, check=True)
+    (path / "README.md").write_text("test repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=path, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=path, check=True, capture_output=True, text=True)
 
 
 def _task(task_id: str = "TS_TEST_001") -> TaskSpec:
@@ -258,3 +268,35 @@ def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
 
     assert result["status"] == "blocked"
     assert result["blocking_reason"] == "BLOCKED_MODE_MISSING"
+
+
+def test_sovereign_runner_blocks_untracked_path_outside_allowed_paths(tmp_path):
+    _init_git_repo(tmp_path)
+    tasks_dir = tmp_path / "taskspecs"
+    evidence_dir = tmp_path / "evidence"
+    gate_path = tmp_path / "AUDIT_GATE.md"
+    _open_gate(gate_path)
+    task = TaskSpec(
+        task_id="TS_TEST_UNTRACKED_FORBIDDEN",
+        title="Untracked path validation task",
+        objective="Validate untracked files are included in path guardrails",
+        allowed_paths=["allowed"],
+        forbidden_paths=["forbidden"],
+        acceptance_criteria=["untracked forbidden path blocks task"],
+        validation_commands=["python3 -c open('forbidden/new.txt','w').write('bad')"],
+        metadata={"operational_mode": "WRITE_AUTHORIZED", "model_target": "DEEPSEEK_4_PRO"},
+    )
+    TaskSpecStore(tasks_dir).enqueue(task)
+    (tmp_path / "forbidden").mkdir()
+
+    result = run_one_queued_task(
+        tasks_dir,
+        evidence_dir,
+        use_sovereign=True,
+        gate_path=gate_path,
+        repo_root=tmp_path,
+    )
+
+    assert result["status"] == "blocked"
+    assert "FORBIDDEN_PATH_MODIFIED: forbidden/new.txt" in result["blocking_reason"]
+    assert "PATH_NOT_ALLOWED: forbidden/new.txt" in result["blocking_reason"]
