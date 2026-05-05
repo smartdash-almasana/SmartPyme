@@ -13,6 +13,9 @@ from factory_prefect.contracts.sandbox import SandboxExecutionResult
 from factory_prefect.sandbox.command_policy import evaluate_command
 
 
+DEFAULT_VALIDATION_COMMANDS = ["python --version"]
+
+
 @task(retries=2, retry_delay_seconds=10, log_prints=True)
 def reconcile_task(task_ledger: TaskLedger, progress_ledger: ProgressLedger) -> TaskLedger:
     for ledger_task in task_ledger.tasks:
@@ -138,8 +141,12 @@ def collect_task(
 
 
 @flow(name="software_factory_flow", log_prints=True, retries=0)
-async def software_factory_flow(root_objective: str) -> ProgressLedger:
+async def software_factory_flow(
+    root_objective: str,
+    validation_commands: list[str] | None = None,
+) -> ProgressLedger:
     run_id = f"run_{uuid.uuid4().hex}"
+    commands = validation_commands if validation_commands is not None else DEFAULT_VALIDATION_COMMANDS
     task_ledger = TaskLedger(
         run_id=run_id,
         root_objective=root_objective,
@@ -154,7 +161,7 @@ async def software_factory_flow(root_objective: str) -> ProgressLedger:
                 task_id="TASK_001_PREFECT_POLICY_SMOKE",
                 objective="Validate Reconcile -> Dispatch -> Review -> Approval -> SandboxMock -> Collect.",
                 assigned_role=AgentRole.REVIEWER,
-                validation_commands=["python --version"],
+                validation_commands=commands,
             )
         ],
     )
