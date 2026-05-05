@@ -30,6 +30,8 @@ def _task(task_id: str = "TS_TEST_001") -> TaskSpec:
         metadata={
             "operational_mode": "WRITE_AUTHORIZED",
             "model_target": "DEEPSEEK_4_PRO",
+            "provider_target": "OPENROUTER",
+            "executor_target": "HERMES",
             "preflight_commands": ["python3 -c print(456)"],
         },
     )
@@ -78,6 +80,7 @@ def test_sovereign_runner_takes_pending_task_and_creates_evidence(tmp_path):
         "git_diff.patch",
         "tests.txt",
         "decision.txt",
+        "execution_result.json",
         "evidence_manifest.json",
     ):
         assert (task_evidence / filename).exists()
@@ -127,6 +130,34 @@ def test_sovereign_runner_writes_evidence_manifest_json(tmp_path):
     assert manifest["complete"] is True
     assert manifest["required_files"]["cycle"].endswith("cycle.md")
     assert manifest["required_files"]["decision"].endswith("decision.txt")
+
+
+def test_sovereign_runner_writes_execution_result_json(tmp_path):
+    tasks_dir = tmp_path / "taskspecs"
+    evidence_dir = tmp_path / "evidence"
+    gate_path = tmp_path / "AUDIT_GATE.md"
+    _open_gate(gate_path)
+    TaskSpecStore(tasks_dir).enqueue(_task())
+
+    result = run_one_queued_task(
+        tasks_dir,
+        evidence_dir,
+        use_sovereign=True,
+        gate_path=gate_path,
+        repo_root=tmp_path,
+    )
+
+    execution_result_path = Path(result["execution_result_path"])
+    execution_result = json.loads(execution_result_path.read_text(encoding="utf-8"))
+    assert execution_result["task_id"] == "TS_TEST_001"
+    assert execution_result["status"] in {"done", "blocked"}
+    assert execution_result["executor_real"] == "HERMES"
+    assert execution_result["model_real"] == "DEEPSEEK_4_PRO"
+    assert execution_result["provider_real"] == "OPENROUTER"
+    assert execution_result["commands_run"][0]["command"] == "python3 -c print(456)"
+    assert execution_result["commands_run"][0]["returncode"] == 0
+    assert execution_result["commit_hash"]
+    assert execution_result["branch"] is not None
 
 
 def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
