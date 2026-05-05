@@ -1,0 +1,39 @@
+{
+  "workflow_id": "ms_af_sandbox_v1",
+  "version": "0.1.0",
+  "purpose": "Evaluate explicit workflow orchestration for SmartPyme without LLM calls.",
+  "runtime": "microsoft_agent_framework_sandbox",
+  "steps": [
+    {
+      "step_id": "planner_mock",
+      "kind": "function",
+      "input": "SandboxRunRequest",
+      "output": "SandboxStepResult"
+    },
+    {
+      "step_id": "validator_mock",
+      "kind": "function",
+      "input": "SandboxStepResult",
+      "output": "SandboxStepResult"
+    },
+    {
+      "step_id": "publisher_mock",
+      "kind": "function",
+      "input": "SandboxStepResult",
+      "output": "SandboxStepResult"
+    }
+  ],
+  "constraints": {
+    "llm_calls_allowed": false,
+    "touch_smartpyme_runtime": false,
+    "touch_hermes": false,
+    "touch_systemd": false,
+    "touch_env_files": false
+  },
+  "success_criteria": [
+    "workflow_spec.json loads",
+    "hello_workflow.py returns PASS",
+    "steps execute in declared order",
+    "no SmartPyme production files are modified"
+  ]
+}
