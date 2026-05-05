@@ -573,7 +573,7 @@ def _run_git(args: list[str], repo_root: Path) -> str:
 
 
 def _git_changed_paths(repo_root: Path) -> list[str]:
-    output = _run_git(["status", "--short"], repo_root)
+    output = _run_git(["status", "--short", "--untracked-files=all"], repo_root)
     changed: list[str] = []
     for line in output.splitlines():
         if not line.strip() or len(line) < 4:
