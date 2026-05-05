@@ -114,13 +114,14 @@ def test_run_dangerous_command_blocked(
         gate_path=gate_path,
     )
 
-    assert result["status"] == "blocked"
+    assert result["status"] == TaskSpecStatus.WAITING_FOR_APPROVAL.value
     assert result["task_id"] == "TASK_DANGEROUS"
-    assert "COMMAND_BLOCKED" in result["blocking_reason"]
+    assert "COMMAND_REQUIRES_APPROVAL" in result["blocking_reason"]
     assert "DANGEROUS_COMMAND_PATTERN" in result["blocking_reason"]
 
     final_task = task_store.get("TASK_DANGEROUS")
-    assert final_task.status == TaskSpecStatus.BLOCKED
+    assert final_task.status == TaskSpecStatus.WAITING_FOR_APPROVAL
+    mock_docker_executor.execute.assert_not_called()
 
 
 def test_run_command_failure(
