@@ -1,0 +1,33 @@
+VEREDICTO: PASS
+
+HITO: HITO_008_TASK_LOOP_DOCKER_INTEGRATION
+
+COMMIT:
+d0ab0a5 feat(factory): integrate docker sandbox into task loop
+
+RESUMEN:
+DockerExecutor fue promovido al core de factoría y conectado al TaskLoop soberano mediante factory/core/queue_runner.py.
+
+ARCHIVOS:
+- factory/core/queue_runner.py
+- factory/contracts/sandbox.py
+- factory/contracts/__init__.py
+- factory/sandbox/docker_executor.py
+- factory/sandbox/command_policy.py
+- factory/sandbox/__init__.py
+- tests/factory/test_queue_runner_docker_integration.py
+
+VALIDACION:
+pytest tests/factory/test_queue_runner_docker_integration.py -q
+Resultado: 4 passed
+
+RESTRICCIONES:
+- No Hermes
+- No MCP
+- No LLM
+- No app/**
+- No Prefect movido al core
+- DockerExecutor no depende de experiments/
+
+ESTADO:
+PASS / PUSHED_DIRECT
