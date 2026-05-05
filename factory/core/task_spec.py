@@ -10,6 +10,7 @@ from typing import Any
 class TaskSpecStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
+    WAITING_FOR_APPROVAL = "waiting_for_approval"
     DONE = "done"
     BLOCKED = "blocked"
 
