@@ -25,11 +25,11 @@ def _task(task_id: str = "TS_TEST_001") -> TaskSpec:
         allowed_paths=["allowed"],
         forbidden_paths=["forbidden"],
         acceptance_criteria=["runner closes one task"],
-        validation_commands=["python -c print(123)"],
+        validation_commands=["python3 -c print(123)"],
         metadata={
             "operational_mode": "WRITE_AUTHORIZED",
             "model_target": "DEEPSEEK_4_PRO",
-            "preflight_commands": ["python -c print(456)"],
+            "preflight_commands": ["python3 -c print(456)"],
         },
     )
 
@@ -114,7 +114,7 @@ def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
         allowed_paths=["allowed"],
         forbidden_paths=[],
         acceptance_criteria=["mode is required"],
-        validation_commands=["python -c print(1)"],
+        validation_commands=["python3 -c print(1)"],
         metadata={"model_target": "DEEPSEEK_4_PRO"},
     )
     TaskSpecStore(tasks_dir).enqueue(task)
