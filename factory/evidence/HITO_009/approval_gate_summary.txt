@@ -1,0 +1,29 @@
+VEREDICTO: PASS_PENDING_LOCAL_VALIDATION
+
+HITO: HITO_009_APPROVAL_GATE_FOR_TASK_LOOP
+
+RESUMEN:
+Se agregó un Approval Gate determinístico local al TaskLoop soberano.
+Si una TaskSpec contiene comandos que requieren aprobación humana según command_policy.evaluate_command, el loop no marca la tarea como in_progress, no invoca DockerExecutor y mueve la TaskSpec a waiting_for_approval.
+
+CAMBIOS:
+- TaskSpecStatus.WAITING_FOR_APPROVAL = waiting_for_approval
+- TaskSpecStore reconoce el directorio waiting_for_approval
+- TaskSpecStore.mark_waiting_for_approval(...)
+- queue_runner pre-verifica comandos antes de mark_in_progress
+- tests/factory/test_approval_gate.py cubre gate, ejecución segura y listado del nuevo estado
+
+RESTRICCIONES:
+- No Hermes
+- No MCP
+- No Telegram
+- No ApprovalClient real
+- No contratos HITL promovidos
+- No app/**
+
+VALIDACION_REQUERIDA_LOCAL:
+pytest tests/factory/test_approval_gate.py -q
+pytest tests/factory/test_queue_runner_docker_integration.py -q
+
+ESTADO:
+Implementado en GitHub. Requiere pull y validación local/VM.
