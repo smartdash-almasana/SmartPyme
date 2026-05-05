@@ -1,0 +1,8 @@
+$ echo 'Validación mínima para permitir que el ciclo genere evidencia'
+returncode=0
+stdout:
+Validación mínima para permitir que el ciclo genere evidencia
+
+stderr:
+
+---

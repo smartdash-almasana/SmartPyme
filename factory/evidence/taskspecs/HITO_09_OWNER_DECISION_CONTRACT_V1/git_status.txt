@@ -1,0 +1,4 @@
+M factory/control/AUDIT_GATE.md
+?? docs/product/OWNER_DECISION_CONTRACT_V1.md
+?? factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/
+?? factory/taskspecs/in_progress/

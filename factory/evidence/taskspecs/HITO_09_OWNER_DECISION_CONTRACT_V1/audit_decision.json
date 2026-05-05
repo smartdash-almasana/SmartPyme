@@ -1,0 +1,15 @@
+{
+  "task_id": "HITO_09_OWNER_DECISION_CONTRACT_V1",
+  "decision": "BLOCKED",
+  "auditor": "sovereign_task_loop_v1",
+  "checked_commit": "ed3bd99",
+  "checked_evidence_dir": "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1",
+  "checked_evidence_manifest": "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json",
+  "summary": "Sovereign TaskLoop cycle blocked: PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/audit_decision.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/cycle.md;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/decision.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/execution_result.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_diff.patch;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_status.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/tests.txt;PATH_NOT_ALLOWED: factory/taskspecs/in_progress/HITO_09_OWNER_DECISION_CONTRACT_V1.json",
+  "risks": [
+    "PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/audit_decision.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/cycle.md;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/decision.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/execution_result.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_diff.patch;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_status.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/tests.txt;PATH_NOT_ALLOWED: factory/taskspecs/in_progress/HITO_09_OWNER_DECISION_CONTRACT_V1.json"
+  ],
+  "required_human_action": false,
+  "next_gate_status": "WAITING_AUDIT",
+  "next_milestone": null
+}

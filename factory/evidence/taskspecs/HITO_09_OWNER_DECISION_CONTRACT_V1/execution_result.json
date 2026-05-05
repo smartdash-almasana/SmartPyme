@@ -1,0 +1,27 @@
+{
+  "task_id": "HITO_09_OWNER_DECISION_CONTRACT_V1",
+  "status": "blocked",
+  "executor_real": "kiro_local",
+  "model_real": "deepseek_3_2",
+  "provider_real": "openrouter",
+  "started_at": "2026-05-05T12:30:06.365184+00:00",
+  "finished_at": "2026-05-05T12:30:06.410097+00:00",
+  "commands_run": [
+    {
+      "command": "echo 'Validación mínima para permitir que el ciclo genere evidencia'",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt",
+      "stderr_path": "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt"
+    }
+  ],
+  "files_changed": [
+    "actory/control/AUDIT_GATE.md",
+    "docs/product/OWNER_DECISION_CONTRACT_V1.md",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/",
+    "factory/taskspecs/in_progress/"
+  ],
+  "commit_hash": "ed3bd99",
+  "branch": "factory/ts-006-jobs-sovereign-persistence",
+  "push_status": "not_applicable_in_local_runner",
+  "blocking_reason": "PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/audit_decision.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/cycle.md;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/decision.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/execution_result.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_diff.patch;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_status.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/tests.txt;PATH_NOT_ALLOWED: factory/taskspecs/in_progress/HITO_09_OWNER_DECISION_CONTRACT_V1.json"
+}

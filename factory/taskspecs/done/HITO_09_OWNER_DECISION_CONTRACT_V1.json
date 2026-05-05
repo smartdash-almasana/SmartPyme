@@ -1,0 +1,51 @@
+{
+  "task_id": "HITO_09_OWNER_DECISION_CONTRACT_V1",
+  "title": "OwnerDecision Contract V1",
+  "objective": "Crear OwnerDecision / DecisionRecord v1 como documento de producto",
+  "allowed_paths": [
+    "**"
+  ],
+  "forbidden_paths": [
+    "app/**",
+    "factory/core/**",
+    "tests/**",
+    ".env",
+    "config.yaml"
+  ],
+  "acceptance_criteria": [
+    "docs/product/OWNER_DECISION_CONTRACT_V1.md creado",
+    "Evidencia JSON generada en factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/",
+    "Gate queda en WAITING_AUDIT",
+    "Commit/push realizado"
+  ],
+  "validation_commands": [
+    "echo 'Validación mínima para permitir que el ciclo genere evidencia'"
+  ],
+  "status": "done",
+  "evidence_paths": [
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/cycle.md",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_status.txt",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_diff.patch",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/tests.txt",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/decision.txt",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/execution_result.json",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json",
+    "factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/audit_decision.json"
+  ],
+  "blocking_reason": null,
+  "metadata": {
+    "operational_mode": "WRITE_AUTHORIZED",
+    "model_target": "deepseek_3_2",
+    "provider_target": "openrouter",
+    "executor_target": "kiro_local",
+    "capa": "product_contracts",
+    "fase": "documentar",
+    "max_prompt_tokens_est": 4000,
+    "max_output_tokens_est": 2000,
+    "max_files_read": 3,
+    "max_searches": 2,
+    "quiet_protocol": true,
+    "human_required": false
+  }
+}

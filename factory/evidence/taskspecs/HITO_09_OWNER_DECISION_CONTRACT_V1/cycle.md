@@ -1,0 +1,9 @@
+# Sovereign TaskLoop Cycle: HITO_09_OWNER_DECISION_CONTRACT_V1
+
+task_id: HITO_09_OWNER_DECISION_CONTRACT_V1
+title: OwnerDecision Contract V1
+status: blocked
+operational_mode: WRITE_AUTHORIZED
+model_target: deepseek_3_2
+gate_status_start: recorded_in_initial_cycle
+blocking_reason: PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/audit_decision.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/commands.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/cycle.md;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/decision.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/evidence_manifest.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/execution_result.json;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_diff.patch;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/git_status.txt;PATH_NOT_ALLOWED: factory/evidence/taskspecs/HITO_09_OWNER_DECISION_CONTRACT_V1/tests.txt;PATH_NOT_ALLOWED: factory/taskspecs/in_progress/HITO_09_OWNER_DECISION_CONTRACT_V1.json
