@@ -19,6 +19,7 @@ BUSINESS_TASK_TYPES: set[str] = set()
 ALLOWED_GATE_STATUSES = {"OPEN", "APPROVED", "RUN"}
 WAITING_AUDIT_STATUS = "WAITING_AUDIT"
 EVIDENCE_MANIFEST_FILENAME = "evidence_manifest.json"
+EXECUTION_RESULT_FILENAME = "execution_result.json"
 MINIMUM_EVIDENCE_FILES = (
     "cycle.md",
     "commands.txt",
@@ -94,6 +95,7 @@ def run_one_sovereign_task(
     gate_path: str | Path = Path("factory/control/AUDIT_GATE.md"),
     repo_root: str | Path = Path("."),
 ) -> dict:
+    started_at = datetime.now(UTC)
     gate_path = Path(gate_path)
     repo_root = Path(repo_root)
     gate_status = _read_gate_status(gate_path)
@@ -148,6 +150,17 @@ def run_one_sovereign_task(
     _write_decision_evidence(task_evidence_dir, final_status, blocking_reason)
     _write_cycle_evidence(task_evidence_dir, task, final_status, blocking_reason)
     _write_waiting_audit_gate(gate_path, task.task_id, final_status, blocking_reason)
+    execution_result_path = _write_execution_result(
+        task=task,
+        task_evidence_dir=task_evidence_dir,
+        final_status=final_status,
+        blocking_reason=blocking_reason,
+        command_results=command_results,
+        started_at=started_at,
+        finished_at=datetime.now(UTC),
+        branch=_current_branch(repo_root),
+        commit_hash=_current_commit(repo_root),
+    )
     manifest_path = _write_evidence_manifest(
         task=task,
         task_evidence_dir=task_evidence_dir,
@@ -160,8 +173,9 @@ def run_one_sovereign_task(
         "status": final_status,
         "task_id": task.task_id,
         "evidence_dir": str(task_evidence_dir),
+        "execution_result_path": str(execution_result_path),
         "evidence_manifest_path": str(manifest_path),
-        "evidence_paths": [*evidence_paths, str(manifest_path)],
+        "evidence_paths": [*evidence_paths, str(execution_result_path), str(manifest_path)],
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
     }
@@ -363,6 +377,49 @@ def _write_decision_evidence(
     )
 
 
+def _write_execution_result(
+    *,
+    task: TaskSpec,
+    task_evidence_dir: Path,
+    final_status: str,
+    blocking_reason: str | None,
+    command_results: list[dict[str, object]],
+    started_at: datetime,
+    finished_at: datetime,
+    branch: str,
+    commit_hash: str,
+) -> Path:
+    result_path = task_evidence_dir / EXECUTION_RESULT_FILENAME
+    result = {
+        "task_id": task.task_id,
+        "status": final_status,
+        "executor_real": task.metadata.get("executor_target") or task.metadata.get("executor") or "UNKNOWN",
+        "model_real": task.metadata.get("model_target"),
+        "provider_real": task.metadata.get("provider_target"),
+        "started_at": started_at.isoformat(),
+        "finished_at": finished_at.isoformat(),
+        "commands_run": [
+            {
+                "command": command_result["command"],
+                "returncode": command_result["returncode"],
+                "stdout_path": str(task_evidence_dir / "commands.txt"),
+                "stderr_path": str(task_evidence_dir / "commands.txt"),
+            }
+            for command_result in command_results
+        ],
+        "files_changed": _changed_files_from_git_status(task_evidence_dir / "git_status.txt"),
+        "commit_hash": commit_hash,
+        "branch": branch,
+        "push_status": "not_applicable_in_local_runner",
+        "blocking_reason": blocking_reason,
+    }
+    result_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return result_path
+
+
 def _write_evidence_manifest(
     *,
     task: TaskSpec,
@@ -394,6 +451,17 @@ def _write_evidence_manifest(
         encoding="utf-8",
     )
     return manifest_path
+
+
+def _changed_files_from_git_status(git_status_path: Path) -> list[str]:
+    if not git_status_path.exists():
+        return []
+    changed: list[str] = []
+    for line in git_status_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        changed.append(line[3:].strip() if len(line) > 3 else line.strip())
+    return changed
 
 
 def _run_git(args: list[str], repo_root: Path) -> str:
