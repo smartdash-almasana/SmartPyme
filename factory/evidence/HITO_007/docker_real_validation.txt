@@ -1,0 +1,22 @@
+VEREDICTO: PASS
+
+HITO: HITO_007_DOCKER_SANDBOX_MINIMAL
+
+EVIDENCIA:
+_DOCKER_SDK_AVAILABLE = True
+_docker_daemon_available = True
+task_id='manual_hito_007'
+command='python -c "print('\''ok'\'')"'
+returncode=0
+stdout='ok\n'
+stderr=''
+blocked=False
+requires_human_approval=False
+reasons=[]
+
+NOTA:
+pytest experiments/prefect-factory/tests/test_docker_executor.py -q -rs todavía muestra 1 skipped en este entorno,
+pero la ejecución real directa del DockerExecutor fue validada con:
+PYTHONPATH=experiments/prefect-factory python - <<'PY'
+...
+PY
