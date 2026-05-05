@@ -283,7 +283,7 @@ def test_sovereign_runner_blocks_untracked_path_outside_allowed_paths(tmp_path):
         allowed_paths=["allowed"],
         forbidden_paths=["forbidden"],
         acceptance_criteria=["untracked forbidden path blocks task"],
-        validation_commands=["python3 -c open('forbidden/new.txt','w').write('bad')"],
+        validation_commands=["python3 -c \"from pathlib import Path; Path('forbidden/new.txt').write_text('bad')\""],
         metadata={"operational_mode": "WRITE_AUTHORIZED", "model_target": "DEEPSEEK_4_PRO"},
     )
     TaskSpecStore(tasks_dir).enqueue(task)
