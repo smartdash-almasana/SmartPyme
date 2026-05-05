@@ -1,0 +1,2 @@
+?? factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/
+?? factory/taskspecs/

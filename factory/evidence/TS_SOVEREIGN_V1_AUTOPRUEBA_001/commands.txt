@@ -1,0 +1,65 @@
+$ echo 'PREFLIGHT: verificando gate y repo'
+returncode=0
+stdout:
+PREFLIGHT: verificando gate y repo
+
+stderr:
+
+---
+$ pwd
+returncode=0
+stdout:
+/opt/smartpyme-factory/repos/SmartPyme
+
+stderr:
+
+---
+$ git status --short
+returncode=0
+stdout:
+?? factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/
+?? factory/taskspecs/
+
+stderr:
+
+---
+$ python3 -m py_compile factory/core/queue_runner.py
+returncode=0
+stdout:
+
+stderr:
+
+---
+$ echo 'POST: ciclo completado'
+returncode=0
+stdout:
+POST: ciclo completado
+
+stderr:
+
+---
+$ git status --short
+returncode=0
+stdout:
+?? factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/
+?? factory/taskspecs/
+
+stderr:
+
+---
+$ ls -la factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/
+returncode=0
+stdout:
+total 12
+drwxr-xr-x  2 neoalmasana neoalmasana 4096 May  5 02:59 .
+drwxr-xr-x 60 neoalmasana neoalmasana 4096 May  5 02:59 ..
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 02:59 commands.txt
+-rw-r--r--  1 neoalmasana neoalmasana  262 May  5 02:59 cycle.md
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 02:59 decision.txt
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 02:59 git_diff.patch
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 02:59 git_status.txt
+-rw-r--r--  1 neoalmasana neoalmasana    0 May  5 02:59 tests.txt
+
+stderr:
+
+---

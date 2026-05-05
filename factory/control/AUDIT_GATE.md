@@ -1,6 +1,7 @@
 # AUDIT GATE
 
-status: OPEN
-updated_at: 2026-04-28T14:20:00+00:00
-updated_by: ChatGPT_Director_Auditor
-reason: control_telegram_operativo_repo_limpio_estado_anterior_resuelto
+status: WAITING_AUDIT
+updated_at: 2026-05-05T02:59:04.446858+00:00
+updated_by: sovereign_task_loop_v1
+task_id: TS_SOVEREIGN_V1_AUTOPRUEBA_001
+reason: task_done

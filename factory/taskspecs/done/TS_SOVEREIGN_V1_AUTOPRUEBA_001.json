@@ -1,0 +1,57 @@
+{
+  "task_id": "TS_SOVEREIGN_V1_AUTOPRUEBA_001",
+  "title": "Autoprueba TaskLoop soberano V1",
+  "objective": "Ejecutar ciclo soberano mínimo del TaskLoop V1: validar gate, seleccionar TaskSpec, ejecutar comandos de preflight, validation y post, generar evidencia JSON completa y cerrar gate en WAITING_AUDIT.",
+  "allowed_paths": [
+    "factory/control/AUDIT_GATE.md",
+    "factory/taskspecs/pending/TS_SOVEREIGN_V1_AUTOPRUEBA_001.json",
+    "factory/core/queue_runner.py",
+    "factory/evidence/"
+  ],
+  "forbidden_paths": [
+    "app/**",
+    "core/**",
+    "services/**",
+    "factory/runner_logs/**"
+  ],
+  "acceptance_criteria": [
+    "Gate inicial OPEN",
+    "Se crea evidence_dir con 6 archivos mínimos",
+    "Se generan evidence_manifest.json, execution_result.json, audit_decision.json",
+    "Gate final WAITING_AUDIT",
+    "TaskSpec pasa a status done o blocked con razón clara"
+  ],
+  "validation_commands": [
+    "python3 -m py_compile factory/core/queue_runner.py"
+  ],
+  "status": "done",
+  "evidence_paths": [
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/cycle.md",
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/git_status.txt",
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/git_diff.patch",
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/tests.txt",
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/decision.txt"
+  ],
+  "blocking_reason": null,
+  "metadata": {
+    "mode": "patch_only",
+    "operational_mode": "ANALYSIS_ONLY",
+    "layer": "FACTORY_RUNTIME",
+    "phase": "EJECUTAR",
+    "model_target": "DEEPSEEK_4_PRO",
+    "max_files_read": 3,
+    "max_searches": 1,
+    "preflight_commands": [
+      "echo 'PREFLIGHT: verificando gate y repo'",
+      "pwd",
+      "git status --short"
+    ],
+    "post_commands": [
+      "echo 'POST: ciclo completado'",
+      "git status --short",
+      "ls -la factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/"
+    ],
+    "human_required": false
+  }
+}

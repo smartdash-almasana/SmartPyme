@@ -1,0 +1,61 @@
+{
+  "task_id": "TS_SOVEREIGN_V1_AUTOPRUEBA_001",
+  "status": "done",
+  "executor_real": "UNKNOWN",
+  "model_real": "DEEPSEEK_4_PRO",
+  "provider_real": null,
+  "started_at": "2026-05-05T02:59:04.265196+00:00",
+  "finished_at": "2026-05-05T02:59:04.447442+00:00",
+  "commands_run": [
+    {
+      "command": "echo 'PREFLIGHT: verificando gate y repo'",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "pwd",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "git status --short",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "python3 -m py_compile factory/core/queue_runner.py",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "echo 'POST: ciclo completado'",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "git status --short",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    },
+    {
+      "command": "ls -la factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+      "stderr_path": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt"
+    }
+  ],
+  "files_changed": [
+    "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/",
+    "factory/taskspecs/"
+  ],
+  "commit_hash": "dbbbc2a",
+  "branch": "factory/ts-006-jobs-sovereign-persistence",
+  "push_status": "not_applicable_in_local_runner",
+  "blocking_reason": null
+}

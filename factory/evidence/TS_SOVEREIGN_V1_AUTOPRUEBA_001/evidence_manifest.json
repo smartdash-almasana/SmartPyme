@@ -1,0 +1,16 @@
+{
+  "task_id": "TS_SOVEREIGN_V1_AUTOPRUEBA_001",
+  "evidence_dir": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001",
+  "required_files": {
+    "cycle": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/cycle.md",
+    "commands": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/commands.txt",
+    "git_status": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/git_status.txt",
+    "git_diff": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/git_diff.patch",
+    "tests": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/tests.txt",
+    "decision": "factory/evidence/TS_SOVEREIGN_V1_AUTOPRUEBA_001/decision.txt"
+  },
+  "commit_hash": "dbbbc2a",
+  "branch": "factory/ts-006-jobs-sovereign-persistence",
+  "gate_status_after": "WAITING_AUDIT",
+  "complete": true
+}
