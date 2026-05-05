@@ -104,14 +104,18 @@ def sandbox_task(
                 reasons=review.reasons,
             )
 
+    from factory_prefect.sandbox.docker_executor import DockerExecutor
+    from factory_prefect.contracts.sandbox import SandboxExecutionRequest
+
     command = review.commands_to_validate[0] if review.commands_to_validate else "python --version"
-    return SandboxExecutionResult(
+    executor = DockerExecutor()
+    request = SandboxExecutionRequest(
         task_id=ledger_task.task_id,
         command=command,
-        returncode=0,
-        stdout="SANDBOX_MOCK_PASS",
-        stderr="",
+        timeout_seconds=60,
+        network_disabled=True,
     )
+    return executor.execute(request)
 
 
 @task(log_prints=True)
