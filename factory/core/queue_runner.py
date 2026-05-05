@@ -573,8 +573,17 @@ def _run_git(args: list[str], repo_root: Path) -> str:
 
 
 def _git_changed_paths(repo_root: Path) -> list[str]:
-    output = _run_git(["diff", "--name-only"], repo_root)
-    return [line.strip() for line in output.splitlines() if line.strip()]
+    output = _run_git(["status", "--short"], repo_root)
+    changed: list[str] = []
+    for line in output.splitlines():
+        if not line.strip() or len(line) < 4:
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1].strip()
+        if path:
+            changed.append(path)
+    return changed
 
 
 def _current_branch(repo_root: Path) -> str:
