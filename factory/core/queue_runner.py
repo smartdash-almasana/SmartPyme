@@ -14,6 +14,7 @@ from factory.core.task_loop import (
 )
 from factory.core.task_spec import TaskSpec, validate_changed_paths
 from factory.core.task_spec_store import TaskSpecStore
+from factory.sandbox.command_policy import evaluate_command
 from factory.sandbox.docker_executor import DockerExecutor
 
 BUSINESS_TASK_TYPES: set[str] = set()
@@ -117,6 +118,20 @@ def run_one_sovereign_task(
             "status": "idle",
             "task_id": None,
             "reason": "NO_PENDING_TASKSPEC",
+            "gate_status": gate_status,
+        }
+
+    approval_requirement = _approval_requirement(pending_task)
+    if approval_requirement is not None:
+        waiting_task = store.mark_waiting_for_approval(
+            pending_task.task_id,
+            approval_requirement,
+        )
+        return {
+            "status": waiting_task.status.value,
+            "task_id": waiting_task.task_id,
+            "reason": approval_requirement,
+            "blocking_reason": approval_requirement,
             "gate_status": gate_status,
         }
 
@@ -289,6 +304,15 @@ def _sovereign_commands(task: TaskSpec) -> list[str]:
         *list(task.validation_commands),
         *list(metadata.get("post_commands") or []),
     ]
+
+
+def _approval_requirement(task: TaskSpec) -> str | None:
+    for command in _sovereign_commands(task):
+        policy = evaluate_command(command)
+        if policy.requires_human_approval:
+            reasons = ",".join(policy.reasons) if policy.reasons else "UNKNOWN_REASON"
+            return f"COMMAND_REQUIRES_APPROVAL: {command}. Reasons: {reasons}"
+    return None
 
 
 def _run_commands(
