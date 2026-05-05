@@ -82,6 +82,7 @@ def test_sovereign_runner_takes_pending_task_and_creates_evidence(tmp_path):
         "decision.txt",
         "execution_result.json",
         "evidence_manifest.json",
+        "audit_decision.json",
     ):
         assert (task_evidence / filename).exists()
 
@@ -158,6 +159,32 @@ def test_sovereign_runner_writes_execution_result_json(tmp_path):
     assert execution_result["commands_run"][0]["returncode"] == 0
     assert execution_result["commit_hash"]
     assert execution_result["branch"] is not None
+
+
+def test_sovereign_runner_writes_audit_decision_json(tmp_path):
+    tasks_dir = tmp_path / "taskspecs"
+    evidence_dir = tmp_path / "evidence"
+    gate_path = tmp_path / "AUDIT_GATE.md"
+    _open_gate(gate_path)
+    TaskSpecStore(tasks_dir).enqueue(_task())
+
+    result = run_one_queued_task(
+        tasks_dir,
+        evidence_dir,
+        use_sovereign=True,
+        gate_path=gate_path,
+        repo_root=tmp_path,
+    )
+
+    audit_decision_path = Path(result["audit_decision_path"])
+    audit_decision = json.loads(audit_decision_path.read_text(encoding="utf-8"))
+    assert audit_decision["task_id"] == "TS_TEST_001"
+    assert audit_decision["decision"] in {"PASS", "BLOCKED"}
+    assert audit_decision["auditor"] == "sovereign_task_loop_v1"
+    assert audit_decision["checked_commit"]
+    assert audit_decision["checked_evidence_dir"] == str(evidence_dir / "TS_TEST_001")
+    assert audit_decision["required_human_action"] is False
+    assert audit_decision["next_gate_status"] in {"OPEN", "WAITING_AUDIT"}
 
 
 def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
