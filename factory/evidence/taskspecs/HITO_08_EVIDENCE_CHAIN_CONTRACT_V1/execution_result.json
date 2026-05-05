@@ -1,0 +1,35 @@
+{
+  "task_id": "HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "status": "done",
+  "executor_real": "KIRO_LOCAL",
+  "model_real": "DEEPSEEK_3_2",
+  "provider_real": "OPENROUTER",
+  "started_at": "2026-05-05T11:53:27.828008+00:00",
+  "finished_at": "2026-05-05T11:53:27.873351+00:00",
+  "commands_run": [
+    {
+      "command": "echo 'Documento creado'",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt",
+      "stderr_path": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt"
+    },
+    {
+      "command": "echo 'Evidencia será generada por ciclo'",
+      "returncode": 0,
+      "stdout_path": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt",
+      "stderr_path": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt"
+    }
+  ],
+  "files_changed": [
+    "actory/control/AUDIT_GATE.md",
+    "docs/product/EVIDENCE_CHAIN_CONTRACT_V1.md",
+    "factory/evidence/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/",
+    "factory/evidence/taskspecs/",
+    "factory/taskspecs/done/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1.json",
+    "factory/taskspecs/in_progress/"
+  ],
+  "commit_hash": "a9d474a",
+  "branch": "factory/ts-006-jobs-sovereign-persistence",
+  "push_status": "not_applicable_in_local_runner",
+  "blocking_reason": null
+}

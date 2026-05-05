@@ -1,0 +1,16 @@
+$ echo 'Documento creado'
+returncode=0
+stdout:
+Documento creado
+
+stderr:
+
+---
+$ echo 'Evidencia será generada por ciclo'
+returncode=0
+stdout:
+Evidencia será generada por ciclo
+
+stderr:
+
+---

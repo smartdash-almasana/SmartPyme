@@ -1,0 +1,6 @@
+M factory/control/AUDIT_GATE.md
+?? docs/product/EVIDENCE_CHAIN_CONTRACT_V1.md
+?? factory/evidence/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/
+?? factory/evidence/taskspecs/
+?? factory/taskspecs/done/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1.json
+?? factory/taskspecs/in_progress/

@@ -1,0 +1,16 @@
+{
+  "task_id": "HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "evidence_dir": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "required_files": {
+    "cycle": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/cycle.md",
+    "commands": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt",
+    "git_status": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/git_status.txt",
+    "git_diff": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/git_diff.patch",
+    "tests": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/tests.txt",
+    "decision": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/decision.txt"
+  },
+  "commit_hash": "a9d474a",
+  "branch": "factory/ts-006-jobs-sovereign-persistence",
+  "gate_status_after": "WAITING_AUDIT",
+  "complete": true
+}

@@ -1,0 +1,50 @@
+{
+  "task_id": "HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "title": "Evidence Chain Contract v1",
+  "objective": "Crear contrato EvidenceChain v1 como documento de producto usando el flujo soberano simple.",
+  "allowed_paths": [
+    "docs/product/EVIDENCE_CHAIN_CONTRACT_V1.md",
+    "factory/taskspecs/**",
+    "factory/evidence/taskspecs/**",
+    "factory/control/AUDIT_GATE.md"
+  ],
+  "forbidden_paths": [
+    "app/**",
+    "factory/core/**",
+    "tests/**",
+    ".env",
+    "config.yaml"
+  ],
+  "acceptance_criteria": [
+    "docs/product/EVIDENCE_CHAIN_CONTRACT_V1.md creado",
+    "Evidencia JSON generada en factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/",
+    "Gate queda en WAITING_AUDIT",
+    "Commit/push realizado"
+  ],
+  "validation_commands": [
+    "echo 'Documento creado'",
+    "echo 'Evidencia será generada por ciclo'"
+  ],
+  "status": "done",
+  "evidence_paths": [
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/cycle.md",
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/commands.txt",
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/git_status.txt",
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/git_diff.patch",
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/tests.txt",
+    "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/decision.txt"
+  ],
+  "blocking_reason": null,
+  "metadata": {
+    "operational_mode": "WRITE_AUTHORIZED",
+    "model_target": "DEEPSEEK_3_2",
+    "provider_target": "OPENROUTER",
+    "executor_target": "KIRO_LOCAL",
+    "max_prompt_tokens_est": 4000,
+    "max_output_tokens_est": 2000,
+    "max_files_read": 3,
+    "max_searches": 2,
+    "quiet_protocol": true,
+    "human_required": false
+  }
+}

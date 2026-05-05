@@ -1,0 +1,13 @@
+{
+  "task_id": "HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "decision": "PASS",
+  "auditor": "sovereign_task_loop_v1",
+  "checked_commit": "a9d474a",
+  "checked_evidence_dir": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1",
+  "checked_evidence_manifest": "factory/evidence/taskspecs/HITO_08_EVIDENCE_CHAIN_CONTRACT_V1/evidence_manifest.json",
+  "summary": "Sovereign TaskLoop cycle completed with required evidence.",
+  "risks": [],
+  "required_human_action": false,
+  "next_gate_status": "OPEN",
+  "next_milestone": null
+}
