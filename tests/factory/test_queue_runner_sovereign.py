@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from factory.core.queue_runner import run_one_queued_task
@@ -77,6 +78,7 @@ def test_sovereign_runner_takes_pending_task_and_creates_evidence(tmp_path):
         "git_diff.patch",
         "tests.txt",
         "decision.txt",
+        "evidence_manifest.json",
     ):
         assert (task_evidence / filename).exists()
 
@@ -100,6 +102,31 @@ def test_sovereign_runner_moves_task_to_final_state_and_waiting_audit(tmp_path):
     assert result["status"] in {"done", "blocked"}
     assert store.next_pending() is None
     assert "status: WAITING_AUDIT" in gate_path.read_text(encoding="utf-8")
+
+
+def test_sovereign_runner_writes_evidence_manifest_json(tmp_path):
+    tasks_dir = tmp_path / "taskspecs"
+    evidence_dir = tmp_path / "evidence"
+    gate_path = tmp_path / "AUDIT_GATE.md"
+    _open_gate(gate_path)
+    TaskSpecStore(tasks_dir).enqueue(_task())
+
+    result = run_one_queued_task(
+        tasks_dir,
+        evidence_dir,
+        use_sovereign=True,
+        gate_path=gate_path,
+        repo_root=tmp_path,
+    )
+
+    manifest_path = Path(result["evidence_manifest_path"])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["task_id"] == "TS_TEST_001"
+    assert manifest["evidence_dir"] == str(evidence_dir / "TS_TEST_001")
+    assert manifest["gate_status_after"] == "WAITING_AUDIT"
+    assert manifest["complete"] is True
+    assert manifest["required_files"]["cycle"].endswith("cycle.md")
+    assert manifest["required_files"]["decision"].endswith("decision.txt")
 
 
 def test_sovereign_runner_blocks_missing_operational_mode(tmp_path):
