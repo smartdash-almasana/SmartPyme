@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
-import shlex
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
+from factory.contracts.sandbox import SandboxExecutionRequest
 from factory.core.task_loop import (
     MultiagentTask,
     load_task,
@@ -14,6 +14,7 @@ from factory.core.task_loop import (
 )
 from factory.core.task_spec import TaskSpec, validate_changed_paths
 from factory.core.task_spec_store import TaskSpecStore
+from factory.sandbox.docker_executor import DockerExecutor
 
 BUSINESS_TASK_TYPES: set[str] = set()
 ALLOWED_GATE_STATUSES = {"OPEN", "APPROVED", "RUN"}
@@ -130,7 +131,9 @@ def run_one_sovereign_task(
     if not operational_mode:
         blocking_reason = "BLOCKED_MODE_MISSING"
     else:
-        command_results = _run_commands(_sovereign_commands(task), repo_root)
+        command_results = _run_commands(
+            task.task_id, _sovereign_commands(task), repo_root
+        )
         blocking_reason = _first_command_failure(command_results)
 
     _write_command_evidence(task_evidence_dir, command_results)
@@ -186,7 +189,11 @@ def run_one_sovereign_task(
         blocking_reason=blocking_reason,
     )
 
-    extra_evidence_paths = [str(execution_result_path), str(manifest_path), str(audit_decision_path)]
+    extra_evidence_paths = [
+        str(execution_result_path),
+        str(manifest_path),
+        str(audit_decision_path),
+    ]
     if human_escalation_path is not None:
         extra_evidence_paths.append(str(human_escalation_path))
 
@@ -197,7 +204,9 @@ def run_one_sovereign_task(
         "execution_result_path": str(execution_result_path),
         "evidence_manifest_path": str(manifest_path),
         "audit_decision_path": str(audit_decision_path),
-        "human_escalation_path": str(human_escalation_path) if human_escalation_path else None,
+        "human_escalation_path": (
+            str(human_escalation_path) if human_escalation_path else None
+        ),
         "evidence_paths": [*evidence_paths, *extra_evidence_paths],
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
@@ -282,31 +291,35 @@ def _sovereign_commands(task: TaskSpec) -> list[str]:
     ]
 
 
-def _run_commands(commands: list[str], repo_root: Path) -> list[dict[str, object]]:
+def _run_commands(
+    task_id: str, commands: list[str], repo_root: Path
+) -> list[dict[str, object]]:
     results: list[dict[str, object]] = []
+    executor = DockerExecutor()
+
     for command in commands:
-        completed = subprocess.run(
-            shlex.split(command),
-            cwd=repo_root,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        request = SandboxExecutionRequest(task_id=task_id, command=command)
+        exec_result = executor.execute(request)
+
         results.append(
             {
-                "command": command,
-                "returncode": completed.returncode,
-                "stdout": completed.stdout,
-                "stderr": completed.stderr,
+                "command": exec_result.command,
+                "returncode": exec_result.returncode,
+                "stdout": exec_result.stdout,
+                "stderr": exec_result.stderr,
+                "blocked": exec_result.blocked,
+                "reasons": exec_result.reasons,
             }
         )
-        if completed.returncode != 0:
+        if exec_result.returncode != 0 or exec_result.blocked:
             break
     return results
 
 
 def _first_command_failure(command_results: list[dict[str, object]]) -> str | None:
     for result in command_results:
+        if result.get("blocked"):
+            return f"COMMAND_BLOCKED: {result['command']}. Reasons: {result.get('reasons')}"
         if result["returncode"] != 0:
             return f"COMMAND_FAILED: {result['command']}"
     return None
@@ -341,7 +354,9 @@ def _write_cycle_evidence(
         f"gate_status_start: {gate_status or 'recorded_in_initial_cycle'}",
         f"blocking_reason: {blocking_reason or ''}",
     ]
-    (task_evidence_dir / "cycle.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (task_evidence_dir / "cycle.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
 
 
 def _write_command_evidence(
@@ -416,7 +431,11 @@ def _write_execution_result(
     result = {
         "task_id": task.task_id,
         "status": final_status,
-        "executor_real": task.metadata.get("executor_target") or task.metadata.get("executor") or "UNKNOWN",
+        "executor_real": (
+            task.metadata.get("executor_target")
+            or task.metadata.get("executor")
+            or "UNKNOWN"
+        ),
         "model_real": task.metadata.get("model_target"),
         "provider_real": task.metadata.get("provider_target"),
         "started_at": started_at.isoformat(),
@@ -430,7 +449,9 @@ def _write_execution_result(
             }
             for command_result in command_results
         ],
-        "files_changed": _changed_files_from_git_status(task_evidence_dir / "git_status.txt"),
+        "files_changed": _changed_files_from_git_status(
+            task_evidence_dir / "git_status.txt"
+        ),
         "commit_hash": commit_hash,
         "branch": branch,
         "push_status": "not_applicable_in_local_runner",
@@ -520,18 +541,24 @@ def _write_human_escalation_if_required(
         return None
     path = task_evidence_dir / HUMAN_ESCALATION_FILENAME
     escalation_type = str(task.metadata.get("escalation_type") or "HUMAN_REQUIRED")
-    reason = str(task.metadata.get("human_reason") or blocking_reason or "Human decision required")
+    reason = str(
+        task.metadata.get("human_reason") or blocking_reason or "Human decision required"
+    )
     result = {
         "task_id": task.task_id,
         "escalation_type": escalation_type,
         "severity": str(task.metadata.get("human_severity") or "HIGH"),
         "reason": reason,
         "decision_needed": str(task.metadata.get("decision_needed") or reason),
-        "options": list(task.metadata.get("human_options") or ["APPROVE", "STOP_FACTORY"]),
+        "options": list(
+            task.metadata.get("human_options") or ["APPROVE", "STOP_FACTORY"]
+        ),
         "recommended_option": task.metadata.get("recommended_option"),
         "safe_to_continue": bool(task.metadata.get("safe_to_continue", False)),
     }
-    path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     return path
 
 
@@ -539,7 +566,9 @@ def _human_escalation_required(task: TaskSpec, blocking_reason: str | None) -> b
     if bool(task.metadata.get("human_required")):
         return True
     reason = (blocking_reason or "").lower()
-    return any(token in reason for token in ("secret", "credential", "token", "key", "billing"))
+    return any(
+        token in reason for token in ("secret", "credential", "token", "key", "billing")
+    )
 
 
 def _audit_summary(decision: str, blocking_reason: str | None) -> str:
@@ -569,7 +598,11 @@ def _run_git(args: list[str], repo_root: Path) -> str:
         capture_output=True,
         check=False,
     )
-    return completed.stdout.strip() if completed.returncode == 0 else completed.stderr.strip()
+    return (
+        completed.stdout.strip()
+        if completed.returncode == 0
+        else completed.stderr.strip()
+    )
 
 
 def _git_changed_paths(repo_root: Path) -> list[str]:
