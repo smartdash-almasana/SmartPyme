@@ -9,13 +9,6 @@ Uso:
     python3 -m factory.core.run_taskloop_once --mode sovereign
     python3 -m factory.core.run_taskloop_once --mode multiagent
 
-Opcionalmente se pueden sobreescribir los paths:
-
-    --tasks-dir /ruta/taskspecs
-    --evidence-dir /ruta/evidence/taskspecs
-    --gate-path /ruta/AUDIT_GATE.md
-    --repo-root /ruta/del/repo
-
 La salida es un objeto JSON compacto con el resultado del ciclo.
 """
 
@@ -23,10 +16,117 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from factory.core.queue_runner import run_one_queued_task
+
+DONE_REMOTE_SYNCED = "DONE_REMOTE_SYNCED"
+BLOCKED_REMOTE_SYNC = "BLOCKED_REMOTE_SYNC"
+
+
+def _run_git(repo_root: Path, args: list[str]) -> tuple[int, str, str]:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
+
+
+def check_remote_sync(repo_root: str | Path = ".", remote: str = "origin") -> dict[str, Any]:
+    """Verifica que HEAD local exista en el remoto de la rama activa.
+
+    Regla operativa: un hito solo puede considerarse DONE real si:
+    - el worktree está limpio;
+    - hay rama local activa;
+    - existe HEAD local;
+    - el commit remoto de origin/<branch> coincide con HEAD.
+    """
+    root = Path(repo_root)
+
+    status_code, status_out, status_err = _run_git(root, ["status", "--short"])
+    if status_code != 0:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": f"GIT_STATUS_FAILED: {status_err}",
+        }
+    if status_out:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": "DIRTY_WORKTREE",
+            "git_status": status_out,
+        }
+
+    branch_code, branch, branch_err = _run_git(root, ["branch", "--show-current"])
+    if branch_code != 0 or not branch:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": f"BRANCH_UNAVAILABLE: {branch_err}",
+        }
+
+    head_code, head, head_err = _run_git(root, ["rev-parse", "HEAD"])
+    if head_code != 0 or not head:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": f"HEAD_UNAVAILABLE: {head_err}",
+            "branch": branch,
+        }
+
+    remote_code, remote_head, remote_err = _run_git(
+        root,
+        ["ls-remote", remote, f"refs/heads/{branch}"],
+    )
+    if remote_code != 0:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": f"LS_REMOTE_FAILED: {remote_err}",
+            "branch": branch,
+            "local_head": head,
+        }
+
+    remote_sha = remote_head.split()[0] if remote_head else ""
+    if remote_sha != head:
+        return {
+            "remote_sync_status": BLOCKED_REMOTE_SYNC,
+            "remote_sync_ok": False,
+            "remote_sync_reason": "REMOTE_HEAD_MISMATCH",
+            "branch": branch,
+            "local_head": head,
+            "remote_head": remote_sha,
+        }
+
+    return {
+        "remote_sync_status": DONE_REMOTE_SYNCED,
+        "remote_sync_ok": True,
+        "remote_sync_reason": None,
+        "branch": branch,
+        "local_head": head,
+        "remote_head": remote_sha,
+    }
+
+
+def _filtered_result(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": result.get("status"),
+        "task_id": result.get("task_id"),
+        "evidence_dir": result.get("evidence_dir"),
+        "evidence_manifest_path": result.get("evidence_manifest_path"),
+        "execution_result_path": result.get("execution_result_path"),
+        "audit_decision_path": result.get("audit_decision_path"),
+        "human_escalation_path": result.get("human_escalation_path"),
+        "blocking_reason": result.get("blocking_reason") or result.get("reason"),
+        "gate_status": result.get("gate_status"),
+    }
 
 
 def main() -> None:
@@ -66,8 +166,24 @@ def main() -> None:
         action="store_true",
         help="Salida JSON sin indentación (default: indentado)",
     )
+    parser.add_argument(
+        "--check-remote-sync",
+        action="store_true",
+        help="Solo verifica que HEAD local esté pusheado en origin/<branch>.",
+    )
+    parser.add_argument(
+        "--require-remote-sync",
+        action="store_true",
+        help="Agrega verificación remota al resultado del ciclo. No hace push.",
+    )
 
     args = parser.parse_args()
+    indent = None if args.compact else 2
+
+    if args.check_remote_sync:
+        json.dump(check_remote_sync(args.repo_root), sys.stdout, ensure_ascii=False, indent=indent)
+        sys.stdout.write("\n")
+        return
 
     result = run_one_queued_task(
         tasks_dir=args.tasks_dir,
@@ -77,21 +193,10 @@ def main() -> None:
         repo_root=args.repo_root,
     )
 
-    # Filtrar campos no requeridos por el contrato solicitado
-    # run_one_queued_task devuelve 'reason' o 'blocking_reason'; preferimos 'blocking_reason'
-    filtered = {
-        "status": result.get("status"),
-        "task_id": result.get("task_id"),
-        "evidence_dir": result.get("evidence_dir"),
-        "evidence_manifest_path": result.get("evidence_manifest_path"),
-        "execution_result_path": result.get("execution_result_path"),
-        "audit_decision_path": result.get("audit_decision_path"),
-        "human_escalation_path": result.get("human_escalation_path"),
-        "blocking_reason": result.get("blocking_reason") or result.get("reason"),
-        "gate_status": result.get("gate_status"),
-    }
+    filtered = _filtered_result(result)
+    if args.require_remote_sync:
+        filtered.update(check_remote_sync(args.repo_root))
 
-    indent = None if args.compact else 2
     json.dump(filtered, sys.stdout, ensure_ascii=False, indent=indent)
     sys.stdout.write("\n")
 
