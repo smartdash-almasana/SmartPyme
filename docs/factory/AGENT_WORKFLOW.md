@@ -318,9 +318,70 @@ Cada fase tiene:
 
 ---
 
-## Formato TaskSpec obligatorio
+## MODEL_TARGET vs EJECUTOR
 
-Todo prompt operativo debe declarar:
+### Distinción conceptual
+
+`MODEL_TARGET` y `EJECUTOR` son dos dimensiones distintas de una tarea operativa:
+
+| Campo | Qué define | Dónde vive | Ejemplo |
+|---|---|---|---|
+| `MODEL_TARGET` | Rol funcional del agente: qué tipo de razonamiento y capacidad se necesita | Schema TaskSpec YAML / campo obligatorio en prompts | `CODEX` |
+| `EJECUTOR` | Superficie concreta donde se ejecuta materialmente la tarea | Metadato operativo del prompt (no en schema YAML) | `KIRO_LOCAL` |
+
+### Regla
+
+```text
+MODEL_TARGET define el rol.
+EJECUTOR define la superficie de ejecución.
+Son independientes.
+```
+
+### KIRO_LOCAL como ejecutor tipo CODEX
+
+Kiro local puede ejecutar tareas cuyo `MODEL_TARGET` es `CODEX`.
+
+Criterio de equivalencia:
+
+- Kiro opera como builder de código bajo contrato.
+- Respeta `allowed_files`, `forbidden_files`, `required_tests` y `acceptance_criteria`.
+- Produce diff, evidencia y veredicto.
+- No decide arquitectura ni roadmap.
+
+Cuando una tarea la ejecuta Kiro local con rol CODEX, declarar:
+
+```text
+MODEL_TARGET: CODEX
+EJECUTOR: KIRO_LOCAL
+```
+
+### Restricción de schema
+
+`KIRO_LOCAL` **no debe usarse como valor de `model_target`** en TaskSpecs YAML mientras no esté en el enum del schema:
+
+```json
+"model_target": { "enum": ["CODEX", "DEEPSEEK_4_PRO", "DEEPSEEK_3_2"] }
+```
+
+Una TaskSpec YAML con `model_target: KIRO_LOCAL` fallaría la validación contra `taskspec.schema.json`.
+
+### Uso en prompts directos
+
+Los prompts directos (no TaskSpec YAML) pueden declarar `EJECUTOR: KIRO_LOCAL` como metadato operativo sin romper el schema:
+
+```text
+CAPA: ...
+FASE: ...
+MODO: WRITE_AUTHORIZED
+MODEL_TARGET: CODEX
+EJECUTOR: KIRO_LOCAL
+```
+
+`EJECUTOR` es informativo. No cambia los permisos ni el modo operativo. `MODO` sigue siendo el campo que define qué está permitido.
+
+---
+
+## Formato TaskSpec obligatorio
 
 ```text
 CAPA:
