@@ -35,6 +35,7 @@ class ExecutionResultV2(BaseModel):
     return_code: int = 0
     evidence_path: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    reasons: List[str] = Field(default_factory=list)
 
 
 class GraphState(BaseModel):
