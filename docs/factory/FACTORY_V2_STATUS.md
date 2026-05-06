@@ -1,6 +1,6 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v7  
+Estado: CANONICO v8  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
 HEAD validado: `2692252 test(factory-v2): cover explicit docker runner`
@@ -19,6 +19,7 @@ La POC determinística low-cost ya tiene:
 - adapter Docker real inyectable;
 - runner Docker explícito;
 - smoke real de `run_with_docker` validado;
+- smoke aislado de LangGraph validado;
 - evidencia por nodo;
 - evidencia de run (`run.json`);
 - documentación de contratos;
@@ -60,6 +61,83 @@ pytest tests/factory_v2/test_policy.py -q
 
 pytest tests/factory_v2/test_code_policy.py -q
 PASS
+```
+
+---
+
+## SMOKE LANGGRAPH AISLADO
+
+Fecha: 2026-05-06  
+Modo: smoke manual en VM, sin tocar código, sin tocar dependencias del proyecto, sin modificar `pyproject.toml`.
+
+Precondición inicial:
+
+```text
+LANGGRAPH_IMPORT_BLOCKED: ModuleNotFoundError("No module named 'langgraph'")
+```
+
+Decisión:
+
+```text
+No instalar global por PEP 668.
+No agregar dependencia al proyecto todavía.
+Crear entorno aislado .venv-langgraph solo para smoke.
+```
+
+Comando ejecutado:
+
+```text
+python3 -m venv .venv-langgraph
+. .venv-langgraph/bin/activate
+python -m pip install -U pip
+python -m pip install langgraph pytest
+```
+
+Resultado de import:
+
+```text
+LANGGRAPH_IMPORT_OK
+```
+
+Versión instalada en entorno aislado:
+
+```text
+langgraph==1.1.10
+```
+
+Smoke determinístico ejecutado:
+
+```text
+StateGraph(SmokeState)
+audit_node -> review_node -> END
+```
+
+Salida confirmada:
+
+```text
+{'message': 'LANGGRAPH_SMOKE -> audit -> review'}
+```
+
+Advertencia observada:
+
+```text
+LangChainPendingDeprecationWarning sobre allowed_objects en JsonPlusSerializer.
+```
+
+Clasificación:
+
+```text
+No bloqueante.
+Advertencia de deprecación futura, no fallo de smoke.
+```
+
+Conclusión:
+
+```text
+LangGraph funciona en entorno aislado y puede ejecutar un grafo determinístico mínimo.
+Todavía no está integrado en factory_v2.
+Todavía no está declarado como dependencia del proyecto.
+Todavía no reemplaza run_graph.
 ```
 
 ---
@@ -647,6 +725,8 @@ No continuar HITO_010/HITO_011/HITO_012 legacy
 No mezclar factory_v2 con legacy
 No usar LLM dentro del grafo
 No hacer Docker default sin inyección explícita
+No declarar LangGraph como dependencia del proyecto todavía
+No reemplazar run_graph por LangGraph todavía
 ```
 
 ---
@@ -670,9 +750,11 @@ Patches críticos: manuales y determinísticos.
 
 `factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph` y vía runner explícito `run_with_docker`.
 
+LangGraph fue probado en entorno aislado, pero aún no está integrado.
+
 Todavía no tiene:
 
-- LangGraph real;
+- LangGraph real integrado;
 - agentes reales;
 - integración Hermes Runtime;
 - Prefect;
@@ -687,7 +769,25 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — LangGraph mínimo determinístico
+### Ciclo 1 — Declarar dependencia LangGraph de forma controlada
+
+Objetivo:
+
+```text
+Agregar LangGraph como dependencia opcional/dev si se decide avanzar a integración real.
+```
+
+Condición previa:
+
+```text
+No romper entorno actual.
+No instalar global.
+No modificar runtime principal todavía.
+```
+
+---
+
+### Ciclo 2 — LangGraph mínimo determinístico integrado
 
 Objetivo:
 
@@ -705,7 +805,7 @@ No reemplazar run_graph hasta validar equivalencia.
 
 ---
 
-### Ciclo 2 — Hermes HITL mínimo
+### Ciclo 3 — Hermes HITL mínimo
 
 Objetivo:
 
@@ -721,22 +821,6 @@ Sandbox + contratos + runner explícito ya cerrados.
 
 ---
 
-### Ciclo 3 — GitHub PR plan
-
-Objetivo:
-
-```text
-Definir branch/diff/PR draft o PR simulado sin merge automático.
-```
-
-Condición previa:
-
-```text
-GitHub sigue como fuente de verdad.
-```
-
----
-
 ## DECISIÓN FINAL
 
 `factory_v2` queda como nueva base limpia para continuar la factoría low-cost multiagente.
@@ -746,5 +830,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado, docker_runner explícito validado y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado, docker_runner explícito validado, LangGraph probado aisladamente y tests verdes.
 ```
