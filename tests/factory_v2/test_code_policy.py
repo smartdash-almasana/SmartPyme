@@ -54,7 +54,7 @@ def test_blocks_network_related_patterns() -> None:
     assert "REQUESTS_BLOCKED" in reasons
 
     allowed, reasons = policy.evaluate(
-        code="def make_socket(socket_factory):\n    return socket_factory()\n",
+        code="import socket\ndef make_socket():\n    return socket.socket()\n",
         test_code="",
     )
 
