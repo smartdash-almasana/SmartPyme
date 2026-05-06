@@ -1,9 +1,9 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v5  
+Estado: CANONICO v6  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
-HEAD validado: `5cdec6c feat(factory-v2): enforce code policy before docker wrapper`
+HEAD validado: `2692252 test(factory-v2): cover explicit docker runner`
 
 ---
 
@@ -17,9 +17,11 @@ La POC determinística low-cost ya tiene:
 - grafo determinístico;
 - sandbox fake;
 - adapter Docker real inyectable;
+- runner Docker explícito;
 - evidencia por nodo;
 - evidencia de run (`run.json`);
 - documentación de contratos;
+- guía operativa de configuración tooling;
 - `CommandPolicyV2`;
 - `CodePolicyV2`;
 - enforcement de `CodePolicyV2` antes de construir el wrapper Docker;
@@ -35,22 +37,83 @@ La POC determinística low-cost ya tiene:
 Últimas validaciones reportadas:
 
 ```text
+pytest tests/factory_v2/test_docker_runner.py -q
+PASS
+
+pytest tests/factory_v2/ -q
+PASS
+```
+
+Validaciones previas registradas:
+
+```text
 pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
 ............ [100%]
 
 pytest tests/factory_v2/ -q
 ........................................... [100%]
-```
 
-Validaciones parciales registradas:
-
-```text
 pytest tests/factory_v2/test_policy.py -q
 ...... [100%]
 6 passed
 
 pytest tests/factory_v2/test_code_policy.py -q
 PASS
+```
+
+---
+
+## RUNNER DOCKER EXPLICITO
+
+Fecha: 2026-05-06  
+Modo: implementación mínima, sin tocar `graph.py` ni legacy.
+
+Archivos:
+
+```text
+factory_v2/docker_runner.py
+tests/factory_v2/test_docker_runner.py
+```
+
+Commits:
+
+```text
+69d8755 feat(factory-v2): add explicit docker runner
+2692252 test(factory-v2): cover explicit docker runner
+```
+
+Contrato implementado:
+
+```text
+run_with_docker(task_spec: TaskSpecV2) -> GraphState
+```
+
+Implementación:
+
+```text
+run_graph(task_spec, sandbox_adapter=DockerSandboxAdapter())
+```
+
+Regla preservada:
+
+```text
+run_graph(task_spec) mantiene FakeSandboxAdapter como default seguro.
+run_with_docker(task_spec) usa Docker real de forma deliberada.
+Docker no queda habilitado como default global.
+```
+
+Test validado:
+
+```text
+tests/factory_v2/test_docker_runner.py
+```
+
+Criterio PASS:
+
+```text
+El test monkeypatchea DockerSandboxAdapter con un adapter de grabación.
+Confirma que run_with_docker inyecta adapter explícitamente.
+Confirma GraphState con sandbox_result PASS y review_result PASS.
 ```
 
 ---
@@ -198,6 +261,9 @@ run_graph puede ejecutarse con DockerSandboxAdapter real por inyección explíci
 ## COMMITS RELEVANTES
 
 ```text
+2692252 test(factory-v2): cover explicit docker runner
+69d8755 feat(factory-v2): add explicit docker runner
+d7e7215 docs(factory): add tooling config guide
 5cdec6c feat(factory-v2): enforce code policy before docker wrapper
 16984fe test(factory-v2): fix socket policy coverage
 21343ef test(factory-v2): cover code policy
@@ -270,6 +336,38 @@ VALIDADO
 
 ---
 
+### Guía tooling/configuración
+
+Archivo:
+
+```text
+docs/factory/FACTORY_V2_TOOLING_CONFIG_GUIDE.md
+```
+
+Documenta:
+
+- Docker;
+- Pydantic;
+- LangGraph;
+- Prefect;
+- Pydantic AI;
+- Hermes;
+- Vertex AI / Model Garden / MaaS;
+- Gemini Vertex;
+- Qwen3 Coder Vertex MaaS;
+- Kimi K2 Thinking Vertex MaaS;
+- GitHub;
+- comandos diarios mínimos;
+- límites operativos.
+
+Estado:
+
+```text
+VALIDADO COMO GUIA OPERATIVA INICIAL
+```
+
+---
+
 ### Grafo determinístico
 
 Archivo:
@@ -298,6 +396,41 @@ Estado:
 
 ```text
 VALIDADO CON FAKE SANDBOX Y CON DOCKER ADAPTER INYECTADO
+```
+
+---
+
+### Runner Docker explícito
+
+Archivo:
+
+```text
+factory_v2/docker_runner.py
+```
+
+Contrato:
+
+```text
+run_with_docker(task_spec: TaskSpecV2) -> GraphState
+```
+
+Rol:
+
+```text
+Entrada operacional explícita para ejecutar run_graph con DockerSandboxAdapter.
+```
+
+Regla:
+
+```text
+No modifica graph.py.
+No convierte Docker en default global.
+```
+
+Estado:
+
+```text
+VALIDADO
 ```
 
 ---
@@ -418,7 +551,7 @@ Regla:
 
 ```text
 Docker real no queda como default global del grafo.
-Se usa por inyección explícita.
+Se usa por inyección explícita o runner explícito.
 ```
 
 ---
@@ -477,7 +610,7 @@ Patches críticos: manuales y determinísticos.
 
 ## FRONTERA ACTUAL
 
-`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph`.
+`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph` y vía runner explícito.
 
 Todavía no tiene:
 
@@ -496,51 +629,53 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Test automatizado de run_graph con Docker adapter inyectado
+### Ciclo 1 — Smoke manual de run_with_docker real
 
 Objetivo:
 
 ```text
-Convertir el smoke manual de run_graph + DockerSandboxAdapter en test explícito si aporta valor.
+Ejecutar run_with_docker(TaskSpecV2(...)) en VM y verificar evidencia/run.json.
 ```
 
 Condición:
 
 ```text
-No convertir Docker real en default global.
-Evitar test frágil si Docker no está disponible en CI.
+No tocar graph.py.
+No tocar legacy.
+No convertir Docker en default global.
 ```
 
 ---
 
-### Ciclo 2 — Integración explícita de Docker en grafo bajo control
+### Ciclo 2 — LangGraph mínimo determinístico
 
 Objetivo:
 
 ```text
-Agregar mecanismo explícito para ejecutar run_graph con DockerSandboxAdapter solo por inyección/control deliberado.
-```
-
-Condición:
-
-```text
-No convertir Docker real en default global.
-```
-
----
-
-### Ciclo 3 — LangGraph real mínimo
-
-Objetivo:
-
-```text
-Reemplazar grafo manual por LangGraph manteniendo los contratos actuales.
+Crear un grafo LangGraph mínimo con nodos determinísticos, manteniendo contratos actuales.
 ```
 
 Condición previa:
 
 ```text
 No romper tests existentes.
+No meter agentes reales todavía.
+```
+
+---
+
+### Ciclo 3 — Hermes HITL mínimo
+
+Objetivo:
+
+```text
+Definir cómo Hermes aprueba/deniega una tarea antes de escalar autonomía.
+```
+
+Condición previa:
+
+```text
+Sandbox + contratos + runner explícito ya cerrados.
 ```
 
 ---
@@ -554,5 +689,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado, docker_runner explícito y tests verdes.
 ```
