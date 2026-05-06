@@ -1,6 +1,6 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v4  
+Estado: CANONICO v5  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
 HEAD validado: `5cdec6c feat(factory-v2): enforce code policy before docker wrapper`
@@ -25,6 +25,7 @@ La POC determinística low-cost ya tiene:
 - enforcement de `CodePolicyV2` antes de construir el wrapper Docker;
 - enforcement de `CommandPolicyV2` sobre el wrapper Docker;
 - smoke real de `DockerSandboxAdapter` validado;
+- smoke de `run_graph` con `DockerSandboxAdapter` inyectado validado;
 - suite `tests/factory_v2/` verde.
 
 ---
@@ -132,6 +133,68 @@ CodePolicyV2 bloquea contenido peligroso antes de construir/ejecutar el wrapper 
 
 ---
 
+## SMOKE RUN_GRAPH + DOCKER ADAPTER INYECTADO
+
+Fecha: 2026-05-06  
+Modo: smoke manual, sin tocar código ni legacy.
+
+Ejecución:
+
+```text
+run_graph(
+  TaskSpecV2(task_id="manual_run_graph_docker_adapter", ...),
+  sandbox_adapter=DockerSandboxAdapter(),
+)
+```
+
+Resultado del estado:
+
+```text
+halted: False
+halt_reason: vacío
+audit: PASS
+implement: PASS
+sandbox: PASS
+review: PASS
+sandbox_reasons: []
+review_return_code: 0
+```
+
+Evidencia generada:
+
+```text
+factory_v2/evidence/manual_run_graph_docker_adapter/audit_20260506T173749Z.json
+factory_v2/evidence/manual_run_graph_docker_adapter/implement_20260506T173749Z.json
+factory_v2/evidence/manual_run_graph_docker_adapter/sandbox_20260506T173749Z.json
+factory_v2/evidence/manual_run_graph_docker_adapter/review_20260506T173749Z.json
+factory_v2/evidence/manual_run_graph_docker_adapter/run.json
+```
+
+`run.json` confirmado:
+
+```json
+{
+  "task_id": "manual_run_graph_docker_adapter",
+  "status": "PASS",
+  "halted": false,
+  "halt_reason": null,
+  "nodes": {
+    "audit_result": "PASS",
+    "implement_result": "PASS",
+    "sandbox_result": "PASS",
+    "review_result": "PASS"
+  }
+}
+```
+
+Conclusión:
+
+```text
+run_graph puede ejecutarse con DockerSandboxAdapter real por inyección explícita, sin convertir Docker en default global.
+```
+
+---
+
 ## COMMITS RELEVANTES
 
 ```text
@@ -234,7 +297,7 @@ Características:
 Estado:
 
 ```text
-VALIDADO
+VALIDADO CON FAKE SANDBOX Y CON DOCKER ADAPTER INYECTADO
 ```
 
 ---
@@ -348,7 +411,7 @@ Casos cubiertos:
 Estado:
 
 ```text
-VALIDADO COMO ADAPTER INYECTABLE CON CODE POLICY, COMMAND POLICY Y SMOKE REAL DOCKER
+VALIDADO COMO ADAPTER INYECTABLE CON CODE POLICY, COMMAND POLICY, SMOKE REAL DOCKER Y SMOKE RUN_GRAPH
 ```
 
 Regla:
@@ -414,7 +477,7 @@ Patches críticos: manuales y determinísticos.
 
 ## FRONTERA ACTUAL
 
-`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política.
+`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph`.
 
 Todavía no tiene:
 
@@ -433,7 +496,24 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Integración explícita de Docker en grafo bajo control
+### Ciclo 1 — Test automatizado de run_graph con Docker adapter inyectado
+
+Objetivo:
+
+```text
+Convertir el smoke manual de run_graph + DockerSandboxAdapter en test explícito si aporta valor.
+```
+
+Condición:
+
+```text
+No convertir Docker real en default global.
+Evitar test frágil si Docker no está disponible en CI.
+```
+
+---
+
+### Ciclo 2 — Integración explícita de Docker en grafo bajo control
 
 Objetivo:
 
@@ -445,23 +525,6 @@ Condición:
 
 ```text
 No convertir Docker real en default global.
-```
-
----
-
-### Ciclo 2 — Smoke de run_graph con adapter Docker inyectado
-
-Objetivo:
-
-```text
-Ejecutar run_graph(task_spec, sandbox_adapter=DockerSandboxAdapter()) y verificar evidencia/run.json.
-```
-
-Condición:
-
-```text
-No tocar graph.py.
-No tocar legacy.
 ```
 
 ---
@@ -491,5 +554,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado y tests verdes.
 ```
