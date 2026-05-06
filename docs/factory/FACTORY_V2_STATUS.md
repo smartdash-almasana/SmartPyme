@@ -1,6 +1,6 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v6  
+Estado: CANONICO v7  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
 HEAD validado: `2692252 test(factory-v2): cover explicit docker runner`
@@ -18,6 +18,7 @@ La POC determinística low-cost ya tiene:
 - sandbox fake;
 - adapter Docker real inyectable;
 - runner Docker explícito;
+- smoke real de `run_with_docker` validado;
 - evidencia por nodo;
 - evidencia de run (`run.json`);
 - documentación de contratos;
@@ -114,6 +115,63 @@ Criterio PASS:
 El test monkeypatchea DockerSandboxAdapter con un adapter de grabación.
 Confirma que run_with_docker inyecta adapter explícitamente.
 Confirma GraphState con sandbox_result PASS y review_result PASS.
+```
+
+---
+
+## SMOKE REAL RUN_WITH_DOCKER
+
+Fecha: 2026-05-06  
+Modo: smoke manual en VM, sin tocar código.
+
+Ejecución:
+
+```text
+run_with_docker(
+  TaskSpecV2(
+    task_id="manual_run_with_docker",
+    objective="Smoke manual de docker_runner explícito",
+    files_allowed=["factory_v2/"],
+    acceptance_criteria=["run_with_docker termina PASS y genera evidencia"],
+    modo="AUDIT_ONLY",
+  )
+)
+```
+
+Resultado del estado:
+
+```text
+halted: False
+halt_reason: vacío
+audit: PASS
+implement: PASS
+sandbox: PASS
+review: PASS
+sandbox_reasons: []
+review_return_code: 0
+```
+
+`run.json` confirmado:
+
+```json
+{
+  "task_id": "manual_run_with_docker",
+  "status": "PASS",
+  "halted": false,
+  "halt_reason": null,
+  "nodes": {
+    "audit_result": "PASS",
+    "implement_result": "PASS",
+    "sandbox_result": "PASS",
+    "review_result": "PASS"
+  }
+}
+```
+
+Conclusión:
+
+```text
+run_with_docker ejecuta el grafo con Docker real por entrada explícita y conserva evidencia PASS.
 ```
 
 ---
@@ -430,7 +488,7 @@ No convierte Docker en default global.
 Estado:
 
 ```text
-VALIDADO
+VALIDADO CON TEST Y SMOKE REAL
 ```
 
 ---
@@ -610,7 +668,7 @@ Patches críticos: manuales y determinísticos.
 
 ## FRONTERA ACTUAL
 
-`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph` y vía runner explícito.
+`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política, tanto en smoke directo como inyectado en `run_graph` y vía runner explícito `run_with_docker`.
 
 Todavía no tiene:
 
@@ -629,25 +687,7 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Smoke manual de run_with_docker real
-
-Objetivo:
-
-```text
-Ejecutar run_with_docker(TaskSpecV2(...)) en VM y verificar evidencia/run.json.
-```
-
-Condición:
-
-```text
-No tocar graph.py.
-No tocar legacy.
-No convertir Docker en default global.
-```
-
----
-
-### Ciclo 2 — LangGraph mínimo determinístico
+### Ciclo 1 — LangGraph mínimo determinístico
 
 Objetivo:
 
@@ -660,11 +700,12 @@ Condición previa:
 ```text
 No romper tests existentes.
 No meter agentes reales todavía.
+No reemplazar run_graph hasta validar equivalencia.
 ```
 
 ---
 
-### Ciclo 3 — Hermes HITL mínimo
+### Ciclo 2 — Hermes HITL mínimo
 
 Objetivo:
 
@@ -680,6 +721,22 @@ Sandbox + contratos + runner explícito ya cerrados.
 
 ---
 
+### Ciclo 3 — GitHub PR plan
+
+Objetivo:
+
+```text
+Definir branch/diff/PR draft o PR simulado sin merge automático.
+```
+
+Condición previa:
+
+```text
+GitHub sigue como fuente de verdad.
+```
+
+---
+
 ## DECISIÓN FINAL
 
 `factory_v2` queda como nueva base limpia para continuar la factoría low-cost multiagente.
@@ -689,5 +746,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado, docker_runner explícito y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado, run_graph validado, docker_runner explícito validado y tests verdes.
 ```
