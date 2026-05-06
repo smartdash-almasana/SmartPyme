@@ -1,6 +1,6 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v3  
+Estado: CANONICO v4  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
 HEAD validado: `5cdec6c feat(factory-v2): enforce code policy before docker wrapper`
@@ -20,17 +20,18 @@ La POC determinística low-cost ya tiene:
 - evidencia por nodo;
 - evidencia de run (`run.json`);
 - documentación de contratos;
-- política mínima de comandos (`CommandPolicyV2`);
-- política mínima de contenido Python (`CodePolicyV2`);
+- `CommandPolicyV2`;
+- `CodePolicyV2`;
 - enforcement de `CodePolicyV2` antes de construir el wrapper Docker;
 - enforcement de `CommandPolicyV2` sobre el wrapper Docker;
+- smoke real de `DockerSandboxAdapter` validado;
 - suite `tests/factory_v2/` verde.
 
 ---
 
 ## TEST RESULT
 
-Última validación reportada:
+Últimas validaciones reportadas:
 
 ```text
 pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
@@ -40,7 +41,7 @@ pytest tests/factory_v2/ -q
 ........................................... [100%]
 ```
 
-Validaciones previas registradas:
+Validaciones parciales registradas:
 
 ```text
 pytest tests/factory_v2/test_policy.py -q
@@ -49,13 +50,85 @@ pytest tests/factory_v2/test_policy.py -q
 
 pytest tests/factory_v2/test_code_policy.py -q
 PASS
-
-pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
-........... [100%]
-11 passed
 ```
 
-Worktree reportado como limpio después de los ciclos cerrados.
+---
+
+## SMOKE REAL DOCKER + POLICIES
+
+Fecha: 2026-05-06  
+Modo: smoke manual, sin tocar código ni `graph.py`.
+
+### Precondición corregida
+
+Después del cambio/reinicio de instancia, Docker daemon estaba activo, pero Python no detectaba Docker porque faltaba SDK:
+
+```text
+_DOCKER_SDK_AVAILABLE = False
+_docker_daemon_available = False
+```
+
+Se instaló dependencia del sistema:
+
+```text
+sudo apt-get install -y python3-docker
+```
+
+Resultado:
+
+```text
+_DOCKER_SDK_AVAILABLE = True
+_docker_daemon_available = True
+```
+
+### Smoke permitido
+
+Entrada:
+
+```text
+task_id: manual_docker_policy_pass
+code: def add(a, b): return a + b
+test_code: assert add(1, 2) == 3
+```
+
+Resultado:
+
+```text
+status=PASS
+return_code=0
+reasons=[]
+```
+
+Conclusión:
+
+```text
+DockerSandboxAdapter ejecuta código permitido en Docker real.
+```
+
+### Smoke bloqueado por CodePolicyV2
+
+Entrada:
+
+```text
+task_id: manual_docker_code_policy_block
+code: import os
+test_code: vacío
+```
+
+Resultado:
+
+```text
+status=BLOCKED
+return_code=125
+reasons=['IMPORT_OS_BLOCKED']
+stderr='Código bloqueado por la política de contenido.'
+```
+
+Conclusión:
+
+```text
+CodePolicyV2 bloquea contenido peligroso antes de construir/ejecutar el wrapper Docker.
+```
 
 ---
 
@@ -90,7 +163,7 @@ Archivo:
 factory_v2/contracts.py
 ```
 
-Incluye contratos mínimos para:
+Incluye:
 
 - `TaskSpecV2`;
 - `ExecutionResultV2`;
@@ -103,12 +176,6 @@ Estado:
 VALIDADO
 ```
 
-Cobertura:
-
-```text
-tests/factory_v2/test_contracts.py
-```
-
 ---
 
 ### Documentación de contratos
@@ -119,18 +186,9 @@ Archivo:
 docs/factory/FACTORY_V2_CONTRACTS.md
 ```
 
-Estado:
+Documenta:
 
-```text
-VALIDADO
-```
-
-Contenido documentado:
-
-- `TaskSpecV2`;
-- `ExecutionResultV2`;
-- `GraphState`;
-- `NodeStatus`;
+- contratos Pydantic;
 - `EvidenceWriter.write`;
 - `EvidenceWriter.write_run`;
 - payload de `run.json`;
@@ -140,6 +198,12 @@ Contenido documentado:
 - flujo normal;
 - halt temprano;
 - límites actuales.
+
+Estado:
+
+```text
+VALIDADO
+```
 
 ---
 
@@ -157,12 +221,6 @@ Flujo actual:
 audit -> implement -> sandbox -> review
 ```
 
-Estado:
-
-```text
-VALIDADO
-```
-
 Características:
 
 - sin LLM;
@@ -172,34 +230,6 @@ Características:
 - soporta halt temprano;
 - escribe evidencia por nodo;
 - escribe `run.json` por ejecución.
-
-Cobertura:
-
-```text
-tests/factory_v2/test_factory_graph_smoke.py
-```
-
----
-
-### Sandbox fake
-
-Archivo:
-
-```text
-factory_v2/sandbox.py
-```
-
-Componente:
-
-```text
-FakeSandboxAdapter
-```
-
-Uso:
-
-- default seguro del grafo;
-- smoke tests;
-- ejecución determinística sin Docker real.
 
 Estado:
 
@@ -217,39 +247,29 @@ Archivo:
 factory_v2/policy.py
 ```
 
-Componente:
-
-```text
-CommandPolicyV2
-```
-
 Rol:
 
+```text
 Política determinística mínima para evaluar comandos antes de ejecución en sandbox Docker.
+```
+
+Contrato:
+
+- allowlist mínima;
+- blocklist de comandos destructivos, red, shell, escalada y contenedores;
+- fail-closed para comandos desconocidos;
+- razones claras.
+
+Límite:
+
+```text
+En DockerSandboxAdapter evalúa el wrapper generado, no el contenido semántico de code/test.
+```
 
 Estado:
 
 ```text
 VALIDADO
-```
-
-Cobertura:
-
-```text
-tests/factory_v2/test_policy.py
-```
-
-Contrato actual:
-
-- allowlist mínima de comandos seguros;
-- blocklist de comandos destructivos, de red, shell, escalada y contenedores;
-- fail-closed para comandos desconocidos;
-- razones claras para permitir o bloquear.
-
-Límite explícito:
-
-```text
-La política evalúa el comando recibido. En DockerSandboxAdapter evalúa el wrapper generado, no el contenido semántico de code/test.
 ```
 
 ---
@@ -262,39 +282,29 @@ Archivo:
 factory_v2/code_policy.py
 ```
 
-Componente:
-
-```text
-CodePolicyV2
-```
-
 Rol:
 
-Política determinística mínima para validar `code` y `test_code` antes de construir el wrapper Docker.
+```text
+Política determinística mínima para validar code/test_code antes de construir el wrapper Docker.
+```
+
+Contrato:
+
+- fail-closed si `code` está vacío;
+- bloquea patrones peligrosos de IO, red, procesos y ejecución dinámica;
+- evalúa `code` y `test_code`;
+- devuelve razones estables como `IMPORT_OS_BLOCKED`, `SUBPROCESS_BLOCKED`, `SOCKET_BLOCKED`, `OPEN_BLOCKED`, `EVAL_BLOCKED`, `EXEC_BLOCKED`, `DYNAMIC_IMPORT_BLOCKED`.
+
+Límite:
+
+```text
+No reemplaza sandbox real ni análisis estático profundo.
+```
 
 Estado:
 
 ```text
 VALIDADO
-```
-
-Cobertura:
-
-```text
-tests/factory_v2/test_code_policy.py
-```
-
-Contrato actual:
-
-- fail-closed si `code` está vacío;
-- bloquea patrones peligrosos de IO, red, procesos y ejecución dinámica;
-- evalúa tanto `code` como `test_code`;
-- devuelve razones estables como `IMPORT_OS_BLOCKED`, `SUBPROCESS_BLOCKED`, `SOCKET_BLOCKED`, `OPEN_BLOCKED`, `EVAL_BLOCKED`, `EXEC_BLOCKED`, `DYNAMIC_IMPORT_BLOCKED`.
-
-Límite explícito:
-
-```text
-CodePolicyV2 es una barrera previa conservadora. No reemplaza sandbox real ni análisis estático profundo.
 ```
 
 ---
@@ -307,40 +317,11 @@ Archivo:
 factory_v2/sandbox.py
 ```
 
-Componente:
-
-```text
-DockerSandboxAdapter
-```
-
 Rol:
 
-Wrapper de `DockerExecutor` real detrás del contrato `factory_v2`.
-
-Estado:
-
 ```text
-VALIDADO COMO ADAPTER INYECTABLE CON CODE POLICY Y COMMAND POLICY
+Wrapper de DockerExecutor real detrás del contrato factory_v2.
 ```
-
-Cobertura:
-
-```text
-tests/factory_v2/test_docker_sandbox_adapter.py
-```
-
-Casos cubiertos:
-
-- comando seguro con PASS;
-- comando bloqueado por executor legacy;
-- fallo de comando;
-- Docker no disponible;
-- mapeo de resultado hacia `ExecutionResultV2`;
-- policy opcional inyectada;
-- bloqueo por `CodePolicyV2` antes de construir wrapper Docker;
-- bloqueo por `CommandPolicyV2` antes de invocar DockerExecutor;
-- no invocación del executor cuando `CodePolicyV2` bloquea;
-- no invocación del executor cuando `CommandPolicyV2` bloquea.
 
 Orden de seguridad actual:
 
@@ -351,6 +332,23 @@ code/test_code
 -> CommandPolicyV2
 -> DockerExecutor
 -> ExecutionResultV2
+```
+
+Casos cubiertos:
+
+- comando seguro con PASS;
+- comando bloqueado por executor legacy;
+- fallo de comando;
+- Docker no disponible;
+- mapeo hacia `ExecutionResultV2`;
+- bloqueo por `CodePolicyV2` antes de construir wrapper;
+- bloqueo por `CommandPolicyV2` antes de invocar DockerExecutor;
+- no invocación del executor cuando alguna policy bloquea.
+
+Estado:
+
+```text
+VALIDADO COMO ADAPTER INYECTABLE CON CODE POLICY, COMMAND POLICY Y SMOKE REAL DOCKER
 ```
 
 Regla:
@@ -383,55 +381,9 @@ Estado:
 VALIDADO
 ```
 
-Cobertura:
-
-```text
-tests/factory_v2/test_evidence_writer.py
-```
-
-`write`:
-
-- guarda un `ExecutionResultV2` como JSON.
-
-`write_run`:
-
-- guarda `run.json` por `task_id`;
-- conserva payload mínimo de ejecución.
-
----
-
-## EVIDENCIA DE RUN
-
-El grafo escribe `run.json` al final de cada ejecución.
-
-Payload mínimo esperado:
-
-```text
-task_id
-status
-halted
-halt_reason
-nodes
-```
-
-Caminos cubiertos:
-
-```text
-PASS normal
-BLOCKED por halt temprano
-```
-
-Estado:
-
-```text
-VALIDADO
-```
-
 ---
 
 ## REGLAS RESPETADAS
-
-Durante este ciclo se respetó:
 
 ```text
 No tocar app/**
@@ -447,39 +399,7 @@ No hacer Docker default sin inyección explícita
 
 ## ESTADO DE HERMES / MODELOS
 
-Hermes fue estabilizado parcialmente para ciclos cortos.
-
-Validaciones realizadas:
-
-```text
-AUDIT corto: PASS
-WRITE trivial: PASS
-WRITE pequeño real: PASS
-```
-
-Configuración real verificada en:
-
-```text
-/home/neoalmasana/.hermes/config.yaml
-```
-
-Valores safe-mode verificados por lectura directa del archivo:
-
-```text
-agent.max_turns: 8
-compression.enabled: false
-terminal.persistent_shell: false
-auxiliary.compression.provider: vacío
-```
-
-Advertencia:
-
-```text
-No confiar en introspección verbal del modelo para confirmar config.
-La verificación válida es lectura directa de config.yaml.
-```
-
-Política operativa actual de modelos:
+Política operativa actual:
 
 ```text
 Gemini Vertex: principal para lectura, auditoría y documentación.
@@ -513,25 +433,7 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Smoke real de DockerSandboxAdapter con políticas
-
-Objetivo:
-
-```text
-Ejecutar DockerSandboxAdapter real con caso permitido y caso bloqueado, sin convertir Docker en default global.
-```
-
-Condición:
-
-```text
-No tocar graph.py.
-No tocar legacy.
-Solo smoke/manual o test específico si hace falta.
-```
-
----
-
-### Ciclo 2 — Integración explícita de Docker en grafo bajo control
+### Ciclo 1 — Integración explícita de Docker en grafo bajo control
 
 Objetivo:
 
@@ -543,6 +445,23 @@ Condición:
 
 ```text
 No convertir Docker real en default global.
+```
+
+---
+
+### Ciclo 2 — Smoke de run_graph con adapter Docker inyectado
+
+Objetivo:
+
+```text
+Ejecutar run_graph(task_spec, sandbox_adapter=DockerSandboxAdapter()) y verificar evidencia/run.json.
+```
+
+Condición:
+
+```text
+No tocar graph.py.
+No tocar legacy.
 ```
 
 ---
@@ -572,5 +491,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox real validado y tests verdes.
 ```
