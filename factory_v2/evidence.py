@@ -24,3 +24,12 @@ class EvidenceWriter:
 
         evidence_path.write_text(result.model_dump_json(indent=2))
         return evidence_path
+
+    def write_run(self, task_id: str, payload: dict) -> Path:
+        """Escribe un resumen de ejecución en evidence/<task_id>/run.json."""
+        task_dir = self.base_dir / task_id
+        task_dir.mkdir(parents=True, exist_ok=True)
+
+        run_path = task_dir / "run.json"
+        run_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
+        return run_path

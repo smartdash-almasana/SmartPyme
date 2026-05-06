@@ -1,4 +1,4 @@
-"""Test unitario mínimo para EvidenceWriter.write."""
+"""Test unitario para EvidenceWriter — write + write_run."""
 
 import json
 from pathlib import Path
@@ -30,3 +30,32 @@ class TestEvidenceWriterWrite:
             assert data["status"] == "PASS"
             assert data["stdout"] == "ok"
             assert data["return_code"] == 0
+
+
+class TestEvidenceWriterWriteRun:
+    def test_write_run_guarda_run_json(self):
+        """write_run() debe crear evidence/<task_id>/run.json con task_id, status, nodes."""
+        with TemporaryDirectory() as tmpdir:
+            writer = EvidenceWriter(base_dir=Path(tmpdir))
+            payload = {
+                "task_id": "T-RUN-001",
+                "run_status": "PASS",
+                "halted": False,
+                "nodes": {
+                    "audit": "PASS",
+                    "sandbox": "PASS",
+                    "review": "PASS",
+                },
+            }
+
+            path = writer.write_run("T-RUN-001", payload)
+
+            assert path.exists()
+            assert path.name == "run.json"
+            assert path.parent.name == "T-RUN-001"
+
+            data = json.loads(path.read_text())
+            assert data["task_id"] == "T-RUN-001"
+            assert data["run_status"] == "PASS"
+            assert data["halted"] is False
+            assert data["nodes"]["audit"] == "PASS"
