@@ -214,3 +214,20 @@ def test_fake_sandbox_adapter_still_works():
     assert result.return_code == 0
     assert "fake-sandbox" in result.stdout
     assert result.reasons == []
+
+def test_adapter_blocks_dangerous_code_with_code_policy():
+    """CodePolicyV2 bloquea contenido peligroso antes de invocar Docker."""
+    mock_executor = MagicMock()
+    adapter = DockerSandboxAdapter(executor=mock_executor)
+
+    result = adapter.execute(
+        task_id="T_CODE_POLICY_BLOCK",
+        code="import os\n",
+        test_code="",
+    )
+
+    assert result.status == NodeStatus.BLOCKED
+    assert result.task_id == "T_CODE_POLICY_BLOCK"
+    assert result.return_code == 125
+    assert "IMPORT_OS_BLOCKED" in result.reasons
+    mock_executor.execute.assert_not_called()
