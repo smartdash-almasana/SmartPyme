@@ -125,6 +125,31 @@ def _review_node(state: GraphState) -> GraphState:
     return state
 
 
+def _write_run_evidence(writer: EvidenceWriter, state: GraphState) -> None:
+    """Escribe run.json con el resumen de la ejecución."""
+    nodes = {}
+    for attr in ("audit_result", "implement_result", "sandbox_result", "review_result"):
+        result = getattr(state, attr, None)
+        if result is not None:
+            nodes[attr] = result.status.value
+
+    if state.halted:
+        status = "BLOCKED"
+    elif state.review_result and state.review_result.status != NodeStatus.PASS:
+        status = "FAIL"
+    else:
+        status = "PASS"
+
+    payload = {
+        "task_id": state.task_spec.task_id,
+        "status": status,
+        "halted": state.halted,
+        "halt_reason": state.halt_reason or None,
+        "nodes": nodes,
+    }
+    writer.write_run(state.task_spec.task_id, payload)
+
+
 def run_graph(
     task_spec: TaskSpecV2,
     sandbox_adapter: Optional[SandboxAdapterProtocol] = None,
@@ -147,6 +172,7 @@ def run_graph(
     if state.audit_result:
         state.audit_result.evidence_path = str(writer.write(state.audit_result))
     if state.halted:
+        _write_run_evidence(writer, state)
         return state
 
     # Nodo 2: Implement
@@ -164,4 +190,5 @@ def run_graph(
     if state.review_result:
         state.review_result.evidence_path = str(writer.write(state.review_result))
 
+    _write_run_evidence(writer, state)
     return state

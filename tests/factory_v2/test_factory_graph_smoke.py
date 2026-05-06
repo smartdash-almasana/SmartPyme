@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import MagicMock
 
 from factory.contracts.sandbox import SandboxExecutionResult
@@ -125,3 +126,44 @@ class TestFactoryGraphSmoke:
         assert state.halted is False
         assert state.sandbox_result.status == NodeStatus.PASS
         assert "fake-sandbox" in state.sandbox_result.stdout
+
+    def test_run_json_escrito_en_flujo_completo(self):
+        """run_graph debe escribir run.json al finalizar flujo completo."""
+        spec = TaskSpecV2(
+            task_id="T-RUNJSON-001",
+            objective="Test run.json en flujo completo",
+            modo="WRITE_AUTHORIZED",
+        )
+
+        state = run_graph(spec)
+        assert state.halted is False
+
+        run_dir = Path(state.audit_result.evidence_path).parent
+        run_path = run_dir / "run.json"
+        assert run_path.exists()
+
+        data = json.loads(run_path.read_text())
+        assert data["task_id"] == "T-RUNJSON-001"
+        assert data["status"] == "PASS"
+        assert data["halted"] is False
+        assert data["halt_reason"] is None
+        assert len(data["nodes"]) == 4
+
+    def test_run_json_escrito_en_halt(self):
+        """run_graph debe escribir run.json también cuando halted=true."""
+        spec = TaskSpecV2(task_id="T-RUNJSON-HALT", objective="")
+
+        state = run_graph(spec)
+        assert state.halted is True
+
+        run_dir = Path(state.audit_result.evidence_path).parent
+        run_path = run_dir / "run.json"
+        assert run_path.exists()
+
+        data = json.loads(run_path.read_text())
+        assert data["task_id"] == "T-RUNJSON-HALT"
+        assert data["status"] == "BLOCKED"
+        assert data["halted"] is True
+        assert data["halt_reason"] == "BLOCKED_MISSING_REQUIRED_FIELDS"
+        assert len(data["nodes"]) == 1
+        assert "audit_result" in data["nodes"]
