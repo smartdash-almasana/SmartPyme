@@ -1,9 +1,9 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v2  
+Estado: CANONICO v3  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
-HEAD validado: `32d8925 feat(factory-v2): enforce command policy in docker sandbox`
+HEAD validado: `5cdec6c feat(factory-v2): enforce code policy before docker wrapper`
 
 ---
 
@@ -21,7 +21,9 @@ La POC determinística low-cost ya tiene:
 - evidencia de run (`run.json`);
 - documentación de contratos;
 - política mínima de comandos (`CommandPolicyV2`);
-- enforcement de política en `DockerSandboxAdapter`;
+- política mínima de contenido Python (`CodePolicyV2`);
+- enforcement de `CodePolicyV2` antes de construir el wrapper Docker;
+- enforcement de `CommandPolicyV2` sobre el wrapper Docker;
 - suite `tests/factory_v2/` verde.
 
 ---
@@ -31,24 +33,22 @@ La POC determinística low-cost ya tiene:
 Última validación reportada:
 
 ```text
+pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
+............ [100%]
+
 pytest tests/factory_v2/ -q
-PASS
+........................................... [100%]
 ```
 
-Validación previa registrada:
-
-```text
-pytest tests/factory_v2/ -q
-......................... [100%]
-25 passed
-```
-
-Validaciones parciales recientes:
+Validaciones previas registradas:
 
 ```text
 pytest tests/factory_v2/test_policy.py -q
 ...... [100%]
 6 passed
+
+pytest tests/factory_v2/test_code_policy.py -q
+PASS
 
 pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
 ........... [100%]
@@ -62,6 +62,10 @@ Worktree reportado como limpio después de los ciclos cerrados.
 ## COMMITS RELEVANTES
 
 ```text
+5cdec6c feat(factory-v2): enforce code policy before docker wrapper
+16984fe test(factory-v2): fix socket policy coverage
+21343ef test(factory-v2): cover code policy
+32e447a feat(factory-v2): add code policy
 32d8925 feat(factory-v2): enforce command policy in docker sandbox
 f7d13c2 feat(factory-v2): add command policy
 66057d5 docs(factory): add factory_v2 contracts
@@ -245,7 +249,52 @@ Contrato actual:
 Límite explícito:
 
 ```text
-La política evalúa el comando recibido, no hace análisis semántico profundo de código Python.
+La política evalúa el comando recibido. En DockerSandboxAdapter evalúa el wrapper generado, no el contenido semántico de code/test.
+```
+
+---
+
+### CodePolicyV2
+
+Archivo:
+
+```text
+factory_v2/code_policy.py
+```
+
+Componente:
+
+```text
+CodePolicyV2
+```
+
+Rol:
+
+Política determinística mínima para validar `code` y `test_code` antes de construir el wrapper Docker.
+
+Estado:
+
+```text
+VALIDADO
+```
+
+Cobertura:
+
+```text
+tests/factory_v2/test_code_policy.py
+```
+
+Contrato actual:
+
+- fail-closed si `code` está vacío;
+- bloquea patrones peligrosos de IO, red, procesos y ejecución dinámica;
+- evalúa tanto `code` como `test_code`;
+- devuelve razones estables como `IMPORT_OS_BLOCKED`, `SUBPROCESS_BLOCKED`, `SOCKET_BLOCKED`, `OPEN_BLOCKED`, `EVAL_BLOCKED`, `EXEC_BLOCKED`, `DYNAMIC_IMPORT_BLOCKED`.
+
+Límite explícito:
+
+```text
+CodePolicyV2 es una barrera previa conservadora. No reemplaza sandbox real ni análisis estático profundo.
 ```
 
 ---
@@ -271,7 +320,7 @@ Wrapper de `DockerExecutor` real detrás del contrato `factory_v2`.
 Estado:
 
 ```text
-VALIDADO COMO ADAPTER INYECTABLE CON POLICY
+VALIDADO COMO ADAPTER INYECTABLE CON CODE POLICY Y COMMAND POLICY
 ```
 
 Cobertura:
@@ -288,21 +337,27 @@ Casos cubiertos:
 - Docker no disponible;
 - mapeo de resultado hacia `ExecutionResultV2`;
 - policy opcional inyectada;
+- bloqueo por `CodePolicyV2` antes de construir wrapper Docker;
 - bloqueo por `CommandPolicyV2` antes de invocar DockerExecutor;
-- no invocación del executor cuando la policy bloquea.
+- no invocación del executor cuando `CodePolicyV2` bloquea;
+- no invocación del executor cuando `CommandPolicyV2` bloquea.
+
+Orden de seguridad actual:
+
+```text
+code/test_code
+-> CodePolicyV2
+-> _build_shell_command
+-> CommandPolicyV2
+-> DockerExecutor
+-> ExecutionResultV2
+```
 
 Regla:
 
 ```text
 Docker real no queda como default global del grafo.
 Se usa por inyección explícita.
-```
-
-Límite explícito:
-
-```text
-CommandPolicyV2 dentro de DockerSandboxAdapter evalúa el comando wrapper generado.
-No analiza el contenido semántico de code/test.
 ```
 
 ---
@@ -390,7 +445,7 @@ No hacer Docker default sin inyección explícita
 
 ---
 
-## ESTADO DE HERMES
+## ESTADO DE HERMES / MODELOS
 
 Hermes fue estabilizado parcialmente para ciclos cortos.
 
@@ -424,27 +479,22 @@ No confiar en introspección verbal del modelo para confirmar config.
 La verificación válida es lectura directa de config.yaml.
 ```
 
-Uso permitido de Hermes por ahora:
+Política operativa actual de modelos:
 
 ```text
-AUDIT corto
-WRITE pequeño de 1 archivo + 1 test
-```
-
-Uso no recomendado todavía:
-
-```text
-WRITE complejo
-edición de múltiples capas
-refactor largo
-cambios de arquitectura
+Gemini Vertex: principal para lectura, auditoría y documentación.
+Qwen3 Coder Vertex MaaS: builder puntual si no hay 429.
+Kimi K2 Thinking Vertex MaaS: auditor puntual.
+OpenRouter/DeepSeek: no diario por costo/límites.
+IA local/Ollama: descartada para esta fase por costo/beneficio.
+Patches críticos: manuales y determinísticos.
 ```
 
 ---
 
 ## FRONTERA ACTUAL
 
-`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por política mínima.
+`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por dos capas de política.
 
 Todavía no tiene:
 
@@ -454,7 +504,7 @@ Todavía no tiene:
 - Prefect;
 - PR automation;
 - policy engine completo;
-- análisis semántico de código generado antes de sandbox;
+- análisis estático profundo;
 - persistencia industrial;
 - observabilidad industrial;
 - factory-of-factories.
@@ -463,7 +513,25 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Integración explícita de Docker en grafo bajo control
+### Ciclo 1 — Smoke real de DockerSandboxAdapter con políticas
+
+Objetivo:
+
+```text
+Ejecutar DockerSandboxAdapter real con caso permitido y caso bloqueado, sin convertir Docker en default global.
+```
+
+Condición:
+
+```text
+No tocar graph.py.
+No tocar legacy.
+Solo smoke/manual o test específico si hace falta.
+```
+
+---
+
+### Ciclo 2 — Integración explícita de Docker en grafo bajo control
 
 Objetivo:
 
@@ -475,22 +543,6 @@ Condición:
 
 ```text
 No convertir Docker real en default global.
-```
-
----
-
-### Ciclo 2 — Política más fuerte sobre contenido
-
-Objetivo:
-
-```text
-Agregar validaciones previas sobre code/test antes de construir el wrapper de Docker.
-```
-
-Motivo:
-
-```text
-CommandPolicyV2 hoy evalúa el wrapper, no el contenido semántico de code/test.
 ```
 
 ---
@@ -520,5 +572,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, policy mínima, sandbox y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, políticas mínimas, sandbox y tests verdes.
 ```
