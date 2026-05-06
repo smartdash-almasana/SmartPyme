@@ -17,6 +17,7 @@ from factory.core.task_spec_store import TaskSpecStore
 from factory.orchestrator.evidence_store import EvidenceStore, MINIMUM_EVIDENCE_FILES
 from factory.sandbox.command_policy import evaluate_command
 from factory.sandbox.docker_executor import DockerExecutor
+from factory.control.vcs_controller import create_commit_plan
 
 BUSINESS_TASK_TYPES: set[str] = set()
 ALLOWED_GATE_STATUSES = {"OPEN", "APPROVED", "RUN"}
@@ -204,6 +205,22 @@ def run_one_sovereign_task(
     if human_escalation_path is not None:
         extra_evidence_paths.append(str(human_escalation_path))
 
+    commit_plan_path: Path | None = None
+    if final_task.status.value == "done" and task.metadata.get("commit_on_success"):
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        changed_files = _git_changed_paths(repo_root)
+        plan = create_commit_plan(
+            task=task,
+            changed_files=changed_files,
+            evidence_manifest=manifest,
+            branch=branch,
+            base_commit=commit_hash,
+        )
+        commit_plan_path = evidence_store.write_commit_plan(task.task_id, plan)
+
+    if commit_plan_path:
+        extra_evidence_paths.append(str(commit_plan_path))
+
     return {
         "status": final_status,
         "task_id": task.task_id,
@@ -214,7 +231,8 @@ def run_one_sovereign_task(
         "human_escalation_path": (
             str(human_escalation_path) if human_escalation_path else None
         ),
-        "evidence_paths": [*evidence_paths, *extra_evidence_paths],
+        "commit_plan_path": str(commit_plan_path) if commit_plan_path else None,
+        "evidence_paths": extra_evidence_paths,
         "blocking_reason": blocking_reason,
         "gate_status": WAITING_AUDIT_STATUS,
     }

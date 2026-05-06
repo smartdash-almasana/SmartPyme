@@ -11,6 +11,7 @@ EVIDENCE_MANIFEST_FILENAME = "evidence_manifest.json"
 EXECUTION_RESULT_FILENAME = "execution_result.json"
 AUDIT_DECISION_FILENAME = "audit_decision.json"
 HUMAN_ESCALATION_FILENAME = "human_escalation.json"
+COMMIT_PLAN_FILENAME = "commit_plan.json"
 MINIMUM_EVIDENCE_FILES = (
     "cycle.md",
     "commands.txt",
@@ -224,6 +225,9 @@ class EvidenceStore:
             "safe_to_continue": bool(task.metadata.get("safe_to_continue", False)),
         }
         return self.write_json(task.task_id, HUMAN_ESCALATION_FILENAME, result)
+
+    def write_commit_plan(self, task_id: str, plan: CommitPlan) -> Path:
+        return self.write_json(task_id, COMMIT_PLAN_FILENAME, plan.to_dict())
 
     def _human_escalation_required(
         self, task: TaskSpec, blocking_reason: str | None
