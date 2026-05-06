@@ -1,9 +1,14 @@
 """Smoke test del grafo determinístico factory_v2."""
 
-import json
+from __future__ import annotations
 
+import json
+from unittest.mock import MagicMock
+
+from factory.contracts.sandbox import SandboxExecutionResult
 from factory_v2.contracts import NodeStatus, TaskSpecV2
 from factory_v2.graph import run_graph
+from factory_v2.sandbox import DockerSandboxAdapter, FakeSandboxAdapter
 
 
 class TestFactoryGraphSmoke:
@@ -75,3 +80,48 @@ class TestFactoryGraphSmoke:
                 data = json.load(f)
             assert data["task_id"] == "T-SMOKE-003"
             assert data["status"] == "PASS"
+
+    def test_flujo_con_docker_sandbox_adapter(self):
+        """Grafo completo con DockerSandboxAdapter mockeado → PASS."""
+        mock_executor = MagicMock()
+        mock_executor.execute.return_value = SandboxExecutionResult(
+            task_id="T-DOCKER-SMOKE",
+            command="echo ... | base64 -d | python3 -",
+            returncode=0,
+            stdout="Hola, Mundo!",
+            stderr="",
+            blocked=False,
+        )
+
+        spec = TaskSpecV2(
+            task_id="T-DOCKER-SMOKE",
+            objective="Test con DockerSandboxAdapter",
+            modo="WRITE_AUTHORIZED",
+        )
+        adapter = DockerSandboxAdapter(executor=mock_executor)
+
+        state = run_graph(spec, sandbox_adapter=adapter)
+
+        assert state.halted is False
+        assert state.audit_result is not None
+        assert state.audit_result.status == NodeStatus.PASS
+        assert state.sandbox_result is not None
+        assert state.sandbox_result.status == NodeStatus.PASS
+        assert state.review_result.status == NodeStatus.PASS
+        assert state.sandbox_result.stdout == "Hola, Mundo!"
+
+        mock_executor.execute.assert_called_once()
+
+    def test_flujo_con_fake_sandbox_adapter_explicito(self):
+        """Grafo con FakeSandboxAdapter explícito (no default) → PASS."""
+        spec = TaskSpecV2(
+            task_id="T-FAKE-EXPLICIT",
+            objective="Test con FakeSandboxAdapter explícito",
+        )
+        adapter = FakeSandboxAdapter()
+
+        state = run_graph(spec, sandbox_adapter=adapter)
+
+        assert state.halted is False
+        assert state.sandbox_result.status == NodeStatus.PASS
+        assert "fake-sandbox" in state.sandbox_result.stdout
