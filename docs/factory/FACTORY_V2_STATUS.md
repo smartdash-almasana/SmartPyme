@@ -1,9 +1,9 @@
 # FACTORY_V2_STATUS
 
-Estado: CANONICO v1  
+Estado: CANONICO v2  
 Fecha: 2026-05-06  
 Rama: `factory/ts-006-jobs-sovereign-persistence`  
-HEAD validado: `eac84e3 feat(factory-v2): write run evidence from graph`
+HEAD validado: `32d8925 feat(factory-v2): enforce command policy in docker sandbox`
 
 ---
 
@@ -19,6 +19,9 @@ La POC determinística low-cost ya tiene:
 - adapter Docker real inyectable;
 - evidencia por nodo;
 - evidencia de run (`run.json`);
+- documentación de contratos;
+- política mínima de comandos (`CommandPolicyV2`);
+- enforcement de política en `DockerSandboxAdapter`;
 - suite `tests/factory_v2/` verde.
 
 ---
@@ -29,17 +32,40 @@ La POC determinística low-cost ya tiene:
 
 ```text
 pytest tests/factory_v2/ -q
+PASS
+```
+
+Validación previa registrada:
+
+```text
+pytest tests/factory_v2/ -q
 ......................... [100%]
 25 passed
 ```
 
-Worktree reportado como limpio después de la ejecución.
+Validaciones parciales recientes:
+
+```text
+pytest tests/factory_v2/test_policy.py -q
+...... [100%]
+6 passed
+
+pytest tests/factory_v2/test_docker_sandbox_adapter.py -q
+........... [100%]
+11 passed
+```
+
+Worktree reportado como limpio después de los ciclos cerrados.
 
 ---
 
 ## COMMITS RELEVANTES
 
 ```text
+32d8925 feat(factory-v2): enforce command policy in docker sandbox
+f7d13c2 feat(factory-v2): add command policy
+66057d5 docs(factory): add factory_v2 contracts
+5cbeca3 docs(factory): record factory_v2 status
 eac84e3 feat(factory-v2): write run evidence from graph
 0e729d3 feat(factory-v2): add run evidence writer
 ba7f6db test(factory-v2): cover evidence writer
@@ -78,6 +104,38 @@ Cobertura:
 ```text
 tests/factory_v2/test_contracts.py
 ```
+
+---
+
+### Documentación de contratos
+
+Archivo:
+
+```text
+docs/factory/FACTORY_V2_CONTRACTS.md
+```
+
+Estado:
+
+```text
+VALIDADO
+```
+
+Contenido documentado:
+
+- `TaskSpecV2`;
+- `ExecutionResultV2`;
+- `GraphState`;
+- `NodeStatus`;
+- `EvidenceWriter.write`;
+- `EvidenceWriter.write_run`;
+- payload de `run.json`;
+- `SandboxAdapterProtocol`;
+- `FakeSandboxAdapter`;
+- `DockerSandboxAdapter`;
+- flujo normal;
+- halt temprano;
+- límites actuales.
 
 ---
 
@@ -147,6 +205,51 @@ VALIDADO
 
 ---
 
+### CommandPolicyV2
+
+Archivo:
+
+```text
+factory_v2/policy.py
+```
+
+Componente:
+
+```text
+CommandPolicyV2
+```
+
+Rol:
+
+Política determinística mínima para evaluar comandos antes de ejecución en sandbox Docker.
+
+Estado:
+
+```text
+VALIDADO
+```
+
+Cobertura:
+
+```text
+tests/factory_v2/test_policy.py
+```
+
+Contrato actual:
+
+- allowlist mínima de comandos seguros;
+- blocklist de comandos destructivos, de red, shell, escalada y contenedores;
+- fail-closed para comandos desconocidos;
+- razones claras para permitir o bloquear.
+
+Límite explícito:
+
+```text
+La política evalúa el comando recibido, no hace análisis semántico profundo de código Python.
+```
+
+---
+
 ### DockerSandboxAdapter
 
 Archivo:
@@ -168,7 +271,7 @@ Wrapper de `DockerExecutor` real detrás del contrato `factory_v2`.
 Estado:
 
 ```text
-VALIDADO COMO ADAPTER INYECTABLE
+VALIDADO COMO ADAPTER INYECTABLE CON POLICY
 ```
 
 Cobertura:
@@ -180,16 +283,26 @@ tests/factory_v2/test_docker_sandbox_adapter.py
 Casos cubiertos:
 
 - comando seguro con PASS;
-- comando bloqueado;
+- comando bloqueado por executor legacy;
 - fallo de comando;
 - Docker no disponible;
-- mapeo de resultado hacia `ExecutionResultV2`.
+- mapeo de resultado hacia `ExecutionResultV2`;
+- policy opcional inyectada;
+- bloqueo por `CommandPolicyV2` antes de invocar DockerExecutor;
+- no invocación del executor cuando la policy bloquea.
 
 Regla:
 
 ```text
 Docker real no queda como default global del grafo.
 Se usa por inyección explícita.
+```
+
+Límite explícito:
+
+```text
+CommandPolicyV2 dentro de DockerSandboxAdapter evalúa el comando wrapper generado.
+No analiza el contenido semántico de code/test.
 ```
 
 ---
@@ -234,7 +347,7 @@ tests/factory_v2/test_evidence_writer.py
 
 ## EVIDENCIA DE RUN
 
-El grafo ahora escribe `run.json` al final de cada ejecución.
+El grafo escribe `run.json` al final de cada ejecución.
 
 Payload mínimo esperado:
 
@@ -331,7 +444,7 @@ cambios de arquitectura
 
 ## FRONTERA ACTUAL
 
-`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima.
+`factory_v2` ya puede ejecutar una POC determinística con evidencia mínima y Docker adapter protegido por política mínima.
 
 Todavía no tiene:
 
@@ -341,6 +454,7 @@ Todavía no tiene:
 - Prefect;
 - PR automation;
 - policy engine completo;
+- análisis semántico de código generado antes de sandbox;
 - persistencia industrial;
 - observabilidad industrial;
 - factory-of-factories.
@@ -349,35 +463,34 @@ Todavía no tiene:
 
 ## PRÓXIMOS CICLOS RECOMENDADOS
 
-### Ciclo 1 — Documentar contratos actuales
+### Ciclo 1 — Integración explícita de Docker en grafo bajo control
 
 Objetivo:
 
 ```text
-Documentar contratos internos factory_v2 y payload de run.json.
+Agregar mecanismo explícito para ejecutar run_graph con DockerSandboxAdapter solo por inyección/control deliberado.
 ```
 
-Archivo sugerido:
+Condición:
 
 ```text
-docs/factory/FACTORY_V2_CONTRACTS.md
+No convertir Docker real en default global.
 ```
 
 ---
 
-### Ciclo 2 — Política de comandos mínima
+### Ciclo 2 — Política más fuerte sobre contenido
 
 Objetivo:
 
 ```text
-Agregar CommandPolicyV2 mínima antes de permitir Docker real operativo.
+Agregar validaciones previas sobre code/test antes de construir el wrapper de Docker.
 ```
 
-Archivos probables:
+Motivo:
 
 ```text
-factory_v2/policy.py
-tests/factory_v2/test_policy.py
+CommandPolicyV2 hoy evalúa el wrapper, no el contenido semántico de code/test.
 ```
 
 ---
@@ -407,5 +520,5 @@ El legacy queda como cantera técnica y evidencia histórica, no como centro de 
 Frase rectora:
 
 ```text
-Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia y tests verdes.
+Factory_v2 avanza por ciclos cortos, contratos explícitos, evidencia, policy mínima, sandbox y tests verdes.
 ```
