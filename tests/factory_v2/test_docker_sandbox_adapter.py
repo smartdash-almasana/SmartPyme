@@ -8,6 +8,7 @@ import pytest
 
 from factory.contracts.sandbox import SandboxExecutionResult
 from factory_v2.contracts import NodeStatus
+from factory_v2.policy import CommandPolicyV2
 from factory_v2.sandbox import (
     DockerSandboxAdapter,
     _build_shell_command,
@@ -124,8 +125,8 @@ def test_execute_command_failure():
     assert result.stderr == "Error: algo falló"
 
 
-def test_execute_blocked_by_policy():
-    """Comando bloqueado por command_policy → BLOCKED con reasons."""
+def test_execute_blocked_by_legacy_policy():
+    """Comando bloqueado por command_policy del executor legacy → BLOCKED."""
     mock_executor = MagicMock()
     mock_executor.execute.return_value = SandboxExecutionResult(
         task_id="T_BLOCKED",
@@ -134,7 +135,7 @@ def test_execute_blocked_by_policy():
         stdout="",
         stderr="Command blocked by policy before Docker execution.",
         blocked=True,
-        reasons=["DANGEROUS_COMMAND_PATTERN:^git\\\\s+push"],
+        reasons=['DANGEROUS_COMMAND_PATTERN:^git\s+push'],
     )
 
     adapter = DockerSandboxAdapter(executor=mock_executor)
@@ -146,12 +147,7 @@ def test_execute_blocked_by_policy():
 
 
 def test_execute_docker_unavailable():
-    """Docker no disponible → BLOCKED con DOCKER_UNAVAILABLE.
-
-    Usa docker_available=False para forzar la detección de indisponibilidad
-    sin mockear el executor directamente.
-    """
-    # docker_available=False fuerza a DockerExecutor a reportar indisponibilidad
+    """Docker no disponible → BLOCKED con DOCKER_UNAVAILABLE."""
     adapter = DockerSandboxAdapter(docker_available=False)
     result = adapter.execute(
         task_id="T_NO_DOCKER",
@@ -166,8 +162,51 @@ def test_execute_docker_unavailable():
     assert "Docker daemon not available" in result.stderr
 
 
+# ── Tests de integración de CommandPolicyV2 ───────────────────────
+
+
+class BlockEchoPolicy(CommandPolicyV2):
+    """Política de test que bloquea el comando 'echo'."""
+    BLOCKLIST = {"echo"}
+
+
+def test_adapter_blocks_command_with_injected_policy():
+    """Verifica que el adapter bloquea un comando usando la policy inyectada."""
+    mock_executor = MagicMock()
+    policy = BlockEchoPolicy()
+
+    adapter = DockerSandboxAdapter(executor=mock_executor, policy=policy)
+    result = adapter.execute(task_id="T_POLICY_BLOCK", code="print(1)", test_code="")
+
+    assert result.status == NodeStatus.BLOCKED
+    assert result.task_id == "T_POLICY_BLOCK"
+    assert result.return_code == 126
+    assert "Comando 'echo' está en la blocklist y está bloqueado." in result.reasons[0]
+    
+    mock_executor.execute.assert_not_called()
+
+
+def test_adapter_allows_command_with_default_policy():
+    """Verifica que el adapter permite un comando con la policy por defecto."""
+    mock_executor = MagicMock()
+    mock_executor.execute.return_value = SandboxExecutionResult(
+        task_id="T_POLICY_PASS",
+        command="echo hi",
+        returncode=0,
+        stdout="",
+        stderr="",
+        blocked=False,
+    )
+    
+    adapter = DockerSandboxAdapter(executor=mock_executor)
+    result = adapter.execute(task_id="T_POLICY_PASS", code="print(1)", test_code="")
+    
+    assert result.status == NodeStatus.PASS
+    mock_executor.execute.assert_called_once()
+
+
 def test_fake_sandbox_adapter_still_works():
-    """FakeSandboxAdapter sigue funcionando tras los cambios."""
+    """FakeSandboxAdapter sigue funcionando tras los cambios y no usa la política."""
     adapter = FakeSandboxAdapter()
     result = adapter.execute(task_id="T_FAKE", code="x=1", test_code="assert x==1")
 

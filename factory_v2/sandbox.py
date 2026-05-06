@@ -8,6 +8,7 @@ from typing import Optional
 from factory.contracts.sandbox import SandboxExecutionRequest, SandboxExecutionResult
 from factory.sandbox.docker_executor import DockerExecutor
 from factory_v2.contracts import ExecutionResultV2, NodeStatus
+from factory_v2.policy import CommandPolicyV2
 
 
 def _build_shell_command(code: str, test_code: str) -> str:
@@ -84,14 +85,17 @@ class DockerSandboxAdapter:
         *,
         docker_available: Optional[bool] = None,
         executor: Optional[DockerExecutor] = None,
+        policy: Optional[CommandPolicyV2] = None,
     ) -> None:
         """Parámetros:
             docker_available: Override para tests (pasa a DockerExecutor).
             executor: Inyectar un DockerExecutor mockeado para tests.
+            policy: Política de seguridad de comandos a aplicar.
         """
         self._executor: DockerExecutor = executor or DockerExecutor(
             docker_available=docker_available
         )
+        self._policy = policy or CommandPolicyV2()
 
     def execute(
         self,
@@ -103,9 +107,22 @@ class DockerSandboxAdapter:
     ) -> ExecutionResultV2:
         """Ejecuta code + test_code en Docker efímero.
 
+        La política evalúa el comando wrapper generado, no el contenido semántico de code/test.
         Si Docker no está disponible, retorna BLOCKED con DOCKER_UNAVAILABLE.
         """
         command = _build_shell_command(code, test_code)
+
+        allowed, reason = self._policy.evaluate(command)
+        if not allowed:
+            return ExecutionResultV2(
+                task_id=task_id,
+                node_name="sandbox",
+                status=NodeStatus.BLOCKED,
+                stdout="",
+                stderr=f"Comando bloqueado por la política de seguridad: {reason}",
+                return_code=126,
+                reasons=[reason],
+            )
 
         request = SandboxExecutionRequest(
             task_id=task_id,
