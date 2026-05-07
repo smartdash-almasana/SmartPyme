@@ -39,3 +39,5 @@ tfplan
 opencode.json
 .agents/**/.mcp.json
 .agents/**/.mcp.json
+
+.env.local
