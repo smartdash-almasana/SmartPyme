@@ -5,6 +5,7 @@ description = "SmartPyme operational core and autonomous factory"
 requires-python = ">=3.11"
 dependencies = [
   "polars>=1.0",
+  "supabase>=2.0",
 ]
 
 [project.optional-dependencies]
