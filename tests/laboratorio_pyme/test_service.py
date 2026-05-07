@@ -150,3 +150,68 @@ def test_p8_borrador_sin_hallazgos():
     draft = svc.crear_borrador_informe(CLIENTE, CASE, [])
     assert len(draft.hallazgos) == 0
     assert draft.hallazgos == []
+
+
+# ---------------------------------------------------------------------------
+# TS_LAB_CONTRACTUAL_CORE_ALIGNMENT_V1
+# Prueba que el servicio preserva los identificadores core cuando se proveen.
+# ---------------------------------------------------------------------------
+
+def test_crear_caso_preserva_job_id_y_user_id():
+    """Service preserva job_id y user_id en el caso creado."""
+    svc = LaboratorioService()
+    caso = svc.crear_caso(CLIENTE, "Juan", [LAB], job_id="job-abc", user_id="user-xyz")
+    assert caso.job_id == "job-abc"
+    assert caso.user_id == "user-xyz"
+
+
+def test_crear_caso_sin_core_ids_son_none():
+    """Service produce job_id=None y user_id=None cuando no se proveen."""
+    svc = LaboratorioService()
+    caso = svc.crear_caso(CLIENTE, "Juan", [LAB])
+    assert caso.job_id is None
+    assert caso.user_id is None
+
+
+def test_crear_selection_preserva_job_id():
+    """Service preserva job_id en la selección creada."""
+    svc = LaboratorioService()
+    sel = svc.crear_selection(CLIENTE, CASE, [LAB], job_id="job-abc")
+    assert sel.job_id == "job-abc"
+
+
+def test_crear_selection_sin_job_id_es_none():
+    """Service produce job_id=None en selección cuando no se provee."""
+    svc = LaboratorioService()
+    sel = svc.crear_selection(CLIENTE, CASE, [LAB])
+    assert sel.job_id is None
+
+
+def test_crear_borrador_preserva_job_id_decision_id_user_id():
+    """Service preserva job_id, decision_id y user_id en el borrador."""
+    svc = LaboratorioService()
+    draft = svc.crear_borrador_informe(
+        CLIENTE, CASE, [],
+        job_id="job-abc", decision_id="dec-001", user_id="user-xyz"
+    )
+    assert draft.job_id == "job-abc"
+    assert draft.decision_id == "dec-001"
+    assert draft.user_id == "user-xyz"
+
+
+def test_crear_borrador_sin_core_ids_son_none():
+    """Service produce job_id=None, decision_id=None, user_id=None cuando no se proveen."""
+    svc = LaboratorioService()
+    draft = svc.crear_borrador_informe(CLIENTE, CASE, [])
+    assert draft.job_id is None
+    assert draft.decision_id is None
+    assert draft.user_id is None
+
+
+def test_draft_es_transiente_no_tiene_metodo_save():
+    """LaboratorioReportDraft retornado por el servicio no tiene métodos de persistencia."""
+    svc = LaboratorioService()
+    draft = svc.crear_borrador_informe(CLIENTE, CASE, [])
+    assert not hasattr(draft, "save")
+    assert not hasattr(draft, "persist")
+    assert not hasattr(draft, "commit")

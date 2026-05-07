@@ -270,3 +270,123 @@ def test_p6_rechazo_prioridad_invalida():
             laboratorio=LAB, hallazgo="hallazgo", prioridad="critica",
             impacto_estimado="Moderado"
         )
+
+
+# ---------------------------------------------------------------------------
+# TS_LAB_CONTRACTUAL_CORE_ALIGNMENT_V1
+# Prueba que cliente_id es el primer campo y que los campos core opcionales
+# existen y defaulean a None en todos los contratos relevantes.
+# ---------------------------------------------------------------------------
+
+def test_cliente_id_es_primer_campo_en_case():
+    """cliente_id debe ser el primer campo de LaboratorioPymeCase."""
+    import dataclasses
+    fields = [f.name for f in dataclasses.fields(LaboratorioPymeCase)]
+    assert fields[0] == "cliente_id"
+
+
+def test_cliente_id_es_primer_campo_en_selection():
+    """cliente_id debe ser el primer campo de LaboratorioSelection."""
+    import dataclasses
+    fields = [f.name for f in dataclasses.fields(LaboratorioSelection)]
+    assert fields[0] == "cliente_id"
+
+
+def test_cliente_id_es_primer_campo_en_evidence():
+    """cliente_id debe ser el primer campo de EvidenceRequirement."""
+    import dataclasses
+    fields = [f.name for f in dataclasses.fields(EvidenceRequirement)]
+    assert fields[0] == "cliente_id"
+
+
+def test_cliente_id_es_primer_campo_en_finding():
+    """cliente_id debe ser el primer campo de DiagnosticFinding."""
+    import dataclasses
+    fields = [f.name for f in dataclasses.fields(DiagnosticFinding)]
+    assert fields[0] == "cliente_id"
+
+
+def test_cliente_id_es_primer_campo_en_draft():
+    """cliente_id debe ser el primer campo de LaboratorioReportDraft."""
+    import dataclasses
+    fields = [f.name for f in dataclasses.fields(LaboratorioReportDraft)]
+    assert fields[0] == "cliente_id"
+
+
+def test_case_core_ids_default_none():
+    """LaboratorioPymeCase: job_id y user_id defaulean a None."""
+    caso = LaboratorioPymeCase(
+        cliente_id=CLIENTE, case_id=CASE, dueno_nombre="Juan",
+        laboratorios=[LAB], estado="borrador", creado_en="2024-01-01T00:00:00"
+    )
+    assert caso.job_id is None
+    assert caso.user_id is None
+
+
+def test_case_acepta_job_id_y_user_id():
+    """LaboratorioPymeCase preserva job_id y user_id cuando se proveen."""
+    caso = LaboratorioPymeCase(
+        cliente_id=CLIENTE, case_id=CASE, dueno_nombre="Juan",
+        laboratorios=[LAB], estado="borrador", creado_en="2024-01-01T00:00:00",
+        job_id="job-abc", user_id="user-xyz"
+    )
+    assert caso.job_id == "job-abc"
+    assert caso.user_id == "user-xyz"
+
+
+def test_finding_core_ids_default_none():
+    """DiagnosticFinding: job_id y decision_id defaulean a None."""
+    f = DiagnosticFinding(
+        cliente_id=CLIENTE, finding_id="f-001", case_id=CASE,
+        laboratorio=LAB, hallazgo="hallazgo", prioridad="alta",
+        impacto_estimado="Moderado"
+    )
+    assert f.job_id is None
+    assert f.decision_id is None
+
+
+def test_finding_acepta_job_id_y_decision_id():
+    """DiagnosticFinding preserva job_id y decision_id cuando se proveen."""
+    f = DiagnosticFinding(
+        cliente_id=CLIENTE, finding_id="f-001", case_id=CASE,
+        laboratorio=LAB, hallazgo="hallazgo", prioridad="alta",
+        impacto_estimado="Moderado",
+        job_id="job-abc", decision_id="dec-001"
+    )
+    assert f.job_id == "job-abc"
+    assert f.decision_id == "dec-001"
+
+
+def test_draft_core_ids_default_none():
+    """LaboratorioReportDraft: job_id, decision_id y user_id defaulean a None."""
+    draft = LaboratorioReportDraft(
+        cliente_id=CLIENTE, report_id="r-001", case_id=CASE,
+        hallazgos=[], estado_borrador="pendiente_revision", generado_en="2024-01-01T00:00:00"
+    )
+    assert draft.job_id is None
+    assert draft.decision_id is None
+    assert draft.user_id is None
+
+
+def test_draft_acepta_core_ids():
+    """LaboratorioReportDraft preserva job_id, decision_id y user_id cuando se proveen."""
+    draft = LaboratorioReportDraft(
+        cliente_id=CLIENTE, report_id="r-001", case_id=CASE,
+        hallazgos=[], estado_borrador="pendiente_revision", generado_en="2024-01-01T00:00:00",
+        job_id="job-abc", decision_id="dec-001", user_id="user-xyz"
+    )
+    assert draft.job_id == "job-abc"
+    assert draft.decision_id == "dec-001"
+    assert draft.user_id == "user-xyz"
+
+
+def test_draft_es_transiente_no_tiene_metodo_save():
+    """LaboratorioReportDraft no expone métodos de persistencia (save, persist, commit)."""
+    draft = LaboratorioReportDraft(
+        cliente_id=CLIENTE, report_id="r-001", case_id=CASE,
+        hallazgos=[], estado_borrador="pendiente_revision", generado_en="2024-01-01T00:00:00"
+    )
+    assert not hasattr(draft, "save")
+    assert not hasattr(draft, "persist")
+    assert not hasattr(draft, "commit")
+    assert not hasattr(draft, "insert")
