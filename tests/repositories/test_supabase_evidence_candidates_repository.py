@@ -357,6 +357,18 @@ def test_get_preserva_metadata(repo):
     assert fetched.metadata.get("periodo") == "Q1"
 
 
+def test_get_no_muta_metadata_original_en_fila(repo, fake_client):
+    chunk = _make_chunk(metadata={"origen": "factura"}, plan_id="plan-123")
+    repo.create(chunk)
+
+    fetched = repo.get("ev-001")
+    assert fetched is not None
+    assert fetched.plan_id == "plan-123"
+
+    rows = fake_client.get_rows("evidence_candidates")
+    assert rows[0]["metadata"]["plan_id"] == "plan-123"
+
+
 # ---------------------------------------------------------------------------
 # list_by_job — filtra por cliente_id y job_id
 # ---------------------------------------------------------------------------

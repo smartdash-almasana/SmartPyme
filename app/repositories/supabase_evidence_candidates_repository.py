@@ -211,7 +211,7 @@ class SupabaseEvidenceCandidatesRepository:
         desde metadata.
         """
         payload = row.get("payload") or {}
-        metadata = row.get("metadata") or {}
+        metadata = dict(row.get("metadata") or {})
 
         # Extraer plan_id de metadata si fue almacenado allí.
         plan_id = metadata.pop("plan_id", None)
