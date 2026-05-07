@@ -1,9 +1,18 @@
 """Smoke test real end-to-end del Laboratorio MVP contra Supabase DEV.
 
-Carga .env.local, construye el contexto de persistencia real con provider=supabase,
-ejecuta crear_caso_persistente + cerrar_caso_persistente y valida filas creadas.
+Carga credenciales desde .env.local o variables de entorno del sistema.
+No imprime ni hardcodea secretos. No limpia datos. No usa drop/truncate/delete.
 
-NO imprime secretos. NO limpia datos. NO usa drop/truncate/delete.
+Uso:
+    python -m scripts.smoke_laboratorio_supabase_dev
+
+Requiere en .env.local o entorno:
+    SMARTPYME_PERSISTENCE_PROVIDER=supabase
+    SMARTPYME_SUPABASE_URL=<url>
+    SMARTPYME_SUPABASE_KEY=<service_role_key>
+
+Requiere:
+    pip install supabase
 """
 from __future__ import annotations
 
@@ -143,8 +152,7 @@ except Exception as e:
 # ---------------------------------------------------------------------------
 # 10. cerrar_caso_persistente
 # ---------------------------------------------------------------------------
-# Actualizar case_id en hallazgos
-from dataclasses import replace
+# Construir hallazgos con el case_id real
 hallazgos_con_case = [
     DiagnosticFinding(
         cliente_id=CLIENTE_ID,
