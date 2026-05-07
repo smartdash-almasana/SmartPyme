@@ -110,3 +110,28 @@ def test_p0_endpoint_montado_en_main_app(monkeypatch):
     assert res.status_code == 200
     assert res.json()["status"] == "closed"
     assert res.json()["case_id"] == "case-main-1"
+
+
+def test_form_get_devuelve_html():
+    """GET /api/v1/laboratorio/p0/form devuelve 200 con HTML del formulario."""
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/form")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
+    body = res.text
+    assert "Laboratorio" in body
+    assert "cliente_id" in body
+    assert "dueno_nombre" in body
+    assert "laboratorio" in body
+    assert "hallazgo" in body
+    assert "/api/v1/laboratorio/p0/casos" in body
+
+
+def test_form_no_expone_secrets():
+    """El HTML del formulario no contiene referencias a secrets o URLs de Supabase."""
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/form")
+    body = res.text
+    assert "supabase.co" not in body
+    assert "service_role" not in body
+    assert "SMARTPYME_SUPABASE" not in body
