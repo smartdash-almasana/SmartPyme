@@ -8,8 +8,8 @@ Uso:
 
 Requiere en .env.local o entorno:
     SMARTPYME_PERSISTENCE_PROVIDER=supabase
-    SMARTPYME_SUPABASE_URL=<url>
-    SMARTPYME_SUPABASE_KEY=<service_role_key>
+    SMARTPYME_SUPABASE_URL=<url del proyecto>
+    SMARTPYME_SUPABASE_KEY=<clave del proyecto>
 
 Requiere:
     pip install supabase
