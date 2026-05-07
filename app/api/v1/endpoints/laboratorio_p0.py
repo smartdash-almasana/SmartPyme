@@ -27,5 +27,7 @@ def create_caso(payload: LaboratorioP0Request):
         )
         return result.to_dict()
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
+        raise HTTPException(
+            status_code=400,
+            detail="No se pudo ejecutar el flujo Laboratorio P0. Revisar configuración y evidencia.",
+        ) from exc

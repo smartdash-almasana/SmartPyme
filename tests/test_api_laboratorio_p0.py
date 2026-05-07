@@ -49,3 +49,26 @@ def test_create_caso_input_invalido_422():
     res = client.post("/api/v1/laboratorio/p0/casos", json={"cliente_id": "x"})
     assert res.status_code == 422
 
+
+def test_create_caso_error_sanitizado_sin_secret_leak(monkeypatch):
+    from app.api.v1.endpoints import laboratorio_p0
+
+    def _fake_run_error(**kwargs):
+        raise RuntimeError(
+            "SECRET_KEY_123 SMARTPYME_SUPABASE_KEY https://example.supabase.co"
+        )
+
+    monkeypatch.setattr(laboratorio_p0, "run_laboratorio_p0", _fake_run_error)
+    client = TestClient(create_app())
+    payload = {
+        "cliente_id": "cliente_demo",
+        "dueno_nombre": "Dueño Demo",
+        "laboratorio": "diagnostico_operativo",
+        "hallazgo": "Primer hallazgo demo",
+    }
+    res = client.post("/api/v1/laboratorio/p0/casos", json=payload)
+    assert res.status_code == 400
+    detail = res.json()["detail"]
+    assert "SECRET_KEY_123" not in detail
+    assert "SMARTPYME_SUPABASE_KEY" not in detail
+    assert "supabase.co" not in detail
