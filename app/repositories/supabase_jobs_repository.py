@@ -1,4 +1,4 @@
-"""Adapter Supabase para jobs (background_jobs) — SmartPyme P0.
+"""Adapter Supabase para jobs — SmartPyme P0.
 
 Implementa JobPort usando un cliente Supabase inyectable.
 El cliente real es `supabase.Client` (librería supabase-py).
@@ -12,7 +12,7 @@ Reglas:
     - No modifica JobRepository (SQLite legacy).
     - No hace dual-write.
 
-Tabla Supabase esperada: background_jobs
+Tabla Supabase esperada: jobs
     cliente_id      TEXT NOT NULL
     job_id          TEXT NOT NULL
     job_type        TEXT NOT NULL
@@ -32,7 +32,7 @@ from typing import Any
 from app.contracts.job_contract import Job, JobStatus
 from app.repositories.persistence_provider import validate_supabase_env
 
-_TABLE = "background_jobs"
+_TABLE = "jobs"
 
 
 class SupabaseJobsRepository:

@@ -152,7 +152,7 @@ def test_con_cliente_inyectado_no_requiere_env(monkeypatch, fake_client):
 def test_create_inserta_job(repo, fake_client):
     job = _make_job()
     repo.create(job)
-    rows = fake_client.get_rows("background_jobs")
+    rows = fake_client.get_rows("jobs")
     assert len(rows) == 1
     assert rows[0]["job_id"] == "job-001"
     assert rows[0]["cliente_id"] == CLIENTE_A
@@ -162,7 +162,7 @@ def test_create_inserta_payload_como_dict(repo, fake_client):
     """payload y traceable_origin se insertan como dict, no como string."""
     job = _make_job()
     repo.create(job)
-    rows = fake_client.get_rows("background_jobs")
+    rows = fake_client.get_rows("jobs")
     assert isinstance(rows[0]["payload"], dict)
     assert isinstance(rows[0]["traceable_origin"], dict)
 
@@ -171,7 +171,7 @@ def test_create_inserta_status_como_string(repo, fake_client):
     """status se inserta como string."""
     job = _make_job(status=JobStatus.RUNNING)
     repo.create(job)
-    rows = fake_client.get_rows("background_jobs")
+    rows = fake_client.get_rows("jobs")
     assert rows[0]["status"] == "RUNNING"
 
 
@@ -187,7 +187,7 @@ def test_create_no_inserta_en_mismatch(repo, fake_client):
     job = _make_job(cliente_id=CLIENTE_B)
     with pytest.raises(ValueError):
         repo.create(job)
-    assert fake_client.get_rows("background_jobs") == []
+    assert fake_client.get_rows("jobs") == []
 
 
 # ---------------------------------------------------------------------------
