@@ -27,7 +27,7 @@ create table public.clientes (
   nombre text,
   status text not null default 'active',
   metadata jsonb not null default '{}'::jsonb,
-  created_at timestamz not null default now(),
+  created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   check (length(trim(cliente_id)) > 0)
 );
