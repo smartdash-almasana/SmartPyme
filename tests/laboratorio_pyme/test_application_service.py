@@ -15,9 +15,11 @@ import pytest
 
 from app.contracts.job_contract import JobStatus
 from app.laboratorio_pyme.application_service import (
+    CasoCerradoResult,
     CasoPersistenteResult,
     LaboratorioApplicationService,
 )
+from app.laboratorio_pyme.contracts import DiagnosticFinding
 from app.laboratorio_pyme.persistence import LaboratorioPersistenceContext
 from app.laboratorio_pyme.service import LaboratorioService
 from app.laboratorio_pyme.tipos import TipoLaboratorio
@@ -332,5 +334,274 @@ def test_no_hay_llamadas_de_red(app_svc):
         cliente_id=CLIENTE_A,
         dueno_nombre="Ana García",
         laboratorios=[TipoLaboratorio.analisis_comercial],
+    )
+    assert result is not None
+
+
+# ---------------------------------------------------------------------------
+# Helpers para cerrar_caso_persistente
+# ---------------------------------------------------------------------------
+
+def _make_hallazgo(
+    cliente_id: str = CLIENTE_A,
+    case_id: str = "case-001",
+    finding_id: str = "finding-001",
+    hallazgo: str = "Margen bruto por debajo del umbral esperado",
+    prioridad: str = "alta",
+    impacto_estimado: str = "Pérdida estimada de $15,000 mensuales",
+    laboratorio: TipoLaboratorio = TipoLaboratorio.analisis_comercial,
+) -> DiagnosticFinding:
+    return DiagnosticFinding(
+        cliente_id=cliente_id,
+        finding_id=finding_id,
+        case_id=case_id,
+        laboratorio=laboratorio,
+        hallazgo=hallazgo,
+        prioridad=prioridad,
+        impacto_estimado=impacto_estimado,
+    )
+
+
+@pytest.fixture
+def caso_creado(app_svc):
+    """Crea un caso persistente y devuelve el resultado para usarlo en tests de cierre."""
+    return app_svc.crear_caso_persistente(
+        cliente_id=CLIENTE_A,
+        dueno_nombre="Ana García",
+        laboratorios=[TipoLaboratorio.analisis_comercial],
+        job_id="job-fixture-001",
+    )
+
+
+# ---------------------------------------------------------------------------
+# cerrar_caso_persistente — flujo básico
+# ---------------------------------------------------------------------------
+
+def test_cerrar_caso_persistente_devuelve_result(app_svc, caso_creado):
+    hallazgos = [_make_hallazgo(case_id=caso_creado.case_id)]
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=hallazgos,
+    )
+    assert isinstance(result, CasoCerradoResult)
+
+
+def test_cerrar_caso_persistente_conserva_cliente_id(app_svc, caso_creado):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    assert result.cliente_id == CLIENTE_A
+
+
+def test_cerrar_caso_persistente_conserva_case_id(app_svc, caso_creado):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    assert result.case_id == caso_creado.case_id
+
+
+def test_cerrar_caso_persistente_conserva_job_id(app_svc, caso_creado):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    assert result.job_id == caso_creado.job_id
+
+
+def test_cerrar_caso_persistente_devuelve_report_id_no_vacio(app_svc, caso_creado):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    assert result.report_id
+    assert len(result.report_id) > 0
+
+
+# ---------------------------------------------------------------------------
+# persiste DiagnosticReport en fake repo
+# ---------------------------------------------------------------------------
+
+def test_cerrar_caso_persiste_report_en_repo(app_svc, caso_creado, fake_client):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    rows = fake_client.get_rows("reports")
+    assert len(rows) == 1
+    assert rows[0]["report_id"] == result.report_id
+    assert rows[0]["cliente_id"] == CLIENTE_A
+
+
+def test_report_persistido_tiene_case_id(app_svc, caso_creado, fake_client):
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    rows = fake_client.get_rows("reports")
+    assert rows[0]["case_id"] == caso_creado.case_id
+
+
+def test_report_persistido_status_confirmed_con_hallazgos(app_svc, caso_creado, fake_client):
+    """diagnosis_status = CONFIRMED cuando hay hallazgos."""
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    rows = fake_client.get_rows("reports")
+    assert rows[0]["status"] == "CONFIRMED"
+
+
+def test_report_persistido_status_insufficient_sin_hallazgos(app_svc, caso_creado, fake_client):
+    """diagnosis_status = INSUFFICIENT_EVIDENCE cuando no hay hallazgos."""
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[],
+    )
+    rows = fake_client.get_rows("reports")
+    assert rows[0]["status"] == "INSUFFICIENT_EVIDENCE"
+
+
+def test_report_persistido_payload_contiene_findings(app_svc, caso_creado, fake_client):
+    hallazgo = _make_hallazgo(
+        case_id=caso_creado.case_id,
+        hallazgo="Stock negativo detectado",
+    )
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[hallazgo],
+    )
+    rows = fake_client.get_rows("reports")
+    findings = rows[0]["payload"]["findings"]
+    assert len(findings) == 1
+    assert findings[0]["hallazgo"] == "Stock negativo detectado"
+
+
+def test_report_persistido_acepta_hypothesis_provista(app_svc, caso_creado, fake_client):
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+        hypothesis="Investigar si el margen bruto está por debajo del umbral?",
+    )
+    rows = fake_client.get_rows("reports")
+    assert rows[0]["payload"]["hypothesis"] == "Investigar si el margen bruto está por debajo del umbral?"
+
+
+def test_report_persistido_acepta_reasoning_summary_provisto(app_svc, caso_creado, fake_client):
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+        reasoning_summary="Análisis completado con tres fuentes de evidencia.",
+    )
+    rows = fake_client.get_rows("reports")
+    assert rows[0]["payload"]["reasoning_summary"] == "Análisis completado con tres fuentes de evidencia."
+
+
+# ---------------------------------------------------------------------------
+# LaboratorioReportDraft NO se persiste en cerrar_caso_persistente
+# ---------------------------------------------------------------------------
+
+def test_cerrar_caso_no_persiste_laboratorio_report_draft(app_svc, caso_creado, fake_client):
+    """cerrar_caso_persistente persiste solo en reports, no como draft paralelo."""
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
+    )
+    # Solo reports debe tener una fila nueva.
+    assert len(fake_client.get_rows("reports")) == 1
+    # decisions y evidence_candidates deben seguir vacíos.
+    assert fake_client.get_rows("decisions") == []
+    assert fake_client.get_rows("evidence_candidates") == []
+
+
+# ---------------------------------------------------------------------------
+# Flujo completo: crear + cerrar
+# ---------------------------------------------------------------------------
+
+def test_flujo_completo_crear_y_cerrar(app_svc, fake_client):
+    """Flujo P0 completo: crear caso → cerrar caso con reporte."""
+    # Crear
+    creado = app_svc.crear_caso_persistente(
+        cliente_id=CLIENTE_A,
+        dueno_nombre="María Fernández",
+        laboratorios=[TipoLaboratorio.analisis_financiero],
+    )
+    assert len(fake_client.get_rows("jobs")) == 1
+    assert len(fake_client.get_rows("operational_cases")) == 1
+
+    # Cerrar
+    hallazgo = _make_hallazgo(
+        case_id=creado.case_id,
+        hallazgo="Flujo de caja negativo en Q1",
+        laboratorio=TipoLaboratorio.analisis_financiero,
+    )
+    cerrado = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=creado.case_id,
+        job_id=creado.job_id,
+        hallazgos=[hallazgo],
+    )
+    assert len(fake_client.get_rows("reports")) == 1
+    assert cerrado.case_id == creado.case_id
+    assert cerrado.job_id == creado.job_id
+    assert cerrado.cliente_id == CLIENTE_A
+
+
+def test_cerrar_caso_no_rompe_crear_caso(app_svc, fake_client):
+    """cerrar_caso_persistente no afecta el estado de crear_caso_persistente."""
+    creado = app_svc.crear_caso_persistente(
+        cliente_id=CLIENTE_A,
+        dueno_nombre="Pedro Ruiz",
+        laboratorios=[TipoLaboratorio.analisis_stock],
+    )
+    app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=creado.case_id,
+        job_id=creado.job_id,
+        hallazgos=[],
+    )
+    # El job y el case original siguen intactos.
+    assert len(fake_client.get_rows("jobs")) == 1
+    assert len(fake_client.get_rows("operational_cases")) == 1
+    assert len(fake_client.get_rows("reports")) == 1
+
+
+# ---------------------------------------------------------------------------
+# Sin llamadas de red en cerrar_caso_persistente
+# ---------------------------------------------------------------------------
+
+def test_cerrar_caso_no_hay_llamadas_de_red(app_svc, caso_creado):
+    result = app_svc.cerrar_caso_persistente(
+        cliente_id=CLIENTE_A,
+        case_id=caso_creado.case_id,
+        job_id=caso_creado.job_id,
+        hallazgos=[_make_hallazgo(case_id=caso_creado.case_id)],
     )
     assert result is not None

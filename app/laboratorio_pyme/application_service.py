@@ -12,7 +12,7 @@ Principios:
     - cliente_id fluye a través de todas las entidades creadas.
     - job_id se preserva si se provee; se genera uno si no.
 
-CONTRACT_BRIDGE:
+CONTRACT_BRIDGE (crear_caso_persistente):
     LaboratorioPymeCase (Laboratorio) → OperationalCase (core P0)
         case_id         → case_id
         cliente_id      → cliente_id
@@ -28,6 +28,18 @@ CONTRACT_BRIDGE:
         status          → JobStatus.PENDING
 
     LaboratorioReportDraft NO se persiste — es transiente por diseño.
+
+CONTRACT_BRIDGE (cerrar_caso_persistente):
+    LaboratorioReportDraft (Laboratorio, transiente) → DiagnosticReport (core P0)
+        report_id       → report_id
+        cliente_id      → cliente_id
+        case_id         → case_id
+        hallazgos       → findings (lista de dicts con hallazgo/prioridad/impacto)
+        hypothesis      → hypothesis (construida desde dueno_nombre + skill_id)
+        diagnosis_status → "CONFIRMED" si hay hallazgos, "INSUFFICIENT_EVIDENCE" si no
+        reasoning_summary → resumen generado desde hallazgos o texto provisto
+
+    LaboratorioReportDraft NO se persiste — solo se usa para construir DiagnosticReport.
 """
 from __future__ import annotations
 
@@ -35,9 +47,10 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
+from app.contracts.diagnostic_report import DiagnosticReport
 from app.contracts.job_contract import Job, JobStatus
 from app.contracts.operational_case import OperationalCase
-from app.laboratorio_pyme.contracts import LaboratorioPymeCase
+from app.laboratorio_pyme.contracts import DiagnosticFinding, LaboratorioPymeCase
 from app.laboratorio_pyme.persistence import LaboratorioPersistenceContext
 from app.laboratorio_pyme.service import LaboratorioService
 from app.laboratorio_pyme.tipos import TipoLaboratorio
@@ -54,6 +67,19 @@ class CasoPersistenteResult:
     case_id: str
     job_id: str
     laboratorio_case: LaboratorioPymeCase
+
+
+@dataclass(frozen=True, slots=True)
+class CasoCerradoResult:
+    """Resultado del flujo cerrar_caso_persistente.
+
+    Contiene los IDs de las entidades core creadas y persistidas al cierre.
+    """
+
+    cliente_id: str
+    case_id: str
+    job_id: str
+    report_id: str
 
 
 class LaboratorioApplicationService:
@@ -174,4 +200,106 @@ class LaboratorioApplicationService:
             case_id=laboratorio_case.case_id,
             job_id=resolved_job_id,
             laboratorio_case=laboratorio_case,
+        )
+
+    def cerrar_caso_persistente(
+        self,
+        cliente_id: str,
+        case_id: str,
+        job_id: str,
+        hallazgos: list[DiagnosticFinding],
+        *,
+        hypothesis: str | None = None,
+        reasoning_summary: str | None = None,
+        decision_id: str | None = None,
+        user_id: str | None = None,
+    ) -> CasoCerradoResult:
+        """Cierra un caso diagnóstico y persiste DiagnosticReport en P0.
+
+        Flujo:
+            1. Construye LaboratorioReportDraft via LaboratorioService
+               (objeto transiente — NO se persiste directamente).
+            2. Proyecta LaboratorioReportDraft → DiagnosticReport core P0.
+            3. Persiste DiagnosticReport en ctx.reports.
+            4. Devuelve CasoCerradoResult con cliente_id, case_id, job_id, report_id.
+
+        LaboratorioReportDraft NO se persiste como entidad propia — es transiente.
+
+        CONTRACT_BRIDGE:
+            LaboratorioReportDraft.hallazgos → DiagnosticReport.findings
+                (lista de dicts con hallazgo, prioridad, impacto_estimado)
+            diagnosis_status = "CONFIRMED" si hay hallazgos,
+                               "INSUFFICIENT_EVIDENCE" si la lista está vacía.
+            hypothesis se construye desde el parámetro provisto o se genera
+                desde case_id si no se provee.
+            reasoning_summary se construye desde hallazgos si no se provee.
+
+        Args:
+            cliente_id: Identificador del tenant. Obligatorio.
+            case_id: Identificador del caso a cerrar. Obligatorio.
+            job_id: Identificador del job asociado. Obligatorio.
+            hallazgos: Lista de DiagnosticFinding del Laboratorio.
+            hypothesis: Hipótesis investigada. Si None, se genera desde case_id.
+            reasoning_summary: Resumen del razonamiento. Si None, se genera
+                desde los hallazgos.
+            decision_id: Enlace opcional a la decisión asociada.
+            user_id: Enlace opcional al usuario que cierra el caso.
+
+        Returns:
+            CasoCerradoResult con cliente_id, case_id, job_id y report_id.
+        """
+        # 1. Construir LaboratorioReportDraft (transiente)
+        draft = self._service.crear_borrador_informe(
+            cliente_id=cliente_id,
+            case_id=case_id,
+            hallazgos=hallazgos,
+            job_id=job_id,
+            decision_id=decision_id,
+            user_id=user_id,
+        )
+
+        # 2. Proyectar → DiagnosticReport core P0
+        #    CONTRACT_BRIDGE: diagnosis_status según presencia de hallazgos.
+        diagnosis_status = "CONFIRMED" if hallazgos else "INSUFFICIENT_EVIDENCE"
+
+        resolved_hypothesis = hypothesis or f"Investigar si el caso {case_id} presenta hallazgos accionables?"
+
+        resolved_summary = reasoning_summary or (
+            f"{len(hallazgos)} hallazgo(s) detectado(s): "
+            + "; ".join(h.hallazgo for h in hallazgos[:3])
+            if hallazgos
+            else "Sin hallazgos detectados en este ciclo diagnóstico."
+        )
+
+        findings_dicts = [
+            {
+                "hallazgo": h.hallazgo,
+                "prioridad": h.prioridad,
+                "impacto_estimado": h.impacto_estimado,
+                "laboratorio": h.laboratorio.value,
+                "finding_id": h.finding_id,
+            }
+            for h in hallazgos
+        ]
+
+        report = DiagnosticReport(
+            cliente_id=cliente_id,
+            report_id=draft.report_id,
+            case_id=case_id,
+            hypothesis=resolved_hypothesis,
+            diagnosis_status=diagnosis_status,
+            findings=findings_dicts,
+            evidence_used=[],
+            reasoning_summary=resolved_summary,
+        )
+
+        # 3. Persistir DiagnosticReport
+        self._ctx.reports.create_report(report)
+
+        # 4. Devolver resultado
+        return CasoCerradoResult(
+            cliente_id=cliente_id,
+            case_id=case_id,
+            job_id=job_id,
+            report_id=draft.report_id,
         )
