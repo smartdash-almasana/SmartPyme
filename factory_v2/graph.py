@@ -11,7 +11,7 @@ from factory_v2.contracts import (
     TaskSpecV2,
 )
 from factory_v2.evidence import EvidenceWriter
-from factory_v2.sandbox import FakeSandboxAdapter
+from factory_v2.sandbox import FakeSandboxAdapter, SandboxAdapter
 
 
 def _audit_node(state: GraphState) -> GraphState:
@@ -75,9 +75,8 @@ def _implement_node(state: GraphState) -> GraphState:
     return state
 
 
-def _sandbox_node(state: GraphState) -> GraphState:
-    """Ejecuta código en sandbox fake."""
-    adapter = FakeSandboxAdapter()
+def _sandbox_node(state: GraphState, adapter: SandboxAdapter) -> GraphState:
+    """Ejecuta código en sandbox usando el adapter provisto."""
     result = adapter.execute(
         task_id=state.task_spec.task_id,
         code=state.generated_code,
@@ -116,12 +115,23 @@ def _review_node(state: GraphState) -> GraphState:
     return state
 
 
-def run_graph(task_spec: TaskSpecV2) -> GraphState:
+def run_graph(
+    task_spec: TaskSpecV2,
+    sandbox_adapter: SandboxAdapter | None = None,
+) -> GraphState:
     """Ejecuta el grafo determinístico completo y escribe evidencia.
 
     Flujo: audit → implement → sandbox → review
     Cada nodo escribe evidencia local al terminar.
+
+    Args:
+        task_spec: Especificación de la tarea a ejecutar.
+        sandbox_adapter: Adapter de sandbox a usar. Si es None,
+            se usa FakeSandboxAdapter por defecto.
     """
+    if sandbox_adapter is None:
+        sandbox_adapter = FakeSandboxAdapter()
+
     state = GraphState(task_spec=task_spec)
     writer = EvidenceWriter()
 
@@ -137,8 +147,8 @@ def run_graph(task_spec: TaskSpecV2) -> GraphState:
     if state.implement_result:
         state.implement_result.evidence_path = str(writer.write(state.implement_result))
 
-    # Nodo 3: Sandbox
-    state = _sandbox_node(state)
+    # Nodo 3: Sandbox (usa adapter inyectado o default)
+    state = _sandbox_node(state, sandbox_adapter)
     if state.sandbox_result:
         state.sandbox_result.evidence_path = str(writer.write(state.sandbox_result))
 
