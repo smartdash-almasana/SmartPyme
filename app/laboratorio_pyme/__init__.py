@@ -11,6 +11,7 @@ from app.laboratorio_pyme.contracts import (
     LaboratorioReportDraft,
     LaboratorioSelection,
 )
+from app.laboratorio_pyme.persistence import LaboratorioPersistenceContext
 from app.laboratorio_pyme.service import LaboratorioService
 from app.laboratorio_pyme.tipos import TipoLaboratorio
 
@@ -21,5 +22,6 @@ __all__ = [
     "EvidenceRequirement",
     "DiagnosticFinding",
     "LaboratorioReportDraft",
+    "LaboratorioPersistenceContext",
     "LaboratorioService",
 ]

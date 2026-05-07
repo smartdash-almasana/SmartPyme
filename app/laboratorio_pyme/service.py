@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from app.laboratorio_pyme.contracts import (
     DiagnosticFinding,
@@ -30,6 +31,11 @@ class LaboratorioService:
     Los identificadores core (job_id, decision_id, user_id) se preservan
     cuando se proveen — no se generan ni transforman.
     """
+
+    def __init__(self, persistence_context: Any | None = None) -> None:
+        # Contexto opcional para integración con repository_factory.
+        # No cambia el comportamiento actual del servicio si no se provee.
+        self.persistence_context = persistence_context
 
     def crear_caso(
         self,
