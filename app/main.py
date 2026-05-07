@@ -1,12 +1,15 @@
-from core.job import Job
-from core.orchestrator import advance_job
+"""Entrypoint FastAPI mínimo para SmartPyme API."""
+from __future__ import annotations
+
+from fastapi import FastAPI
+
+from app.api.v1.api import api_router
+
+app = FastAPI(title="SmartPyme API")
+
+app.include_router(api_router, prefix="/api/v1")
 
 
-def main() -> None:
-    job = Job.create()
-    job = advance_job(job)
-    print(f"Job {job.id} -> {job.status}")
-
-
-if __name__ == "__main__":
-    main()
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}

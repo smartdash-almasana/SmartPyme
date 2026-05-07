@@ -72,3 +72,41 @@ def test_create_caso_error_sanitizado_sin_secret_leak(monkeypatch):
     assert "SECRET_KEY_123" not in detail
     assert "SMARTPYME_SUPABASE_KEY" not in detail
     assert "supabase.co" not in detail
+
+
+def test_health_ok():
+    """GET /health retorna 200 y {"status": "ok"}."""
+    from app.main import app as main_app
+
+    client = TestClient(main_app)
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert res.json() == {"status": "ok"}
+
+
+def test_p0_endpoint_montado_en_main_app(monkeypatch):
+    """POST /api/v1/laboratorio/p0/casos está montado en la app principal."""
+    from app.api.v1.endpoints import laboratorio_p0
+    from app.main import app as main_app
+
+    def _fake_run(**kwargs):
+        return LaboratorioP0Result(
+            cliente_id="cliente_demo",
+            case_id="case-main-1",
+            job_id="job-main-1",
+            report_id="rep-main-1",
+            status="closed",
+        )
+
+    monkeypatch.setattr(laboratorio_p0, "run_laboratorio_p0", _fake_run)
+    client = TestClient(main_app)
+    payload = {
+        "cliente_id": "cliente_demo",
+        "dueno_nombre": "Dueño Demo",
+        "laboratorio": "diagnostico_operativo",
+        "hallazgo": "Primer hallazgo demo",
+    }
+    res = client.post("/api/v1/laboratorio/p0/casos", json=payload)
+    assert res.status_code == 200
+    assert res.json()["status"] == "closed"
+    assert res.json()["case_id"] == "case-main-1"
