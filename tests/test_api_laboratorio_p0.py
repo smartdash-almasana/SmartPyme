@@ -264,3 +264,13 @@ def test_get_reporte_llama_load_env_local(monkeypatch):
     res = client.get("/api/v1/laboratorio/p0/reportes/rep-env-1?cliente_id=cliente_demo")
     assert res.status_code == 200
     assert called, "load_env_local_if_exists debe ser llamada en el endpoint GET reporte"
+
+
+def test_form_contiene_consultar_reporte():
+    """El HTML del formulario contiene el texto 'Consultar reporte'."""
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/form")
+    assert res.status_code == 200
+    body = res.text
+    assert "Consultar reporte" in body
+    assert "/api/v1/laboratorio/p0/reportes/" in body

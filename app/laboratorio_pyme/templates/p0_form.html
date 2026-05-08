@@ -74,6 +74,32 @@
     .result td { padding: .25rem .5rem; vertical-align: top; }
     .result td:first-child { font-weight: 600; white-space: nowrap; width: 40%; }
     .hidden { display: none; }
+    .btn-secondary {
+      margin-top: 1rem;
+      padding: .5rem 1rem;
+      background: #f0f9ff;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      border-radius: 4px;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: #e0f2fe; }
+    .btn-secondary:disabled { opacity: .5; cursor: not-allowed; }
+    #report-detail {
+      margin-top: 1rem;
+      padding: .75rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: .8rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #334155;
+    }
     .spinner {
       display: inline-block;
       width: 14px; height: 14px;
@@ -196,7 +222,44 @@
           <tr><td>report_id</td><td>${esc(data.report_id)}</td></tr>
           <tr><td>status</td><td><strong>${esc(data.status)}</strong></td></tr>
         </table>
+        <button class="btn-secondary" id="btn-consultar-reporte" type="button">
+          Consultar reporte
+        </button>
+        <div id="report-detail" class="hidden"></div>
       `;
+
+      document.getElementById('btn-consultar-reporte').addEventListener('click', () => {
+        consultarReporte(data.report_id, data.cliente_id);
+      });
+    }
+
+    async function consultarReporte(reportId, clienteId) {
+      const btnConsultar = document.getElementById('btn-consultar-reporte');
+      const reportDetail = document.getElementById('report-detail');
+
+      btnConsultar.disabled = true;
+      btnConsultar.textContent = 'Consultando…';
+      reportDetail.className = 'hidden';
+      reportDetail.textContent = '';
+
+      try {
+        const url = `/api/v1/laboratorio/p0/reportes/${encodeURIComponent(reportId)}?cliente_id=${encodeURIComponent(clienteId)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        reportDetail.className = '';
+        if (!resp.ok) {
+          reportDetail.textContent = `Error ${resp.status}: ${data.detail || JSON.stringify(data)}`;
+        } else {
+          reportDetail.textContent = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        reportDetail.className = '';
+        reportDetail.textContent = 'No se pudo consultar el reporte. Verificá que el servidor esté corriendo.';
+      } finally {
+        btnConsultar.disabled = false;
+        btnConsultar.textContent = 'Consultar reporte';
+      }
     }
 
     function showError(msg) {
