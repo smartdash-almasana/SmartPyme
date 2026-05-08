@@ -8,6 +8,8 @@ from pydantic import ValidationError
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FormulaExecution,
+    PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
 )
@@ -88,6 +90,42 @@ def _valid_observation(**overrides):
     }
     payload.update(overrides)
     return VariableObservation(**payload)
+
+
+def _valid_pathology_candidate(**overrides):
+    payload = {
+        "candidate_id": "pc_001",
+        "tenant_id": "tenant_demo",
+        "pathology_code": "margen_erosionado",
+        "source_reception_id": "rec_001",
+        "symptom_codes": ["s_ventas_sin_margen"],
+        "supporting_observation_ids": ["obs_001"],
+        "missing_evidence_codes": [],
+        "confidence": 0.7,
+        "status": "CANDIDATE",
+        "rejection_reason": None,
+        "created_at": datetime.utcnow(),
+    }
+    payload.update(overrides)
+    return PathologyCandidate(**payload)
+
+
+def _valid_formula_execution(**overrides):
+    payload = {
+        "execution_id": "fx_001",
+        "tenant_id": "tenant_demo",
+        "formula_code": "margen_bruto_v1",
+        "input_observation_ids": ["obs_001"],
+        "output_variable_code": "margen_bruto",
+        "result_value": None,
+        "result_unit": "ratio",
+        "status": "READY",
+        "blocking_reason": None,
+        "error_message": None,
+        "created_at": datetime.utcnow(),
+    }
+    payload.update(overrides)
+    return FormulaExecution(**payload)
 
 
 def test_crea_reception_record_valido():
@@ -254,12 +292,139 @@ def test_variable_observation_status_rechaza_valor_fuera_de_literal():
         _valid_observation(status="APPROVED")  # type: ignore[arg-type]
 
 
+def test_crea_pathology_candidate_valido():
+    candidate = _valid_pathology_candidate()
+
+    assert candidate.candidate_id == "pc_001"
+    assert candidate.status == "CANDIDATE"
+
+
+def test_pathology_candidate_rechaza_candidate_id_vacio():
+    with pytest.raises(ValidationError, match="candidate_id"):
+        _valid_pathology_candidate(candidate_id=" ")
+
+
+def test_pathology_candidate_rechaza_tenant_id_vacio():
+    with pytest.raises(ValidationError, match="tenant_id"):
+        _valid_pathology_candidate(tenant_id="")
+
+
+def test_pathology_candidate_rechaza_pathology_code_vacio():
+    with pytest.raises(ValidationError, match="pathology_code"):
+        _valid_pathology_candidate(pathology_code=" ")
+
+
+def test_pathology_candidate_confidence_menor_a_0_falla():
+    with pytest.raises(ValidationError):
+        _valid_pathology_candidate(confidence=-0.1)
+
+
+def test_pathology_candidate_confidence_mayor_a_1_falla():
+    with pytest.raises(ValidationError):
+        _valid_pathology_candidate(confidence=1.1)
+
+
+def test_pathology_candidate_needs_evidence_requiere_missing_evidence_codes():
+    with pytest.raises(ValidationError, match="missing_evidence_codes"):
+        _valid_pathology_candidate(status="NEEDS_EVIDENCE", missing_evidence_codes=[])
+
+
+def test_pathology_candidate_ready_for_evaluation_requiere_supporting_observation_ids():
+    with pytest.raises(ValidationError, match="supporting_observation_ids"):
+        _valid_pathology_candidate(status="READY_FOR_EVALUATION", supporting_observation_ids=[])
+
+
+def test_pathology_candidate_rejected_requiere_rejection_reason():
+    with pytest.raises(ValidationError, match="rejection_reason"):
+        _valid_pathology_candidate(status="REJECTED", rejection_reason=" ")
+
+
+def test_pathology_candidate_status_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_pathology_candidate(status="CONFIRMED")  # type: ignore[arg-type]
+
+
+def test_pathology_candidate_no_tiene_diagnostico_hallazgo_ni_accion_final():
+    fields = set(PathologyCandidate.model_fields.keys())
+
+    forbidden_fields = {
+        "diagnostico_final",
+        "hallazgo_final",
+        "accion_recomendada_final",
+        "patologia_confirmada",
+    }
+    assert forbidden_fields.isdisjoint(fields)
+
+
+def test_crea_formula_execution_valida():
+    execution = _valid_formula_execution()
+
+    assert execution.execution_id == "fx_001"
+    assert execution.status == "READY"
+
+
+def test_formula_execution_rechaza_execution_id_vacio():
+    with pytest.raises(ValidationError, match="execution_id"):
+        _valid_formula_execution(execution_id="")
+
+
+def test_formula_execution_rechaza_tenant_id_vacio():
+    with pytest.raises(ValidationError, match="tenant_id"):
+        _valid_formula_execution(tenant_id=" ")
+
+
+def test_formula_execution_rechaza_formula_code_vacio():
+    with pytest.raises(ValidationError, match="formula_code"):
+        _valid_formula_execution(formula_code=" ")
+
+
+def test_formula_execution_ready_requiere_input_observation_ids():
+    with pytest.raises(ValidationError, match="input_observation_ids"):
+        _valid_formula_execution(status="READY", input_observation_ids=[])
+
+
+def test_formula_execution_executed_requiere_input_observation_ids_y_result_value():
+    with pytest.raises(ValidationError, match="input_observation_ids"):
+        _valid_formula_execution(status="EXECUTED", input_observation_ids=[], result_value=123)
+
+    with pytest.raises(ValidationError, match="result_value"):
+        _valid_formula_execution(status="EXECUTED", input_observation_ids=["obs_001"], result_value=None)
+
+
+def test_formula_execution_blocked_requiere_blocking_reason():
+    with pytest.raises(ValidationError, match="blocking_reason"):
+        _valid_formula_execution(status="BLOCKED", blocking_reason="")
+
+
+def test_formula_execution_failed_requiere_error_message():
+    with pytest.raises(ValidationError, match="error_message"):
+        _valid_formula_execution(status="FAILED", error_message=None)
+
+
+def test_formula_execution_status_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_formula_execution(status="DONE")  # type: ignore[arg-type]
+
+
+def test_formula_execution_no_tiene_diagnostico_patologia_confirmada_ni_hallazgo_final():
+    fields = set(FormulaExecution.model_fields.keys())
+
+    forbidden_fields = {
+        "diagnostico_final",
+        "patologia_confirmada",
+        "hallazgo_final",
+    }
+    assert forbidden_fields.isdisjoint(fields)
+
+
 
 def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     reception_fields = set(ReceptionRecord.model_fields.keys())
     evidence_fields = set(EvidenceRecord.model_fields.keys())
     ingestion_fields = set(DocumentIngestion.model_fields.keys())
     observation_fields = set(VariableObservation.model_fields.keys())
+    pathology_fields = set(PathologyCandidate.model_fields.keys())
+    formula_fields = set(FormulaExecution.model_fields.keys())
 
     forbidden_fields = {
         "diagnostico_final",
@@ -274,3 +439,5 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     assert forbidden_fields.isdisjoint(evidence_fields)
     assert forbidden_fields.isdisjoint(ingestion_fields)
     assert forbidden_fields.isdisjoint(observation_fields)
+    assert forbidden_fields.isdisjoint(pathology_fields)
+    assert forbidden_fields.isdisjoint(formula_fields)

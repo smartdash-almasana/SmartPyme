@@ -61,6 +61,15 @@ IngestionStatus = Literal[
 
 ObservationStatus = Literal["OBSERVED", "NEEDS_REVIEW", "REJECTED", "CONFIRMED"]
 
+PathologyCandidateStatus = Literal[
+    "CANDIDATE",
+    "NEEDS_EVIDENCE",
+    "READY_FOR_EVALUATION",
+    "REJECTED",
+]
+
+FormulaExecutionStatus = Literal["READY", "EXECUTED", "BLOCKED", "FAILED"]
+
 
 class ReceptionRecord(BaseModel):
     reception_id: str = Field(...)
@@ -205,5 +214,85 @@ class VariableObservation(BaseModel):
 
         if self.status == "REJECTED" and not self.quality_flags:
             raise ValueError("quality_flags debe tener al menos un item cuando status == REJECTED")
+
+        return self
+
+
+class PathologyCandidate(BaseModel):
+    candidate_id: str = Field(...)
+    tenant_id: str = Field(...)
+    pathology_code: str = Field(...)
+    source_reception_id: str | None = Field(default=None)
+    symptom_codes: list[str] = Field(default_factory=list)
+    supporting_observation_ids: list[str] = Field(default_factory=list)
+    missing_evidence_codes: list[str] = Field(default_factory=list)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    status: PathologyCandidateStatus = Field(...)
+    rejection_reason: str | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "PathologyCandidate":
+        if not self.candidate_id or not self.candidate_id.strip():
+            raise ValueError("candidate_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.pathology_code or not self.pathology_code.strip():
+            raise ValueError("pathology_code no puede ser vacio")
+
+        if self.status == "NEEDS_EVIDENCE" and not self.missing_evidence_codes:
+            raise ValueError(
+                "missing_evidence_codes debe tener al menos un item cuando status == NEEDS_EVIDENCE"
+            )
+
+        if self.status == "READY_FOR_EVALUATION" and not self.supporting_observation_ids:
+            raise ValueError(
+                "supporting_observation_ids debe tener al menos un item cuando status == READY_FOR_EVALUATION"
+            )
+
+        if self.status == "REJECTED":
+            if not self.rejection_reason or not self.rejection_reason.strip():
+                raise ValueError("rejection_reason es obligatorio cuando status == REJECTED")
+
+        return self
+
+
+class FormulaExecution(BaseModel):
+    execution_id: str = Field(...)
+    tenant_id: str = Field(...)
+    formula_code: str = Field(...)
+    input_observation_ids: list[str] = Field(default_factory=list)
+    output_variable_code: str | None = Field(default=None)
+    result_value: str | int | float | bool | None = Field(default=None)
+    result_unit: str | None = Field(default=None)
+    status: FormulaExecutionStatus = Field(...)
+    blocking_reason: str | None = Field(default=None)
+    error_message: str | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "FormulaExecution":
+        if not self.execution_id or not self.execution_id.strip():
+            raise ValueError("execution_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.formula_code or not self.formula_code.strip():
+            raise ValueError("formula_code no puede ser vacio")
+
+        if self.status in {"READY", "EXECUTED"} and not self.input_observation_ids:
+            raise ValueError(
+                "input_observation_ids debe tener al menos un item cuando status == READY o EXECUTED"
+            )
+
+        if self.status == "EXECUTED" and self.result_value is None:
+            raise ValueError("result_value es obligatorio cuando status == EXECUTED")
+
+        if self.status == "BLOCKED":
+            if not self.blocking_reason or not self.blocking_reason.strip():
+                raise ValueError("blocking_reason es obligatorio cuando status == BLOCKED")
+
+        if self.status == "FAILED":
+            if not self.error_message or not self.error_message.strip():
+                raise ValueError("error_message es obligatorio cuando status == FAILED")
 
         return self
