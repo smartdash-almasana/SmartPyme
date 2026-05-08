@@ -15,7 +15,7 @@ Este repositorio:
 
 Garantías:
     - Aislamiento soberano por tenant_id: un tenant nunca lee registros de otro.
-    - Fail-closed: tenant_id, reception_id o evidence_id vacíos lanzan ValueError.
+    - Fail-closed: tenant_id y cualquier ID específico vacíos lanzan ValueError.
     - Upsert por (tenant_id, id): save pisa el registro previo del mismo par.
     - Sin DB, sin red, sin dependencias externas.
 """
@@ -23,8 +23,10 @@ Garantías:
 from __future__ import annotations
 
 from app.contracts.clinical_operational_contracts import (
+    DocumentIngestion,
     EvidenceRecord,
     ReceptionRecord,
+    VariableObservation,
 )
 
 
@@ -46,6 +48,10 @@ class InMemoryClinicalOperationalRepository:
         self._receptions: dict[tuple[str, str], ReceptionRecord] = {}
         # dict[(tenant_id, evidence_id), EvidenceRecord]
         self._evidence: dict[tuple[str, str], EvidenceRecord] = {}
+        # dict[(tenant_id, ingestion_id), DocumentIngestion]
+        self._ingestions: dict[tuple[str, str], DocumentIngestion] = {}
+        # dict[(tenant_id, observation_id), VariableObservation]
+        self._observations: dict[tuple[str, str], VariableObservation] = {}
 
     # ------------------------------------------------------------------
     # ReceptionRecord
@@ -119,4 +125,98 @@ class InMemoryClinicalOperationalRepository:
             record
             for (tid, _), record in self._evidence.items()
             if tid == tenant_id and record.linked_reception_id == reception_id
+        ]
+
+    # ------------------------------------------------------------------
+    # DocumentIngestion
+    # ------------------------------------------------------------------
+
+    def save_ingestion(self, record: DocumentIngestion) -> DocumentIngestion:
+        """Persiste o actualiza un DocumentIngestion (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.ingestion_id, "ingestion_id")
+        key = (record.tenant_id, record.ingestion_id)
+        self._ingestions[key] = record
+        return record
+
+    def get_ingestion(
+        self, tenant_id: str, ingestion_id: str
+    ) -> DocumentIngestion | None:
+        """Devuelve el DocumentIngestion del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(ingestion_id, "ingestion_id")
+        return self._ingestions.get((tenant_id, ingestion_id))
+
+    def list_ingestions(self, tenant_id: str) -> list[DocumentIngestion]:
+        """Devuelve todos los DocumentIngestion del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._ingestions.items()
+            if tid == tenant_id
+        ]
+
+    def list_ingestions_for_evidence(
+        self, tenant_id: str, evidence_id: str
+    ) -> list[DocumentIngestion]:
+        """Devuelve DocumentIngestion del tenant vinculados a una evidence."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(evidence_id, "evidence_id")
+        return [
+            record
+            for (tid, _), record in self._ingestions.items()
+            if tid == tenant_id and record.evidence_id == evidence_id
+        ]
+
+    # ------------------------------------------------------------------
+    # VariableObservation
+    # ------------------------------------------------------------------
+
+    def save_observation(self, record: VariableObservation) -> VariableObservation:
+        """Persiste o actualiza un VariableObservation (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.observation_id, "observation_id")
+        key = (record.tenant_id, record.observation_id)
+        self._observations[key] = record
+        return record
+
+    def get_observation(
+        self, tenant_id: str, observation_id: str
+    ) -> VariableObservation | None:
+        """Devuelve el VariableObservation del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(observation_id, "observation_id")
+        return self._observations.get((tenant_id, observation_id))
+
+    def list_observations(self, tenant_id: str) -> list[VariableObservation]:
+        """Devuelve todos los VariableObservation del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._observations.items()
+            if tid == tenant_id
+        ]
+
+    def list_observations_for_evidence(
+        self, tenant_id: str, evidence_id: str
+    ) -> list[VariableObservation]:
+        """Devuelve VariableObservation del tenant vinculados a una evidence."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(evidence_id, "evidence_id")
+        return [
+            record
+            for (tid, _), record in self._observations.items()
+            if tid == tenant_id and record.evidence_id == evidence_id
+        ]
+
+    def list_observations_for_ingestion(
+        self, tenant_id: str, ingestion_id: str
+    ) -> list[VariableObservation]:
+        """Devuelve VariableObservation del tenant vinculados a una ingestion."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(ingestion_id, "ingestion_id")
+        return [
+            record
+            for (tid, _), record in self._observations.items()
+            if tid == tenant_id and record.ingestion_id == ingestion_id
         ]
