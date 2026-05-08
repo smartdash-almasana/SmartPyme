@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -32,7 +32,7 @@ def _valid_reception(**overrides):
         "result_id": None,
         "blocking_reason": None,
         "detected_opportunity": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return ReceptionRecord(**payload)
@@ -50,7 +50,7 @@ def _valid_evidence(**overrides):
         "status": "RECEIVED",
         "linked_reception_id": None,
         "quality_flags": [],
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return EvidenceRecord(**payload)
@@ -69,7 +69,7 @@ def _valid_ingestion(**overrides):
         "output_ref": None,
         "error_message": None,
         "quality_flags": [],
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return DocumentIngestion(**payload)
@@ -89,7 +89,7 @@ def _valid_observation(**overrides):
         "confidence": 0.85,
         "status": "OBSERVED",
         "quality_flags": [],
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return VariableObservation(**payload)
@@ -107,7 +107,7 @@ def _valid_pathology_candidate(**overrides):
         "confidence": 0.7,
         "status": "CANDIDATE",
         "rejection_reason": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return PathologyCandidate(**payload)
@@ -125,7 +125,7 @@ def _valid_formula_execution(**overrides):
         "status": "READY",
         "blocking_reason": None,
         "error_message": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return FormulaExecution(**payload)
@@ -145,7 +145,7 @@ def _valid_operational_case_candidate(**overrides):
         "recommended_route": "ruta_1",
         "status": "DRAFT",
         "rejection_reason": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return OperationalCaseCandidate(**payload)
@@ -169,8 +169,8 @@ def _valid_operational_case(**overrides):
         "insufficiency_reason": None,
         "rejection_reason": None,
         "next_step": "Iniciar investigacion operacional.",
-        "opened_at": datetime.utcnow(),
-        "created_at": datetime.utcnow(),
+        "opened_at": datetime.now(UTC),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return OperationalCase(**payload)
@@ -193,7 +193,7 @@ def _valid_finding(**overrides):
         "recommended_next_step": None,
         "human_review_required": False,
         "rejection_reason": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
     }
     payload.update(overrides)
     return FindingRecord(**payload)
@@ -209,6 +209,16 @@ def test_crea_reception_record_valido():
 def test_reception_rechaza_tenant_id_vacio():
     with pytest.raises(ValidationError, match="tenant_id"):
         _valid_reception(tenant_id="   ")
+
+
+def test_reception_rechaza_reception_id_vacio():
+    with pytest.raises(ValidationError, match="reception_id"):
+        _valid_reception(reception_id=" ")
+
+
+def test_reception_rechaza_channel_vacio():
+    with pytest.raises(ValidationError, match="channel"):
+        _valid_reception(channel=" ")
 
 
 def test_reception_rechaza_original_message_vacio():
@@ -800,6 +810,9 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
         "hallazgo_final",
         "hallazgo_confirmado",
         "patologia_final",
+        "accion_ejecutada",
+        "decision_automatica_dueno",
+        "autorizacion_automatica",
     }
 
     assert forbidden_fields.isdisjoint(reception_fields)

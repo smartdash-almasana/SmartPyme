@@ -12,7 +12,7 @@ No contiene logica de diagnostico ni hallazgos finales.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -88,6 +88,10 @@ FindingSeverity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 FindingStatus = Literal["DRAFT", "SUPPORTED", "NEEDS_REVIEW", "REJECTED"]
 
 
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
 class ReceptionRecord(BaseModel):
     reception_id: str = Field(...)
     tenant_id: str = Field(...)
@@ -101,12 +105,18 @@ class ReceptionRecord(BaseModel):
     result_id: str | None = Field(default=None)
     blocking_reason: str | None = Field(default=None)
     detected_opportunity: str | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "ReceptionRecord":
+        if not self.reception_id or not self.reception_id.strip():
+            raise ValueError("reception_id no puede ser vacio")
+
         if not self.tenant_id or not self.tenant_id.strip():
             raise ValueError("tenant_id no puede ser vacio")
+
+        if not self.channel or not self.channel.strip():
+            raise ValueError("channel no puede ser vacio")
 
         if not self.original_message or not self.original_message.strip():
             raise ValueError("original_message no puede ser vacio")
@@ -135,7 +145,7 @@ class EvidenceRecord(BaseModel):
     status: EvidenceStatus = Field(...)
     linked_reception_id: str | None = Field(default=None)
     quality_flags: list[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "EvidenceRecord":
@@ -168,7 +178,7 @@ class DocumentIngestion(BaseModel):
     output_ref: str | None = Field(default=None)
     error_message: str | None = Field(default=None)
     quality_flags: list[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "DocumentIngestion":
@@ -213,7 +223,7 @@ class VariableObservation(BaseModel):
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     status: ObservationStatus = Field(...)
     quality_flags: list[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "VariableObservation":
@@ -246,7 +256,7 @@ class PathologyCandidate(BaseModel):
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     status: PathologyCandidateStatus = Field(...)
     rejection_reason: str | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "PathologyCandidate":
@@ -285,7 +295,7 @@ class FormulaExecution(BaseModel):
     status: FormulaExecutionStatus = Field(...)
     blocking_reason: str | None = Field(default=None)
     error_message: str | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "FormulaExecution":
@@ -328,7 +338,7 @@ class OperationalCaseCandidate(BaseModel):
     recommended_route: str | None = Field(default=None)
     status: OperationalCaseCandidateStatus = Field(...)
     rejection_reason: str | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "OperationalCaseCandidate":
@@ -391,7 +401,7 @@ class OperationalCase(BaseModel):
     rejection_reason: str | None = Field(default=None)
     next_step: str = Field(...)
     opened_at: datetime | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "OperationalCase":
@@ -461,7 +471,7 @@ class FindingRecord(BaseModel):
     recommended_next_step: str | None = Field(default=None)
     human_review_required: bool = Field(default=False)
     rejection_reason: str | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def _validate_rules(self) -> "FindingRecord":
@@ -488,13 +498,6 @@ class FindingRecord(BaseModel):
             if not self.comparison_summary or not self.comparison_summary.strip():
                 raise ValueError(
                     "comparison_summary es obligatorio cuando status == SUPPORTED"
-                )
-
-            if self.quantified_difference is None and (
-                not self.comparison_summary or not self.comparison_summary.strip()
-            ):
-                raise ValueError(
-                    "quantified_difference o comparison_summary debe existir cuando status == SUPPORTED"
                 )
 
         if self.severity == "CRITICAL" and self.human_review_required is not True:
