@@ -121,3 +121,55 @@ def test_resultado_tiene_estructura_clinica():
     }
 
     assert claves_esperadas.issubset(set(result.keys()))
+
+
+def test_mensaje_con_contexto_llena_anamnesis_contexto():
+    state = crear_estado_inicial("cliente_contexto")
+
+    procesar_mensaje(
+        state,
+        "Tengo un kiosco, somos 3, urgente hoy: proceso de caja afectado desde hace 3 meses, "
+        "pierdo 200000 y 10 horas por semana.",
+    )
+
+    contexto = state.anamnesis_contexto
+    assert contexto["rubro"] == "kiosco"
+    assert contexto["tamano_aprox"] == "micro"
+    assert contexto["urgencia"] == "alta"
+    assert contexto["proceso_afectado"] == "tesoreria_caja"
+    assert contexto["periodo_problema"] == "desde hace 3 meses"
+    assert contexto["impacto_economico_estimado"] == "200000"
+    assert contexto["impacto_tiempo"] == "10 horas"
+
+
+def test_segundo_mensaje_no_borra_contexto_previo():
+    state = crear_estado_inicial("cliente_contexto_no_borra")
+
+    procesar_mensaje(state, "Tengo un kiosco con problemas de caja desde hace 2 meses.")
+    contexto_1 = dict(state.anamnesis_contexto)
+
+    procesar_mensaje(state, "Necesito ayuda para ordenar esto.")
+    contexto_2 = state.anamnesis_contexto
+
+    assert contexto_2["rubro"] == contexto_1["rubro"]
+    assert contexto_2["proceso_afectado"] == contexto_1["proceso_afectado"]
+    assert contexto_2["periodo_problema"] == contexto_1["periodo_problema"]
+
+
+def test_engine_agrega_incertidumbres_controladas_si_faltan_datos_clave():
+    state = crear_estado_inicial("cliente_incertidumbres")
+
+    result = procesar_mensaje(state, "Vendo mucho pero no queda plata.")
+
+    incertidumbres = set(result["incertidumbres"])
+    assert "falta_rubro" in incertidumbres
+    assert "falta_periodo_problema" in incertidumbres
+    assert "falta_impacto" in incertidumbres
+
+
+def test_questions_prioriza_repregunta_clinica_antes_de_evidencia_documental():
+    state = crear_estado_inicial("cliente_prioridad_clinica")
+
+    result = procesar_mensaje(state, "Vendo mucho pero no queda plata.")
+
+    assert result["pregunta"] == "Para entender mejor el caso: en que rubro esta tu negocio?"

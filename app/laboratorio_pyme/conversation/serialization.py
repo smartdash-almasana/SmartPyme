@@ -17,6 +17,7 @@ from app.laboratorio_pyme.conversation.state import (
     ConversationState,
     FaseConversacion,
     HipotesisActiva,
+    crear_anamnesis_contexto_inicial,
 )
 
 
@@ -54,6 +55,18 @@ def conversation_state_to_dict(state: ConversationState) -> dict[str, Any]:
         "evidencia_confirmada": list(state.evidencia_confirmada),
         "datos_conocidos": [dict(d) for d in state.datos_conocidos],
         "incertidumbres": list(state.incertidumbres),
+        "anamnesis_contexto": {
+            "rubro": state.anamnesis_contexto.get("rubro"),
+            "tamano_aprox": state.anamnesis_contexto.get("tamano_aprox"),
+            "urgencia": state.anamnesis_contexto.get("urgencia"),
+            "impacto_economico_estimado": state.anamnesis_contexto.get("impacto_economico_estimado"),
+            "impacto_tiempo": state.anamnesis_contexto.get("impacto_tiempo"),
+            "proceso_afectado": state.anamnesis_contexto.get("proceso_afectado"),
+            "periodo_problema": state.anamnesis_contexto.get("periodo_problema"),
+            "evidencia_disponible": list(
+                state.anamnesis_contexto.get("evidencia_disponible") or []
+            ),
+        },
         "hipotesis_activas": [_hipotesis_to_dict(h) for h in state.hipotesis_activas],
     }
 
@@ -89,6 +102,26 @@ def conversation_state_from_dict(data: dict[str, Any]) -> ConversationState:
 
     hipotesis_raw = data.get("hipotesis_activas") or []
     hipotesis_activas = [_hipotesis_from_dict(h) for h in hipotesis_raw]
+    contexto_raw = data.get("anamnesis_contexto") or {}
+    contexto = crear_anamnesis_contexto_inicial()
+    if isinstance(contexto_raw, dict):
+        for key in (
+            "rubro",
+            "tamano_aprox",
+            "urgencia",
+            "impacto_economico_estimado",
+            "impacto_tiempo",
+            "proceso_afectado",
+            "periodo_problema",
+        ):
+            value = contexto_raw.get(key)
+            if isinstance(value, str):
+                contexto[key] = value
+            elif value is None:
+                contexto[key] = None
+        evidencia = contexto_raw.get("evidencia_disponible")
+        if isinstance(evidencia, list):
+            contexto["evidencia_disponible"] = [v for v in evidencia if isinstance(v, str)]
 
     return ConversationState(
         cliente_id=data["cliente_id"],
@@ -102,5 +135,6 @@ def conversation_state_from_dict(data: dict[str, Any]) -> ConversationState:
         evidencia_confirmada=list(data.get("evidencia_confirmada") or []),
         datos_conocidos=list(data.get("datos_conocidos") or []),
         incertidumbres=list(data.get("incertidumbres") or []),
+        anamnesis_contexto=contexto,
         hipotesis_activas=hipotesis_activas,
     )

@@ -127,6 +127,18 @@ def test_roundtrip_conserva_dimension_foco():
     assert reconstruido.dimension_foco == "ambas"
 
 
+def test_roundtrip_conserva_anamnesis_contexto():
+    state = crear_estado_inicial("cliente_roundtrip_contexto")
+    procesar_mensaje(
+        state,
+        "Tengo un kiosco, proceso de caja, desde hace 2 meses, pierdo 120000 y 8 horas por semana.",
+    )
+
+    reconstruido = _roundtrip(state)
+
+    assert reconstruido.anamnesis_contexto == state.anamnesis_contexto
+
+
 def test_tolera_campos_opcionales_faltantes():
     # Dict mínimo: solo cliente_id obligatorio
     data_minimo = {"cliente_id": "cliente_minimo"}
@@ -145,6 +157,8 @@ def test_tolera_campos_opcionales_faltantes():
     assert reconstruido.evidencia_confirmada == []
     assert reconstruido.datos_conocidos == []
     assert reconstruido.incertidumbres == []
+    assert reconstruido.anamnesis_contexto["rubro"] is None
+    assert reconstruido.anamnesis_contexto["evidencia_disponible"] == []
 
 
 def test_fase_string_se_convierte_a_enum():

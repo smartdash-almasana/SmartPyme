@@ -37,6 +37,19 @@ class HipotesisActiva:
         self.peso = min(1.0, max(self.peso, round(nuevo_peso, 4)))
 
 
+def crear_anamnesis_contexto_inicial() -> dict[str, str | list[str] | None]:
+    return {
+        "rubro": None,
+        "tamano_aprox": None,
+        "urgencia": None,
+        "impacto_economico_estimado": None,
+        "impacto_tiempo": None,
+        "proceso_afectado": None,
+        "periodo_problema": None,
+        "evidencia_disponible": [],
+    }
+
+
 @dataclass
 class ConversationState:
     """Estado completo de una sesión investigativa con el dueño."""
@@ -53,6 +66,9 @@ class ConversationState:
     historial_mensajes: list[str] = field(default_factory=list)
     dimension_foco: str | None = None
     ultima_pregunta: str | None = None
+    anamnesis_contexto: dict[str, str | list[str] | None] = field(
+        default_factory=crear_anamnesis_contexto_inicial
+    )
 
     @property
     def estado(self) -> str:
