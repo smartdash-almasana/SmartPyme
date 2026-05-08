@@ -9,6 +9,8 @@ from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
     FormulaExecution,
+    OperationalCase,
+    OperationalCaseCandidate,
     PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
@@ -126,6 +128,51 @@ def _valid_formula_execution(**overrides):
     }
     payload.update(overrides)
     return FormulaExecution(**payload)
+
+
+def _valid_operational_case_candidate(**overrides):
+    payload = {
+        "candidate_id": "occ_001",
+        "tenant_id": "tenant_demo",
+        "source_reception_id": "rec_001",
+        "pathology_candidate_ids": ["pc_001"],
+        "variable_observation_ids": ["obs_001"],
+        "formula_execution_ids": ["fx_001"],
+        "primary_pathology_code": "margen_erosionado",
+        "evidence_gap_codes": [],
+        "principal_entropic_core": "margen-caja-costos",
+        "recommended_route": "ruta_1",
+        "status": "DRAFT",
+        "rejection_reason": None,
+        "created_at": datetime.utcnow(),
+    }
+    payload.update(overrides)
+    return OperationalCaseCandidate(**payload)
+
+
+def _valid_operational_case(**overrides):
+    payload = {
+        "case_id": "case_001",
+        "tenant_id": "tenant_demo",
+        "candidate_id": "occ_001",
+        "source_reception_id": "rec_001",
+        "primary_pathology_code": "margen_erosionado",
+        "related_pathology_codes": ["caja_inconsistente"],
+        "formula_execution_ids": ["fx_001"],
+        "variable_observation_ids": ["obs_001"],
+        "evidence_gap_codes": [],
+        "principal_entropic_core": "margen-caja-costos",
+        "recommended_route": "ruta_1",
+        "status": "READY_FOR_INVESTIGATION",
+        "clarification_question": None,
+        "insufficiency_reason": None,
+        "rejection_reason": None,
+        "next_step": "Iniciar investigacion operacional.",
+        "opened_at": datetime.utcnow(),
+        "created_at": datetime.utcnow(),
+    }
+    payload.update(overrides)
+    return OperationalCase(**payload)
 
 
 def test_crea_reception_record_valido():
@@ -417,6 +464,178 @@ def test_formula_execution_no_tiene_diagnostico_patologia_confirmada_ni_hallazgo
     assert forbidden_fields.isdisjoint(fields)
 
 
+def test_crea_operational_case_candidate_valido():
+    candidate = _valid_operational_case_candidate()
+
+    assert candidate.candidate_id == "occ_001"
+    assert candidate.status == "DRAFT"
+
+
+def test_operational_case_candidate_rechaza_candidate_id_vacio():
+    with pytest.raises(ValidationError, match="candidate_id"):
+        _valid_operational_case_candidate(candidate_id=" ")
+
+
+def test_operational_case_candidate_rechaza_tenant_id_vacio():
+    with pytest.raises(ValidationError, match="tenant_id"):
+        _valid_operational_case_candidate(tenant_id=" ")
+
+
+def test_operational_case_candidate_rechaza_source_reception_id_vacio():
+    with pytest.raises(ValidationError, match="source_reception_id"):
+        _valid_operational_case_candidate(source_reception_id=" ")
+
+
+def test_operational_case_candidate_needs_evidence_requiere_evidence_gap_codes():
+    with pytest.raises(ValidationError, match="evidence_gap_codes"):
+        _valid_operational_case_candidate(status="NEEDS_EVIDENCE", evidence_gap_codes=[])
+
+
+def test_operational_case_candidate_ready_for_review_requiere_pathology_candidate_ids():
+    with pytest.raises(ValidationError, match="pathology_candidate_ids"):
+        _valid_operational_case_candidate(status="READY_FOR_REVIEW", pathology_candidate_ids=[])
+
+
+def test_operational_case_candidate_ready_for_review_requiere_variable_observation_ids():
+    with pytest.raises(ValidationError, match="variable_observation_ids"):
+        _valid_operational_case_candidate(status="READY_FOR_REVIEW", variable_observation_ids=[])
+
+
+def test_operational_case_candidate_ready_for_review_requiere_formula_execution_ids():
+    with pytest.raises(ValidationError, match="formula_execution_ids"):
+        _valid_operational_case_candidate(status="READY_FOR_REVIEW", formula_execution_ids=[])
+
+
+def test_operational_case_candidate_ready_for_review_requiere_primary_pathology_code():
+    with pytest.raises(ValidationError, match="primary_pathology_code"):
+        _valid_operational_case_candidate(status="READY_FOR_REVIEW", primary_pathology_code=None)
+
+
+def test_operational_case_candidate_ready_for_review_requiere_principal_entropic_core():
+    with pytest.raises(ValidationError, match="principal_entropic_core"):
+        _valid_operational_case_candidate(status="READY_FOR_REVIEW", principal_entropic_core=None)
+
+
+def test_operational_case_candidate_rejected_requiere_rejection_reason():
+    with pytest.raises(ValidationError, match="rejection_reason"):
+        _valid_operational_case_candidate(status="REJECTED", rejection_reason="")
+
+
+def test_operational_case_candidate_status_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_operational_case_candidate(status="APPROVED")  # type: ignore[arg-type]
+
+
+def test_operational_case_candidate_no_tiene_diagnostico_final_ni_hallazgo_final():
+    fields = set(OperationalCaseCandidate.model_fields.keys())
+    forbidden_fields = {"diagnostico_final", "hallazgo_final", "accion_recomendada_final"}
+    assert forbidden_fields.isdisjoint(fields)
+
+
+def test_crea_operational_case_valido_ready_for_investigation():
+    case = _valid_operational_case()
+
+    assert case.case_id == "case_001"
+    assert case.status == "READY_FOR_INVESTIGATION"
+
+
+def test_operational_case_rechaza_case_id_vacio():
+    with pytest.raises(ValidationError, match="case_id"):
+        _valid_operational_case(case_id=" ")
+
+
+def test_operational_case_rechaza_tenant_id_vacio():
+    with pytest.raises(ValidationError, match="tenant_id"):
+        _valid_operational_case(tenant_id="")
+
+
+def test_operational_case_rechaza_candidate_id_vacio():
+    with pytest.raises(ValidationError, match="candidate_id"):
+        _valid_operational_case(candidate_id=" ")
+
+
+def test_operational_case_rechaza_source_reception_id_vacio():
+    with pytest.raises(ValidationError, match="source_reception_id"):
+        _valid_operational_case(source_reception_id="")
+
+
+def test_operational_case_rechaza_primary_pathology_code_vacio():
+    with pytest.raises(ValidationError, match="primary_pathology_code"):
+        _valid_operational_case(primary_pathology_code=" ")
+
+
+def test_operational_case_rechaza_next_step_vacio():
+    with pytest.raises(ValidationError, match="next_step"):
+        _valid_operational_case(next_step=" ")
+
+
+def test_operational_case_ready_for_investigation_requiere_variable_observation_ids():
+    with pytest.raises(ValidationError, match="variable_observation_ids"):
+        _valid_operational_case(status="READY_FOR_INVESTIGATION", variable_observation_ids=[])
+
+
+def test_operational_case_ready_for_investigation_requiere_formula_execution_ids():
+    with pytest.raises(ValidationError, match="formula_execution_ids"):
+        _valid_operational_case(status="READY_FOR_INVESTIGATION", formula_execution_ids=[])
+
+
+def test_operational_case_ready_for_investigation_requiere_principal_entropic_core():
+    with pytest.raises(ValidationError, match="principal_entropic_core"):
+        _valid_operational_case(status="READY_FOR_INVESTIGATION", principal_entropic_core=None)
+
+
+def test_operational_case_ready_for_investigation_requiere_opened_at():
+    with pytest.raises(ValidationError, match="opened_at"):
+        _valid_operational_case(status="READY_FOR_INVESTIGATION", opened_at=None)
+
+
+def test_operational_case_clarification_required_requiere_clarification_question():
+    with pytest.raises(ValidationError, match="clarification_question"):
+        _valid_operational_case(
+            status="CLARIFICATION_REQUIRED",
+            clarification_question=None,
+            opened_at=None,
+            variable_observation_ids=[],
+            formula_execution_ids=[],
+            principal_entropic_core=None,
+        )
+
+
+def test_operational_case_insufficient_evidence_requiere_insufficiency_reason():
+    with pytest.raises(ValidationError, match="insufficiency_reason"):
+        _valid_operational_case(
+            status="INSUFFICIENT_EVIDENCE",
+            insufficiency_reason="",
+            opened_at=None,
+            variable_observation_ids=[],
+            formula_execution_ids=[],
+            principal_entropic_core=None,
+        )
+
+
+def test_operational_case_rejected_out_of_scope_requiere_rejection_reason():
+    with pytest.raises(ValidationError, match="rejection_reason"):
+        _valid_operational_case(
+            status="REJECTED_OUT_OF_SCOPE",
+            rejection_reason=" ",
+            opened_at=None,
+            variable_observation_ids=[],
+            formula_execution_ids=[],
+            principal_entropic_core=None,
+        )
+
+
+def test_operational_case_status_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_operational_case(status="OPEN")  # type: ignore[arg-type]
+
+
+def test_operational_case_no_tiene_hallazgo_final_accion_ejecutada_ni_decision_automatica():
+    fields = set(OperationalCase.model_fields.keys())
+    forbidden_fields = {"hallazgo_final", "accion_ejecutada", "decision_automatica_dueno"}
+    assert forbidden_fields.isdisjoint(fields)
+
+
 
 def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     reception_fields = set(ReceptionRecord.model_fields.keys())
@@ -425,6 +644,8 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     observation_fields = set(VariableObservation.model_fields.keys())
     pathology_fields = set(PathologyCandidate.model_fields.keys())
     formula_fields = set(FormulaExecution.model_fields.keys())
+    candidate_fields = set(OperationalCaseCandidate.model_fields.keys())
+    case_fields = set(OperationalCase.model_fields.keys())
 
     forbidden_fields = {
         "diagnostico_final",
@@ -441,3 +662,5 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     assert forbidden_fields.isdisjoint(observation_fields)
     assert forbidden_fields.isdisjoint(pathology_fields)
     assert forbidden_fields.isdisjoint(formula_fields)
+    assert forbidden_fields.isdisjoint(candidate_fields)
+    assert forbidden_fields.isdisjoint(case_fields)

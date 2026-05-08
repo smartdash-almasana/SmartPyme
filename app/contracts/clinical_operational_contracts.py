@@ -70,6 +70,20 @@ PathologyCandidateStatus = Literal[
 
 FormulaExecutionStatus = Literal["READY", "EXECUTED", "BLOCKED", "FAILED"]
 
+OperationalCaseCandidateStatus = Literal[
+    "DRAFT",
+    "NEEDS_EVIDENCE",
+    "READY_FOR_REVIEW",
+    "REJECTED",
+]
+
+OperationalCaseStatus = Literal[
+    "READY_FOR_INVESTIGATION",
+    "CLARIFICATION_REQUIRED",
+    "INSUFFICIENT_EVIDENCE",
+    "REJECTED_OUT_OF_SCOPE",
+]
+
 
 class ReceptionRecord(BaseModel):
     reception_id: str = Field(...)
@@ -294,5 +308,135 @@ class FormulaExecution(BaseModel):
         if self.status == "FAILED":
             if not self.error_message or not self.error_message.strip():
                 raise ValueError("error_message es obligatorio cuando status == FAILED")
+
+        return self
+
+
+class OperationalCaseCandidate(BaseModel):
+    candidate_id: str = Field(...)
+    tenant_id: str = Field(...)
+    source_reception_id: str = Field(...)
+    pathology_candidate_ids: list[str] = Field(default_factory=list)
+    variable_observation_ids: list[str] = Field(default_factory=list)
+    formula_execution_ids: list[str] = Field(default_factory=list)
+    primary_pathology_code: str | None = Field(default=None)
+    evidence_gap_codes: list[str] = Field(default_factory=list)
+    principal_entropic_core: str | None = Field(default=None)
+    recommended_route: str | None = Field(default=None)
+    status: OperationalCaseCandidateStatus = Field(...)
+    rejection_reason: str | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "OperationalCaseCandidate":
+        if not self.candidate_id or not self.candidate_id.strip():
+            raise ValueError("candidate_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.source_reception_id or not self.source_reception_id.strip():
+            raise ValueError("source_reception_id no puede ser vacio")
+
+        if self.status == "NEEDS_EVIDENCE" and not self.evidence_gap_codes:
+            raise ValueError(
+                "evidence_gap_codes debe tener al menos un item cuando status == NEEDS_EVIDENCE"
+            )
+
+        if self.status == "READY_FOR_REVIEW":
+            if not self.pathology_candidate_ids:
+                raise ValueError(
+                    "pathology_candidate_ids debe tener al menos un item cuando status == READY_FOR_REVIEW"
+                )
+            if not self.variable_observation_ids:
+                raise ValueError(
+                    "variable_observation_ids debe tener al menos un item cuando status == READY_FOR_REVIEW"
+                )
+            if not self.formula_execution_ids:
+                raise ValueError(
+                    "formula_execution_ids debe tener al menos un item cuando status == READY_FOR_REVIEW"
+                )
+            if not self.primary_pathology_code or not self.primary_pathology_code.strip():
+                raise ValueError(
+                    "primary_pathology_code es obligatorio cuando status == READY_FOR_REVIEW"
+                )
+            if not self.principal_entropic_core or not self.principal_entropic_core.strip():
+                raise ValueError(
+                    "principal_entropic_core es obligatorio cuando status == READY_FOR_REVIEW"
+                )
+
+        if self.status == "REJECTED":
+            if not self.rejection_reason or not self.rejection_reason.strip():
+                raise ValueError("rejection_reason es obligatorio cuando status == REJECTED")
+
+        return self
+
+
+class OperationalCase(BaseModel):
+    case_id: str = Field(...)
+    tenant_id: str = Field(...)
+    candidate_id: str = Field(...)
+    source_reception_id: str = Field(...)
+    primary_pathology_code: str = Field(...)
+    related_pathology_codes: list[str] = Field(default_factory=list)
+    formula_execution_ids: list[str] = Field(default_factory=list)
+    variable_observation_ids: list[str] = Field(default_factory=list)
+    evidence_gap_codes: list[str] = Field(default_factory=list)
+    principal_entropic_core: str | None = Field(default=None)
+    recommended_route: str | None = Field(default=None)
+    status: OperationalCaseStatus = Field(...)
+    clarification_question: str | None = Field(default=None)
+    insufficiency_reason: str | None = Field(default=None)
+    rejection_reason: str | None = Field(default=None)
+    next_step: str = Field(...)
+    opened_at: datetime | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "OperationalCase":
+        if not self.case_id or not self.case_id.strip():
+            raise ValueError("case_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.candidate_id or not self.candidate_id.strip():
+            raise ValueError("candidate_id no puede ser vacio")
+        if not self.source_reception_id or not self.source_reception_id.strip():
+            raise ValueError("source_reception_id no puede ser vacio")
+        if not self.primary_pathology_code or not self.primary_pathology_code.strip():
+            raise ValueError("primary_pathology_code no puede ser vacio")
+        if not self.next_step or not self.next_step.strip():
+            raise ValueError("next_step no puede ser vacio")
+
+        if self.status == "READY_FOR_INVESTIGATION":
+            if not self.variable_observation_ids:
+                raise ValueError(
+                    "variable_observation_ids debe tener al menos un item cuando status == READY_FOR_INVESTIGATION"
+                )
+            if not self.formula_execution_ids:
+                raise ValueError(
+                    "formula_execution_ids debe tener al menos un item cuando status == READY_FOR_INVESTIGATION"
+                )
+            if not self.principal_entropic_core or not self.principal_entropic_core.strip():
+                raise ValueError(
+                    "principal_entropic_core es obligatorio cuando status == READY_FOR_INVESTIGATION"
+                )
+            if self.opened_at is None:
+                raise ValueError("opened_at es obligatorio cuando status == READY_FOR_INVESTIGATION")
+
+        if self.status == "CLARIFICATION_REQUIRED":
+            if not self.clarification_question or not self.clarification_question.strip():
+                raise ValueError(
+                    "clarification_question es obligatorio cuando status == CLARIFICATION_REQUIRED"
+                )
+
+        if self.status == "INSUFFICIENT_EVIDENCE":
+            if not self.insufficiency_reason or not self.insufficiency_reason.strip():
+                raise ValueError(
+                    "insufficiency_reason es obligatorio cuando status == INSUFFICIENT_EVIDENCE"
+                )
+
+        if self.status == "REJECTED_OUT_OF_SCOPE":
+            if not self.rejection_reason or not self.rejection_reason.strip():
+                raise ValueError(
+                    "rejection_reason es obligatorio cuando status == REJECTED_OUT_OF_SCOPE"
+                )
 
         return self
