@@ -25,6 +25,8 @@ from __future__ import annotations
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FormulaExecution,
+    PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
 )
@@ -52,6 +54,10 @@ class InMemoryClinicalOperationalRepository:
         self._ingestions: dict[tuple[str, str], DocumentIngestion] = {}
         # dict[(tenant_id, observation_id), VariableObservation]
         self._observations: dict[tuple[str, str], VariableObservation] = {}
+        # dict[(tenant_id, candidate_id), PathologyCandidate]
+        self._pathology_candidates: dict[tuple[str, str], PathologyCandidate] = {}
+        # dict[(tenant_id, execution_id), FormulaExecution]
+        self._formula_executions: dict[tuple[str, str], FormulaExecution] = {}
 
     # ------------------------------------------------------------------
     # ReceptionRecord
@@ -219,4 +225,119 @@ class InMemoryClinicalOperationalRepository:
             record
             for (tid, _), record in self._observations.items()
             if tid == tenant_id and record.ingestion_id == ingestion_id
+        ]
+
+    # ------------------------------------------------------------------
+    # PathologyCandidate
+    # ------------------------------------------------------------------
+
+    def save_pathology_candidate(
+        self, record: PathologyCandidate
+    ) -> PathologyCandidate:
+        """Persiste o actualiza un PathologyCandidate (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.candidate_id, "candidate_id")
+        key = (record.tenant_id, record.candidate_id)
+        self._pathology_candidates[key] = record
+        return record
+
+    def get_pathology_candidate(
+        self, tenant_id: str, candidate_id: str
+    ) -> PathologyCandidate | None:
+        """Devuelve el PathologyCandidate del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(candidate_id, "candidate_id")
+        return self._pathology_candidates.get((tenant_id, candidate_id))
+
+    def list_pathology_candidates(
+        self, tenant_id: str
+    ) -> list[PathologyCandidate]:
+        """Devuelve todos los PathologyCandidate del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._pathology_candidates.items()
+            if tid == tenant_id
+        ]
+
+    def list_pathology_candidates_for_reception(
+        self, tenant_id: str, reception_id: str
+    ) -> list[PathologyCandidate]:
+        """Devuelve PathologyCandidate del tenant vinculados a una reception."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(reception_id, "reception_id")
+        return [
+            record
+            for (tid, _), record in self._pathology_candidates.items()
+            if tid == tenant_id and record.source_reception_id == reception_id
+        ]
+
+    def list_pathology_candidates_by_code(
+        self, tenant_id: str, pathology_code: str
+    ) -> list[PathologyCandidate]:
+        """Devuelve PathologyCandidate del tenant con el pathology_code dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(pathology_code, "pathology_code")
+        return [
+            record
+            for (tid, _), record in self._pathology_candidates.items()
+            if tid == tenant_id and record.pathology_code == pathology_code
+        ]
+
+    # ------------------------------------------------------------------
+    # FormulaExecution
+    # ------------------------------------------------------------------
+
+    def save_formula_execution(
+        self, record: FormulaExecution
+    ) -> FormulaExecution:
+        """Persiste o actualiza un FormulaExecution (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.execution_id, "execution_id")
+        key = (record.tenant_id, record.execution_id)
+        self._formula_executions[key] = record
+        return record
+
+    def get_formula_execution(
+        self, tenant_id: str, execution_id: str
+    ) -> FormulaExecution | None:
+        """Devuelve el FormulaExecution del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(execution_id, "execution_id")
+        return self._formula_executions.get((tenant_id, execution_id))
+
+    def list_formula_executions(
+        self, tenant_id: str
+    ) -> list[FormulaExecution]:
+        """Devuelve todos los FormulaExecution del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._formula_executions.items()
+            if tid == tenant_id
+        ]
+
+    def list_formula_executions_by_formula(
+        self, tenant_id: str, formula_code: str
+    ) -> list[FormulaExecution]:
+        """Devuelve FormulaExecution del tenant con el formula_code dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(formula_code, "formula_code")
+        return [
+            record
+            for (tid, _), record in self._formula_executions.items()
+            if tid == tenant_id and record.formula_code == formula_code
+        ]
+
+    def list_formula_executions_for_observation(
+        self, tenant_id: str, observation_id: str
+    ) -> list[FormulaExecution]:
+        """Devuelve FormulaExecution del tenant que contienen observation_id
+        en su lista input_observation_ids."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(observation_id, "observation_id")
+        return [
+            record
+            for (tid, _), record in self._formula_executions.items()
+            if tid == tenant_id and observation_id in record.input_observation_ids
         ]

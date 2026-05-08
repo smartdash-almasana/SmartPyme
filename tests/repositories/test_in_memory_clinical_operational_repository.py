@@ -13,6 +13,8 @@ import pytest
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FormulaExecution,
+    PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
 )
@@ -614,3 +616,366 @@ def test_ingestion_id_vacio_falla_en_list_observations_for_ingestion():
     repo = _repo()
     with pytest.raises(ValueError):
         repo.list_observations_for_ingestion("tenant_a", "")
+
+
+# ---------------------------------------------------------------------------
+# Helpers para PathologyCandidate y FormulaExecution
+# ---------------------------------------------------------------------------
+
+def _make_pathology_candidate(
+    tenant_id: str = "tenant_a",
+    candidate_id: str = "cand_001",
+    pathology_code: str = "margen_erosionado",
+    status: str = "CANDIDATE",
+    source_reception_id: str | None = None,
+    **kwargs,
+) -> PathologyCandidate:
+    return PathologyCandidate(
+        candidate_id=candidate_id,
+        tenant_id=tenant_id,
+        pathology_code=pathology_code,
+        status=status,
+        source_reception_id=source_reception_id,
+        **kwargs,
+    )
+
+
+def _make_formula_execution(
+    tenant_id: str = "tenant_a",
+    execution_id: str = "exec_001",
+    formula_code: str = "margen_bruto_pct",
+    status: str = "BLOCKED",
+    input_observation_ids: list[str] | None = None,
+    **kwargs,
+) -> FormulaExecution:
+    return FormulaExecution(
+        execution_id=execution_id,
+        tenant_id=tenant_id,
+        formula_code=formula_code,
+        status=status,
+        input_observation_ids=input_observation_ids or [],
+        blocking_reason="sin variables disponibles" if status == "BLOCKED" else None,
+        **kwargs,
+    )
+
+
+# ===========================================================================
+# PathologyCandidate — tests
+# ===========================================================================
+
+def test_guarda_y_recupera_pathology_candidate():
+    repo = _repo()
+    cand = _make_pathology_candidate()
+    repo.save_pathology_candidate(cand)
+
+    resultado = repo.get_pathology_candidate("tenant_a", "cand_001")
+
+    assert resultado is not None
+    assert resultado.candidate_id == "cand_001"
+    assert resultado.tenant_id == "tenant_a"
+
+
+def test_upsert_pathology_candidate_pisa_registro_previo():
+    repo = _repo()
+    cand_v1 = _make_pathology_candidate(pathology_code="margen_erosionado")
+    cand_v2 = _make_pathology_candidate(pathology_code="caja_inconsistente")
+
+    repo.save_pathology_candidate(cand_v1)
+    repo.save_pathology_candidate(cand_v2)
+
+    resultado = repo.get_pathology_candidate("tenant_a", "cand_001")
+    assert resultado is not None
+    assert resultado.pathology_code == "caja_inconsistente"
+
+
+def test_no_permite_leer_pathology_candidate_de_otro_tenant():
+    repo = _repo()
+    cand = _make_pathology_candidate(tenant_id="tenant_a", candidate_id="cand_001")
+    repo.save_pathology_candidate(cand)
+
+    resultado = repo.get_pathology_candidate("tenant_b", "cand_001")
+
+    assert resultado is None
+
+
+def test_list_pathology_candidates_filtra_por_tenant():
+    repo = _repo()
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(tenant_id="tenant_a", candidate_id="cand_001")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(tenant_id="tenant_a", candidate_id="cand_002")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(tenant_id="tenant_b", candidate_id="cand_003")
+    )
+
+    resultado = repo.list_pathology_candidates("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cand_001", "cand_002"}
+
+
+def test_list_pathology_candidates_for_reception_devuelve_solo_vinculados():
+    repo = _repo()
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_001", source_reception_id="rec_001")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_002", source_reception_id="rec_002")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_003", source_reception_id="rec_001")
+    )
+
+    resultado = repo.list_pathology_candidates_for_reception("tenant_a", "rec_001")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cand_001", "cand_003"}
+
+
+def test_list_pathology_candidates_for_reception_sin_vinculados_devuelve_vacia():
+    repo = _repo()
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_001", source_reception_id="rec_001")
+    )
+
+    resultado = repo.list_pathology_candidates_for_reception("tenant_a", "rec_999")
+
+    assert resultado == []
+
+
+def test_list_pathology_candidates_by_code_devuelve_solo_ese_codigo():
+    repo = _repo()
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_001", pathology_code="margen_erosionado")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_002", pathology_code="caja_inconsistente")
+    )
+    repo.save_pathology_candidate(
+        _make_pathology_candidate(candidate_id="cand_003", pathology_code="margen_erosionado")
+    )
+
+    resultado = repo.list_pathology_candidates_by_code("tenant_a", "margen_erosionado")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cand_001", "cand_003"}
+
+
+def test_tenant_id_espacios_falla_en_save_pathology_candidate():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_pathology_candidate(tenant_id="")
+
+
+def test_tenant_id_espacios_falla_en_get_pathology_candidate():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_pathology_candidate("   ", "cand_001")
+
+
+def test_tenant_id_espacios_falla_en_list_pathology_candidates():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_pathology_candidates("   ")
+
+
+def test_tenant_id_espacios_falla_en_list_pathology_candidates_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_pathology_candidates_for_reception("   ", "rec_001")
+
+
+def test_tenant_id_espacios_falla_en_list_pathology_candidates_by_code():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_pathology_candidates_by_code("   ", "margen_erosionado")
+
+
+def test_candidate_id_vacio_falla_en_get_pathology_candidate():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_pathology_candidate("tenant_a", "")
+
+
+def test_reception_id_vacio_falla_en_list_pathology_candidates_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_pathology_candidates_for_reception("tenant_a", "")
+
+
+def test_pathology_code_vacio_falla_en_list_pathology_candidates_by_code():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_pathology_candidates_by_code("tenant_a", "")
+
+
+# ===========================================================================
+# FormulaExecution — tests
+# ===========================================================================
+
+def test_guarda_y_recupera_formula_execution():
+    repo = _repo()
+    exec_ = _make_formula_execution()
+    repo.save_formula_execution(exec_)
+
+    resultado = repo.get_formula_execution("tenant_a", "exec_001")
+
+    assert resultado is not None
+    assert resultado.execution_id == "exec_001"
+    assert resultado.tenant_id == "tenant_a"
+
+
+def test_upsert_formula_execution_pisa_registro_previo():
+    repo = _repo()
+    exec_v1 = _make_formula_execution(formula_code="margen_bruto_pct")
+    exec_v2 = _make_formula_execution(formula_code="rotacion_stock")
+
+    repo.save_formula_execution(exec_v1)
+    repo.save_formula_execution(exec_v2)
+
+    resultado = repo.get_formula_execution("tenant_a", "exec_001")
+    assert resultado is not None
+    assert resultado.formula_code == "rotacion_stock"
+
+
+def test_no_permite_leer_formula_execution_de_otro_tenant():
+    repo = _repo()
+    exec_ = _make_formula_execution(tenant_id="tenant_a", execution_id="exec_001")
+    repo.save_formula_execution(exec_)
+
+    resultado = repo.get_formula_execution("tenant_b", "exec_001")
+
+    assert resultado is None
+
+
+def test_list_formula_executions_filtra_por_tenant():
+    repo = _repo()
+    repo.save_formula_execution(
+        _make_formula_execution(tenant_id="tenant_a", execution_id="exec_001")
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(tenant_id="tenant_a", execution_id="exec_002")
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(tenant_id="tenant_b", execution_id="exec_003")
+    )
+
+    resultado = repo.list_formula_executions("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {e.execution_id for e in resultado}
+    assert ids == {"exec_001", "exec_002"}
+
+
+def test_list_formula_executions_by_formula_devuelve_solo_ese_codigo():
+    repo = _repo()
+    repo.save_formula_execution(
+        _make_formula_execution(execution_id="exec_001", formula_code="margen_bruto_pct")
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(execution_id="exec_002", formula_code="rotacion_stock")
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(execution_id="exec_003", formula_code="margen_bruto_pct")
+    )
+
+    resultado = repo.list_formula_executions_by_formula("tenant_a", "margen_bruto_pct")
+
+    assert len(resultado) == 2
+    ids = {e.execution_id for e in resultado}
+    assert ids == {"exec_001", "exec_003"}
+
+
+def test_list_formula_executions_for_observation_devuelve_solo_las_que_contienen_obs():
+    repo = _repo()
+    repo.save_formula_execution(
+        _make_formula_execution(
+            execution_id="exec_001",
+            input_observation_ids=["obs_001", "obs_002"],
+        )
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(
+            execution_id="exec_002",
+            input_observation_ids=["obs_003"],
+        )
+    )
+    repo.save_formula_execution(
+        _make_formula_execution(
+            execution_id="exec_003",
+            input_observation_ids=["obs_001"],
+        )
+    )
+
+    resultado = repo.list_formula_executions_for_observation("tenant_a", "obs_001")
+
+    assert len(resultado) == 2
+    ids = {e.execution_id for e in resultado}
+    assert ids == {"exec_001", "exec_003"}
+
+
+def test_list_formula_executions_for_observation_sin_match_devuelve_vacia():
+    repo = _repo()
+    repo.save_formula_execution(
+        _make_formula_execution(
+            execution_id="exec_001",
+            input_observation_ids=["obs_001"],
+        )
+    )
+
+    resultado = repo.list_formula_executions_for_observation("tenant_a", "obs_999")
+
+    assert resultado == []
+
+
+def test_tenant_id_espacios_falla_en_save_formula_execution():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_formula_execution(tenant_id="")
+
+
+def test_tenant_id_espacios_falla_en_get_formula_execution():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_formula_execution("   ", "exec_001")
+
+
+def test_tenant_id_espacios_falla_en_list_formula_executions():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_formula_executions("   ")
+
+
+def test_tenant_id_espacios_falla_en_list_formula_executions_by_formula():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_formula_executions_by_formula("   ", "margen_bruto_pct")
+
+
+def test_tenant_id_espacios_falla_en_list_formula_executions_for_observation():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_formula_executions_for_observation("   ", "obs_001")
+
+
+def test_execution_id_vacio_falla_en_get_formula_execution():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_formula_execution("tenant_a", "")
+
+
+def test_formula_code_vacio_falla_en_list_formula_executions_by_formula():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_formula_executions_by_formula("tenant_a", "")
+
+
+def test_observation_id_vacio_falla_en_list_formula_executions_for_observation():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_formula_executions_for_observation("tenant_a", "")
