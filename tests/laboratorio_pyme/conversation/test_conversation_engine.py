@@ -48,8 +48,8 @@ def test_no_repite_pregunta():
     r1 = procesar_mensaje(state, "vendo mucho pero no queda plata")
     r2 = procesar_mensaje(state, "vendo mucho pero no queda plata")
 
-    assert r1["proxima_pregunta"] == r2["proxima_pregunta"]
-    assert len(state["historial_preguntas"]) == 1
+    assert r1["proxima_pregunta"] != r2["proxima_pregunta"]
+    assert len(state["historial_preguntas"]) == 2
 
 
 
