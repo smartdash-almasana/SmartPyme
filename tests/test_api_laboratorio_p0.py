@@ -235,3 +235,32 @@ def test_get_reporte_no_expone_secrets_en_error(monkeypatch):
     assert "supabase.co" not in detail
     assert "service_role" not in detail
     assert "SMARTPYME_SUPABASE" not in detail
+
+
+def test_get_reporte_llama_load_env_local(monkeypatch):
+    """GET /reportes/{report_id} llama load_env_local_if_exists antes de resolver provider."""
+    from app.api.v1.endpoints import laboratorio_p0
+    from app.laboratorio_pyme import persistence as persistence_mod
+
+    called = []
+
+    def _fake_load_env():
+        called.append(True)
+
+    def _fake_from_factory(**kwargs):
+        return _FakePersistenceContext(report=_FakeReport(
+            cliente_id="cliente_demo",
+            report_id="rep-env-1",
+        ))
+
+    monkeypatch.setattr(laboratorio_p0, "load_env_local_if_exists", _fake_load_env)
+    monkeypatch.setattr(
+        persistence_mod.LaboratorioPersistenceContext,
+        "from_repository_factory",
+        staticmethod(_fake_from_factory),
+    )
+
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/reportes/rep-env-1?cliente_id=cliente_demo")
+    assert res.status_code == 200
+    assert called, "load_env_local_if_exists debe ser llamada en el endpoint GET reporte"

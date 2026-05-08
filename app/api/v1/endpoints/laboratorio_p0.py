@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from app.laboratorio_pyme.p0_runner import run_laboratorio_p0
+from app.laboratorio_pyme.p0_runner import load_env_local_if_exists, run_laboratorio_p0
 
 router = APIRouter()
 
@@ -56,6 +56,7 @@ def get_reporte(report_id: str, cliente_id: str):
     from app.laboratorio_pyme.persistence import LaboratorioPersistenceContext
     from app.repositories.persistence_provider import PersistenceProvider, get_provider
 
+    load_env_local_if_exists()  # FIX: cargar .env.local antes de resolver provider
     provider = get_provider(os.environ.get("SMARTPYME_PERSISTENCE_PROVIDER"))
 
     supabase_client = None
