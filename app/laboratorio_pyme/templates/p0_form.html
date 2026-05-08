@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laboratorio P0 — SmartPyme</title>
+  <title>Laboratorio Operativo PyME — SmartPyme</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -89,8 +89,8 @@
 </head>
 <body>
   <div class="card">
-    <h1>Laboratorio de Análisis PyME</h1>
-    <p class="subtitle">Flujo P0 — Diagnóstico operativo inicial</p>
+    <h1>Laboratorio Operativo PyME</h1>
+    <p class="subtitle">Cargá un hallazgo y generá un caso cerrado con reporte persistido.</p>
 
     <form id="p0-form" novalidate>
       <label for="cliente_id">ID de cliente</label>
@@ -98,18 +98,20 @@
         id="cliente_id" name="cliente_id" type="text"
         placeholder="ej: cliente_demo_001" required
         autocomplete="off"
+        value="cliente_demo_form"
       />
 
       <label for="dueno_nombre">Nombre del dueño</label>
       <input
         id="dueno_nombre" name="dueno_nombre" type="text"
         placeholder="ej: Juan García" required
+        value="Dueño Demo Form"
       />
 
       <label for="laboratorio">Laboratorio</label>
       <select id="laboratorio" name="laboratorio" required>
         <option value="">— seleccionar —</option>
-        <option value="diagnostico_operativo">Diagnóstico operativo</option>
+        <option value="diagnostico_operativo" selected>Diagnóstico operativo</option>
         <option value="analisis_comercial">Análisis comercial</option>
         <option value="analisis_stock">Análisis de stock</option>
         <option value="analisis_financiero">Análisis financiero</option>
@@ -122,7 +124,7 @@
         id="hallazgo" name="hallazgo"
         placeholder="Describí el síntoma o problema principal que observás en la empresa."
         required
-      ></textarea>
+      >Primer hallazgo demo desde formulario P0</textarea>
 
       <button type="submit" id="submit-btn">Ejecutar Laboratorio P0</button>
     </form>
