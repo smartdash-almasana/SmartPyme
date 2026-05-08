@@ -48,6 +48,19 @@ EvidenceStatus = Literal[
     "LINKED",
 ]
 
+IngestionProvider = Literal["bem", "manual", "internal", "other"]
+
+IngestionStatus = Literal[
+    "RECEIVED",
+    "SENT_TO_PROVIDER",
+    "STRUCTURED",
+    "NEEDS_REVIEW",
+    "FAILED",
+    "REJECTED",
+]
+
+ObservationStatus = Literal["OBSERVED", "NEEDS_REVIEW", "REJECTED", "CONFIRMED"]
+
 
 class ReceptionRecord(BaseModel):
     reception_id: str = Field(...)
@@ -113,5 +126,84 @@ class EvidenceRecord(BaseModel):
         if self.status == "REJECTED":
             if not self.quality_flags:
                 raise ValueError("quality_flags debe tener al menos un item cuando status == REJECTED")
+
+        return self
+
+
+class DocumentIngestion(BaseModel):
+    ingestion_id: str = Field(...)
+    tenant_id: str = Field(...)
+    evidence_id: str = Field(...)
+    provider: IngestionProvider = Field(...)
+    source_type: EvidenceSourceType = Field(...)
+    status: IngestionStatus = Field(...)
+    provider_workflow_id: str | None = Field(default=None)
+    provider_call_id: str | None = Field(default=None)
+    output_ref: str | None = Field(default=None)
+    error_message: str | None = Field(default=None)
+    quality_flags: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "DocumentIngestion":
+        if not self.ingestion_id or not self.ingestion_id.strip():
+            raise ValueError("ingestion_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.evidence_id or not self.evidence_id.strip():
+            raise ValueError("evidence_id no puede ser vacio")
+
+        if self.provider == "bem" and self.status in {"SENT_TO_PROVIDER", "STRUCTURED", "NEEDS_REVIEW"}:
+            if not self.provider_call_id or not self.provider_call_id.strip():
+                raise ValueError(
+                    "provider_call_id es obligatorio para provider == bem en estados SENT_TO_PROVIDER/STRUCTURED/NEEDS_REVIEW"
+                )
+
+        if self.status == "STRUCTURED":
+            if not self.output_ref or not self.output_ref.strip():
+                raise ValueError("output_ref es obligatorio cuando status == STRUCTURED")
+
+        if self.status == "FAILED":
+            if not self.error_message or not self.error_message.strip():
+                raise ValueError("error_message es obligatorio cuando status == FAILED")
+
+        if self.status == "REJECTED":
+            if not self.quality_flags:
+                raise ValueError("quality_flags debe tener al menos un item cuando status == REJECTED")
+
+        return self
+
+
+class VariableObservation(BaseModel):
+    observation_id: str = Field(...)
+    tenant_id: str = Field(...)
+    variable_code: str = Field(...)
+    value: str | int | float | bool | None = Field(default=None)
+    unit: str | None = Field(default=None)
+    period: str | None = Field(default=None)
+    evidence_id: str = Field(...)
+    ingestion_id: str | None = Field(default=None)
+    source_ref: str | None = Field(default=None)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    status: ObservationStatus = Field(...)
+    quality_flags: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "VariableObservation":
+        if not self.observation_id or not self.observation_id.strip():
+            raise ValueError("observation_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.variable_code or not self.variable_code.strip():
+            raise ValueError("variable_code no puede ser vacio")
+        if not self.evidence_id or not self.evidence_id.strip():
+            raise ValueError("evidence_id no puede ser vacio")
+
+        if self.status == "CONFIRMED" and self.value is None:
+            raise ValueError("value es obligatorio cuando status == CONFIRMED")
+
+        if self.status == "REJECTED" and not self.quality_flags:
+            raise ValueError("quality_flags debe tener al menos un item cuando status == REJECTED")
 
         return self
