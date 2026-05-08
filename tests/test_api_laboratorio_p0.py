@@ -135,3 +135,103 @@ def test_form_no_expone_secrets():
     assert "supabase.co" not in body
     assert "service_role" not in body
     assert "SMARTPYME_SUPABASE" not in body
+
+
+# ---------------------------------------------------------------------------
+# Tests GET /reportes/{report_id}
+# ---------------------------------------------------------------------------
+
+class _FakeReport:
+    """Fake report para tests sin red."""
+    def __init__(self, cliente_id, report_id, case_id="case-1", status="closed"):
+        self.cliente_id = cliente_id
+        self.report_id = report_id
+        self.case_id = case_id
+        self.diagnosis_status = status
+        self.payload = {"hypothesis": "test", "findings": []}
+        self.result = None
+        self.metadata = {}
+
+
+class _FakeReportRepo:
+    def __init__(self, report=None):
+        self._report = report
+
+    def get_report(self, report_id: str):
+        if self._report and self._report.report_id == report_id:
+            return self._report
+        return None
+
+
+class _FakePersistenceContext:
+    def __init__(self, report=None):
+        self.reports = _FakeReportRepo(report)
+
+
+def test_get_reporte_ok(monkeypatch):
+    """GET /reportes/{report_id} retorna 200 con datos del report."""
+    from app.laboratorio_pyme import persistence as persistence_mod
+
+    fake_report = _FakeReport(
+        cliente_id="cliente_demo",
+        report_id="rep-1",
+        case_id="case-1",
+        status="closed",
+    )
+
+    def _fake_from_factory(**kwargs):
+        return _FakePersistenceContext(report=fake_report)
+
+    monkeypatch.setattr(
+        persistence_mod.LaboratorioPersistenceContext,
+        "from_repository_factory",
+        staticmethod(_fake_from_factory),
+    )
+
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/reportes/rep-1?cliente_id=cliente_demo")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["cliente_id"] == "cliente_demo"
+    assert data["report_id"] == "rep-1"
+    assert data["case_id"] == "case-1"
+    assert data["status"] == "closed"
+
+
+def test_get_reporte_404_si_no_existe(monkeypatch):
+    """GET /reportes/{report_id} retorna 404 si el report no existe."""
+    from app.laboratorio_pyme import persistence as persistence_mod
+
+    def _fake_from_factory(**kwargs):
+        return _FakePersistenceContext(report=None)
+
+    monkeypatch.setattr(
+        persistence_mod.LaboratorioPersistenceContext,
+        "from_repository_factory",
+        staticmethod(_fake_from_factory),
+    )
+
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/reportes/no-existe?cliente_id=cliente_demo")
+    assert res.status_code == 404
+
+
+def test_get_reporte_no_expone_secrets_en_error(monkeypatch):
+    """El 404 no expone secrets ni URLs de Supabase."""
+    from app.laboratorio_pyme import persistence as persistence_mod
+
+    def _fake_from_factory(**kwargs):
+        return _FakePersistenceContext(report=None)
+
+    monkeypatch.setattr(
+        persistence_mod.LaboratorioPersistenceContext,
+        "from_repository_factory",
+        staticmethod(_fake_from_factory),
+    )
+
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/reportes/no-existe?cliente_id=cliente_demo")
+    detail = res.json().get("detail", "")
+    assert "supabase.co" not in detail
+    assert "service_role" not in detail
+    assert "SMARTPYME_SUPABASE" not in detail

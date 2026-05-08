@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pathlib
 
 from fastapi import APIRouter, HTTPException
@@ -47,3 +48,46 @@ def create_caso(payload: LaboratorioP0Request):
             status_code=400,
             detail="No se pudo ejecutar el flujo Laboratorio P0. Revisar configuración y evidencia.",
         ) from exc
+
+
+@router.get("/reportes/{report_id}")
+def get_reporte(report_id: str, cliente_id: str):
+    """Consulta un report persistido por report_id y cliente_id."""
+    from app.laboratorio_pyme.persistence import LaboratorioPersistenceContext
+    from app.repositories.persistence_provider import PersistenceProvider, get_provider
+
+    provider = get_provider(os.environ.get("SMARTPYME_PERSISTENCE_PROVIDER"))
+
+    supabase_client = None
+    if provider == PersistenceProvider.SUPABASE:
+        from app.laboratorio_pyme.p0_runner import _build_supabase_client_from_env
+        supabase_client = _build_supabase_client_from_env()
+
+    try:
+        ctx = LaboratorioPersistenceContext.from_repository_factory(
+            cliente_id=cliente_id,
+            provider=provider.value,
+            supabase_client=supabase_client,
+        )
+    except NotImplementedError:
+        raise HTTPException(
+            status_code=503,
+            detail="Proveedor de persistencia no disponible para reportes.",
+        )
+
+    report = ctx.reports.get_report(report_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail="Reporte no encontrado.")
+
+    response: dict = {
+        "cliente_id": report.cliente_id,
+        "report_id": report.report_id,
+        "case_id": getattr(report, "case_id", None),
+        "status": getattr(report, "diagnosis_status", None),
+    }
+    for field in ("payload", "result", "metadata"):
+        val = getattr(report, field, None)
+        if val is not None:
+            response[field] = val
+
+    return response
