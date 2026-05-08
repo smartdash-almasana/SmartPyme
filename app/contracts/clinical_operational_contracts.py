@@ -84,6 +84,9 @@ OperationalCaseStatus = Literal[
     "REJECTED_OUT_OF_SCOPE",
 ]
 
+FindingSeverity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+FindingStatus = Literal["DRAFT", "SUPPORTED", "NEEDS_REVIEW", "REJECTED"]
+
 
 class ReceptionRecord(BaseModel):
     reception_id: str = Field(...)
@@ -438,5 +441,67 @@ class OperationalCase(BaseModel):
                 raise ValueError(
                     "rejection_reason es obligatorio cuando status == REJECTED_OUT_OF_SCOPE"
                 )
+
+        return self
+
+
+class FindingRecord(BaseModel):
+    finding_id: str = Field(...)
+    tenant_id: str = Field(...)
+    case_id: str = Field(...)
+    title: str = Field(...)
+    description: str = Field(...)
+    severity: FindingSeverity = Field(...)
+    status: FindingStatus = Field(...)
+    evidence_ids: list[str] = Field(default_factory=list)
+    variable_observation_ids: list[str] = Field(default_factory=list)
+    formula_execution_ids: list[str] = Field(default_factory=list)
+    quantified_difference: str | int | float | None = Field(default=None)
+    comparison_summary: str | None = Field(default=None)
+    recommended_next_step: str | None = Field(default=None)
+    human_review_required: bool = Field(default=False)
+    rejection_reason: str | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "FindingRecord":
+        if not self.finding_id or not self.finding_id.strip():
+            raise ValueError("finding_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.case_id or not self.case_id.strip():
+            raise ValueError("case_id no puede ser vacio")
+        if not self.title or not self.title.strip():
+            raise ValueError("title no puede ser vacio")
+        if not self.description or not self.description.strip():
+            raise ValueError("description no puede ser vacio")
+
+        if self.status == "SUPPORTED":
+            if not self.evidence_ids:
+                raise ValueError("evidence_ids debe tener al menos un item cuando status == SUPPORTED")
+
+            if not self.variable_observation_ids and not self.formula_execution_ids:
+                raise ValueError(
+                    "variable_observation_ids o formula_execution_ids debe tener al menos un item cuando status == SUPPORTED"
+                )
+
+            if not self.comparison_summary or not self.comparison_summary.strip():
+                raise ValueError(
+                    "comparison_summary es obligatorio cuando status == SUPPORTED"
+                )
+
+            if self.quantified_difference is None and (
+                not self.comparison_summary or not self.comparison_summary.strip()
+            ):
+                raise ValueError(
+                    "quantified_difference o comparison_summary debe existir cuando status == SUPPORTED"
+                )
+
+        if self.severity == "CRITICAL" and self.human_review_required is not True:
+            raise ValueError("human_review_required debe ser True cuando severity == CRITICAL")
+
+        if self.status == "REJECTED":
+            if not self.rejection_reason or not self.rejection_reason.strip():
+                raise ValueError("rejection_reason es obligatorio cuando status == REJECTED")
 
         return self

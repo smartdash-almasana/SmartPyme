@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FindingRecord,
     FormulaExecution,
     OperationalCase,
     OperationalCaseCandidate,
@@ -173,6 +174,29 @@ def _valid_operational_case(**overrides):
     }
     payload.update(overrides)
     return OperationalCase(**payload)
+
+
+def _valid_finding(**overrides):
+    payload = {
+        "finding_id": "fr_001",
+        "tenant_id": "tenant_demo",
+        "case_id": "case_001",
+        "title": "Margen en deterioro",
+        "description": "Se observa deterioro sostenido del margen en los ultimos periodos.",
+        "severity": "MEDIUM",
+        "status": "DRAFT",
+        "evidence_ids": [],
+        "variable_observation_ids": [],
+        "formula_execution_ids": [],
+        "quantified_difference": None,
+        "comparison_summary": None,
+        "recommended_next_step": None,
+        "human_review_required": False,
+        "rejection_reason": None,
+        "created_at": datetime.utcnow(),
+    }
+    payload.update(overrides)
+    return FindingRecord(**payload)
 
 
 def test_crea_reception_record_valido():
@@ -636,6 +660,127 @@ def test_operational_case_no_tiene_hallazgo_final_accion_ejecutada_ni_decision_a
     assert forbidden_fields.isdisjoint(fields)
 
 
+def test_crea_finding_record_valido_en_draft():
+    finding = _valid_finding()
+
+    assert finding.finding_id == "fr_001"
+    assert finding.status == "DRAFT"
+
+
+def test_crea_finding_record_valido_supported_con_observaciones_y_comparison_summary():
+    finding = _valid_finding(
+        status="SUPPORTED",
+        evidence_ids=["ev_001"],
+        variable_observation_ids=["obs_001"],
+        comparison_summary="Margen actual 12% vs historico 22%.",
+    )
+    assert finding.status == "SUPPORTED"
+
+
+def test_crea_finding_record_valido_supported_con_formula_quantified_difference_y_comparison_summary():
+    finding = _valid_finding(
+        status="SUPPORTED",
+        evidence_ids=["ev_001"],
+        formula_execution_ids=["fx_001"],
+        quantified_difference=10.0,
+        comparison_summary="Diferencia de 10 puntos porcentuales vs baseline.",
+    )
+    assert finding.status == "SUPPORTED"
+
+
+def test_finding_rechaza_finding_id_vacio():
+    with pytest.raises(ValidationError, match="finding_id"):
+        _valid_finding(finding_id=" ")
+
+
+def test_finding_rechaza_tenant_id_vacio():
+    with pytest.raises(ValidationError, match="tenant_id"):
+        _valid_finding(tenant_id="")
+
+
+def test_finding_rechaza_case_id_vacio():
+    with pytest.raises(ValidationError, match="case_id"):
+        _valid_finding(case_id=" ")
+
+
+def test_finding_rechaza_title_vacio():
+    with pytest.raises(ValidationError, match="title"):
+        _valid_finding(title=" ")
+
+
+def test_finding_rechaza_description_vacia():
+    with pytest.raises(ValidationError, match="description"):
+        _valid_finding(description="")
+
+
+def test_finding_supported_requiere_evidence_ids():
+    with pytest.raises(ValidationError, match="evidence_ids"):
+        _valid_finding(
+            status="SUPPORTED",
+            evidence_ids=[],
+            variable_observation_ids=["obs_001"],
+            comparison_summary="Resumen de comparacion",
+        )
+
+
+def test_finding_supported_requiere_variable_o_formula():
+    with pytest.raises(ValidationError, match="variable_observation_ids o formula_execution_ids"):
+        _valid_finding(
+            status="SUPPORTED",
+            evidence_ids=["ev_001"],
+            variable_observation_ids=[],
+            formula_execution_ids=[],
+            comparison_summary="Resumen de comparacion",
+        )
+
+
+def test_finding_supported_requiere_comparison_summary():
+    with pytest.raises(ValidationError, match="comparison_summary"):
+        _valid_finding(
+            status="SUPPORTED",
+            evidence_ids=["ev_001"],
+            variable_observation_ids=["obs_001"],
+            comparison_summary=None,
+        )
+
+
+def test_finding_supported_falla_si_no_hay_quantified_difference_ni_comparison_summary():
+    with pytest.raises(ValidationError, match="comparison_summary"):
+        _valid_finding(
+            status="SUPPORTED",
+            evidence_ids=["ev_001"],
+            formula_execution_ids=["fx_001"],
+            quantified_difference=None,
+            comparison_summary=None,
+        )
+
+
+def test_finding_critical_requiere_human_review_required_true():
+    with pytest.raises(ValidationError, match="human_review_required"):
+        _valid_finding(severity="CRITICAL", human_review_required=False)
+
+
+def test_finding_rejected_requiere_rejection_reason():
+    with pytest.raises(ValidationError, match="rejection_reason"):
+        _valid_finding(status="REJECTED", rejection_reason=" ")
+
+
+def test_finding_severity_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_finding(severity="SEVERE")  # type: ignore[arg-type]
+
+
+def test_finding_status_rechaza_valor_fuera_de_literal():
+    with pytest.raises(ValidationError):
+        _valid_finding(status="APPROVED")  # type: ignore[arg-type]
+
+
+def test_finding_no_tiene_accion_ejecutada_ni_decision_automatica_dueno():
+    fields = set(FindingRecord.model_fields.keys())
+    forbidden_fields = {"accion_ejecutada", "decision_automatica_dueno"}
+    assert forbidden_fields.isdisjoint(fields)
+
+
 
 def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     reception_fields = set(ReceptionRecord.model_fields.keys())
@@ -646,6 +791,7 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     formula_fields = set(FormulaExecution.model_fields.keys())
     candidate_fields = set(OperationalCaseCandidate.model_fields.keys())
     case_fields = set(OperationalCase.model_fields.keys())
+    finding_fields = set(FindingRecord.model_fields.keys())
 
     forbidden_fields = {
         "diagnostico_final",
@@ -664,3 +810,4 @@ def test_contratos_no_tienen_campos_de_diagnostico_ni_hallazgo_final():
     assert forbidden_fields.isdisjoint(formula_fields)
     assert forbidden_fields.isdisjoint(candidate_fields)
     assert forbidden_fields.isdisjoint(case_fields)
+    assert forbidden_fields.isdisjoint(finding_fields)
