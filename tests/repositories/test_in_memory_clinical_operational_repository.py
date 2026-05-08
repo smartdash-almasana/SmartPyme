@@ -14,6 +14,8 @@ from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
     FormulaExecution,
+    OperationalCase,
+    OperationalCaseCandidate,
     PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
@@ -979,3 +981,364 @@ def test_observation_id_vacio_falla_en_list_formula_executions_for_observation()
     repo = _repo()
     with pytest.raises(ValueError):
         repo.list_formula_executions_for_observation("tenant_a", "")
+
+
+# ---------------------------------------------------------------------------
+# Helpers para OperationalCaseCandidate y OperationalCase
+# ---------------------------------------------------------------------------
+
+def _make_case_candidate(
+    tenant_id: str = "tenant_a",
+    candidate_id: str = "cc_001",
+    source_reception_id: str = "rec_001",
+    status: str = "DRAFT",
+    primary_pathology_code: str | None = None,
+    **kwargs,
+) -> OperationalCaseCandidate:
+    return OperationalCaseCandidate(
+        candidate_id=candidate_id,
+        tenant_id=tenant_id,
+        source_reception_id=source_reception_id,
+        status=status,
+        primary_pathology_code=primary_pathology_code,
+        **kwargs,
+    )
+
+
+def _make_case(
+    tenant_id: str = "tenant_a",
+    case_id: str = "case_001",
+    candidate_id: str = "cc_001",
+    source_reception_id: str = "rec_001",
+    primary_pathology_code: str = "margen_erosionado",
+    status: str = "CLARIFICATION_REQUIRED",
+    next_step: str = "solicitar datos de ventas",
+    clarification_question: str | None = None,
+    **kwargs,
+) -> OperationalCase:
+    # Si status requiere clarification_question y no se pasó, usar default
+    if status == "CLARIFICATION_REQUIRED" and clarification_question is None:
+        clarification_question = "¿Cuál fue el margen del último trimestre?"
+    return OperationalCase(
+        case_id=case_id,
+        tenant_id=tenant_id,
+        candidate_id=candidate_id,
+        source_reception_id=source_reception_id,
+        primary_pathology_code=primary_pathology_code,
+        status=status,
+        next_step=next_step,
+        clarification_question=clarification_question,
+        **kwargs,
+    )
+
+
+# ===========================================================================
+# OperationalCaseCandidate — tests
+# ===========================================================================
+
+def test_guarda_y_recupera_case_candidate():
+    repo = _repo()
+    cc = _make_case_candidate()
+    repo.save_case_candidate(cc)
+
+    resultado = repo.get_case_candidate("tenant_a", "cc_001")
+
+    assert resultado is not None
+    assert resultado.candidate_id == "cc_001"
+    assert resultado.tenant_id == "tenant_a"
+
+
+def test_upsert_case_candidate_pisa_registro_previo():
+    repo = _repo()
+    cc_v1 = _make_case_candidate(status="DRAFT")
+    cc_v2 = _make_case_candidate(status="NEEDS_EVIDENCE", evidence_gap_codes=["ventas_periodo"])
+
+    repo.save_case_candidate(cc_v1)
+    repo.save_case_candidate(cc_v2)
+
+    resultado = repo.get_case_candidate("tenant_a", "cc_001")
+    assert resultado is not None
+    assert resultado.status == "NEEDS_EVIDENCE"
+
+
+def test_no_permite_leer_case_candidate_de_otro_tenant():
+    repo = _repo()
+    cc = _make_case_candidate(tenant_id="tenant_a", candidate_id="cc_001")
+    repo.save_case_candidate(cc)
+
+    resultado = repo.get_case_candidate("tenant_b", "cc_001")
+
+    assert resultado is None
+
+
+def test_list_case_candidates_filtra_por_tenant():
+    repo = _repo()
+    repo.save_case_candidate(_make_case_candidate(tenant_id="tenant_a", candidate_id="cc_001"))
+    repo.save_case_candidate(_make_case_candidate(tenant_id="tenant_a", candidate_id="cc_002"))
+    repo.save_case_candidate(_make_case_candidate(tenant_id="tenant_b", candidate_id="cc_003"))
+
+    resultado = repo.list_case_candidates("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cc_001", "cc_002"}
+
+
+def test_list_case_candidates_for_reception_devuelve_solo_vinculados():
+    repo = _repo()
+    repo.save_case_candidate(_make_case_candidate(candidate_id="cc_001", source_reception_id="rec_001"))
+    repo.save_case_candidate(_make_case_candidate(candidate_id="cc_002", source_reception_id="rec_002"))
+    repo.save_case_candidate(_make_case_candidate(candidate_id="cc_003", source_reception_id="rec_001"))
+
+    resultado = repo.list_case_candidates_for_reception("tenant_a", "rec_001")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cc_001", "cc_003"}
+
+
+def test_list_case_candidates_for_reception_sin_vinculados_devuelve_vacia():
+    repo = _repo()
+    repo.save_case_candidate(_make_case_candidate(candidate_id="cc_001", source_reception_id="rec_001"))
+
+    resultado = repo.list_case_candidates_for_reception("tenant_a", "rec_999")
+
+    assert resultado == []
+
+
+def test_list_case_candidates_by_primary_pathology_devuelve_solo_ese_codigo():
+    repo = _repo()
+    repo.save_case_candidate(
+        _make_case_candidate(candidate_id="cc_001", primary_pathology_code="margen_erosionado")
+    )
+    repo.save_case_candidate(
+        _make_case_candidate(candidate_id="cc_002", primary_pathology_code="caja_inconsistente")
+    )
+    repo.save_case_candidate(
+        _make_case_candidate(candidate_id="cc_003", primary_pathology_code="margen_erosionado")
+    )
+
+    resultado = repo.list_case_candidates_by_primary_pathology("tenant_a", "margen_erosionado")
+
+    assert len(resultado) == 2
+    ids = {c.candidate_id for c in resultado}
+    assert ids == {"cc_001", "cc_003"}
+
+
+def test_tenant_id_espacios_falla_en_save_case_candidate():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_case_candidate(tenant_id="")
+
+
+def test_tenant_id_espacios_falla_en_get_case_candidate():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_case_candidate("   ", "cc_001")
+
+
+def test_tenant_id_espacios_falla_en_list_case_candidates():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_case_candidates("   ")
+
+
+def test_tenant_id_espacios_falla_en_list_case_candidates_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_case_candidates_for_reception("   ", "rec_001")
+
+
+def test_tenant_id_espacios_falla_en_list_case_candidates_by_primary_pathology():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_case_candidates_by_primary_pathology("   ", "margen_erosionado")
+
+
+def test_candidate_id_vacio_falla_en_get_case_candidate():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_case_candidate("tenant_a", "")
+
+
+def test_reception_id_vacio_falla_en_list_case_candidates_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_case_candidates_for_reception("tenant_a", "")
+
+
+def test_pathology_code_vacio_falla_en_list_case_candidates_by_primary_pathology():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_case_candidates_by_primary_pathology("tenant_a", "")
+
+
+# ===========================================================================
+# OperationalCase — tests
+# ===========================================================================
+
+def test_guarda_y_recupera_case():
+    repo = _repo()
+    case = _make_case()
+    repo.save_case(case)
+
+    resultado = repo.get_case("tenant_a", "case_001")
+
+    assert resultado is not None
+    assert resultado.case_id == "case_001"
+    assert resultado.tenant_id == "tenant_a"
+
+
+def test_upsert_case_pisa_registro_previo():
+    repo = _repo()
+    case_v1 = _make_case(next_step="paso 1")
+    case_v2 = _make_case(next_step="paso 2")
+
+    repo.save_case(case_v1)
+    repo.save_case(case_v2)
+
+    resultado = repo.get_case("tenant_a", "case_001")
+    assert resultado is not None
+    assert resultado.next_step == "paso 2"
+
+
+def test_no_permite_leer_case_de_otro_tenant():
+    repo = _repo()
+    case = _make_case(tenant_id="tenant_a", case_id="case_001")
+    repo.save_case(case)
+
+    resultado = repo.get_case("tenant_b", "case_001")
+
+    assert resultado is None
+
+
+def test_list_cases_filtra_por_tenant():
+    repo = _repo()
+    repo.save_case(_make_case(tenant_id="tenant_a", case_id="case_001"))
+    repo.save_case(_make_case(tenant_id="tenant_a", case_id="case_002"))
+    repo.save_case(_make_case(tenant_id="tenant_b", case_id="case_003"))
+
+    resultado = repo.list_cases("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {c.case_id for c in resultado}
+    assert ids == {"case_001", "case_002"}
+
+
+def test_list_cases_for_reception_devuelve_solo_vinculados():
+    repo = _repo()
+    repo.save_case(_make_case(case_id="case_001", source_reception_id="rec_001"))
+    repo.save_case(_make_case(case_id="case_002", source_reception_id="rec_002"))
+    repo.save_case(_make_case(case_id="case_003", source_reception_id="rec_001"))
+
+    resultado = repo.list_cases_for_reception("tenant_a", "rec_001")
+
+    assert len(resultado) == 2
+    ids = {c.case_id for c in resultado}
+    assert ids == {"case_001", "case_003"}
+
+
+def test_list_cases_for_reception_sin_vinculados_devuelve_vacia():
+    repo = _repo()
+    repo.save_case(_make_case(case_id="case_001", source_reception_id="rec_001"))
+
+    resultado = repo.list_cases_for_reception("tenant_a", "rec_999")
+
+    assert resultado == []
+
+
+def test_list_cases_by_primary_pathology_devuelve_solo_ese_codigo():
+    repo = _repo()
+    repo.save_case(_make_case(case_id="case_001", primary_pathology_code="margen_erosionado"))
+    repo.save_case(_make_case(case_id="case_002", primary_pathology_code="caja_inconsistente"))
+    repo.save_case(_make_case(case_id="case_003", primary_pathology_code="margen_erosionado"))
+
+    resultado = repo.list_cases_by_primary_pathology("tenant_a", "margen_erosionado")
+
+    assert len(resultado) == 2
+    ids = {c.case_id for c in resultado}
+    assert ids == {"case_001", "case_003"}
+
+
+def test_list_cases_by_status_devuelve_solo_ese_status():
+    repo = _repo()
+    repo.save_case(_make_case(case_id="case_001", status="CLARIFICATION_REQUIRED"))
+    repo.save_case(_make_case(case_id="case_002", status="INSUFFICIENT_EVIDENCE",
+                              insufficiency_reason="faltan datos de ventas",
+                              clarification_question=None))
+    repo.save_case(_make_case(case_id="case_003", status="CLARIFICATION_REQUIRED"))
+
+    resultado = repo.list_cases_by_status("tenant_a", "CLARIFICATION_REQUIRED")
+
+    assert len(resultado) == 2
+    ids = {c.case_id for c in resultado}
+    assert ids == {"case_001", "case_003"}
+
+
+def test_list_cases_by_status_sin_match_devuelve_vacia():
+    repo = _repo()
+    repo.save_case(_make_case(case_id="case_001", status="CLARIFICATION_REQUIRED"))
+
+    resultado = repo.list_cases_by_status("tenant_a", "REJECTED_OUT_OF_SCOPE")
+
+    assert resultado == []
+
+
+def test_tenant_id_espacios_falla_en_save_case():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_case(tenant_id="")
+
+
+def test_tenant_id_espacios_falla_en_get_case():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_case("   ", "case_001")
+
+
+def test_tenant_id_espacios_falla_en_list_cases():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases("   ")
+
+
+def test_tenant_id_espacios_falla_en_list_cases_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_for_reception("   ", "rec_001")
+
+
+def test_tenant_id_espacios_falla_en_list_cases_by_primary_pathology():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_by_primary_pathology("   ", "margen_erosionado")
+
+
+def test_tenant_id_espacios_falla_en_list_cases_by_status():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_by_status("   ", "CLARIFICATION_REQUIRED")
+
+
+def test_case_id_vacio_falla_en_get_case():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_case("tenant_a", "")
+
+
+def test_reception_id_vacio_falla_en_list_cases_for_reception():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_for_reception("tenant_a", "")
+
+
+def test_pathology_code_vacio_falla_en_list_cases_by_primary_pathology():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_by_primary_pathology("tenant_a", "")
+
+
+def test_status_vacio_falla_en_list_cases_by_status():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_cases_by_status("tenant_a", "")

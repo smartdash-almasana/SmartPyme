@@ -26,6 +26,8 @@ from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
     FormulaExecution,
+    OperationalCase,
+    OperationalCaseCandidate,
     PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
@@ -58,6 +60,10 @@ class InMemoryClinicalOperationalRepository:
         self._pathology_candidates: dict[tuple[str, str], PathologyCandidate] = {}
         # dict[(tenant_id, execution_id), FormulaExecution]
         self._formula_executions: dict[tuple[str, str], FormulaExecution] = {}
+        # dict[(tenant_id, candidate_id), OperationalCaseCandidate]
+        self._case_candidates: dict[tuple[str, str], OperationalCaseCandidate] = {}
+        # dict[(tenant_id, case_id), OperationalCase]
+        self._cases: dict[tuple[str, str], OperationalCase] = {}
 
     # ------------------------------------------------------------------
     # ReceptionRecord
@@ -340,4 +346,126 @@ class InMemoryClinicalOperationalRepository:
             record
             for (tid, _), record in self._formula_executions.items()
             if tid == tenant_id and observation_id in record.input_observation_ids
+        ]
+
+    # ------------------------------------------------------------------
+    # OperationalCaseCandidate
+    # ------------------------------------------------------------------
+
+    def save_case_candidate(
+        self, record: OperationalCaseCandidate
+    ) -> OperationalCaseCandidate:
+        """Persiste o actualiza un OperationalCaseCandidate (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.candidate_id, "candidate_id")
+        key = (record.tenant_id, record.candidate_id)
+        self._case_candidates[key] = record
+        return record
+
+    def get_case_candidate(
+        self, tenant_id: str, candidate_id: str
+    ) -> OperationalCaseCandidate | None:
+        """Devuelve el OperationalCaseCandidate del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(candidate_id, "candidate_id")
+        return self._case_candidates.get((tenant_id, candidate_id))
+
+    def list_case_candidates(
+        self, tenant_id: str
+    ) -> list[OperationalCaseCandidate]:
+        """Devuelve todos los OperationalCaseCandidate del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._case_candidates.items()
+            if tid == tenant_id
+        ]
+
+    def list_case_candidates_for_reception(
+        self, tenant_id: str, reception_id: str
+    ) -> list[OperationalCaseCandidate]:
+        """Devuelve OperationalCaseCandidate del tenant vinculados a una reception."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(reception_id, "reception_id")
+        return [
+            record
+            for (tid, _), record in self._case_candidates.items()
+            if tid == tenant_id and record.source_reception_id == reception_id
+        ]
+
+    def list_case_candidates_by_primary_pathology(
+        self, tenant_id: str, pathology_code: str
+    ) -> list[OperationalCaseCandidate]:
+        """Devuelve OperationalCaseCandidate del tenant con el primary_pathology_code dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(pathology_code, "pathology_code")
+        return [
+            record
+            for (tid, _), record in self._case_candidates.items()
+            if tid == tenant_id and record.primary_pathology_code == pathology_code
+        ]
+
+    # ------------------------------------------------------------------
+    # OperationalCase
+    # ------------------------------------------------------------------
+
+    def save_case(self, record: OperationalCase) -> OperationalCase:
+        """Persiste o actualiza un OperationalCase (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.case_id, "case_id")
+        key = (record.tenant_id, record.case_id)
+        self._cases[key] = record
+        return record
+
+    def get_case(
+        self, tenant_id: str, case_id: str
+    ) -> OperationalCase | None:
+        """Devuelve el OperationalCase del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(case_id, "case_id")
+        return self._cases.get((tenant_id, case_id))
+
+    def list_cases(self, tenant_id: str) -> list[OperationalCase]:
+        """Devuelve todos los OperationalCase del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._cases.items()
+            if tid == tenant_id
+        ]
+
+    def list_cases_for_reception(
+        self, tenant_id: str, reception_id: str
+    ) -> list[OperationalCase]:
+        """Devuelve OperationalCase del tenant vinculados a una reception."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(reception_id, "reception_id")
+        return [
+            record
+            for (tid, _), record in self._cases.items()
+            if tid == tenant_id and record.source_reception_id == reception_id
+        ]
+
+    def list_cases_by_primary_pathology(
+        self, tenant_id: str, pathology_code: str
+    ) -> list[OperationalCase]:
+        """Devuelve OperationalCase del tenant con el primary_pathology_code dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(pathology_code, "pathology_code")
+        return [
+            record
+            for (tid, _), record in self._cases.items()
+            if tid == tenant_id and record.primary_pathology_code == pathology_code
+        ]
+
+    def list_cases_by_status(
+        self, tenant_id: str, status: str
+    ) -> list[OperationalCase]:
+        """Devuelve OperationalCase del tenant con el status dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(status, "status")
+        return [
+            record
+            for (tid, _), record in self._cases.items()
+            if tid == tenant_id and record.status == status
         ]
