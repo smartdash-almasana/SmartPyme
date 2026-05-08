@@ -274,3 +274,21 @@ def test_form_contiene_consultar_reporte():
     body = res.text
     assert "Consultar reporte" in body
     assert "/api/v1/laboratorio/p0/reportes/" in body
+
+
+def test_form_contiene_reporte_confirmado():
+    """El HTML del formulario contiene el texto 'Reporte confirmado' (report card)."""
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/form")
+    assert res.status_code == 200
+    body = res.text
+    assert "Reporte confirmado" in body
+
+
+def test_form_contiene_datos_tecnicos():
+    """El HTML del formulario contiene el texto 'Datos técnicos' (collapsible section)."""
+    client = TestClient(create_app())
+    res = client.get("/api/v1/laboratorio/p0/form")
+    assert res.status_code == 200
+    body = res.text
+    assert "Datos técnicos" in body

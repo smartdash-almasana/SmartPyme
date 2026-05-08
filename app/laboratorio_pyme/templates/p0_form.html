@@ -21,7 +21,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.1);
       padding: 2rem;
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
     }
     h1 { font-size: 1.25rem; color: #111; margin-bottom: .25rem; }
     .subtitle { font-size: .875rem; color: #666; margin-bottom: 1.5rem; }
@@ -54,10 +54,12 @@
     }
     button[type="submit"]:hover { background: #1d4ed8; }
     button[type="submit"]:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    /* ── Result area ── */
     .result {
       margin-top: 1.5rem;
       padding: 1rem;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: .875rem;
     }
     .result.success {
@@ -74,6 +76,145 @@
     .result td { padding: .25rem .5rem; vertical-align: top; }
     .result td:first-child { font-weight: 600; white-space: nowrap; width: 40%; }
     .hidden { display: none; }
+
+    /* ── Report card ── */
+    .report-card {
+      margin-top: 1rem;
+      background: #fff;
+      border: 1px solid #d1fae5;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .report-card-header {
+      background: #ecfdf5;
+      padding: .75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .report-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #065f46;
+      flex: 1;
+    }
+    .badge {
+      display: inline-block;
+      padding: .2rem .6rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge-closed  { background: #d1fae5; color: #065f46; }
+    .badge-open    { background: #fef9c3; color: #713f12; }
+    .badge-pending { background: #e0f2fe; color: #0c4a6e; }
+    .badge-default { background: #f1f5f9; color: #475569; }
+
+    /* ── Report grid ── */
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr;          /* mobile: 1 col */
+      gap: .5rem;
+      padding: .75rem 1rem;
+    }
+    @media (min-width: 480px) {
+      .report-grid { grid-template-columns: 1fr 1fr; }  /* desktop: 2 col */
+    }
+    .report-field {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: .5rem .75rem;
+    }
+    .report-field-label {
+      font-size: .7rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .15rem;
+    }
+    .report-field-value {
+      font-size: .85rem;
+      color: #1e293b;
+      word-break: break-all;
+    }
+
+    /* ── Collapsible "Datos técnicos" ── */
+    .collapsible-section {
+      border-top: 1px solid #e2e8f0;
+    }
+    .collapsible-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: .6rem 1rem;
+      text-align: left;
+      font-size: .8rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: background .15s;
+    }
+    .collapsible-toggle:hover { background: #f8fafc; }
+    .collapsible-toggle .arrow {
+      display: inline-block;
+      transition: transform .2s;
+      font-style: normal;
+    }
+    .collapsible-toggle[aria-expanded="true"] .arrow {
+      transform: rotate(90deg);
+    }
+    .collapsible-body {
+      padding: 0 1rem .75rem;
+    }
+    .json-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: .75rem;
+      font-size: .78rem;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      white-space: pre;
+      overflow-x: auto;          /* scroll horizontal en mobile */
+      color: #334155;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    /* ── Error card ── */
+    .error-card {
+      margin-top: 1rem;
+      background: #fff;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .error-card-header {
+      background: #fef2f2;
+      padding: .75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .error-card-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: #991b1b;
+    }
+    .error-card-message {
+      padding: .6rem 1rem;
+      font-size: .875rem;
+      color: #7f1d1d;
+    }
+
+    /* ── Buttons ── */
     .btn-secondary {
       margin-top: 1rem;
       padding: .5rem 1rem;
@@ -88,18 +229,8 @@
     }
     .btn-secondary:hover { background: #e0f2fe; }
     .btn-secondary:disabled { opacity: .5; cursor: not-allowed; }
-    #report-detail {
-      margin-top: 1rem;
-      padding: .75rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 4px;
-      font-size: .8rem;
-      font-family: monospace;
-      white-space: pre-wrap;
-      word-break: break-all;
-      color: #334155;
-    }
+
+    /* ── Spinner ── */
     .spinner {
       display: inline-block;
       width: 14px; height: 14px;
@@ -166,11 +297,10 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Validación básica
       const fields = ['cliente_id', 'dueno_nombre', 'laboratorio', 'hallazgo'];
       for (const f of fields) {
         if (!form[f].value.trim()) {
-          showError('Todos los campos son obligatorios.');
+          showFormError('Todos los campos son obligatorios.');
           form[f].focus();
           return;
         }
@@ -198,20 +328,21 @@
         const data = await resp.json();
 
         if (!resp.ok) {
-          showError(data.detail || `Error ${resp.status}`);
+          showFormError(data.detail || `Error ${resp.status}`);
           return;
         }
 
-        showSuccess(data);
+        showCasoCreado(data);
       } catch (err) {
-        showError('No se pudo conectar con el servidor. Verificá que esté corriendo.');
+        showFormError('No se pudo conectar con el servidor. Verificá que esté corriendo.');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Ejecutar Laboratorio P0';
       }
     });
 
-    function showSuccess(data) {
+    /* ── Caso creado: tabla simple + botón consultar ── */
+    function showCasoCreado(data) {
       box.className = 'result success';
       box.innerHTML = `
         <strong>✓ Caso creado correctamente</strong>
@@ -225,7 +356,7 @@
         <button class="btn-secondary" id="btn-consultar-reporte" type="button">
           Consultar reporte
         </button>
-        <div id="report-detail" class="hidden"></div>
+        <div id="report-area"></div>
       `;
 
       document.getElementById('btn-consultar-reporte').addEventListener('click', () => {
@@ -233,40 +364,136 @@
       });
     }
 
+    /* ── Consultar reporte ── */
     async function consultarReporte(reportId, clienteId) {
       const btnConsultar = document.getElementById('btn-consultar-reporte');
-      const reportDetail = document.getElementById('report-detail');
+      const reportArea   = document.getElementById('report-area');
 
       btnConsultar.disabled = true;
       btnConsultar.textContent = 'Consultando…';
-      reportDetail.className = 'hidden';
-      reportDetail.textContent = '';
+      reportArea.innerHTML = '';
 
       try {
         const url = `/api/v1/laboratorio/p0/reportes/${encodeURIComponent(reportId)}?cliente_id=${encodeURIComponent(clienteId)}`;
         const resp = await fetch(url);
         const data = await resp.json();
 
-        reportDetail.className = '';
         if (!resp.ok) {
-          reportDetail.textContent = `Error ${resp.status}: ${data.detail || JSON.stringify(data)}`;
+          reportArea.innerHTML = buildErrorCard(
+            data.detail || `Error ${resp.status}`,
+            JSON.stringify(data, null, 2)
+          );
         } else {
-          reportDetail.textContent = JSON.stringify(data, null, 2);
+          reportArea.innerHTML = buildReportCard(data);
+          // wire collapsible toggle
+          const toggle = reportArea.querySelector('.collapsible-toggle');
+          const body   = reportArea.querySelector('.collapsible-body');
+          if (toggle && body) {
+            toggle.addEventListener('click', () => {
+              const expanded = toggle.getAttribute('aria-expanded') === 'true';
+              toggle.setAttribute('aria-expanded', String(!expanded));
+              body.classList.toggle('hidden', expanded);
+            });
+          }
         }
       } catch (err) {
-        reportDetail.className = '';
-        reportDetail.textContent = 'No se pudo consultar el reporte. Verificá que el servidor esté corriendo.';
+        reportArea.innerHTML = buildErrorCard(
+          'No se pudo consultar el reporte. Verificá que el servidor esté corriendo.',
+          null
+        );
       } finally {
         btnConsultar.disabled = false;
         btnConsultar.textContent = 'Consultar reporte';
       }
     }
 
-    function showError(msg) {
-      box.className = 'result error';
-      box.innerHTML = `<strong>✗ Error:</strong> ${esc(msg)}`;
+    /* ── Build report card HTML ── */
+    function buildReportCard(data) {
+      const status     = data.status || '';
+      const badgeClass = badgeForStatus(status);
+      const fields = [
+        { label: 'cliente_id', value: data.cliente_id },
+        { label: 'case_id',    value: data.case_id    },
+        { label: 'report_id',  value: data.report_id  },
+        { label: 'status',     value: status          },
+      ];
+
+      const gridItems = fields.map(f => `
+        <div class="report-field">
+          <div class="report-field-label">${esc(f.label)}</div>
+          <div class="report-field-value">${esc(String(f.value ?? '—'))}</div>
+        </div>
+      `).join('');
+
+      const jsonPretty = esc(JSON.stringify(data, null, 2));
+
+      return `
+        <div class="report-card">
+          <div class="report-card-header">
+            <span class="report-card-title">Reporte confirmado</span>
+            <span class="badge ${esc(badgeClass)}">${esc(status || 'sin estado')}</span>
+          </div>
+          <div class="report-grid">${gridItems}</div>
+          <div class="collapsible-section">
+            <button class="collapsible-toggle" type="button" aria-expanded="false">
+              <span class="arrow">▶</span> Datos técnicos
+            </button>
+            <div class="collapsible-body hidden">
+              <pre class="json-block">${jsonPretty}</pre>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
+    /* ── Build error card HTML ── */
+    function buildErrorCard(message, detail) {
+      const detailSection = detail ? `
+        <div class="collapsible-section" style="border-top:1px solid #fca5a5;">
+          <button class="collapsible-toggle" type="button" aria-expanded="false"
+                  style="color:#991b1b;"
+                  onclick="(function(btn){
+                    var b=btn.nextElementSibling;
+                    var exp=btn.getAttribute('aria-expanded')==='true';
+                    btn.setAttribute('aria-expanded',String(!exp));
+                    b.classList.toggle('hidden',exp);
+                  })(this)">
+            <span class="arrow">▶</span> Detalle técnico
+          </button>
+          <div class="collapsible-body hidden">
+            <pre class="json-block" style="border-color:#fca5a5;">${esc(detail)}</pre>
+          </div>
+        </div>
+      ` : '';
+
+      return `
+        <div class="error-card">
+          <div class="error-card-header">
+            <span>✗</span>
+            <span class="error-card-title">Error al consultar el reporte</span>
+          </div>
+          <div class="error-card-message">${esc(message)}</div>
+          ${detailSection}
+        </div>
+      `;
+    }
+
+    /* ── Form-level error (before report area exists) ── */
+    function showFormError(msg) {
+      box.className = 'result error';
+      box.innerHTML = buildErrorCard(msg, null);
+    }
+
+    /* ── Badge class by status ── */
+    function badgeForStatus(status) {
+      const s = (status || '').toLowerCase();
+      if (s === 'closed')  return 'badge-closed';
+      if (s === 'open')    return 'badge-open';
+      if (s === 'pending') return 'badge-pending';
+      return 'badge-default';
+    }
+
+    /* ── HTML escape ── */
     function esc(s) {
       return String(s)
         .replace(/&/g, '&amp;')
