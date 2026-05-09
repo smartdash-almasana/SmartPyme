@@ -333,6 +333,208 @@ La prioridad actual de SmartPyme es cerrar la factoría industrial antes de expa
 6. Ruff + pytest canónicos.
 7. Recién después: ingesta batch, canonical rows, entity resolution y hallazgos.
 
+## Prompt Harness Standard
+
+Todo prompt operativo serio debe usar estructura de harness, no instrucción libre.
+
+Estructura recomendada:
+
+```text
+Fase 0 — Auditoría previa / Doctor de Prompts
+Fase 1 — Identidad, contexto, metodología y restricciones
+Fase 2 — Panel divergente de riesgo
+Fase 3 — Entrega con KPIs o criterios de aceptación
+Fase 4 — Restricciones no negociables
+Fase 5 — Refinamiento separado / V2-DEBUG
+```
+
+Regla:
+
+```text
+auditar antes de ejecutar
+criticar en turno separado
+```
+
+La Fase 0 debe bloquear si faltan branch, archivos, contexto, tests esperados o alcance verificable.
+
+## Roles operativos GPT / Kiro / Codex
+
+### GPT / ChatGPT
+
+Usar para:
+- síntesis estratégica;
+- arquitectura;
+- extracción de estándares;
+- handoffs;
+- decisión del próximo microciclo;
+- auditoría conceptual.
+
+No usar para:
+- afirmar estado local no verificado;
+- reemplazar tests;
+- cerrar implementación sin evidencia.
+
+### Kiro
+
+Usar para:
+- specs;
+- requirements;
+- design docs;
+- task lists;
+- steering;
+- migration plans;
+- acceptance criteria;
+- consumer contracts.
+
+Kiro debe ahorrar tokens de Codex.
+
+Kiro no debe tocar runtime salvo instrucción explícita.
+
+### Codex
+
+Usar para:
+- implementación mínima;
+- bugs;
+- tests;
+- repairs;
+- compatibilidad legacy;
+- validación de código.
+
+Codex no debe inventar arquitectura si no hay spec.
+
+## SmartGraph Governance
+
+SmartGraph es memoria estructural gobernada, no memoria autónoma libre.
+
+Conceptos permitidos:
+
+```text
+nodes
+edges
+aliases
+claims
+claim_type
+confidence
+evidence_ids
+tenant_id
+human review gating
+export graph.json
+```
+
+Prohibido:
+
+```text
+LLM direct writes
+cross-tenant access
+autonomous HYPOTHESIS → SUPPORTED
+SmartGraphActivationEngine before entity resolution is stable
+Graphify as production runtime without ADR
+```
+
+Todo claim `INFERRED`, `AMBIGUOUS` o `HYPOTHESIS` requiere evidencia o revisión humana antes de `SUPPORTED`.
+
+## Legacy Compatibility Standard
+
+Nunca reemplazar un contrato legacy sin auditar consumidores.
+
+Patrón obligatorio:
+
+```text
+mantener legacy estable
+crear servicio SmartGraph separado
+agregar tests para ambos
+migrar consumidores en microciclo posterior
+```
+
+Ejemplo actual:
+
+```text
+EntityResolutionService = legacy
+SmartGraphEntityResolutionService = SmartGraph
+```
+
+## Consumer Contract Enforcement
+
+Los servicios SmartGraph deben preferir input contracts explícitos sobre kwargs sueltos.
+
+Patrón permitido:
+
+```python
+entity_input = build_entity_resolution_input(...)
+service.resolve_or_create_entity(entity_input)
+```
+
+Patrón prohibido:
+
+```python
+service.resolve_or_create_entity(tenant_id=..., node_type=..., canonical_key=...)
+```
+
+Objetivo:
+
+```text
+validación centralizada
+immutability
+anti-bypass
+anti-deriva
+```
+
+## Skills recomendadas
+
+Crear o mantener skills internas para:
+
+```text
+branch_guard
+scope_guard
+legacy_audit
+smartgraph_contract_check
+prompt_harness_check
+evidence_report
+```
+
+Cada skill debe operar como checklist verificable, no como consejo narrativo.
+
+## Secuencia segura SmartGraph
+
+Secuencia actual autorizada:
+
+```text
+repository layer
+→ docs / ADR / schema
+→ entity resolution
+→ integration contract
+→ consumer-side contract enforcement
+→ controlled wiring
+→ activation engine
+→ RLS / hardening
+```
+
+No saltar directo a activation engine ni escritura autónoma.
+
+## Dirección estratégica SmartPyme Producto
+
+SmartPyme producto debe avanzar hacia:
+
+```text
+Operational Evidence Graph
++
+Harness Governance
++
+Human-Gated Automation
++
+Tenant-Scoped Memory
++
+Rollbackable Operations
+```
+
+No hacia:
+
+```text
+agentes autónomos mágicos
+chatbot genérico
+ERP universal prematuro
+```
+
 ## Regla final
 
 Ante duda, bloquear.
