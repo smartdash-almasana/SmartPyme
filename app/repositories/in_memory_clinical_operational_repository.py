@@ -25,6 +25,7 @@ from __future__ import annotations
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FindingRecord,
     FormulaExecution,
     OperationalCase,
     OperationalCaseCandidate,
@@ -64,6 +65,8 @@ class InMemoryClinicalOperationalRepository:
         self._case_candidates: dict[tuple[str, str], OperationalCaseCandidate] = {}
         # dict[(tenant_id, case_id), OperationalCase]
         self._cases: dict[tuple[str, str], OperationalCase] = {}
+        # dict[(tenant_id, finding_id), FindingRecord]
+        self._findings: dict[tuple[str, str], FindingRecord] = {}
 
     # ------------------------------------------------------------------
     # ReceptionRecord
@@ -468,4 +471,80 @@ class InMemoryClinicalOperationalRepository:
             record
             for (tid, _), record in self._cases.items()
             if tid == tenant_id and record.status == status
+        ]
+
+    # ------------------------------------------------------------------
+    # FindingRecord
+    # ------------------------------------------------------------------
+
+    def save_finding(self, record: FindingRecord) -> FindingRecord:
+        """Persiste o actualiza un FindingRecord (upsert por tenant+id)."""
+        _require_non_empty(record.tenant_id, "tenant_id")
+        _require_non_empty(record.finding_id, "finding_id")
+        key = (record.tenant_id, record.finding_id)
+        self._findings[key] = record
+        return record
+
+    def get_finding(
+        self, tenant_id: str, finding_id: str
+    ) -> FindingRecord | None:
+        """Devuelve el FindingRecord del tenant, o None si no existe."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(finding_id, "finding_id")
+        return self._findings.get((tenant_id, finding_id))
+
+    def list_findings(self, tenant_id: str) -> list[FindingRecord]:
+        """Devuelve todos los FindingRecord del tenant."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._findings.items()
+            if tid == tenant_id
+        ]
+
+    def list_findings_for_case(
+        self, tenant_id: str, case_id: str
+    ) -> list[FindingRecord]:
+        """Devuelve FindingRecord del tenant vinculados a un case_id."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(case_id, "case_id")
+        return [
+            record
+            for (tid, _), record in self._findings.items()
+            if tid == tenant_id and record.case_id == case_id
+        ]
+
+    def list_findings_by_status(
+        self, tenant_id: str, status: str
+    ) -> list[FindingRecord]:
+        """Devuelve FindingRecord del tenant con el status dado."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(status, "status")
+        return [
+            record
+            for (tid, _), record in self._findings.items()
+            if tid == tenant_id and record.status == status
+        ]
+
+    def list_findings_by_severity(
+        self, tenant_id: str, severity: str
+    ) -> list[FindingRecord]:
+        """Devuelve FindingRecord del tenant con la severity dada."""
+        _require_non_empty(tenant_id, "tenant_id")
+        _require_non_empty(severity, "severity")
+        return [
+            record
+            for (tid, _), record in self._findings.items()
+            if tid == tenant_id and record.severity == severity
+        ]
+
+    def list_findings_requiring_human_review(
+        self, tenant_id: str
+    ) -> list[FindingRecord]:
+        """Devuelve FindingRecord del tenant donde human_review_required == True."""
+        _require_non_empty(tenant_id, "tenant_id")
+        return [
+            record
+            for (tid, _), record in self._findings.items()
+            if tid == tenant_id and record.human_review_required is True
         ]

@@ -13,6 +13,7 @@ import pytest
 from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
+    FindingRecord,
     FormulaExecution,
     OperationalCase,
     OperationalCaseCandidate,
@@ -1342,3 +1343,309 @@ def test_status_vacio_falla_en_list_cases_by_status():
     repo = _repo()
     with pytest.raises(ValueError):
         repo.list_cases_by_status("tenant_a", "")
+
+# ---------------------------------------------------------------------------
+# Helper para FindingRecord
+# ---------------------------------------------------------------------------
+
+def _make_finding(
+    tenant_id: str = "tenant_a",
+    finding_id: str = "finding_001",
+    case_id: str = "case_001",
+    title: str = "Margen bruto por debajo del umbral",
+    description: str = "El margen bruto cayó un 12% respecto al trimestre anterior",
+    severity: str = "MEDIUM",
+    status: str = "DRAFT",
+    human_review_required: bool = False,
+    **kwargs,
+) -> FindingRecord:
+    return FindingRecord(
+        finding_id=finding_id,
+        tenant_id=tenant_id,
+        case_id=case_id,
+        title=title,
+        description=description,
+        severity=severity,
+        status=status,
+        human_review_required=human_review_required,
+        **kwargs,
+    )
+
+
+# ===========================================================================
+# FindingRecord — tests
+# ===========================================================================
+
+def test_guarda_y_recupera_finding():
+    repo = _repo()
+    finding = _make_finding()
+    repo.save_finding(finding)
+
+    resultado = repo.get_finding("tenant_a", "finding_001")
+
+    assert resultado is not None
+    assert resultado.finding_id == "finding_001"
+    assert resultado.tenant_id == "tenant_a"
+
+
+def test_upsert_finding_pisa_registro_previo():
+    repo = _repo()
+    f_v1 = _make_finding(title="Título original")
+    f_v2 = _make_finding(title="Título actualizado")
+
+    repo.save_finding(f_v1)
+    repo.save_finding(f_v2)
+
+    resultado = repo.get_finding("tenant_a", "finding_001")
+    assert resultado is not None
+    assert resultado.title == "Título actualizado"
+
+
+def test_no_permite_leer_finding_de_otro_tenant():
+    repo = _repo()
+    finding = _make_finding(tenant_id="tenant_a", finding_id="finding_001")
+    repo.save_finding(finding)
+
+    resultado = repo.get_finding("tenant_b", "finding_001")
+
+    assert resultado is None
+
+
+def test_list_findings_filtra_por_tenant():
+    repo = _repo()
+    repo.save_finding(_make_finding(tenant_id="tenant_a", finding_id="finding_001"))
+    repo.save_finding(_make_finding(tenant_id="tenant_a", finding_id="finding_002"))
+    repo.save_finding(_make_finding(tenant_id="tenant_b", finding_id="finding_003"))
+
+    resultado = repo.list_findings("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {f.finding_id for f in resultado}
+    assert ids == {"finding_001", "finding_002"}
+
+
+def test_list_findings_tenant_sin_registros_devuelve_lista_vacia():
+    repo = _repo()
+
+    resultado = repo.list_findings("tenant_sin_datos")
+
+    assert resultado == []
+
+
+def test_list_findings_for_case_devuelve_solo_vinculados():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", case_id="case_001"))
+    repo.save_finding(_make_finding(finding_id="finding_002", case_id="case_002"))
+    repo.save_finding(_make_finding(finding_id="finding_003", case_id="case_001"))
+
+    resultado = repo.list_findings_for_case("tenant_a", "case_001")
+
+    assert len(resultado) == 2
+    ids = {f.finding_id for f in resultado}
+    assert ids == {"finding_001", "finding_003"}
+
+
+def test_list_findings_for_case_sin_vinculados_devuelve_vacia():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", case_id="case_001"))
+
+    resultado = repo.list_findings_for_case("tenant_a", "case_999")
+
+    assert resultado == []
+
+
+def test_list_findings_by_status_devuelve_solo_ese_status():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", status="DRAFT"))
+    repo.save_finding(_make_finding(finding_id="finding_002", status="NEEDS_REVIEW"))
+    repo.save_finding(_make_finding(finding_id="finding_003", status="DRAFT"))
+
+    resultado = repo.list_findings_by_status("tenant_a", "DRAFT")
+
+    assert len(resultado) == 2
+    ids = {f.finding_id for f in resultado}
+    assert ids == {"finding_001", "finding_003"}
+
+
+def test_list_findings_by_status_sin_match_devuelve_vacia():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", status="DRAFT"))
+
+    resultado = repo.list_findings_by_status("tenant_a", "REJECTED")
+
+    assert resultado == []
+
+
+def test_list_findings_by_severity_devuelve_solo_esa_severity():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", severity="MEDIUM"))
+    repo.save_finding(_make_finding(finding_id="finding_002", severity="LOW"))
+    repo.save_finding(_make_finding(finding_id="finding_003", severity="MEDIUM"))
+
+    resultado = repo.list_findings_by_severity("tenant_a", "MEDIUM")
+
+    assert len(resultado) == 2
+    ids = {f.finding_id for f in resultado}
+    assert ids == {"finding_001", "finding_003"}
+
+
+def test_list_findings_by_severity_sin_match_devuelve_vacia():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", severity="LOW"))
+
+    resultado = repo.list_findings_by_severity("tenant_a", "HIGH")
+
+    assert resultado == []
+
+
+def test_list_findings_requiring_human_review_devuelve_solo_los_que_requieren():
+    repo = _repo()
+    # CRITICAL siempre requiere human_review_required=True por contrato
+    repo.save_finding(_make_finding(
+        finding_id="finding_001",
+        severity="CRITICAL",
+        human_review_required=True,
+    ))
+    repo.save_finding(_make_finding(
+        finding_id="finding_002",
+        severity="LOW",
+        human_review_required=False,
+    ))
+    repo.save_finding(_make_finding(
+        finding_id="finding_003",
+        severity="HIGH",
+        human_review_required=True,
+    ))
+
+    resultado = repo.list_findings_requiring_human_review("tenant_a")
+
+    assert len(resultado) == 2
+    ids = {f.finding_id for f in resultado}
+    assert ids == {"finding_001", "finding_003"}
+
+
+def test_list_findings_requiring_human_review_sin_match_devuelve_vacia():
+    repo = _repo()
+    repo.save_finding(_make_finding(finding_id="finding_001", human_review_required=False))
+
+    resultado = repo.list_findings_requiring_human_review("tenant_a")
+
+    assert resultado == []
+
+
+def test_aislamiento_findings_entre_tenants():
+    repo = _repo()
+    repo.save_finding(_make_finding(tenant_id="tenant_a", finding_id="finding_001"))
+    repo.save_finding(_make_finding(tenant_id="tenant_b", finding_id="finding_001"))
+
+    resultado_a = repo.list_findings("tenant_a")
+    resultado_b = repo.list_findings("tenant_b")
+
+    assert len(resultado_a) == 1
+    assert len(resultado_b) == 1
+    assert resultado_a[0].tenant_id == "tenant_a"
+    assert resultado_b[0].tenant_id == "tenant_b"
+
+
+# ---------------------------------------------------------------------------
+# Fail-closed: tenant_id vacío en todos los métodos de FindingRecord
+# ---------------------------------------------------------------------------
+
+def test_tenant_id_vacio_falla_en_save_finding():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_finding(tenant_id="")
+
+
+def test_tenant_id_espacios_falla_en_save_finding():
+    repo = _repo()
+    with pytest.raises((ValueError, Exception)):
+        _make_finding(tenant_id="   ")
+
+
+def test_tenant_id_espacios_falla_en_get_finding():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_finding("   ", "finding_001")
+
+
+def test_tenant_id_espacios_falla_en_list_findings():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings("   ")
+
+
+def test_tenant_id_espacios_falla_en_list_findings_for_case():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_for_case("   ", "case_001")
+
+
+def test_tenant_id_espacios_falla_en_list_findings_by_status():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_status("   ", "DRAFT")
+
+
+def test_tenant_id_espacios_falla_en_list_findings_by_severity():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_severity("   ", "LOW")
+
+
+def test_tenant_id_espacios_falla_en_list_findings_requiring_human_review():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_requiring_human_review("   ")
+
+
+# ---------------------------------------------------------------------------
+# Fail-closed: IDs específicos vacíos
+# ---------------------------------------------------------------------------
+
+def test_finding_id_vacio_falla_en_get_finding():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_finding("tenant_a", "")
+
+
+def test_finding_id_espacios_falla_en_get_finding():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.get_finding("tenant_a", "   ")
+
+
+def test_case_id_vacio_falla_en_list_findings_for_case():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_for_case("tenant_a", "")
+
+
+def test_case_id_espacios_falla_en_list_findings_for_case():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_for_case("tenant_a", "   ")
+
+
+def test_status_vacio_falla_en_list_findings_by_status():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_status("tenant_a", "")
+
+
+def test_status_espacios_falla_en_list_findings_by_status():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_status("tenant_a", "   ")
+
+
+def test_severity_vacio_falla_en_list_findings_by_severity():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_severity("tenant_a", "")
+
+
+def test_severity_espacios_falla_en_list_findings_by_severity():
+    repo = _repo()
+    with pytest.raises(ValueError):
+        repo.list_findings_by_severity("tenant_a", "   ")
