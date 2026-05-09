@@ -33,6 +33,9 @@ from app.contracts.clinical_operational_contracts import (
     ReceptionRecord,
     VariableObservation,
 )
+from app.repositories.clinical_operational_repository_port import (
+    ClinicalOperationalRepositoryPort,
+)
 
 
 def _require_non_empty(value: str, field_name: str) -> None:
@@ -41,11 +44,13 @@ def _require_non_empty(value: str, field_name: str) -> None:
         raise ValueError(f"{field_name} no puede ser vacío: {value!r}")
 
 
-class InMemoryClinicalOperationalRepository:
-    """Repositorio in-memory para ReceptionRecord y EvidenceRecord.
+class InMemoryClinicalOperationalRepository(ClinicalOperationalRepositoryPort):
+    """Repositorio in-memory para los 9 contratos clínico-operacionales.
 
     Almacena registros en dicts indexados por (tenant_id, id).
     Cada operación valida tenant_id antes de tocar el store.
+
+    Implementa ClinicalOperationalRepositoryPort.
     """
 
     def __init__(self) -> None:
