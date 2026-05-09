@@ -12,7 +12,7 @@ Rules:
 
 from __future__ import annotations
 
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, runtime_checkable
 from uuid import UUID
 
 
@@ -91,6 +91,7 @@ SmartGraphClaimStatus = Literal[
 ]
 
 
+@runtime_checkable
 class SmartGraphRepositoryPort(Protocol):
     """Persistence boundary for SmartGraph node/edge/alias/claim records."""
 
