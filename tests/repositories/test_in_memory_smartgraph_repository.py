@@ -32,12 +32,14 @@ def create_node(
     node_type: str = "PRODUCTO",
     canonical_key: str = "producto_a",
     label: str = "Producto A",
+    confidence: float | None = None,
 ) -> dict:
     return repo.create_node(
         tenant_id=tenant_id,
         node_type=node_type,  # type: ignore[arg-type]
         canonical_key=canonical_key,
         label=label,
+        confidence=confidence,
     )
 
 
