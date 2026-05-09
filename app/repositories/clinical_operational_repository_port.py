@@ -21,9 +21,12 @@ from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
     FindingRecord,
+    FindingSeverity,
+    FindingStatus,
     FormulaExecution,
     OperationalCase,
     OperationalCaseCandidate,
+    OperationalCaseStatus,
     PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
@@ -36,6 +39,10 @@ class ClinicalOperationalRepositoryPort(Protocol):
 
     Toda implementación concreta (in-memory, Supabase, etc.) debe cumplir
     con estas firmas exactas.
+
+    Deuda conocida:
+        - Paginación pendiente para adapter persistente real (Supabase).
+          Todos los list_X devuelven colecciones completas sin limit/offset.
     """
 
     # ------------------------------------------------------------------
@@ -268,7 +275,7 @@ class ClinicalOperationalRepositoryPort(Protocol):
         ...
 
     def list_cases_by_status(
-        self, tenant_id: str, status: str
+        self, tenant_id: str, status: OperationalCaseStatus
     ) -> list[OperationalCase]:
         """Devuelve OperationalCase del tenant con el status dado."""
         ...
@@ -298,13 +305,13 @@ class ClinicalOperationalRepositoryPort(Protocol):
         ...
 
     def list_findings_by_status(
-        self, tenant_id: str, status: str
+        self, tenant_id: str, status: FindingStatus
     ) -> list[FindingRecord]:
         """Devuelve FindingRecord del tenant con el status dado."""
         ...
 
     def list_findings_by_severity(
-        self, tenant_id: str, severity: str
+        self, tenant_id: str, severity: FindingSeverity
     ) -> list[FindingRecord]:
         """Devuelve FindingRecord del tenant con la severity dada."""
         ...

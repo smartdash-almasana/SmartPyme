@@ -26,9 +26,12 @@ from app.contracts.clinical_operational_contracts import (
     DocumentIngestion,
     EvidenceRecord,
     FindingRecord,
+    FindingSeverity,
+    FindingStatus,
     FormulaExecution,
     OperationalCase,
     OperationalCaseCandidate,
+    OperationalCaseStatus,
     PathologyCandidate,
     ReceptionRecord,
     VariableObservation,
@@ -467,7 +470,7 @@ class InMemoryClinicalOperationalRepository(ClinicalOperationalRepositoryPort):
         ]
 
     def list_cases_by_status(
-        self, tenant_id: str, status: str
+        self, tenant_id: str, status: OperationalCaseStatus
     ) -> list[OperationalCase]:
         """Devuelve OperationalCase del tenant con el status dado."""
         _require_non_empty(tenant_id, "tenant_id")
@@ -520,7 +523,7 @@ class InMemoryClinicalOperationalRepository(ClinicalOperationalRepositoryPort):
         ]
 
     def list_findings_by_status(
-        self, tenant_id: str, status: str
+        self, tenant_id: str, status: FindingStatus
     ) -> list[FindingRecord]:
         """Devuelve FindingRecord del tenant con el status dado."""
         _require_non_empty(tenant_id, "tenant_id")
@@ -532,7 +535,7 @@ class InMemoryClinicalOperationalRepository(ClinicalOperationalRepositoryPort):
         ]
 
     def list_findings_by_severity(
-        self, tenant_id: str, severity: str
+        self, tenant_id: str, severity: FindingSeverity
     ) -> list[FindingRecord]:
         """Devuelve FindingRecord del tenant con la severity dada."""
         _require_non_empty(tenant_id, "tenant_id")
