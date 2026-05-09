@@ -16,7 +16,13 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-addopts = "-q"
+addopts = "-q --import-mode=importlib"
+norecursedirs = [".git", ".venv", ".tmp", "tests/tmp", "__pycache__"]
+markers = [
+  "factory: factory-scoped tests",
+  "integration: integration-level tests",
+  "slow: slow tests",
+]
 
 [tool.ruff]
 target-version = "py311"
