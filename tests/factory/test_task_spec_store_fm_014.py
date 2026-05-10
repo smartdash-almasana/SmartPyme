@@ -22,7 +22,7 @@ def test_store_enqueue_and_get_pending_task(tmp_path):
     path = store.enqueue(_task())
     loaded = store.get("FM_014")
 
-    assert path.endswith("pending/FM_014.json")
+    assert path.replace("\\", "/").endswith("pending/FM_014.json")
     assert loaded is not None
     assert loaded.task_id == "FM_014"
     assert loaded.status == TaskSpecStatus.PENDING
@@ -48,7 +48,8 @@ def test_store_state_transitions_pending_to_in_progress_to_done(tmp_path):
     assert done.status == TaskSpecStatus.DONE
     assert done.evidence_paths == ["factory/evidence/FM_014/report.txt"]
     assert store.get("FM_014").status == TaskSpecStatus.DONE
-    assert store.counts() == {"pending": 0, "in_progress": 0, "done": 1, "blocked": 0}
+    assert store.counts() == {"pending": 0, "in_progress": 0, "done": 1, "blocked": 0,
+                              "waiting_for_approval": 0}
 
 
 def test_store_blocks_pending_task(tmp_path):
