@@ -41,17 +41,18 @@ class BemClient:
         if not isinstance(payload, dict) or not payload:
             raise ValueError("payload es obligatorio y no puede estar vacío")
 
-        url = f"{self._base_url}/workflows/{workflow_id.strip()}/submit"
+        url = f"{self._base_url}/v3/workflows/{workflow_id.strip()}/call?wait=true"
         headers = {
             "x-api-key": self._api_key,
             "content-type": "application/json",
         }
+        request_body = {"input": payload}
 
         if httpx is not None:
-            return self._submit_with_httpx(url, headers, payload)
+            return self._submit_with_httpx(url, headers, request_body)
         if requests is not None:
-            return self._submit_with_requests(url, headers, payload)
-        return self._submit_with_urllib(url, headers, payload)
+            return self._submit_with_requests(url, headers, request_body)
+        return self._submit_with_urllib(url, headers, request_body)
 
     def _submit_with_httpx(
         self,

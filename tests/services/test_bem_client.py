@@ -13,10 +13,11 @@ pytestmark = pytest.mark.skipif(httpx is None, reason="httpx no disponible en en
 def test_submit_payload_ok_with_httpx_mock_transport() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
-        assert request.url.path == "/workflows/wf-001/submit"
+        assert request.url.path == "/v3/workflows/wf-001/call"
+        assert request.url.query == b"wait=true"
         assert request.headers["x-api-key"] == "secret-key"
         assert request.headers["content-type"] == "application/json"
-        assert json.loads(request.content.decode("utf-8")) == {"foo": "bar"}
+        assert json.loads(request.content.decode("utf-8")) == {"input": {"foo": "bar"}}
         return httpx.Response(status_code=200, json={"status": "ok", "id": "r-1"})
 
     client = BemClient(
