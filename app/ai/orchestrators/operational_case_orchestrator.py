@@ -149,6 +149,7 @@ class OperationalCaseOrchestrator:
                 hypothesis=hypothesis,
                 evidence_ids=evidence,
                 status="OPEN",
+                symptom_id_orientativo=symptom_id_from_job,
             )
 
             # 6. Persistence

@@ -43,6 +43,8 @@ def test_engine_keeps_margen_bruto_negativo_not_detected():
 
 
 def test_catalog_pathology_without_evaluator_returns_pending_data():
+    # Nombre histórico preservado. El evaluador de venta_bajo_costo ya está implementado.
+    # Con ganancia_bruta(ventas=1000, costos=1200) el resultado es negativo → ACTIVE.
     result = PathologyEngineService().evaluate(
         "venta_bajo_costo",
         PathologyEvaluationInput(
@@ -52,8 +54,7 @@ def test_catalog_pathology_without_evaluator_returns_pending_data():
         ),
     )
 
-    assert result.status == PathologyStatus.PENDING_DATA
-    assert result.metadata["blocking_reason"] == "PATHOLOGY_NOT_IMPLEMENTED"
+    assert result.status == PathologyStatus.ACTIVE
     assert result.metadata["catalog"]["category"] == "pricing"
 
 

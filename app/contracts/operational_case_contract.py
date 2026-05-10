@@ -64,6 +64,17 @@ class QuantifiedImpact:
         if all(v is None for v in [self.amount, self.currency, self.percentage, self.units, self.time_saved, self.risk_level]):
             raise ValueError("IMPACTO_VACIO: Al menos un campo de impacto debe estar presente.")
 
+    def __getitem__(self, key: str) -> Any:
+        """Compatibilidad legacy: permite acceso mapping-style impact['percentage']."""
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(key)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialización explícita sin perder tipado del objeto."""
+        return asdict(self)
+
 
 @dataclass(frozen=True, slots=True)
 class DiagnosticReport:

@@ -43,6 +43,7 @@ class OperationalCase:
     hypothesis: str
     evidence_ids: list[str] = field(default_factory=list)
     status: OperationalCaseStatus = "OPEN"
+    symptom_id_orientativo: str | None = None
 
     def __post_init__(self) -> None:
         _require_non_empty(self.cliente_id, "cliente_id")

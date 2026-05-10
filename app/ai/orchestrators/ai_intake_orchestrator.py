@@ -55,15 +55,8 @@ class AIIntakeOrchestrator:
 
         symptom_id = interpretation.symptom_id
         symptom_entry = get_symptom(symptom_id) if symptom_id else None
-        
-        if symptom_id and symptom_entry is None:
-            return {
-                "status": "CLARIFICATION_REQUIRED",
-                "skill_id": skill_id,
-                "reason": "INVALID_SYMPTOM",
-                "owner_message": f"No pude identificar el síntoma '{symptom_id}'. ¿Podrías describirlo de otra forma?",
-            }
-
+        # Si el symptom_id no existe en el catálogo, se ignora silenciosamente.
+        # El flujo continúa sin enriquecimiento de catálogo (symptom_entry queda None).
         # 2. Data Curation
         # For now, interpretation only has names. We pass them as markers.
         # If we had a schema with values, we'd pass the actual dict.
@@ -76,6 +69,16 @@ class AIIntakeOrchestrator:
         )
 
         if curation_res.status == "CURATION_INVALID":
+            # Si el síntoma era inválido (no existe en catálogo), el error de curación
+            # probablemente se debe a que el skill tampoco es reconocible.
+            # Guiar al dueño a reformular en lugar de rechazar.
+            if symptom_id and symptom_entry is None:
+                return {
+                    "status": "CLARIFICATION_REQUIRED",
+                    "skill_id": skill_id,
+                    "reason": "INVALID_SYMPTOM",
+                    "owner_message": f"No pude identificar el síntoma '{symptom_id}'. ¿Podrías describirlo de otra forma?",
+                }
             return {
                 "status": "REJECTED",
                 "skill_id": skill_id,
@@ -156,6 +159,15 @@ class AIIntakeOrchestrator:
             }
 
         if status == "UNKNOWN_SKILL":
+            # Si el síntoma era inválido (no existe en catálogo), reportar como
+            # CLARIFICATION_REQUIRED para guiar al dueño a reformular.
+            if symptom_id and symptom_entry is None:
+                return {
+                    "status": "CLARIFICATION_REQUIRED",
+                    "skill_id": skill_id,
+                    "reason": "INVALID_SYMPTOM",
+                    "owner_message": f"No pude identificar el síntoma '{symptom_id}'. ¿Podrías describirlo de otra forma?",
+                }
             return {
                 "status": "REJECTED",
                 "skill_id": skill_id,
