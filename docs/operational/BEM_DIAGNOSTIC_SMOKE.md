@@ -190,6 +190,7 @@ VENTA_BAJO_COSTO
 - No prueba workflow real de BEM.
 - Valida únicamente el lado SmartPyme del contrato: recepción, persistencia, diagnóstico e informe.
 - Si se reutiliza el mismo `evidence_id` contra la misma base SQLite, puede aparecer conflicto por duplicado. Para repetir la prueba, usar otro `evidence_id` o limpiar la base local de prueba.
+- El submit real SmartPyme -> BEM (HTTP/MCP) se valida en `docs/operational/BEM_REAL_SUBMIT.md`.
 
 ---
 
@@ -201,4 +202,10 @@ En VM se validó el flujo:
 POST /api/v1/webhooks/bem -> 200 OK
 GET /api/v1/diagnostico/acme-demo -> 200 OK con VENTA_BAJO_COSTO
 GET /api/v1/diagnostico/acme-demo/informe -> 200 OK con Markdown
+```
+
+Estado de cierre técnico:
+
+```text
+Suite completa: 2172 passed, 4 skipped
 ```

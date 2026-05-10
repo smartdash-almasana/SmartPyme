@@ -67,6 +67,31 @@ BEM response_payload
 - `save_clarification`
 - `get_evidence`
 - `ingest_document`
+- `bem_submit_workflow`
+
+## BEM Submit (SmartPyme -> MCP -> BEM)
+
+La integración de submit a BEM queda expuesta por la tool MCP:
+
+- `bem_submit_workflow(tenant_id, workflow_id, payload, db_path?)`
+
+Contrato operativo:
+
+- Persistencia de run en SQLite (`data/bem_runs.db` por defecto o `db_path`).
+- Estado `COMPLETED` cuando BEM responde OK.
+- Estado `REJECTED` con `error_type=BEM_UPSTREAM_ERROR` ante falla de BEM.
+- Sin exposición de secretos.
+
+Implementación mínima asociada:
+
+- `app/services/bem_submit_port.py`
+- `app/services/bem_mcp_submit_adapter.py`
+- `app/services/bem_submit_service.py`
+
+Compatibilidad:
+
+- Se preserva submit HTTP directo vía `BemClient`.
+- SmartPyme puede operar con adapter MCP tenant-aware o cliente HTTP directo.
 
 ### BEM
 

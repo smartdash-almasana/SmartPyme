@@ -125,6 +125,24 @@ Mitigacion:
 - Fail-closed si falta evidencia o confianza suficiente.
 - Persistencia de runs BEM antes de promover evidencia.
 
+## Estado de integración (cierre actual)
+
+Implementado:
+
+- Submit directo SmartPyme -> BEM (HTTP) con tracking de runs.
+- Submit SmartPyme -> MCP -> BEM con adapter tenant-aware.
+- Persistencia de runs en `BemRunRepository` (`data/bem_runs.db` por defecto).
+
+Componentes clave:
+
+- `BemSubmitPort`
+- `BemMcpSubmitAdapter`
+- `BemSubmitService` con soporte HTTP directo y MCP tenant-aware.
+
+Resultado de validación integral:
+
+- Suite completa: `2172 passed, 4 skipped`.
+
 ## Proximos artefactos
 
 - BemWebhookPayload.

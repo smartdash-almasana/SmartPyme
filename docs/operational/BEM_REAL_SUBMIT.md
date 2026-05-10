@@ -4,6 +4,8 @@
 
 Validar envío real de payload curado desde SmartPyme hacia BEM.
 
+También validar submit por frontera MCP cuando SmartPyme actúa como cliente de tool MCP.
+
 ---
 
 ## Precondiciones
@@ -86,6 +88,28 @@ Respuesta esperada en éxito:
 
 ---
 
+## Prueba por frontera MCP
+
+Tool MCP:
+
+```text
+bem_submit_workflow
+```
+
+Entradas:
+
+- `tenant_id`
+- `workflow_id`
+- `payload`
+- `db_path` (opcional)
+
+Resultado esperado:
+
+- `status = COMPLETED` si BEM responde OK.
+- run persistido por tenant en SQLite de runs.
+
+---
+
 ## Errores esperados
 
 - `400` si falta `tenant_id`, `workflow_id` o `payload`.
@@ -105,3 +129,4 @@ Respuesta típica de error:
 
 - Esta prueba valida SmartPyme -> BEM.
 - El retorno BEM -> SmartPyme requiere webhook público configurado en BEM.
+- En modo MCP, la frontera es SmartPyme -> MCP -> BEM.
