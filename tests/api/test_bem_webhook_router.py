@@ -682,3 +682,35 @@ def test_list_evidence_ordering_asc_by_received_at(
     assert res.status_code == 200
     ids = [i["evidence_id"] for i in res.json()["items"]]
     assert ids == ["ev-A", "ev-B", "ev-C"]
+
+
+# ---------------------------------------------------------------------------
+# Case-insensitive kind parsing via webhook
+# ---------------------------------------------------------------------------
+
+
+def test_bem_webhook_accepts_uppercase_kind(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, repo = client_and_repo
+    body = _valid_body()
+    body["payload"]["kind"] = "EXCEL"
+
+    res = client.post("/webhooks/bem", json=body)
+
+    assert res.status_code == 200
+    record = repo.get_by_evidence_id("tenant-1", "ev-001")
+    assert record is not None
+    assert record.kind.value == "excel"
+
+
+def test_bem_webhook_accepts_mixed_case_kind(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    body = _valid_body()
+    body["payload"]["kind"] = "Excel"
+
+    res = client.post("/webhooks/bem", json=body)
+
+    assert res.status_code == 200

@@ -30,7 +30,7 @@ class BemCuratedEvidenceAdapter:
         if not isinstance(kind_value, str) or not kind_value.strip():
             raise ValueError("kind es obligatorio y no puede estar vacío")
         try:
-            kind = EvidenceKind(kind_value)
+            kind = EvidenceKind(kind_value.strip().lower())
         except ValueError as exc:
             raise ValueError(f"kind inválido: {kind_value}") from exc
 

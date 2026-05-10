@@ -198,3 +198,19 @@ def test_health_still_ok(client: TestClient) -> None:
     res = client.get("/health")
     assert res.status_code == 200
     assert res.json() == {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Case-insensitive kind via main app
+# ---------------------------------------------------------------------------
+
+
+def test_bem_webhook_accepts_uppercase_kind_via_main_app(client: TestClient) -> None:
+    """POST /api/v1/webhooks/bem acepta kind en mayúsculas."""
+    body = _valid_bem_body()
+    body["payload"]["kind"] = "EXCEL"
+
+    res = client.post("/api/v1/webhooks/bem", json=body)
+
+    assert res.status_code == 200
+    assert res.json()["status"] == "accepted"

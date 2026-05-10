@@ -118,3 +118,43 @@ def test_build_curated_evidence_fail_closed_on_missing_data() -> None:
 
     with pytest.raises(ValueError, match="data"):
         _adapter().build_curated_evidence("tenant-1", payload)
+
+
+# ---------------------------------------------------------------------------
+# Case-insensitive kind parsing
+# ---------------------------------------------------------------------------
+
+
+def test_kind_uppercase_accepted() -> None:
+    payload = _valid_payload()
+    payload["kind"] = "EXCEL"
+    record = _adapter().build_curated_evidence("tenant-1", payload)
+    assert record.kind == EvidenceKind.EXCEL
+
+
+def test_kind_mixed_case_accepted() -> None:
+    payload = _valid_payload()
+    payload["kind"] = "Excel"
+    record = _adapter().build_curated_evidence("tenant-1", payload)
+    assert record.kind == EvidenceKind.EXCEL
+
+
+def test_kind_pdf_uppercase_accepted() -> None:
+    payload = _valid_payload()
+    payload["kind"] = "PDF"
+    record = _adapter().build_curated_evidence("tenant-1", payload)
+    assert record.kind == EvidenceKind.PDF
+
+
+def test_kind_mixed_case_email_accepted() -> None:
+    payload = _valid_payload()
+    payload["kind"] = "EMAIL"
+    record = _adapter().build_curated_evidence("tenant-1", payload)
+    assert record.kind == EvidenceKind.EMAIL
+
+
+def test_kind_invalid_still_rejected() -> None:
+    payload = _valid_payload()
+    payload["kind"] = "WORD"
+    with pytest.raises(ValueError, match="kind inválido"):
+        _adapter().build_curated_evidence("tenant-1", payload)
