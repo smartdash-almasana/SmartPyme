@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 # entorno CI mínimo), se skipea todo el archivo sin romper la colección.
 gsa = pytest.importorskip(
     "factory.gemini_slice_auditor",
+    exc_type=ImportError,
     reason="factory.gemini_slice_auditor requiere google-genai (dependencia opcional)",
 )
 
