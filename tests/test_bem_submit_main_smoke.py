@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+import app.api.bem_webhook_router as bem_webhook_router
+import app.api.diagnostic_router as diagnostic_router
 from app.api.bem_submit_router import (
     get_bem_client,
     get_bem_runs_db_path,
     get_run_id_provider,
 )
 from app.main import app
+from app.repositories.curated_evidence_repository import CuratedEvidenceRepositoryBackend
 from app.repositories.bem_run_repository import BemRunRepository
 
 
@@ -23,11 +27,11 @@ class _FakeBemClientFail:
         raise RuntimeError("bem down")
 
 
-def _valid_webhook_body() -> dict:
+def _valid_webhook_body(*, evidence_id: str) -> dict:
     return {
         "tenant_id": "tenant-main",
         "payload": {
-            "evidence_id": "ev-main-001",
+            "evidence_id": evidence_id,
             "kind": "EXCEL",
             "data": {"precio_venta": 10, "costo_unitario": 80},
             "source": {"source_name": "ventas.xlsx", "source_type": "excel"},
@@ -35,8 +39,13 @@ def _valid_webhook_body() -> dict:
     }
 
 
-def test_main_app_bem_submit_success_and_routes_alive(tmp_path: Path):
+def test_main_app_bem_submit_success_and_routes_alive(tmp_path: Path, monkeypatch):
     db_path = tmp_path / "bem_runs.db"
+    curated_db_path = tmp_path / "curated_evidence.db"
+    isolated_repo = CuratedEvidenceRepositoryBackend(db_path=curated_db_path)
+    monkeypatch.setattr(bem_webhook_router, "_default_repo", isolated_repo)
+    monkeypatch.setattr(diagnostic_router, "_default_repo", isolated_repo)
+
     app.dependency_overrides[get_bem_runs_db_path] = lambda: db_path
     app.dependency_overrides[get_bem_client] = lambda: _FakeBemClientOk()
     app.dependency_overrides[get_run_id_provider] = lambda: (lambda: "run-main-001")
@@ -62,7 +71,8 @@ def test_main_app_bem_submit_success_and_routes_alive(tmp_path: Path):
     assert res_health.status_code == 200
     assert res_health.json() == {"status": "ok"}
 
-    res_webhook = client.post("/api/v1/webhooks/bem", json=_valid_webhook_body())
+    evidence_id = f"ev-main-{uuid4()}"
+    res_webhook = client.post("/api/v1/webhooks/bem", json=_valid_webhook_body(evidence_id=evidence_id))
     assert res_webhook.status_code == 200
 
     res_diag = client.get("/api/v1/diagnostico/tenant-main")
