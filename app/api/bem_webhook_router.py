@@ -5,8 +5,14 @@ Endpoints:
   POST /webhooks/bem
       body → BemCuratedEvidenceAdapter → CuratedEvidenceRecord → repository.create()
 
+  GET /webhooks/bem/{tenant_id}
+      repository.list_by_tenant() → 200 lista ordenada por received_at asc
+
   GET /webhooks/bem/{tenant_id}/{evidence_id}
       repository.get_by_evidence_id() → 200 | 404
+
+ORDEN DE REGISTRO: el endpoint de lista ({tenant_id}) debe registrarse ANTES que el
+de detalle ({tenant_id}/{evidence_id}) para que FastAPI resuelva correctamente.
 
 El repositorio es inyectable para tests via _build_router(repo) o make_router(db_path).
 Sin async externo. Sin side effects. Fail-closed.
@@ -53,6 +59,10 @@ def make_router(
 def _build_router(repo: CuratedEvidenceRepositoryBackend) -> APIRouter:
     local_router = APIRouter()
 
+    # ------------------------------------------------------------------
+    # POST /webhooks/bem
+    # ------------------------------------------------------------------
+
     @local_router.post("/webhooks/bem")
     def bem_webhook(body: dict[str, Any]) -> dict[str, str]:
         tenant_id = body.get("tenant_id")
@@ -82,6 +92,35 @@ def _build_router(repo: CuratedEvidenceRepositoryBackend) -> APIRouter:
             "evidence_id": record.evidence_id,
         }
 
+    # ------------------------------------------------------------------
+    # GET /webhooks/bem/{tenant_id}  — lista por tenant
+    # Registrado ANTES que el endpoint de detalle para evitar ambigüedad.
+    # ------------------------------------------------------------------
+
+    @local_router.get("/webhooks/bem/{tenant_id}")
+    def list_evidence(tenant_id: str) -> dict[str, Any]:
+        if not tenant_id.strip():
+            raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+
+        records = repo.list_by_tenant(tenant_id=tenant_id)
+
+        return {
+            "tenant_id": tenant_id,
+            "items": [
+                {
+                    "evidence_id": r.evidence_id,
+                    "kind": r.kind.value,
+                    "trace_id": r.trace_id,
+                    "received_at": r.received_at,
+                }
+                for r in records
+            ],
+        }
+
+    # ------------------------------------------------------------------
+    # GET /webhooks/bem/{tenant_id}/{evidence_id}  — detalle
+    # ------------------------------------------------------------------
+
     @local_router.get("/webhooks/bem/{tenant_id}/{evidence_id}")
     def get_evidence(tenant_id: str, evidence_id: str) -> dict[str, Any]:
         if not tenant_id.strip():
@@ -107,6 +146,7 @@ def _build_router(repo: CuratedEvidenceRepositoryBackend) -> APIRouter:
 
 # ---------------------------------------------------------------------------
 # Router por defecto (usa lazy singleton con _DEFAULT_DB_PATH).
+# Mismo orden de registro que _build_router.
 # ---------------------------------------------------------------------------
 
 
@@ -137,6 +177,27 @@ def bem_webhook(body: dict[str, Any]) -> dict[str, str]:
         "status": "accepted",
         "tenant_id": record.tenant_id,
         "evidence_id": record.evidence_id,
+    }
+
+
+@router.get("/webhooks/bem/{tenant_id}")
+def list_evidence(tenant_id: str) -> dict[str, Any]:
+    if not tenant_id.strip():
+        raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+
+    records = _get_default_repo().list_by_tenant(tenant_id=tenant_id)
+
+    return {
+        "tenant_id": tenant_id,
+        "items": [
+            {
+                "evidence_id": r.evidence_id,
+                "kind": r.kind.value,
+                "trace_id": r.trace_id,
+                "received_at": r.received_at,
+            }
+            for r in records
+        ],
     }
 
 

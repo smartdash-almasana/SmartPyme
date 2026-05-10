@@ -472,3 +472,213 @@ def test_get_evidence_tenant_b_cannot_access_tenant_a_via_get(
     res = client.get("/webhooks/bem/tenant-b/ev-secreto")
 
     assert res.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# GET /webhooks/bem/{tenant_id} — lista por tenant
+# ---------------------------------------------------------------------------
+
+
+def _valid_body_with_ts(
+    evidence_id: str,
+    received_at_override: str | None = None,
+    tenant_id: str = "tenant-1",
+) -> dict:
+    """
+    Construye un body válido. received_at_override no se puede inyectar
+    directamente en el webhook (lo genera el adapter), así que para tests
+    de ordering insertamos directamente en el repo.
+    """
+    return _valid_body(tenant_id=tenant_id, evidence_id=evidence_id)
+
+
+def test_list_evidence_returns_200_with_items(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body(evidence_id="ev-001"))
+    client.post("/webhooks/bem", json=_valid_body(evidence_id="ev-002"))
+
+    res = client.get("/webhooks/bem/tenant-1")
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["tenant_id"] == "tenant-1"
+    assert len(body["items"]) == 2
+
+
+def test_list_evidence_response_shape(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body(evidence_id="ev-001"))
+
+    res = client.get("/webhooks/bem/tenant-1")
+    body = res.json()
+
+    assert res.status_code == 200
+    assert "tenant_id" in body
+    assert "items" in body
+    item = body["items"][0]
+    assert set(item.keys()) == {"evidence_id", "kind", "trace_id", "received_at"}
+
+
+def test_list_evidence_items_contain_correct_fields(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body(evidence_id="ev-001", kind="pdf"))
+
+    res = client.get("/webhooks/bem/tenant-1")
+    item = res.json()["items"][0]
+
+    assert item["evidence_id"] == "ev-001"
+    assert item["kind"] == "pdf"
+    assert item["trace_id"] == "trace-123"
+    assert item["received_at"] is not None
+
+
+# ---------------------------------------------------------------------------
+# tenant vacío → lista vacía (no 404)
+# ---------------------------------------------------------------------------
+
+
+def test_list_evidence_empty_tenant_returns_empty_items(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    res = client.get("/webhooks/bem/tenant-sin-datos")
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["tenant_id"] == "tenant-sin-datos"
+    assert body["items"] == []
+
+
+# ---------------------------------------------------------------------------
+# tenant inexistente → lista vacía (no 404)
+# ---------------------------------------------------------------------------
+
+
+def test_list_evidence_unknown_tenant_returns_empty_items(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-001"))
+
+    res = client.get("/webhooks/bem/tenant-inexistente")
+
+    assert res.status_code == 200
+    assert res.json()["items"] == []
+
+
+# ---------------------------------------------------------------------------
+# isolation multi-tenant
+# ---------------------------------------------------------------------------
+
+
+def test_list_evidence_isolation_multi_tenant(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-001"))
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-002"))
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-b", evidence_id="ev-003"))
+
+    res_a = client.get("/webhooks/bem/tenant-a")
+    res_b = client.get("/webhooks/bem/tenant-b")
+
+    assert res_a.status_code == 200
+    assert res_b.status_code == 200
+
+    ids_a = {i["evidence_id"] for i in res_a.json()["items"]}
+    ids_b = {i["evidence_id"] for i in res_b.json()["items"]}
+
+    assert ids_a == {"ev-001", "ev-002"}
+    assert ids_b == {"ev-003"}
+    assert ids_a.isdisjoint(ids_b)
+
+
+def test_list_evidence_tenant_b_sees_zero_from_tenant_a(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-001"))
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-002"))
+
+    res = client.get("/webhooks/bem/tenant-b")
+
+    assert res.status_code == 200
+    assert res.json()["items"] == []
+
+
+# ---------------------------------------------------------------------------
+# ordering correcto (received_at asc)
+# ---------------------------------------------------------------------------
+
+
+def test_list_evidence_ordering_asc_by_received_at(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    """
+    Inserta directamente en el repo con received_at controlados para
+    verificar que list_by_tenant retorna en orden ascendente.
+    """
+    from app.contracts.bem_payloads import (
+        BemConfidenceScore,
+        BemSourceMetadata,
+        CuratedEvidenceRecord,
+        EvidenceKind,
+    )
+
+    _, repo = client_and_repo
+
+    source = BemSourceMetadata(source_name="f.xlsx", source_type="excel")
+
+    repo.create(
+        CuratedEvidenceRecord(
+            tenant_id="tenant-ord",
+            evidence_id="ev-C",
+            kind=EvidenceKind.EXCEL,
+            payload={"x": 1},
+            source_metadata=source,
+            received_at="2024-03-01T10:00:00+00:00",
+        )
+    )
+    repo.create(
+        CuratedEvidenceRecord(
+            tenant_id="tenant-ord",
+            evidence_id="ev-A",
+            kind=EvidenceKind.EXCEL,
+            payload={"x": 1},
+            source_metadata=source,
+            received_at="2024-01-01T10:00:00+00:00",
+        )
+    )
+    repo.create(
+        CuratedEvidenceRecord(
+            tenant_id="tenant-ord",
+            evidence_id="ev-B",
+            kind=EvidenceKind.EXCEL,
+            payload={"x": 1},
+            source_metadata=source,
+            received_at="2024-02-01T10:00:00+00:00",
+        )
+    )
+
+    # Usar el mismo repo en el cliente
+    from app.api.bem_webhook_router import _build_router
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient as TC
+
+    app = FastAPI()
+    app.include_router(_build_router(repo))
+    c = TC(app)
+
+    res = c.get("/webhooks/bem/tenant-ord")
+    assert res.status_code == 200
+    ids = [i["evidence_id"] for i in res.json()["items"]]
+    assert ids == ["ev-A", "ev-B", "ev-C"]
