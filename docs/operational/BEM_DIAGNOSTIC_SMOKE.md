@@ -34,6 +34,16 @@ http://127.0.0.1:8000
 
 ## 1. Enviar evidencia BEM simulada
 
+## Smoke rápido con fixture
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/v1/webhooks/bem" \
+  -H "Content-Type: application/json" \
+  -d @docs/operational/fixtures/bem_payload_venta_bajo_costo.json
+```
+
+---
+
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/webhooks/bem" \
   -H "Content-Type: application/json" \
