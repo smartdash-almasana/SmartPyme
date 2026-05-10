@@ -146,6 +146,11 @@ def _sanitize_target_path_token(raw_token: str) -> str:
     while token and token[-1] in wrappers:
         token = token[:-1].strip()
 
+    # Normalizar separadores Windows → forward slash para compatibilidad cross-platform.
+    # Solo afecta la representación del string; las validaciones de seguridad
+    # (ALLOWED_ROOTS, src/ check) operan sobre el path normalizado.
+    token = token.replace("\\", "/")
+
     return token
 
 
