@@ -279,3 +279,109 @@ def test_make_diagnostic_router_empty_tenant_returns_empty(tmp_path: Path) -> No
     assert res.status_code == 200
     assert res.json()["findings"] == []
     assert res.json()["evidence_count"] == 0
+
+
+# ---------------------------------------------------------------------------
+# GET /diagnostico/{tenant_id}/informe — informe Markdown
+# ---------------------------------------------------------------------------
+
+
+def test_informe_returns_200(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 10.0, "costo_unitario": 50.0})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert res.status_code == 200
+
+
+def test_informe_media_type_is_text_markdown(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 10.0, "costo_unitario": 50.0})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "text/markdown" in res.headers["content-type"]
+
+
+def test_informe_contains_markdown_header(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"x": 1})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "# Diagnóstico Operacional" in res.text
+
+
+def test_informe_contains_tenant_id(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"x": 1})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "tenant-1" in res.text
+
+
+def test_informe_tenant_con_venta_bajo_costo(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 5.0, "costo_unitario": 100.0})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert res.status_code == 200
+    assert "VENTA_BAJO_COSTO" in res.text
+    assert "HIGH" in res.text
+    assert "ev-001" in res.text
+
+
+def test_informe_tenant_sin_findings(
+    client: TestClient,
+) -> None:
+    res = client.get("/diagnostico/tenant-sin-datos/informe")
+
+    assert res.status_code == 200
+    assert "No se detectaron hallazgos operacionales." in res.text
+
+
+def test_informe_tenant_isolation(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(
+        repo, "ev-a",
+        {"precio_venta": 1.0, "costo_unitario": 100.0},
+        tenant_id="tenant-a",
+    )
+
+    res_a = client.get("/diagnostico/tenant-a/informe")
+    res_b = client.get("/diagnostico/tenant-b/informe")
+
+    assert "VENTA_BAJO_COSTO" in res_a.text
+    assert "VENTA_BAJO_COSTO" not in res_b.text
+    assert "No se detectaron hallazgos operacionales." in res_b.text
+
+
+def test_informe_does_not_interfere_with_json_endpoint(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    """El endpoint /informe no debe romper GET /{tenant_id} JSON."""
+    _insert(repo, "ev-001", {"precio_venta": 5.0, "costo_unitario": 100.0})
+
+    json_res = client.get("/diagnostico/tenant-1")
+    md_res = client.get("/diagnostico/tenant-1/informe")
+
+    assert json_res.status_code == 200
+    assert md_res.status_code == 200
+    assert json_res.json()["tenant_id"] == "tenant-1"
+    assert "# Diagnóstico Operacional" in md_res.text

@@ -1,9 +1,15 @@
 """
 Router soberano de diagnóstico operacional básico.
 
-Endpoint:
+Endpoints:
+  GET /diagnostico/{tenant_id}/informe
+      → text/markdown con informe exportable
+
   GET /diagnostico/{tenant_id}
-      BasicOperationalDiagnosticService.build_report() → 200
+      → JSON con findings y evidence_count
+
+ORDEN DE REGISTRO: /informe debe registrarse ANTES que /{tenant_id} para que
+FastAPI no interprete "informe" como un tenant_id.
 
 El repositorio es inyectable para tests via make_diagnostic_router(db_path)
 o _build_diagnostic_router(repo).
@@ -15,17 +21,21 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 
 from app.repositories.curated_evidence_repository import CuratedEvidenceRepositoryBackend
 from app.services.basic_operational_diagnostic_service import (
     BasicOperationalDiagnosticService,
 )
+from app.services.markdown_diagnostic_report_builder import MarkdownDiagnosticReportBuilder
 
 _DEFAULT_DB_PATH = Path("data") / "curated_evidence.db"
 
 router = APIRouter()
 
 _default_repo: CuratedEvidenceRepositoryBackend | None = None
+
+_md_builder = MarkdownDiagnosticReportBuilder()
 
 
 def _get_default_repo() -> CuratedEvidenceRepositoryBackend:
@@ -53,6 +63,29 @@ def make_diagnostic_router(
 def _build_diagnostic_router(repo: CuratedEvidenceRepositoryBackend) -> APIRouter:
     local_router = APIRouter()
     service = BasicOperationalDiagnosticService(repository=repo)
+    builder = MarkdownDiagnosticReportBuilder()
+
+    # ------------------------------------------------------------------
+    # GET /diagnostico/{tenant_id}/informe
+    # Registrado ANTES que /{tenant_id} para evitar ambigüedad de path.
+    # ------------------------------------------------------------------
+
+    @local_router.get("/diagnostico/{tenant_id}/informe")
+    def get_informe(tenant_id: str) -> Response:
+        if not tenant_id.strip():
+            raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+
+        try:
+            report = service.build_report(tenant_id=tenant_id)
+            markdown = builder.build_markdown_report(report)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        return Response(content=markdown, media_type="text/markdown")
+
+    # ------------------------------------------------------------------
+    # GET /diagnostico/{tenant_id}
+    # ------------------------------------------------------------------
 
     @local_router.get("/diagnostico/{tenant_id}")
     def get_diagnostico(tenant_id: str) -> dict[str, Any]:
@@ -71,7 +104,24 @@ def _build_diagnostic_router(repo: CuratedEvidenceRepositoryBackend) -> APIRoute
 
 # ---------------------------------------------------------------------------
 # Router por defecto (usa lazy singleton con _DEFAULT_DB_PATH).
+# Mismo orden de registro que _build_diagnostic_router.
 # ---------------------------------------------------------------------------
+
+
+@router.get("/diagnostico/{tenant_id}/informe")
+def get_informe(tenant_id: str) -> Response:
+    if not tenant_id.strip():
+        raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+
+    service = BasicOperationalDiagnosticService(repository=_get_default_repo())
+
+    try:
+        report = service.build_report(tenant_id=tenant_id)
+        markdown = _md_builder.build_markdown_report(report)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return Response(content=markdown, media_type="text/markdown")
 
 
 @router.get("/diagnostico/{tenant_id}")
