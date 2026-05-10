@@ -6,6 +6,7 @@ from factory.adapters.app_bridge.agent_loop.multiagent_task_loop import (
     run_persisted_multiagent_task_cycle,
     save_task,
 )
+from factory.core.task_loop import _safe_path_segment
 from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO, BusinessTaskExecutor
 
 BUSINESS_TASK_TYPES = {AUDIT_VENTA_BAJO_COSTO}
@@ -86,7 +87,7 @@ def run_one_business_task(
 
 def write_business_task_report(task: MultiagentTask, evidence_dir: Path) -> str:
     evidence_dir.mkdir(parents=True, exist_ok=True)
-    path = evidence_dir / f"{task.task_id}.txt"
+    path = evidence_dir / f"{_safe_path_segment(task.task_id)}.txt"
     path.write_text(
         "\n".join(
             [

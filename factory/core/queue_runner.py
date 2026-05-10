@@ -8,6 +8,7 @@ from pathlib import Path
 from factory.contracts.sandbox import SandboxExecutionRequest
 from factory.core.task_loop import (
     MultiagentTask,
+    _safe_path_segment,
     load_task,
     run_persisted_multiagent_task_cycle,
     save_task,
@@ -248,7 +249,7 @@ def _block_product_runtime_task(
 
 def _write_block_report(task: MultiagentTask, evidence_dir: Path) -> str:
     evidence_dir.mkdir(parents=True, exist_ok=True)
-    path = evidence_dir / f"{task.task_id}.txt"
+    path = evidence_dir / f"{_safe_path_segment(task.task_id)}.txt"
     path.write_text(
         "\n".join(
             [
