@@ -92,21 +92,30 @@ class DiagnosticReport:
 
 @dataclass
 class ValidatedCaseRecord:
+    """Registro persistible de caso validado.
+
+    Mantiene compatibilidad con dos formas históricas del repo:
+    - payload/audit_id para cierres auditados.
+    - hypothesis/evidence_used para contratos y repositorios operacionales legacy.
+    """
+
     validated_case_id: str
     cliente_id: str
     job_id: str
     case_id: str
     report_id: str
     timestamp: str
-    payload: Any
     diagnosis_status: str
-    audit_id: str
-    decision_id: str | None = None
-    closed_by: str | None = None
-    audit_created_at: str | None = None
+    hypothesis: str = ""
+    evidence_used: list[str] = field(default_factory=list)
     formulas_used: list[str] = field(default_factory=list)
     findings_summary: str = ""
-    quantified_impact: Any = None
+    quantified_impact: QuantifiedImpact | dict[str, Any] | None = None
     owner_visible_report: str = ""
     next_question: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
+    payload: Any = None
+    audit_id: str | None = None
+    decision_id: str | None = None
+    closed_by: str | None = None
+    audit_created_at: str | None = None
