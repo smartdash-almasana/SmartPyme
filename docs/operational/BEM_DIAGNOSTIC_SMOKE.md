@@ -44,6 +44,38 @@ curl -X POST "http://127.0.0.1:8000/api/v1/webhooks/bem" \
 
 ---
 
+## Submit manual hacia BEM
+
+- Requiere `BEM_API_KEY` real.
+- Requiere `workflow_id` real de BEM.
+- No se ejecuta en smoke local.
+
+Comando:
+
+```bash
+python tools/bem_submit_payload.py \
+  --workflow-id "<BEM_WORKFLOW_ID>" \
+  --payload-file docs/operational/fixtures/bem_payload_venta_bajo_costo.json
+```
+
+Variante con API key explícita:
+
+```bash
+python tools/bem_submit_payload.py \
+  --workflow-id "<BEM_WORKFLOW_ID>" \
+  --payload-file docs/operational/fixtures/bem_payload_venta_bajo_costo.json \
+  --api-key "<BEM_API_KEY>"
+```
+
+Resultado esperado:
+- JSON de respuesta de BEM impreso en formato pretty.
+
+Aclaración:
+- Este comando prueba salida SmartPyme -> BEM.
+- El smoke webhook prueba entrada BEM -> SmartPyme.
+
+---
+
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/webhooks/bem" \
   -H "Content-Type: application/json" \
