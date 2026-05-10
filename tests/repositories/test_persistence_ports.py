@@ -80,7 +80,6 @@ def test_cliente_port_importable():
 
 def test_job_port_es_protocol_runtime_checkable():
     """JobPort debe ser un Protocol con @runtime_checkable."""
-    from typing import get_protocol_members
     # runtime_checkable permite isinstance checks
     class FakeJob:
         def create(self, job): ...

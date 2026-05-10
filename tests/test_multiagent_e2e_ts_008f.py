@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 
 
 def test_enqueue_then_run_once_e2e(tmp_path):
@@ -8,7 +9,7 @@ def test_enqueue_then_run_once_e2e(tmp_path):
 
     enqueue = subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
             "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
@@ -27,7 +28,7 @@ def test_enqueue_then_run_once_e2e(tmp_path):
 
     run = subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
             "factory.adapters.app_bridge.agent_loop.run_queue_once",
             "--tasks-dir",

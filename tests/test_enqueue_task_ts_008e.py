@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 
 def test_enqueue_creates_task(tmp_path):
@@ -6,7 +7,7 @@ def test_enqueue_creates_task(tmp_path):
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
             "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
@@ -29,7 +30,7 @@ def test_enqueue_file_exists(tmp_path):
 
     subprocess.run(
         [
-            "python",
+            sys.executable,
             "-m",
             "factory.adapters.app_bridge.agent_loop.enqueue_task",
             "--task-id",
