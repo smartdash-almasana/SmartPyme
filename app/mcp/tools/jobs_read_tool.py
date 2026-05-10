@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from app.repositories.finding_repository import FindingRepository
@@ -5,7 +6,7 @@ from app.repositories.job_repository import JobRepository
 
 
 def get_jobs(cliente_id: str):
-    repo = JobRepository(cliente_id, Path("data/jobs.db"))
+    repo = JobRepository(cliente_id, _jobs_db_path())
     jobs = repo.list_jobs()
     return [
         {
@@ -18,7 +19,7 @@ def get_jobs(cliente_id: str):
 
 
 def get_findings(cliente_id: str):
-    repo = FindingRepository(cliente_id, Path("data/findings.db"))
+    repo = FindingRepository(cliente_id, _findings_db_path())
     findings = repo.list_findings()
     return [
         {
@@ -29,3 +30,11 @@ def get_findings(cliente_id: str):
         }
         for f in findings
     ]
+
+
+def _jobs_db_path() -> Path:
+    return Path(os.getenv("SMARTPYME_JOBS_DB_PATH", "data/jobs.db"))
+
+
+def _findings_db_path() -> Path:
+    return Path(os.getenv("SMARTPYME_FINDINGS_DB_PATH", "data/findings.db"))

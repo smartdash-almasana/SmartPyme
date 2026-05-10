@@ -9,8 +9,12 @@ from app.mcp.tools.formula_results_tool import (
 
 
 def test_formula_tool_reads_results(tmp_path, monkeypatch):
-    db = tmp_path / "data" / "formula_results.db"
+    data_dir = tmp_path / "data"
+    db = data_dir / "formula_results.db"
     monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(data_dir / "pathologies.db"))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(data_dir / "jobs.db"))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(data_dir / "findings.db"))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "ganancia_bruta",
@@ -29,8 +33,12 @@ def test_formula_tool_reads_results(tmp_path, monkeypatch):
 
 
 def test_formula_tool_hides_cross_client(tmp_path, monkeypatch):
-    db = tmp_path / "data" / "formula_results.db"
+    data_dir = tmp_path / "data"
+    db = data_dir / "formula_results.db"
     monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(data_dir / "pathologies.db"))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(data_dir / "jobs.db"))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(data_dir / "findings.db"))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "ganancia_bruta",
@@ -58,8 +66,12 @@ def test_formula_result_interpretation_ok():
 
 
 def test_formula_status_for_owner(tmp_path, monkeypatch):
-    db = tmp_path / "data" / "formula_results.db"
+    data_dir = tmp_path / "data"
+    db = data_dir / "formula_results.db"
     monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(data_dir / "pathologies.db"))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(data_dir / "jobs.db"))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(data_dir / "findings.db"))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "margen_bruto",

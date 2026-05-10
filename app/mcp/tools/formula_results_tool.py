@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from app.contracts.formula_contract import FormulaResult, FormulaStatus
@@ -5,13 +6,13 @@ from app.repositories.formula_result_repository import FormulaResultRepository
 
 
 def get_formula_results(cliente_id: str, formula_id: str | None = None) -> list[dict]:
-    repo = FormulaResultRepository(cliente_id, Path("data/formula_results.db"))
+    repo = FormulaResultRepository(cliente_id, _formula_results_db_path())
     results = repo.list_results(formula_id=formula_id)
     return [_serialize_result(result) for result in results]
 
 
 def get_formula_result(cliente_id: str, result_id: str) -> dict | None:
-    repo = FormulaResultRepository(cliente_id, Path("data/formula_results.db"))
+    repo = FormulaResultRepository(cliente_id, _formula_results_db_path())
     result = repo.get(result_id)
     if result is None:
         return None
@@ -51,3 +52,7 @@ def get_formula_status_for_owner(cliente_id: str, formula_id: str | None = None)
 
 def _serialize_result(result: FormulaResult) -> dict:
     return result.model_dump(mode="json")
+
+
+def _formula_results_db_path() -> Path:
+    return Path(os.getenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", "data/formula_results.db"))

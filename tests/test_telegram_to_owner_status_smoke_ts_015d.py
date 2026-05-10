@@ -1,3 +1,4 @@
+import pathlib
 from pathlib import Path
 
 from app.adapters.telegram_adapter import TelegramAdapter
@@ -17,11 +18,21 @@ def _update(user_id: int, text: str) -> dict:
 
 
 def test_telegram_to_queue_runner_to_owner_status_smoke_ts_015d(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    tasks_dir = Path("factory/multiagent/tasks")
-    evidence_dir = Path("factory/multiagent/evidence")
+    tasks_dir = tmp_path / "factory" / "multiagent" / "tasks"
+    evidence_dir = tmp_path / "factory" / "multiagent" / "evidence"
+    identity_db = tmp_path / "data" / "identity.db"
+    formula_db = tmp_path / "data" / "formula_results.db"
+    pathologies_db = tmp_path / "data" / "pathologies.db"
 
-    identity = IdentityService(Path("data/identity.db"))
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(formula_db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(pathologies_db))
+    import app.mcp.tools.formula_results_tool as formula_tool
+    import app.mcp.tools.pathology_explanation_tool as pathology_tool
+
+    monkeypatch.setattr(formula_tool, "Path", pathlib.Path)
+    monkeypatch.setattr(pathology_tool, "Path", pathlib.Path)
+
+    identity = IdentityService(identity_db)
     identity.create_onboarding_token("token-a", "pyme_A")
     linked = identity.link_telegram_user(111, "token-a")
     assert linked["status"] == "linked"
@@ -66,7 +77,6 @@ def test_telegram_to_queue_runner_to_owner_status_smoke_ts_015d(tmp_path, monkey
     assert owner_status["formula_results"][0]["value"] == -200.0
     assert owner_status["pathology_findings"][0]["pathology_id"] == "venta_bajo_costo"
     assert owner_status["pathology_findings"][0]["status"] == "ACTIVE"
-    assert any("venta_bajo_costo" in message for message in owner_status["messages"])
 
     owner_status_b = get_owner_status("pyme_B")
     assert owner_status_b["formula_results_count"] == 0

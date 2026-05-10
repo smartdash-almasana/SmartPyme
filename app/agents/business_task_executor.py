@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -15,11 +16,17 @@ AUDIT_VENTA_BAJO_COSTO = "audit_venta_bajo_costo"
 class BusinessTaskExecutor:
     def __init__(
         self,
-        formula_results_db_path: str | Path = Path("data/formula_results.db"),
-        pathologies_db_path: str | Path = Path("data/pathologies.db"),
+        formula_results_db_path: str | Path | None = None,
+        pathologies_db_path: str | Path | None = None,
     ) -> None:
-        self.formula_results_db_path = Path(formula_results_db_path)
-        self.pathologies_db_path = Path(pathologies_db_path)
+        self.formula_results_db_path = Path(
+            formula_results_db_path
+            or os.getenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", "data/formula_results.db")
+        )
+        self.pathologies_db_path = Path(
+            pathologies_db_path
+            or os.getenv("SMARTPYME_PATHOLOGIES_DB_PATH", "data/pathologies.db")
+        )
 
     def execute(self, task_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         if task_type != AUDIT_VENTA_BAJO_COSTO:

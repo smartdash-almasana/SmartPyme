@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from app.contracts.pathology_contract import PathologyFinding, PathologyStatus
@@ -9,13 +10,13 @@ def get_pathology_findings(
     pathology_id: str | None = None,
     status: str | PathologyStatus | None = None,
 ) -> list[dict]:
-    repo = PathologyRepository(cliente_id, Path("data/pathologies.db"))
+    repo = PathologyRepository(cliente_id, _pathologies_db_path())
     findings = repo.list_findings(pathology_id=pathology_id, status=status)
     return [_serialize_pathology_finding(finding) for finding in findings]
 
 
 def get_pathology_finding(cliente_id: str, pathology_finding_id: str) -> dict | None:
-    repo = PathologyRepository(cliente_id, Path("data/pathologies.db"))
+    repo = PathologyRepository(cliente_id, _pathologies_db_path())
     finding = repo.get(pathology_finding_id)
     if finding is None:
         return None
@@ -66,3 +67,7 @@ def get_pathology_status_for_owner(cliente_id: str) -> dict:
 
 def _serialize_pathology_finding(finding: PathologyFinding) -> dict:
     return finding.model_dump(mode="json")
+
+
+def _pathologies_db_path() -> Path:
+    return Path(os.getenv("SMARTPYME_PATHOLOGIES_DB_PATH", "data/pathologies.db"))
