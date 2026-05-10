@@ -28,7 +28,7 @@ def test_superowner_enqueue_dev_creates_real_taskspec(tmp_path):
     )
 
     assert response["status"] == "queued"
-    assert response["task"]["task_type"] == "taskspec_dev"
+    assert response["task"]["task_type"] == "taskspec_template"
 
     task_id = response["task"]["task_id"]
     task = store.get(task_id)
@@ -56,7 +56,8 @@ def test_superowner_status_pending_and_task_read_use_taskspec_store(tmp_path):
     task_status = adapter.handle_update(_update(111, f"/task {task_id}"))
 
     assert status["status"] == "ok"
-    assert status["counts"] == {"pending": 1, "in_progress": 0, "done": 0, "blocked": 0}
+    assert status["counts"] == {"pending": 1, "in_progress": 0, "done": 0, "blocked": 0,
+                                "waiting_for_approval": 0}
     assert status["next_pending_task_id"] == task_id
     assert pending["pending_count"] == 1
     assert pending["pending_tasks"][0]["task_id"] == task_id
