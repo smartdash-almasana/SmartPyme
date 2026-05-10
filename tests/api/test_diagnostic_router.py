@@ -385,3 +385,67 @@ def test_informe_does_not_interfere_with_json_endpoint(
     assert md_res.status_code == 200
     assert json_res.json()["tenant_id"] == "tenant-1"
     assert "# Diagnóstico Operacional" in md_res.text
+
+
+# ---------------------------------------------------------------------------
+# GET /diagnostico/{tenant_id}/informe — Content-Disposition header
+# ---------------------------------------------------------------------------
+
+
+def test_informe_content_disposition_header_present(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"x": 1})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "content-disposition" in res.headers
+
+
+def test_informe_content_disposition_is_attachment(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"x": 1})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "attachment" in res.headers["content-disposition"]
+
+
+def test_informe_content_disposition_filename_contains_tenant_id(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"x": 1})
+
+    res = client.get("/diagnostico/tenant-abc/informe")
+
+    assert "tenant-abc" in res.headers["content-disposition"]
+    assert "diagnostico-tenant-abc.md" in res.headers["content-disposition"]
+
+
+def test_informe_body_markdown_unchanged_with_header(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 5.0, "costo_unitario": 100.0})
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert res.status_code == 200
+    assert "# Diagnóstico Operacional" in res.text
+    assert "VENTA_BAJO_COSTO" in res.text
+    assert "text/markdown" in res.headers["content-type"]
+
+
+def test_informe_content_disposition_tenant_sin_findings(
+    client: TestClient,
+) -> None:
+    res = client.get("/diagnostico/tenant-vacio/informe")
+
+    assert res.status_code == 200
+    assert "attachment" in res.headers["content-disposition"]
+    assert "diagnostico-tenant-vacio.md" in res.headers["content-disposition"]
+    assert "No se detectaron hallazgos operacionales." in res.text

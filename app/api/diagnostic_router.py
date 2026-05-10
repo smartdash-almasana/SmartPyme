@@ -81,7 +81,13 @@ def _build_diagnostic_router(repo: CuratedEvidenceRepositoryBackend) -> APIRoute
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        return Response(content=markdown, media_type="text/markdown")
+        return Response(
+            content=markdown,
+            media_type="text/markdown",
+            headers={
+                "Content-Disposition": f'attachment; filename="diagnostico-{tenant_id}.md"'
+            },
+        )
 
     # ------------------------------------------------------------------
     # GET /diagnostico/{tenant_id}
@@ -121,7 +127,13 @@ def get_informe(tenant_id: str) -> Response:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return Response(content=markdown, media_type="text/markdown")
+    return Response(
+        content=markdown,
+        media_type="text/markdown",
+        headers={
+            "Content-Disposition": f'attachment; filename="diagnostico-{tenant_id}.md"'
+        },
+    )
 
 
 @router.get("/diagnostico/{tenant_id}")
