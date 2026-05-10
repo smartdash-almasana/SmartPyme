@@ -8,8 +8,9 @@ from app.mcp.tools.formula_results_tool import (
 )
 
 
-def test_formula_tool_reads_results(tmp_path):
-    db = tmp_path / "formula_results.db"
+def test_formula_tool_reads_results(tmp_path, monkeypatch):
+    db = tmp_path / "data" / "formula_results.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "ganancia_bruta",
@@ -20,9 +21,6 @@ def test_formula_tool_reads_results(tmp_path):
         result_id="r1",
     )
 
-    import app.mcp.tools.formula_results_tool as tool
-    tool.Path = lambda p: db
-
     results = get_formula_results("pyme_A")
 
     assert len(results) == 1
@@ -30,8 +28,9 @@ def test_formula_tool_reads_results(tmp_path):
     assert results[0]["value"] == 400.0
 
 
-def test_formula_tool_hides_cross_client(tmp_path):
-    db = tmp_path / "formula_results.db"
+def test_formula_tool_hides_cross_client(tmp_path, monkeypatch):
+    db = tmp_path / "data" / "formula_results.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "ganancia_bruta",
@@ -41,9 +40,6 @@ def test_formula_tool_hides_cross_client(tmp_path):
         ],
         result_id="same-id",
     )
-
-    import app.mcp.tools.formula_results_tool as tool
-    tool.Path = lambda p: db
 
     assert get_formula_result("pyme_B", "same-id") is None
 
@@ -61,8 +57,9 @@ def test_formula_result_interpretation_ok():
     assert "Fuentes usadas: 2" in msg
 
 
-def test_formula_status_for_owner(tmp_path):
-    db = tmp_path / "formula_results.db"
+def test_formula_status_for_owner(tmp_path, monkeypatch):
+    db = tmp_path / "data" / "formula_results.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(db))
     agent = FormulaCalculationAgent("pyme_A", db)
     agent.calculate_and_persist(
         "margen_bruto",
@@ -72,9 +69,6 @@ def test_formula_status_for_owner(tmp_path):
         ],
         result_id="blocked",
     )
-
-    import app.mcp.tools.formula_results_tool as tool
-    tool.Path = lambda p: db
 
     status = get_formula_status_for_owner("pyme_A")
 

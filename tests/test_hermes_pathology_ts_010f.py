@@ -9,9 +9,7 @@ from app.mcp.tools.pathology_explanation_tool import (
 )
 
 
-def _seed_active_pathology(tmp_path):
-    formula_db = tmp_path / "formula_results.db"
-    pathology_db = tmp_path / "pathologies.db"
+def _seed_active_pathology(formula_db, pathology_db):
 
     FormulaCalculationAgent("pyme_A", formula_db).calculate_and_persist(
         "margen_bruto",
@@ -28,11 +26,17 @@ def _seed_active_pathology(tmp_path):
     return formula_db, pathology_db
 
 
-def test_hermes_pathology_tool_reads_and_explains(tmp_path):
-    _, pathology_db = _seed_active_pathology(tmp_path)
-
-    import app.mcp.tools.pathology_explanation_tool as pathology_tool
-    pathology_tool.Path = lambda p: pathology_db
+def test_hermes_pathology_tool_reads_and_explains(tmp_path, monkeypatch):
+    data_dir = tmp_path / "data"
+    formula_db = data_dir / "formula_results.db"
+    pathology_db = data_dir / "pathologies.db"
+    jobs_db = data_dir / "jobs.db"
+    findings_db = data_dir / "findings.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(formula_db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(pathology_db))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(jobs_db))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(findings_db))
+    _seed_active_pathology(formula_db, pathology_db)
 
     findings = get_pathology_findings("pyme_A")
     status = get_pathology_status_for_owner("pyme_A")
@@ -43,26 +47,33 @@ def test_hermes_pathology_tool_reads_and_explains(tmp_path):
     assert "Alerta de negocio" in status["messages"][0]
 
 
-def test_hermes_pathology_tool_hides_cross_client(tmp_path):
-    _, pathology_db = _seed_active_pathology(tmp_path)
-
-    import app.mcp.tools.pathology_explanation_tool as pathology_tool
-    pathology_tool.Path = lambda p: pathology_db
+def test_hermes_pathology_tool_hides_cross_client(tmp_path, monkeypatch):
+    data_dir = tmp_path / "data"
+    formula_db = data_dir / "formula_results.db"
+    pathology_db = data_dir / "pathologies.db"
+    jobs_db = data_dir / "jobs.db"
+    findings_db = data_dir / "findings.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(formula_db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(pathology_db))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(jobs_db))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(findings_db))
+    _seed_active_pathology(formula_db, pathology_db)
 
     assert get_pathology_finding("pyme_B", "pf1") is None
     assert get_pathology_findings("pyme_B") == []
 
 
-def test_owner_status_includes_pathologies(tmp_path):
-    formula_db, pathology_db = _seed_active_pathology(tmp_path)
-
-    import app.mcp.tools.formula_results_tool as formula_tool
-    import app.mcp.tools.jobs_read_tool as jobs_tool
-    import app.mcp.tools.pathology_explanation_tool as pathology_tool
-
-    jobs_tool.Path = lambda p: tmp_path / "empty.db"
-    formula_tool.Path = lambda p: formula_db
-    pathology_tool.Path = lambda p: pathology_db
+def test_owner_status_includes_pathologies(tmp_path, monkeypatch):
+    data_dir = tmp_path / "data"
+    formula_db = data_dir / "formula_results.db"
+    pathology_db = data_dir / "pathologies.db"
+    jobs_db = data_dir / "jobs.db"
+    findings_db = data_dir / "findings.db"
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(formula_db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(pathology_db))
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(jobs_db))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(findings_db))
+    _seed_active_pathology(formula_db, pathology_db)
 
     status = get_owner_status("pyme_A")
 

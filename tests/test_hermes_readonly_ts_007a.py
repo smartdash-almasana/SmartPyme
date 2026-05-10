@@ -6,14 +6,20 @@ from app.repositories.job_repository import JobRepository
 from app.services.findings_service import Finding
 
 
-def test_hermes_read_sovereignty(tmp_path):
+def test_hermes_read_sovereignty(tmp_path, monkeypatch):
     base = tmp_path
 
     cliente_a = "pyme_A"
     cliente_b = "pyme_B"
 
-    jobs_db = base / "jobs.db"
-    findings_db = base / "findings.db"
+    jobs_db = base / "data" / "jobs.db"
+    findings_db = base / "data" / "findings.db"
+    formula_db = base / "data" / "formula_results.db"
+    pathologies_db = base / "data" / "pathologies.db"
+    monkeypatch.setenv("SMARTPYME_JOBS_DB_PATH", str(jobs_db))
+    monkeypatch.setenv("SMARTPYME_FINDINGS_DB_PATH", str(findings_db))
+    monkeypatch.setenv("SMARTPYME_FORMULA_RESULTS_DB_PATH", str(formula_db))
+    monkeypatch.setenv("SMARTPYME_PATHOLOGIES_DB_PATH", str(pathologies_db))
 
     job_repo_a = JobRepository(cliente_a, jobs_db)
     finding_repo_a = FindingRepository(cliente_a, findings_db)
@@ -35,10 +41,6 @@ def test_hermes_read_sovereignty(tmp_path):
         suggested_action="review",
         traceable_origin={}
     ))
-
-    # override paths
-    import app.mcp.tools.jobs_read_tool as tool
-    tool.Path = lambda p: jobs_db if "jobs" in p else findings_db
 
     jobs_a = get_jobs(cliente_a)
     findings_a = get_findings(cliente_a)
