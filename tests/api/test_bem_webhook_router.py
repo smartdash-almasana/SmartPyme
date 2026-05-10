@@ -323,3 +323,152 @@ def test_make_router_uses_provided_db_path(tmp_path: Path) -> None:
     record = repo.get_by_evidence_id("tenant-1", "ev-001")
     assert record is not None
     assert record.evidence_id == "ev-001"
+
+# ---------------------------------------------------------------------------
+# GET /webhooks/bem/{tenant_id}/{evidence_id} — retrieval válido
+# ---------------------------------------------------------------------------
+
+
+def test_get_evidence_returns_200_after_post(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body())
+
+    res = client.get("/webhooks/bem/tenant-1/ev-001")
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["tenant_id"] == "tenant-1"
+    assert body["evidence_id"] == "ev-001"
+    assert body["kind"] == "excel"
+
+
+def test_get_evidence_response_shape(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body())
+
+    res = client.get("/webhooks/bem/tenant-1/ev-001")
+    body = res.json()
+
+    assert res.status_code == 200
+    assert set(body.keys()) == {
+        "tenant_id",
+        "evidence_id",
+        "kind",
+        "payload",
+        "trace_id",
+        "received_at",
+    }
+
+
+# ---------------------------------------------------------------------------
+# GET — payload correcto
+# ---------------------------------------------------------------------------
+
+
+def test_get_evidence_payload_correct(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body())
+
+    res = client.get("/webhooks/bem/tenant-1/ev-001")
+
+    assert res.status_code == 200
+    assert res.json()["payload"] == {"sheet": "ventas", "rows": 10}
+
+
+# ---------------------------------------------------------------------------
+# GET — trace_id correcto
+# ---------------------------------------------------------------------------
+
+
+def test_get_evidence_trace_id_correct(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body())
+
+    res = client.get("/webhooks/bem/tenant-1/ev-001")
+
+    assert res.status_code == 200
+    assert res.json()["trace_id"] == "trace-123"
+
+
+def test_get_evidence_trace_id_none_when_absent(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    body = _valid_body()
+    del body["payload"]["trace_id"]
+    client.post("/webhooks/bem", json=body)
+
+    res = client.get("/webhooks/bem/tenant-1/ev-001")
+
+    assert res.status_code == 200
+    assert res.json()["trace_id"] is None
+
+
+# ---------------------------------------------------------------------------
+# GET — 404 inexistente
+# ---------------------------------------------------------------------------
+
+
+def test_get_evidence_returns_404_when_not_found(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    res = client.get("/webhooks/bem/tenant-1/ev-inexistente")
+
+    assert res.status_code == 404
+    assert "no encontrada" in res.json()["detail"]
+
+
+def test_get_evidence_404_for_unknown_tenant(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a"))
+
+    res = client.get("/webhooks/bem/tenant-desconocido/ev-001")
+
+    assert res.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# GET — tenant isolation
+# ---------------------------------------------------------------------------
+
+
+def test_get_evidence_tenant_isolation(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-001"))
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-b", evidence_id="ev-001"))
+
+    res_a = client.get("/webhooks/bem/tenant-a/ev-001")
+    res_b = client.get("/webhooks/bem/tenant-b/ev-001")
+
+    assert res_a.status_code == 200
+    assert res_a.json()["tenant_id"] == "tenant-a"
+
+    assert res_b.status_code == 200
+    assert res_b.json()["tenant_id"] == "tenant-b"
+
+
+def test_get_evidence_tenant_b_cannot_access_tenant_a_via_get(
+    client_and_repo: tuple[TestClient, CuratedEvidenceRepositoryBackend],
+) -> None:
+    client, _ = client_and_repo
+
+    client.post("/webhooks/bem", json=_valid_body(tenant_id="tenant-a", evidence_id="ev-secreto"))
+
+    res = client.get("/webhooks/bem/tenant-b/ev-secreto")
+
+    assert res.status_code == 404

@@ -1,9 +1,14 @@
 """
-Webhook soberano para recibir evidencia curada desde BEM.
+Webhook soberano para recibir y consultar evidencia curada desde BEM.
 
-Pipeline: body → BemCuratedEvidenceAdapter → CuratedEvidenceRecord → repository.create()
+Endpoints:
+  POST /webhooks/bem
+      body → BemCuratedEvidenceAdapter → CuratedEvidenceRecord → repository.create()
 
-El repositorio es inyectable para tests; el default usa data/curated_evidence.db.
+  GET /webhooks/bem/{tenant_id}/{evidence_id}
+      repository.get_by_evidence_id() → 200 | 404
+
+El repositorio es inyectable para tests via _build_router(repo) o make_router(db_path).
 Sin async externo. Sin side effects. Fail-closed.
 """
 from __future__ import annotations
@@ -20,9 +25,6 @@ _DEFAULT_DB_PATH = Path("data") / "curated_evidence.db"
 
 router = APIRouter()
 
-# Repositorio singleton por defecto (lazy-init en primera petición real).
-# Los tests inyectan su propio repositorio via override de dependencia o
-# usando _make_router() directamente.
 _default_repo: CuratedEvidenceRepositoryBackend | None = None
 
 
@@ -80,11 +82,34 @@ def _build_router(repo: CuratedEvidenceRepositoryBackend) -> APIRouter:
             "evidence_id": record.evidence_id,
         }
 
+    @local_router.get("/webhooks/bem/{tenant_id}/{evidence_id}")
+    def get_evidence(tenant_id: str, evidence_id: str) -> dict[str, Any]:
+        if not tenant_id.strip():
+            raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+        if not evidence_id.strip():
+            raise HTTPException(status_code=400, detail="evidence_id es obligatorio")
+
+        record = repo.get_by_evidence_id(tenant_id=tenant_id, evidence_id=evidence_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="evidencia no encontrada")
+
+        return {
+            "tenant_id": record.tenant_id,
+            "evidence_id": record.evidence_id,
+            "kind": record.kind.value,
+            "payload": record.payload,
+            "trace_id": record.trace_id,
+            "received_at": record.received_at,
+        }
+
     return local_router
 
 
-# Router por defecto montado en el módulo (usa lazy singleton).
-# Para producción se puede reemplazar con make_router(db_path=...).
+# ---------------------------------------------------------------------------
+# Router por defecto (usa lazy singleton con _DEFAULT_DB_PATH).
+# ---------------------------------------------------------------------------
+
+
 @router.post("/webhooks/bem")
 def bem_webhook(body: dict[str, Any]) -> dict[str, str]:
     tenant_id = body.get("tenant_id")
@@ -112,4 +137,27 @@ def bem_webhook(body: dict[str, Any]) -> dict[str, str]:
         "status": "accepted",
         "tenant_id": record.tenant_id,
         "evidence_id": record.evidence_id,
+    }
+
+
+@router.get("/webhooks/bem/{tenant_id}/{evidence_id}")
+def get_evidence(tenant_id: str, evidence_id: str) -> dict[str, Any]:
+    if not tenant_id.strip():
+        raise HTTPException(status_code=400, detail="tenant_id es obligatorio")
+    if not evidence_id.strip():
+        raise HTTPException(status_code=400, detail="evidence_id es obligatorio")
+
+    record = _get_default_repo().get_by_evidence_id(
+        tenant_id=tenant_id, evidence_id=evidence_id
+    )
+    if record is None:
+        raise HTTPException(status_code=404, detail="evidencia no encontrada")
+
+    return {
+        "tenant_id": record.tenant_id,
+        "evidence_id": record.evidence_id,
+        "kind": record.kind.value,
+        "payload": record.payload,
+        "trace_id": record.trace_id,
+        "received_at": record.received_at,
     }
