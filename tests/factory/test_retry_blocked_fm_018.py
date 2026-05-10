@@ -39,7 +39,8 @@ def test_store_retry_blocked_moves_task_back_to_pending_with_metadata(tmp_path):
             "retried_by": "telegram:111",
         }
     ]
-    assert store.counts() == {"pending": 1, "in_progress": 0, "done": 0, "blocked": 0}
+    assert store.counts() == {"pending": 1, "in_progress": 0, "done": 0, "blocked": 0,
+                              "waiting_for_approval": 0}
 
 
 def test_store_retry_blocked_rejects_non_blocked_task(tmp_path):
