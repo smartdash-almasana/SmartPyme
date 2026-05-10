@@ -1,0 +1,15 @@
+{
+  "tenant_id": "acme-demo",
+  "payload": {
+    "evidence_id": "ev-demo-venta-bajo-costo-001",
+    "kind": "EXCEL",
+    "data": {
+      "precio_venta": 10,
+      "costo_unitario": 80
+    },
+    "source": {
+      "source_name": "ventas.xlsx",
+      "source_type": "excel"
+    }
+  }
+}
