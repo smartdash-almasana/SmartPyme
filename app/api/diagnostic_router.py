@@ -17,6 +17,7 @@ Sin async externo. Sin side effects. Fail-closed.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,20 @@ from app.services.basic_operational_diagnostic_service import (
 from app.services.markdown_diagnostic_report_builder import MarkdownDiagnosticReportBuilder
 
 _DEFAULT_DB_PATH = Path("data") / "curated_evidence.db"
+
+
+def _safe_filename_tenant(tenant_id: str) -> str:
+    """
+    Sanitiza tenant_id para uso seguro en Content-Disposition filename.
+
+    - Reemplaza cualquier carácter no alfanumérico, guion o underscore por "_".
+    - Colapsa múltiples "_" consecutivos a uno.
+    - Si el resultado queda vacío, retorna "tenant".
+    """
+    safe = re.sub(r"[^a-zA-Z0-9\-_]", "_", tenant_id)
+    safe = re.sub(r"_+", "_", safe)
+    safe = safe.strip("_")
+    return safe if safe else "tenant"
 
 router = APIRouter()
 
@@ -85,7 +100,9 @@ def _build_diagnostic_router(repo: CuratedEvidenceRepositoryBackend) -> APIRoute
             content=markdown,
             media_type="text/markdown",
             headers={
-                "Content-Disposition": f'attachment; filename="diagnostico-{tenant_id}.md"'
+                "Content-Disposition": (
+                    f'attachment; filename="diagnostico-{_safe_filename_tenant(tenant_id)}.md"'
+                )
             },
         )
 
@@ -131,7 +148,9 @@ def get_informe(tenant_id: str) -> Response:
         content=markdown,
         media_type="text/markdown",
         headers={
-            "Content-Disposition": f'attachment; filename="diagnostico-{tenant_id}.md"'
+            "Content-Disposition": (
+                f'attachment; filename="diagnostico-{_safe_filename_tenant(tenant_id)}.md"'
+            )
         },
     )
 

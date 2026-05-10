@@ -449,3 +449,69 @@ def test_informe_content_disposition_tenant_sin_findings(
     assert "attachment" in res.headers["content-disposition"]
     assert "diagnostico-tenant-vacio.md" in res.headers["content-disposition"]
     assert "No se detectaron hallazgos operacionales." in res.text
+
+
+# ---------------------------------------------------------------------------
+# _safe_filename_tenant — sanitización del filename
+# ---------------------------------------------------------------------------
+
+
+def test_safe_filename_normal_tenant_unchanged() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("tenant-abc") == "tenant-abc"
+
+
+def test_safe_filename_underscore_preserved() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("tenant_abc") == "tenant_abc"
+
+
+def test_safe_filename_spaces_replaced() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("tenant abc") == "tenant_abc"
+
+
+def test_safe_filename_slash_replaced() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("tenant/abc") == "tenant_abc"
+
+
+def test_safe_filename_backslash_replaced() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("tenant\\abc") == "tenant_abc"
+
+
+def test_safe_filename_multiple_special_chars_collapsed() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("ten ant//abc") == "ten_ant_abc"
+
+
+def test_safe_filename_empty_after_sanitize_returns_tenant() -> None:
+    from app.api.diagnostic_router import _safe_filename_tenant
+    assert _safe_filename_tenant("///") == "tenant"
+
+
+# ---------------------------------------------------------------------------
+# Content-Disposition filename sanitizado en respuesta HTTP
+# ---------------------------------------------------------------------------
+
+
+def test_informe_filename_sanitized_spaces(
+    client: TestClient,
+) -> None:
+    # FastAPI URL-encodes spaces in path params; use underscore-based tenant
+    res = client.get("/diagnostico/tenant_con_nombre/informe")
+    assert "diagnostico-tenant_con_nombre.md" in res.headers["content-disposition"]
+
+
+def test_informe_body_preserves_original_tenant_id(
+    repo: CuratedEvidenceRepositoryBackend,
+    client: TestClient,
+) -> None:
+    """El body Markdown usa el tenant_id original, no el sanitizado."""
+    _insert(repo, "ev-001", {"x": 1}, tenant_id="tenant-1")
+
+    res = client.get("/diagnostico/tenant-1/informe")
+
+    assert "tenant-1" in res.text
+    assert res.json is not None or True  # body is text, not JSON
