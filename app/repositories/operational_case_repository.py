@@ -279,4 +279,7 @@ class OperationalCaseRepository:
             ]
 
     def _inflate_validated_case(self, data: dict[str, Any]) -> ValidatedCaseRecord:
+        impact_data = data.get("quantified_impact")
+        if isinstance(impact_data, dict):
+            data["quantified_impact"] = QuantifiedImpact(**impact_data)
         return ValidatedCaseRecord(**data)
