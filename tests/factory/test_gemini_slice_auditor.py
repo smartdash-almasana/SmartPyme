@@ -2,9 +2,16 @@ import sys
 import unittest
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-import factory.gemini_slice_auditor as gsa
+# google-genai es una dependencia opcional. Si no está instalada (VM sin GPU,
+# entorno CI mínimo), se skipea todo el archivo sin romper la colección.
+gsa = pytest.importorskip(
+    "factory.gemini_slice_auditor",
+    reason="factory.gemini_slice_auditor requiere google-genai (dependencia opcional)",
+)
 
 
 class GeminiSliceAuditorTests(unittest.TestCase):
