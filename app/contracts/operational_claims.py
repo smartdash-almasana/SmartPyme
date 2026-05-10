@@ -7,6 +7,11 @@ from typing import Any
 from uuid import uuid4
 
 
+def _require_non_empty(value: str, field_name: str) -> None:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name} is required")
+
+
 class ClaimType(str, Enum):
     DEUDA_COBRANZA = "deuda_cobranza"
     STOCK = "stock"
@@ -137,8 +142,3 @@ def puede_marcar_supported(claim: OperationalClaim) -> bool:
 def claims_del_tenant(claims: list[OperationalClaim], tenant_id: str) -> list[OperationalClaim]:
     _require_non_empty(tenant_id, "tenant_id")
     return [claim for claim in claims if claim.tenant_id == tenant_id]
-
-
-def _require_non_empty(value: str, field_name: str) -> None:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field_name} is required")
