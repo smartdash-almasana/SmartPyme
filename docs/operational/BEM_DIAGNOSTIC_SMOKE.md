@@ -191,6 +191,7 @@ VENTA_BAJO_COSTO
 - Valida únicamente el lado SmartPyme del contrato: recepción, persistencia, diagnóstico e informe.
 - Si se reutiliza el mismo `evidence_id` contra la misma base SQLite, puede aparecer conflicto por duplicado. Para repetir la prueba, usar otro `evidence_id` o limpiar la base local de prueba.
 - El submit real SmartPyme -> BEM (HTTP/MCP) se valida en `docs/operational/BEM_REAL_SUBMIT.md`.
+- El flujo `POST /api/v1/bem/submit` y `bem_submit_workflow` MCP ahora promueven automáticamente `CuratedEvidenceRecord` desde el `response_payload` real de BEM. El webhook (`POST /api/v1/webhooks/bem`) sigue aceptando el payload SmartPyme normalizado (con `evidence_id`, `kind`, `data`, `source`) para el flujo inverso BEM → SmartPyme.
 
 ---
 
@@ -208,4 +209,5 @@ Estado de cierre técnico:
 
 ```text
 Suite completa: 2172 passed, 4 skipped
+Suite específica BEM → CuratedEvidence: 56 passed
 ```

@@ -132,41 +132,61 @@ Implementado:
 - Submit directo SmartPyme -> BEM (HTTP) con tracking de runs.
 - Submit SmartPyme -> MCP -> BEM con adapter tenant-aware.
 - Persistencia de runs en `BemRunRepository` (`data/bem_runs.db` por defecto).
+- `BemCuratedEvidenceAdapter.build_curated_evidence_from_bem_response(...)` mapea `response_payload` real de BEM a `CuratedEvidenceRecord`.
+- `BemSubmitService` promueve automáticamente `CuratedEvidenceRecord` si se inyecta `CuratedEvidenceRepositoryBackend`.
+- HTTP router (`POST /api/v1/bem/submit`) inyecta `CuratedEvidenceRepositoryBackend` por defecto (`data/curated_evidence.db` o `SMARTPYME_CURATED_EVIDENCE_DB_PATH`).
+- MCP bridge (`bem_submit_workflow`) inyecta `CuratedEvidenceRepositoryBackend` por defecto.
 
 Componentes clave:
 
 - `BemSubmitPort`
 - `BemMcpSubmitAdapter`
-- `BemSubmitService` con soporte HTTP directo y MCP tenant-aware.
+- `BemSubmitService` con soporte HTTP directo, MCP tenant-aware y promoción opcional a evidencia curada.
+- `BemCuratedEvidenceAdapter` con método `build_curated_evidence_from_bem_response`.
+- `CuratedEvidenceRepositoryBackend` (`data/curated_evidence.db` por defecto).
+
+Estructura del `response_payload` real de BEM:
+
+```json
+{
+  "callReferenceID": "...",
+  "callID": "...",
+  "avgConfidence": 0.91,
+  "inputType": "excel",
+  "outputs": [
+    {
+      "transformedContent": {
+        "producto": "Mouse Gamer RGB",
+        "precio_venta": 10,
+        "costo_unitario": 80,
+        "cantidad": 5,
+        "source_name": "ventas_demo.xlsx",
+        "source_type": "excel"
+      }
+    }
+  ]
+}
+```
+
+Mapeo `response_payload` → `CuratedEvidenceRecord`:
+
+- `evidence_id`: `callReferenceID` → `callID` → `bem-run-{run_id}` → fail-closed
+- `kind`: inferido desde `inputType` o `source_type`
+- `payload.data`: `precio_venta`, `costo_unitario`, `cantidad`, `producto`
+- `source_metadata.source_name` / `source_type`: desde `transformedContent`
+- `confidence`: desde `avgConfidence` si existe
+- `tenant_id`: preservado desde contexto del run
 
 Resultado de validación integral:
 
-- Suite completa: `2172 passed, 4 skipped`.
+- Suite específica: `56 passed` (adapter + servicio + router + MCP bridge).
 
 ## Proximos artefactos
 
-- BemWebhookPayload.
-- BemCuratedEvidenceAdapter.
-- CuratedEvidenceRecord.
-- EvidenceValidationService.
-- POST /webhooks/bem.
-- MCP tool `bem_submit_workflow`.
-- BemRunRepository.
-
-Primer smoke test objetivo:
-
-```text
-fake BEM payload
--> webhook SmartPyme
--> adapter
--> CuratedEvidenceRecord persistido
-```
-
-Smoke MCP objetivo:
-
-```text
-bem_submit_workflow
--> BEM
--> BemRunRepository
--> response_payload persistido
-```
+- ~~BemWebhookPayload.~~ (implementado)
+- ~~BemCuratedEvidenceAdapter.~~ (implementado)
+- ~~CuratedEvidenceRecord.~~ (implementado)
+- ~~BemRunRepository.~~ (implementado)
+- EvidenceValidationService — conectar `CuratedEvidenceRecord` al diagnóstico operacional.
+- POST /webhooks/bem — webhook externo BEM → SmartPyme (flujo inverso).
+- MCP tool `bem_submit_workflow` — ya operativo con persistencia curada.

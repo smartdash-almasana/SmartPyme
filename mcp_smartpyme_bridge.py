@@ -510,6 +510,69 @@ async def factory_run_deepseek_audit(
             "reason": str(e),
         }
 
+
+@mcp.tool()
+async def bem_submit_workflow(
+    tenant_id: str,
+    workflow_id: str,
+    payload: dict,
+    db_path: str | None = None,
+) -> dict:
+    """
+    Ejecuta un submit de SmartPyme hacia BEM y registra el run en SQLite.
+    Si BEM responde COMPLETED, también persiste CuratedEvidenceRecord.
+    """
+    from pathlib import Path
+
+    from app.repositories.bem_run_repository import BemRunRepository
+    from app.repositories.curated_evidence_repository import CuratedEvidenceRepositoryBackend
+    from app.services.bem_client import BemClient
+    from app.services.bem_submit_service import BemSubmitService
+
+    target_db = (
+        db_path
+        or os.getenv("SMARTPYME_BEM_RUNS_DB_PATH")
+        or str(Path("data") / "bem_runs.db")
+    )
+    curated_db = (
+        os.getenv("SMARTPYME_CURATED_EVIDENCE_DB_PATH")
+        or str(Path("data") / "curated_evidence.db")
+    )
+
+    try:
+        service = BemSubmitService(
+            bem_client=BemClient(),
+            bem_run_repository=BemRunRepository(target_db),
+            curated_evidence_repository=CuratedEvidenceRepositoryBackend(curated_db),
+        )
+        run = service.submit(
+            tenant_id=tenant_id,
+            workflow_id=workflow_id,
+            payload=payload,
+        )
+        return {
+            "status": "COMPLETED",
+            "tenant_id": run.tenant_id,
+            "run_id": run.run_id,
+            "workflow_id": run.workflow_id,
+            "response_payload": run.response_payload,
+            "source": "real",
+        }
+    except RuntimeError as e:
+        return {
+            "status": "REJECTED",
+            "error_type": "BEM_UPSTREAM_ERROR",
+            "reason": str(e),
+            "source": "real",
+        }
+    except Exception as e:
+        return {
+            "status": "REJECTED",
+            "error_type": "INTERNAL_ERROR",
+            "reason": str(e),
+            "source": "real",
+        }
+
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
     mcp.run()

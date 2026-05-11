@@ -6,7 +6,9 @@ from uuid import uuid4
 
 from app.contracts.bem_runs import BemRunRecord
 from app.repositories.bem_run_repository import BemRunRepository
+from app.repositories.curated_evidence_repository import CuratedEvidenceRepositoryBackend
 from app.services.bem_client import BemClient
+from app.services.bem_curated_evidence_adapter import BemCuratedEvidenceAdapter
 from app.services.bem_submit_port import BemSubmitPort
 
 
@@ -18,11 +20,13 @@ class BemSubmitService:
         bem_run_repository: BemRunRepository,
         now_provider: Callable[[], datetime] | None = None,
         run_id_provider: Callable[[], str] | None = None,
+        curated_evidence_repository: CuratedEvidenceRepositoryBackend | None = None,
     ) -> None:
         self._bem_client = bem_client
         self._bem_run_repository = bem_run_repository
         self._now_provider = now_provider or (lambda: datetime.now(timezone.utc))
         self._run_id_provider = run_id_provider or (lambda: str(uuid4()))
+        self._curated_evidence_repository = curated_evidence_repository
 
     def submit(
         self,
@@ -78,6 +82,17 @@ class BemSubmitService:
         updated = self._bem_run_repository.get_by_run_id(tenant_id.strip(), run_id.strip())
         if updated is None:
             raise RuntimeError("persisted run not found")
+
+        # --- Promover a CuratedEvidenceRecord si el repositorio está inyectado ---
+        if self._curated_evidence_repository is not None:
+            adapter = BemCuratedEvidenceAdapter(now_provider=self._now_provider)
+            curated = adapter.build_curated_evidence_from_bem_response(
+                tenant_id=tenant_id.strip(),
+                response_payload=response,
+                run_id=run_id.strip(),
+            )
+            self._curated_evidence_repository.create(curated)
+
         return updated
 
     def _submit_with_client(

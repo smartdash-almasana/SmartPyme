@@ -9,6 +9,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.repositories.bem_run_repository import BemRunRepository
+from app.repositories.curated_evidence_repository import CuratedEvidenceRepositoryBackend
 from app.services.bem_client import BemClient
 from app.services.bem_submit_service import BemSubmitService
 
@@ -17,6 +18,10 @@ router = APIRouter()
 
 def get_bem_runs_db_path() -> Path:
     return Path(os.getenv("SMARTPYME_BEM_RUNS_DB_PATH", "data/bem_runs.db"))
+
+
+def get_curated_evidence_db_path() -> Path:
+    return Path(os.getenv("SMARTPYME_CURATED_EVIDENCE_DB_PATH", "data/curated_evidence.db"))
 
 
 def get_bem_client() -> BemClient:
@@ -33,16 +38,19 @@ def get_run_id_provider() -> Callable[[], str]:
 
 def get_bem_submit_service(
     db_path: Path = Depends(get_bem_runs_db_path),
+    curated_db_path: Path = Depends(get_curated_evidence_db_path),
     bem_client: BemClient = Depends(get_bem_client),
     now_provider: Callable[[], datetime] = Depends(get_now_provider),
     run_id_provider: Callable[[], str] = Depends(get_run_id_provider),
 ) -> BemSubmitService:
     repo = BemRunRepository(db_path)
+    curated_repo = CuratedEvidenceRepositoryBackend(curated_db_path)
     return BemSubmitService(
         bem_client=bem_client,
         bem_run_repository=repo,
         now_provider=now_provider,
         run_id_provider=run_id_provider,
+        curated_evidence_repository=curated_repo,
     )
 
 

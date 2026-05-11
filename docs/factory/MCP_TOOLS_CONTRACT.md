@@ -32,18 +32,43 @@ SmartPyme / Gateway autorizado
 -> BemClient
 -> BEM workflow
 -> BemRunRepository
+-> BemCuratedEvidenceAdapter.build_curated_evidence_from_bem_response(...)
+-> CuratedEvidenceRepositoryBackend
 ```
 
-La herramienta MCP no reemplaza el contrato soberano de evidencia curada. Solo cubre la salida controlada SmartPyme -> BEM para ejecutar un workflow externo.
+La herramienta MCP no reemplaza el contrato soberano de evidencia curada. Cubre la salida controlada SmartPyme -> BEM y la promoción automática a evidencia curada cuando BEM responde con `outputs[0].transformedContent`.
 
-El retorno operacional de BEM se registra primero como run BEM. La promoción a evidencia curada de SmartPyme requiere un adapter explícito posterior:
+Estructura del `response_payload` real de BEM:
 
-```text
-BEM response_payload
--> adapter BEM response -> CuratedEvidenceRecord
--> CuratedEvidenceRepository
--> diagnostico operacional
+```json
+{
+  "callReferenceID": "...",
+  "callID": "...",
+  "avgConfidence": 0.91,
+  "inputType": "excel",
+  "outputs": [
+    {
+      "transformedContent": {
+        "producto": "Mouse Gamer RGB",
+        "precio_venta": 10,
+        "costo_unitario": 80,
+        "cantidad": 5,
+        "source_name": "ventas_demo.xlsx",
+        "source_type": "excel"
+      }
+    }
+  ]
+}
 ```
+
+Mapeo `response_payload` → `CuratedEvidenceRecord`:
+
+- `evidence_id`: `callReferenceID` → `callID` → `bem-run-{run_id}` → fail-closed
+- `kind`: inferido desde `inputType` o `source_type`
+- `payload.data`: `precio_venta`, `costo_unitario`, `cantidad`, `producto`
+- `source_metadata`: `source_name` / `source_type` desde `transformedContent`
+- `confidence`: desde `avgConfidence` si existe
+- `tenant_id`: preservado desde contexto del run
 
 ## Reglas
 
@@ -78,8 +103,10 @@ La integración de submit a BEM queda expuesta por la tool MCP:
 Contrato operativo:
 
 - Persistencia de run en SQLite (`data/bem_runs.db` por defecto o `db_path`).
-- Estado `COMPLETED` cuando BEM responde OK.
+- Promoción automática a `CuratedEvidenceRecord` en `data/curated_evidence.db` (o `SMARTPYME_CURATED_EVIDENCE_DB_PATH`) si el `response_payload` contiene `outputs[0].transformedContent`.
+- Estado `COMPLETED` cuando BEM responde OK y curated evidence fue persistido.
 - Estado `REJECTED` con `error_type=BEM_UPSTREAM_ERROR` ante falla de BEM.
+- Estado `REJECTED` con `error_type=INTERNAL_ERROR` si el adapter falla (response_payload sin estructura BEM esperada).
 - Sin exposición de secretos.
 
 Implementación mínima asociada:
@@ -87,11 +114,14 @@ Implementación mínima asociada:
 - `app/services/bem_submit_port.py`
 - `app/services/bem_mcp_submit_adapter.py`
 - `app/services/bem_submit_service.py`
+- `app/services/bem_curated_evidence_adapter.py` — método `build_curated_evidence_from_bem_response`
+- `app/repositories/curated_evidence_repository.py`
 
 Compatibilidad:
 
 - Se preserva submit HTTP directo vía `BemClient`.
 - SmartPyme puede operar con adapter MCP tenant-aware o cliente HTTP directo.
+- Si `curated_evidence_repository` no se inyecta en `BemSubmitService`, el comportamiento anterior queda intacto.
 
 ### BEM
 
@@ -165,14 +195,32 @@ Configuración alternativa:
 SMARTPYME_BEM_RUNS_DB_PATH
 ```
 
-Este registro conserva el run y el `response_payload` de BEM. No equivale todavía a evidencia curada del dominio SmartPyme.
+Este registro conserva el run y el `response_payload` de BEM.
+
+Inmediatamente después, si el `response_payload` contiene `outputs[0].transformedContent`, se promueve automáticamente a evidencia curada:
+
+```text
+CuratedEvidenceRepositoryBackend
+```
+
+DB local por defecto:
+
+```text
+data/curated_evidence.db
+```
+
+Configuración alternativa:
+
+```text
+SMARTPYME_CURATED_EVIDENCE_DB_PATH
+```
 
 ## Validación
 
 ```bash
 grep -n "mcp.run" mcp_smartpyme_bridge.py
 grep -n "bem_submit_workflow" mcp_smartpyme_bridge.py
-pytest tests -q --tb=short
+pytest tests/api/test_bem_submit_router.py tests/test_mcp_smartpyme_bridge.py tests/services/test_bem_submit_service_curated_evidence.py tests/services/test_bem_curated_evidence_adapter.py -q --tb=short
 ```
 
 ## Criterio de alineación

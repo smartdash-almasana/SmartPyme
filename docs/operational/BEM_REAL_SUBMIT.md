@@ -74,6 +74,7 @@ curl -X POST "http://127.0.0.1:8000/api/v1/bem/submit" \
 
 - `status = COMPLETED` si BEM responde OK.
 - run persistido en `data/bem_runs.db`.
+- `CuratedEvidenceRecord` persistido automáticamente en `data/curated_evidence.db` si el `response_payload` contiene `outputs[0].transformedContent`.
 
 Respuesta esperada en éxito:
 
@@ -85,6 +86,8 @@ Respuesta esperada en éxito:
   "status": "COMPLETED"
 }
 ```
+
+Nota: el `CuratedEvidenceRecord` se persiste en background. Si el `response_payload` de BEM no contiene `outputs[0].transformedContent`, el submit devuelve `400` (adapter fail-closed).
 
 ---
 
@@ -101,12 +104,13 @@ Entradas:
 - `tenant_id`
 - `workflow_id`
 - `payload`
-- `db_path` (opcional)
+- `db_path` (opcional — ruta SQLite de runs BEM)
 
 Resultado esperado:
 
 - `status = COMPLETED` si BEM responde OK.
-- run persistido por tenant en SQLite de runs.
+- run persistido por tenant en SQLite de runs (`data/bem_runs.db`).
+- `CuratedEvidenceRecord` persistido automáticamente en `data/curated_evidence.db` si el `response_payload` contiene `outputs[0].transformedContent`.
 
 ---
 
