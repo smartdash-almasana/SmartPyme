@@ -242,6 +242,37 @@ def _check_movimiento_inconsistente(
     return None
 
 
+def _check_inventario_fantasma(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    INVENTARIO_FANTASMA: stock_actual > 0, compras_periodo == 0, ventas_periodo == 0.
+
+    Severity: MEDIUM — inventario declarado sin movimiento operativo visible.
+    Posible error de carga, stock residual, inventario ficticio o trazabilidad rota.
+    """
+    stock = _to_number(payload.get("stock_actual"))
+    compras = _to_number(payload.get("compras_periodo"))
+    ventas = _to_number(payload.get("ventas_periodo"))
+
+    if stock is None or compras is None or ventas is None:
+        return None
+    if stock > 0 and compras == 0 and ventas == 0:
+        return {
+            "finding_type": "INVENTARIO_FANTASMA",
+            "severity": SEVERITY_MEDIUM,
+            "message": (
+                f"stock_actual ({stock}) es positivo pero compras_periodo ({compras}) "
+                f"y ventas_periodo ({ventas}) son 0. "
+                "No hay movimiento operativo visible en el período. "
+                "Posible inventario ficticio, stock residual o trazabilidad rota."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_precio_desactualizado(
     payload: dict[str, Any],
     evidence_id: str,
@@ -314,6 +345,7 @@ _RULES = [
     _check_movimiento_inconsistente,
     _check_stock_inmovilizado,
     _check_precio_desactualizado,
+    _check_inventario_fantasma,
 ]
 
 

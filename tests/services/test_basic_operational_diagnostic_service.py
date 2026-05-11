@@ -636,3 +636,79 @@ def test_precio_desactualizado_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "PRECIO_DESACTUALIZADO" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# INVENTARIO_FANTASMA
+# ---------------------------------------------------------------------------
+
+
+def test_inventario_fantasma_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara con stock positivo y cero compras/ventas en el período."""
+    _insert(repo, "ev-001", {"stock_actual": 30.0, "compras_periodo": 0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "INVENTARIO_FANTASMA" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "INVENTARIO_FANTASMA")
+    assert finding["severity"] == "MEDIUM"
+    assert finding["evidence_id"] == "ev-001"
+    assert "30.0" in finding["message"]
+    assert "compras_periodo" in finding["message"]
+    assert "ventas_periodo" in finding["message"]
+
+
+def test_inventario_fantasma_not_triggered_when_hay_ventas(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si hubo ventas en el período."""
+    _insert(repo, "ev-001", {"stock_actual": 30.0, "compras_periodo": 0, "ventas_periodo": 5.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "INVENTARIO_FANTASMA" not in _finding_types(report)
+
+
+def test_inventario_fantasma_not_triggered_when_hay_compras(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si hubo compras en el período."""
+    _insert(repo, "ev-001", {"stock_actual": 30.0, "compras_periodo": 10.0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "INVENTARIO_FANTASMA" not in _finding_types(report)
+
+
+def test_inventario_fantasma_not_triggered_when_stock_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si stock_actual == 0."""
+    _insert(repo, "ev-001", {"stock_actual": 0, "compras_periodo": 0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "INVENTARIO_FANTASMA" not in _finding_types(report)
+
+
+def test_inventario_fantasma_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los tres campos."""
+    # Falta compras_periodo
+    _insert(repo, "ev-001", {"stock_actual": 30.0, "ventas_periodo": 0})
+    # Falta ventas_periodo
+    _insert(repo, "ev-002", {"stock_actual": 30.0, "compras_periodo": 0})
+    # Falta stock_actual
+    _insert(repo, "ev-003", {"compras_periodo": 0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "INVENTARIO_FANTASMA" not in _finding_types(report)
