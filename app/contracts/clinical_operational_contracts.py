@@ -508,3 +508,90 @@ class FindingRecord(BaseModel):
                 raise ValueError("rejection_reason es obligatorio cuando status == REJECTED")
 
         return self
+
+
+class Signal(BaseModel):
+    signal_type: str = Field(...)
+    severity: str = Field(...)
+    evidence_refs: list[str] = Field(...)
+    explanation: str = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "Signal":
+        if not self.signal_type or not self.signal_type.strip():
+            raise ValueError("signal_type no puede ser vacio")
+        if not self.severity or not self.severity.strip():
+            raise ValueError("severity no puede ser vacio")
+        if not self.explanation or not self.explanation.strip():
+            raise ValueError("explanation no puede ser vacio")
+        if not self.evidence_refs:
+            raise ValueError("evidence_refs debe tener al menos un item")
+        if any((not isinstance(ref, str) or not ref.strip()) for ref in self.evidence_refs):
+            raise ValueError("evidence_refs no puede contener items vacios")
+        return self
+
+
+class Hypothesis(BaseModel):
+    hypothesis_type: str = Field(...)
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    supporting_signals: list[str] = Field(...)
+    requires_clarification: bool = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "Hypothesis":
+        if not self.hypothesis_type or not self.hypothesis_type.strip():
+            raise ValueError("hypothesis_type no puede ser vacio")
+        if not self.supporting_signals:
+            raise ValueError("supporting_signals debe tener al menos un item")
+        if any((not isinstance(sig, str) or not sig.strip()) for sig in self.supporting_signals):
+            raise ValueError("supporting_signals no puede contener items vacios")
+        return self
+
+
+class ClarificationRequest(BaseModel):
+    question: str = Field(...)
+    related_hypothesis: str = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "ClarificationRequest":
+        if not self.question or not self.question.strip():
+            raise ValueError("question no puede ser vacio")
+        if not self.related_hypothesis or not self.related_hypothesis.strip():
+            raise ValueError("related_hypothesis no puede ser vacio")
+        return self
+
+
+class OwnerCriterion(BaseModel):
+    criterion_type: str = Field(...)
+    description: str = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "OwnerCriterion":
+        if not self.criterion_type or not self.criterion_type.strip():
+            raise ValueError("criterion_type no puede ser vacio")
+        if not self.description or not self.description.strip():
+            raise ValueError("description no puede ser vacio")
+        return self
+
+
+class OperationalPicture(BaseModel):
+    picture_type: str = Field(...)
+    status: str = Field(...)
+    related_hypotheses: list[str] = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "OperationalPicture":
+        if not self.picture_type or not self.picture_type.strip():
+            raise ValueError("picture_type no puede ser vacio")
+        if not self.status or not self.status.strip():
+            raise ValueError("status no puede ser vacio")
+        if not self.related_hypotheses:
+            raise ValueError("related_hypotheses debe tener al menos un item")
+        if any((not isinstance(h, str) or not h.strip()) for h in self.related_hypotheses):
+            raise ValueError("related_hypotheses no puede contener items vacios")
+        return self
+
+
+class AssertivenessScore(BaseModel):
+    score: float = Field(..., ge=0.0, le=1.0)
+    certified_by_owner: bool = Field(...)

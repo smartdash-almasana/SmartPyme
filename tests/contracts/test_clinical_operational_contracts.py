@@ -6,14 +6,20 @@ import pytest
 from pydantic import ValidationError
 
 from app.contracts.clinical_operational_contracts import (
+    AssertivenessScore,
+    ClarificationRequest,
     DocumentIngestion,
     EvidenceRecord,
     FindingRecord,
     FormulaExecution,
+    Hypothesis,
+    OperationalPicture,
     OperationalCase,
     OperationalCaseCandidate,
+    OwnerCriterion,
     PathologyCandidate,
     ReceptionRecord,
+    Signal,
     VariableObservation,
 )
 
@@ -356,6 +362,89 @@ def test_variable_observation_confidence_menor_a_0_falla():
 def test_variable_observation_confidence_mayor_a_1_falla():
     with pytest.raises(ValidationError):
         _valid_observation(confidence=1.01)
+
+
+def test_signal_valido():
+    signal = Signal(
+        signal_type="MARGEN_NEGATIVO",
+        severity="HIGH",
+        evidence_refs=["ev-001"],
+        explanation="Venta por debajo del costo.",
+    )
+    assert signal.signal_type == "MARGEN_NEGATIVO"
+
+
+def test_signal_rechaza_campos_vacios_y_lista_vacia():
+    with pytest.raises(ValidationError, match="signal_type"):
+        Signal(signal_type=" ", severity="HIGH", evidence_refs=["ev-001"], explanation="ok")
+    with pytest.raises(ValidationError, match="evidence_refs"):
+        Signal(signal_type="A", severity="HIGH", evidence_refs=[], explanation="ok")
+
+
+def test_hypothesis_valida():
+    hyp = Hypothesis(
+        hypothesis_type="MARGEN_DANADO",
+        confidence=0.7,
+        supporting_signals=["MARGEN_NEGATIVO"],
+        requires_clarification=True,
+    )
+    assert hyp.requires_clarification is True
+
+
+def test_hypothesis_confidence_fuera_de_rango_falla():
+    with pytest.raises(ValidationError):
+        Hypothesis(
+            hypothesis_type="X",
+            confidence=1.1,
+            supporting_signals=["S1"],
+            requires_clarification=False,
+        )
+
+
+def test_hypothesis_rechaza_supporting_signals_vacia():
+    with pytest.raises(ValidationError, match="supporting_signals"):
+        Hypothesis(
+            hypothesis_type="X",
+            confidence=0.5,
+            supporting_signals=[],
+            requires_clarification=False,
+        )
+
+
+def test_clarification_request_valida_y_rechaza_vacios():
+    req = ClarificationRequest(question="Falta stock real?", related_hypothesis="MARGEN_DANADO")
+    assert req.related_hypothesis == "MARGEN_DANADO"
+    with pytest.raises(ValidationError, match="question"):
+        ClarificationRequest(question=" ", related_hypothesis="H1")
+
+
+def test_owner_criterion_valido_y_rechaza_vacios():
+    crit = OwnerCriterion(criterion_type="LIQUIDEZ", description="Priorizar caja sobre crecimiento")
+    assert crit.criterion_type == "LIQUIDEZ"
+    with pytest.raises(ValidationError, match="description"):
+        OwnerCriterion(criterion_type="LIQUIDEZ", description=" ")
+
+
+def test_operational_picture_valida_y_rechaza_lista_vacia():
+    pic = OperationalPicture(
+        picture_type="PANORAMA_CAJA",
+        status="EN_ALERTA",
+        related_hypotheses=["MARGEN_DANADO"],
+    )
+    assert pic.status == "EN_ALERTA"
+    with pytest.raises(ValidationError, match="related_hypotheses"):
+        OperationalPicture(
+            picture_type="PANORAMA_CAJA",
+            status="EN_ALERTA",
+            related_hypotheses=[],
+        )
+
+
+def test_assertiveness_score_valido_y_rango_fallido():
+    score = AssertivenessScore(score=0.9, certified_by_owner=False)
+    assert score.score == 0.9
+    with pytest.raises(ValidationError):
+        AssertivenessScore(score=-0.1, certified_by_owner=True)
 
 
 def test_variable_observation_confirmed_requiere_value():
