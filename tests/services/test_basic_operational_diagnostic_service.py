@@ -712,3 +712,81 @@ def test_inventario_fantasma_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "INVENTARIO_FANTASMA" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# DUPLICADO_OPERACIONAL
+# ---------------------------------------------------------------------------
+
+
+def test_duplicado_operacional_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Detecta duplicado exacto: misma referencia, monto y fecha."""
+    _insert(repo, "ev-001", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-15"})
+    _insert(repo, "ev-002", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-15"})
+
+    report = service.build_report("tenant-1")
+
+    assert "DUPLICADO_OPERACIONAL" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "DUPLICADO_OPERACIONAL")
+    assert finding["severity"] == "HIGH"
+    assert finding["referencia"] == "FAC-001"
+    assert finding["cantidad_detectada"] == "2"
+
+
+def test_duplicado_operacional_not_triggered_with_distinct_referencia(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si las referencias son distintas."""
+    _insert(repo, "ev-001", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-15"})
+    _insert(repo, "ev-002", {"referencia": "FAC-002", "monto": 500.0, "fecha": "2024-01-15"})
+
+    report = service.build_report("tenant-1")
+
+    assert "DUPLICADO_OPERACIONAL" not in _finding_types(report)
+
+
+def test_duplicado_operacional_not_triggered_with_distinct_fecha(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si las fechas son distintas."""
+    _insert(repo, "ev-001", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-15"})
+    _insert(repo, "ev-002", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-16"})
+
+    report = service.build_report("tenant-1")
+
+    assert "DUPLICADO_OPERACIONAL" not in _finding_types(report)
+
+
+def test_duplicado_operacional_not_triggered_with_distinct_monto(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si los montos son distintos."""
+    _insert(repo, "ev-001", {"referencia": "FAC-001", "monto": 500.0, "fecha": "2024-01-15"})
+    _insert(repo, "ev-002", {"referencia": "FAC-001", "monto": 600.0, "fecha": "2024-01-15"})
+
+    report = service.build_report("tenant-1")
+
+    assert "DUPLICADO_OPERACIONAL" not in _finding_types(report)
+
+
+def test_duplicado_operacional_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: registros con campos faltantes son ignorados."""
+    # Sin fecha
+    _insert(repo, "ev-001", {"referencia": "FAC-001", "monto": 500.0})
+    # Sin monto
+    _insert(repo, "ev-002", {"referencia": "FAC-001", "fecha": "2024-01-15"})
+    # Sin referencia
+    _insert(repo, "ev-003", {"monto": 500.0, "fecha": "2024-01-15"})
+
+    report = service.build_report("tenant-1")
+
+    assert "DUPLICADO_OPERACIONAL" not in _finding_types(report)

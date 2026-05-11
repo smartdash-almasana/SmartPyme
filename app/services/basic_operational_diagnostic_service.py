@@ -332,6 +332,61 @@ def _check_stock_inmovilizado(
 
 
 # ---------------------------------------------------------------------------
+# Reglas cross-record (operan sobre el conjunto completo de evidencias)
+# ---------------------------------------------------------------------------
+
+
+def _check_duplicado_operacional(
+    records: list[CuratedEvidenceRecord],
+) -> list[dict[str, str]]:
+    """
+    DUPLICADO_OPERACIONAL: dos o más registros comparten referencia + monto + fecha.
+
+    Severity: HIGH — posible doble carga manual, duplicación de venta o error
+    administrativo.
+
+    Fail-closed: registros sin alguno de los tres campos son ignorados.
+    """
+    from collections import defaultdict
+
+    # Agrupar por clave (referencia, monto, fecha)
+    groups: dict[tuple[str, str, str], list[str]] = defaultdict(list)
+
+    for record in records:
+        payload = record.payload
+        referencia = payload.get("referencia")
+        monto = payload.get("monto")
+        fecha = payload.get("fecha")
+
+        # Fail-closed: los tres campos deben estar presentes y ser no-None
+        if referencia is None or monto is None or fecha is None:
+            continue
+
+        key = (str(referencia), str(monto), str(fecha))
+        groups[key].append(record.evidence_id)
+
+    findings: list[dict[str, str]] = []
+    for (referencia, monto, fecha), evidence_ids in groups.items():
+        if len(evidence_ids) >= 2:
+            findings.append({
+                "finding_type": "DUPLICADO_OPERACIONAL",
+                "severity": SEVERITY_HIGH,
+                "message": (
+                    f"Se detectaron {len(evidence_ids)} registros con referencia='{referencia}', "
+                    f"monto='{monto}', fecha='{fecha}'. "
+                    "Posible doble carga, duplicación de venta o error administrativo."
+                ),
+                "referencia": referencia,
+                "monto": monto,
+                "fecha": fecha,
+                "cantidad_detectada": str(len(evidence_ids)),
+                "evidence_ids": ",".join(evidence_ids),
+                "evidence_id": evidence_ids[0],
+            })
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Reglas registradas — orden determinístico
 # ---------------------------------------------------------------------------
 
@@ -405,6 +460,8 @@ class BasicOperationalDiagnosticService:
         findings: list[dict[str, str]] = []
         for record in records:
             findings.extend(_apply_rules(record))
+
+        findings.extend(_check_duplicado_operacional(records))
 
         return {
             "tenant_id": tenant_id,
