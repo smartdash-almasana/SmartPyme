@@ -449,3 +449,67 @@ def test_build_report_fails_on_blank_tenant_id(
 ) -> None:
     with pytest.raises(ValueError, match="tenant_id"):
         service.build_report("   ")
+
+
+# ---------------------------------------------------------------------------
+# RENTABILIDAD_NULA
+# ---------------------------------------------------------------------------
+
+
+def test_rentabilidad_nula_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Detecta producto donde precio_venta == costo_unitario (margen 0)."""
+    _insert(repo, "ev-001", {"precio_venta": 100.0, "costo_unitario": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "RENTABILIDAD_NULA" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "RENTABILIDAD_NULA")
+    assert finding["severity"] == "HIGH"
+    assert finding["evidence_id"] == "ev-001"
+    assert "100.0" in finding["message"]
+    assert "Margen absoluto: 0" in finding["message"]
+
+
+def test_rentabilidad_nula_not_triggered_when_venta_mayor(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara cuando precio_venta > costo_unitario."""
+    _insert(repo, "ev-001", {"precio_venta": 120.0, "costo_unitario": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "RENTABILIDAD_NULA" not in _finding_types(report)
+
+
+def test_rentabilidad_nula_not_triggered_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No rompe con datos incompletos (falta costo_unitario)."""
+    _insert(repo, "ev-001", {"precio_venta": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "RENTABILIDAD_NULA" not in _finding_types(report)
+
+
+def test_rentabilidad_nula_coexists_with_other_rules(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """RENTABILIDAD_NULA convive con otras reglas sin interferencia."""
+    # Registro con rentabilidad nula
+    _insert(repo, "ev-001", {"precio_venta": 50.0, "costo_unitario": 50.0})
+    # Registro con stock negativo (regla distinta)
+    _insert(repo, "ev-002", {"stock_actual": -3})
+
+    report = service.build_report("tenant-1")
+    types = _finding_types(report)
+
+    assert "RENTABILIDAD_NULA" in types
+    assert "STOCK_NEGATIVO" in types
+    assert report["evidence_count"] == 2

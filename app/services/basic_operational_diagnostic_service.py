@@ -70,6 +70,36 @@ def _check_venta_bajo_costo(
     return None
 
 
+def _check_rentabilidad_nula(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    RENTABILIDAD_NULA: precio_venta == costo_unitario → margen absoluto 0.
+
+    Severity: HIGH — vender al costo no genera rentabilidad.
+    No cubre gastos operativos, impuestos ni margen de error.
+    """
+    precio = _to_number(payload.get("precio_venta"))
+    costo = _to_number(payload.get("costo_unitario"))
+
+    if precio is None or costo is None:
+        return None
+    if precio == costo:
+        diferencia = precio - costo  # siempre 0
+        return {
+            "finding_type": "RENTABILIDAD_NULA",
+            "severity": SEVERITY_HIGH,
+            "message": (
+                f"precio_venta ({precio}) es igual a costo_unitario ({costo}). "
+                f"Margen absoluto: {diferencia}. Margen porcentual: 0%. "
+                "La venta no genera rentabilidad."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_margen_critico(
     payload: dict[str, Any],
     evidence_id: str,
@@ -218,6 +248,7 @@ def _check_movimiento_inconsistente(
 
 _RULES = [
     _check_venta_bajo_costo,
+    _check_rentabilidad_nula,
     _check_margen_critico,
     _check_costo_cero_sospechoso,
     _check_venta_sin_stock,
