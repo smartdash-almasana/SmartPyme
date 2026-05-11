@@ -574,3 +574,65 @@ def test_stock_inmovilizado_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "STOCK_INMOVILIZADO" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# PRECIO_DESACTUALIZADO
+# ---------------------------------------------------------------------------
+
+
+def test_precio_desactualizado_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara cuando costo_actual > precio_venta."""
+    _insert(repo, "ev-001", {"precio_venta": 80.0, "costo_actual": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "PRECIO_DESACTUALIZADO" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "PRECIO_DESACTUALIZADO")
+    assert finding["severity"] == "HIGH"
+    assert finding["evidence_id"] == "ev-001"
+    assert "100.0" in finding["message"]
+    assert "80.0" in finding["message"]
+    assert "20.00" in finding["message"]
+
+
+def test_precio_desactualizado_not_triggered_when_precio_mayor(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara cuando precio_venta > costo_actual."""
+    _insert(repo, "ev-001", {"precio_venta": 120.0, "costo_actual": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "PRECIO_DESACTUALIZADO" not in _finding_types(report)
+
+
+def test_precio_desactualizado_not_triggered_when_iguales(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara cuando precio_venta == costo_actual."""
+    _insert(repo, "ev-001", {"precio_venta": 100.0, "costo_actual": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "PRECIO_DESACTUALIZADO" not in _finding_types(report)
+
+
+def test_precio_desactualizado_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los dos campos."""
+    # Solo precio_venta, sin costo_actual
+    _insert(repo, "ev-001", {"precio_venta": 80.0})
+    # Solo costo_actual, sin precio_venta
+    _insert(repo, "ev-002", {"costo_actual": 100.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "PRECIO_DESACTUALIZADO" not in _finding_types(report)

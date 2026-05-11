@@ -242,6 +242,37 @@ def _check_movimiento_inconsistente(
     return None
 
 
+def _check_precio_desactualizado(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    PRECIO_DESACTUALIZADO: costo_actual > precio_venta.
+
+    Severity: HIGH — el costo actualizado ya superó el precio de venta.
+    Posible lista de precios atrasada o margen negativo oculto.
+    Síntoma inflacionario o problema de pricing.
+    """
+    precio = _to_number(payload.get("precio_venta"))
+    costo_actual = _to_number(payload.get("costo_actual"))
+
+    if precio is None or costo_actual is None:
+        return None
+    if costo_actual > precio:
+        diferencia = costo_actual - precio
+        return {
+            "finding_type": "PRECIO_DESACTUALIZADO",
+            "severity": SEVERITY_HIGH,
+            "message": (
+                f"costo_actual ({costo_actual}) supera precio_venta ({precio}). "
+                f"Diferencia: {diferencia:.2f}. "
+                "La lista de precios puede estar desactualizada o el margen es negativo."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_stock_inmovilizado(
     payload: dict[str, Any],
     evidence_id: str,
@@ -282,6 +313,7 @@ _RULES = [
     _check_stock_negativo,
     _check_movimiento_inconsistente,
     _check_stock_inmovilizado,
+    _check_precio_desactualizado,
 ]
 
 
