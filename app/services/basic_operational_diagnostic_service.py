@@ -70,6 +70,38 @@ def _check_venta_bajo_costo(
     return None
 
 
+def _check_margen_critico(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    MARGEN_CRITICO: precio_venta > costo_unitario y margen < 5%.
+
+    Severity: HIGH — margen positivo pero insuficiente para absorber gastos,
+    descuentos o variaciones de costo.
+    """
+    precio = _to_number(payload.get("precio_venta"))
+    costo = _to_number(payload.get("costo_unitario"))
+
+    if precio is None or costo is None:
+        return None
+    if precio <= 0 or precio <= costo:
+        return None
+
+    margen = (precio - costo) / precio
+    if margen < 0.05:
+        return {
+            "finding_type": "MARGEN_CRITICO",
+            "severity": SEVERITY_HIGH,
+            "message": (
+                f"margen ({margen:.2%}) es menor al umbral crítico de 5%. "
+                "La venta tiene margen positivo pero insuficiente."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_stock_negativo(
     payload: dict[str, Any],
     evidence_id: str,
@@ -129,6 +161,7 @@ def _check_movimiento_inconsistente(
 
 _RULES = [
     _check_venta_bajo_costo,
+    _check_margen_critico,
     _check_stock_negativo,
     _check_movimiento_inconsistente,
 ]
