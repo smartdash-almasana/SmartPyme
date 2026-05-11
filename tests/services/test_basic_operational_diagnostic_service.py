@@ -300,9 +300,10 @@ def test_multiple_findings_from_single_record(
     types = _finding_types(report)
 
     assert "VENTA_BAJO_COSTO" in types
+    assert "VENTA_SIN_STOCK" in types
     assert "STOCK_NEGATIVO" in types
     assert "MOVIMIENTO_INCONSISTENTE" in types
-    assert len(types) == 3
+    assert len(types) == 4
 
 
 def test_multiple_findings_from_multiple_records(
