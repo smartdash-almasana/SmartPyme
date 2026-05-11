@@ -851,3 +851,78 @@ def test_compra_sin_venta_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "COMPRA_SIN_VENTA" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# VENTA_ESTANCADA
+# ---------------------------------------------------------------------------
+
+
+def test_venta_estancada_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara cuando ventas_periodo < 10% de stock_actual."""
+    # ventas=5, stock=100 → ratio=0.05 < 0.10
+    _insert(repo, "ev-001", {"stock_actual": 100.0, "ventas_periodo": 5.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "VENTA_ESTANCADA" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "VENTA_ESTANCADA")
+    assert finding["severity"] == "MEDIUM"
+    assert finding["evidence_id"] == "ev-001"
+    assert "ratio_rotacion" in finding
+    assert float(finding["ratio_rotacion"]) < 0.10
+
+
+def test_venta_estancada_not_triggered_when_ventas_suficientes(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si ventas_periodo >= 10% del stock."""
+    # ventas=15, stock=100 → ratio=0.15 >= 0.10
+    _insert(repo, "ev-001", {"stock_actual": 100.0, "ventas_periodo": 15.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "VENTA_ESTANCADA" not in _finding_types(report)
+
+
+def test_venta_estancada_not_triggered_when_ventas_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si ventas_periodo == 0 (eso es STOCK_INMOVILIZADO, no VENTA_ESTANCADA)."""
+    _insert(repo, "ev-001", {"stock_actual": 100.0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "VENTA_ESTANCADA" not in _finding_types(report)
+
+
+def test_venta_estancada_not_triggered_when_stock_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si stock_actual == 0."""
+    _insert(repo, "ev-001", {"stock_actual": 0, "ventas_periodo": 5.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "VENTA_ESTANCADA" not in _finding_types(report)
+
+
+def test_venta_estancada_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los dos campos."""
+    # Solo stock_actual, sin ventas_periodo
+    _insert(repo, "ev-001", {"stock_actual": 100.0})
+    # Solo ventas_periodo, sin stock_actual
+    _insert(repo, "ev-002", {"ventas_periodo": 5.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "VENTA_ESTANCADA" not in _finding_types(report)

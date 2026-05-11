@@ -331,6 +331,40 @@ def _check_stock_inmovilizado(
     return None
 
 
+def _check_venta_estancada(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    VENTA_ESTANCADA: stock_actual > 0, ventas_periodo > 0,
+    ventas_periodo < stock_actual * 0.10.
+
+    Severity: MEDIUM — rotación extremadamente baja respecto al inventario disponible.
+    Posible sobrestock silencioso, capital inmovilizado parcialmente o producto enfriándose.
+    """
+    stock = _to_number(payload.get("stock_actual"))
+    ventas = _to_number(payload.get("ventas_periodo"))
+
+    if stock is None or ventas is None:
+        return None
+    if stock <= 0 or ventas <= 0:
+        return None
+
+    ratio = ventas / stock
+    if ratio < 0.10:
+        return {
+            "finding_type": "VENTA_ESTANCADA",
+            "severity": SEVERITY_MEDIUM,
+            "message": (
+                f"ventas_periodo ({ventas}) representa solo {ratio:.2%} del stock_actual ({stock}). "
+                "Rotación extremadamente baja. Posible sobrestock o producto enfriándose."
+            ),
+            "ratio_rotacion": f"{ratio:.4f}",
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_compra_sin_venta(
     payload: dict[str, Any],
     evidence_id: str,
@@ -430,6 +464,7 @@ _RULES = [
     _check_precio_desactualizado,
     _check_inventario_fantasma,
     _check_compra_sin_venta,
+    _check_venta_estancada,
 ]
 
 
