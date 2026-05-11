@@ -66,8 +66,8 @@ def _load_env_local(path: Path = Path(".env.local")) -> dict[str, str]:
 
 
 def _resolve_setting(cli_value: str | None, env_name: str, env_local: dict[str, str]) -> str:
-    if isinstance(cli_value, str) and cli_value.strip():
-        return cli_value.strip()
+    if cli_value is not None:
+        return cli_value.strip() if isinstance(cli_value, str) else ""
     env_value = os.getenv(env_name, "")
     if env_value.strip():
         return env_value.strip()
