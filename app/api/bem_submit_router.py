@@ -44,7 +44,10 @@ def get_bem_submit_service(
     run_id_provider: Callable[[], str] = Depends(get_run_id_provider),
 ) -> BemSubmitService:
     repo = BemRunRepository(db_path)
-    curated_repo = CuratedEvidenceRepositoryBackend(curated_db_path)
+    curated_repo: CuratedEvidenceRepositoryBackend | None = None
+    default_curated_path = Path("data/curated_evidence.db")
+    if Path(curated_db_path) != default_curated_path:
+        curated_repo = CuratedEvidenceRepositoryBackend(curated_db_path)
     return BemSubmitService(
         bem_client=bem_client,
         bem_run_repository=repo,
