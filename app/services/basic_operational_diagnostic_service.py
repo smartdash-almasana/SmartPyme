@@ -102,6 +102,34 @@ def _check_margen_critico(
     return None
 
 
+def _check_costo_cero_sospechoso(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    COSTO_CERO_SOSPECHOSO: costo_unitario == 0 y precio_venta > 0.
+
+    Severity: MEDIUM — puede indicar costo faltante, error de importación o
+    producto sin costeo cargado.
+    """
+    precio = _to_number(payload.get("precio_venta"))
+    costo = _to_number(payload.get("costo_unitario"))
+
+    if precio is None or costo is None:
+        return None
+    if costo == 0 and precio > 0:
+        return {
+            "finding_type": "COSTO_CERO_SOSPECHOSO",
+            "severity": SEVERITY_MEDIUM,
+            "message": (
+                f"costo_unitario ({costo}) es 0 con precio_venta ({precio}) positivo. "
+                "Puede faltar el costo o existir un error de importación."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_venta_sin_stock(
     payload: dict[str, Any],
     evidence_id: str,
@@ -191,6 +219,7 @@ def _check_movimiento_inconsistente(
 _RULES = [
     _check_venta_bajo_costo,
     _check_margen_critico,
+    _check_costo_cero_sospechoso,
     _check_venta_sin_stock,
     _check_stock_negativo,
     _check_movimiento_inconsistente,
