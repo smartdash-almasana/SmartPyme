@@ -13,7 +13,10 @@ from uuid import uuid4
 from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.mcp.tools.owner_status_tool import get_owner_status
+from app.repositories.supabase_curated_evidence_repository import SupabaseCuratedEvidenceRepository
+from app.services.basic_operational_diagnostic_service import BasicOperationalDiagnosticService
 from app.services.bem_client import BemClient
+from app.services.bem_curated_evidence_adapter import BemCuratedEvidenceAdapter
 from app.services.document_intake_service import DocumentIntakeService
 from app.services.identity_service import IdentityService
 
@@ -43,6 +46,9 @@ class TelegramAdapter:
         telegram_send_message: TelegramSendMessage | None = None,
         bem_xlsx_submitter: BEMXlsxSubmitter | None = None,
         bem_workflow_id: str | None = None,
+        curated_evidence_repository: Any | None = None,
+        diagnostic_service: BasicOperationalDiagnosticService | None = None,
+        bem_curated_evidence_adapter: BemCuratedEvidenceAdapter | None = None,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
@@ -54,6 +60,9 @@ class TelegramAdapter:
         self.telegram_send_message = telegram_send_message
         self.bem_xlsx_submitter = bem_xlsx_submitter
         self.bem_workflow_id = bem_workflow_id
+        self.curated_evidence_repository = curated_evidence_repository
+        self.diagnostic_service = diagnostic_service
+        self.bem_curated_evidence_adapter = bem_curated_evidence_adapter or BemCuratedEvidenceAdapter()
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -74,6 +83,12 @@ class TelegramAdapter:
                     "Cuenta no vinculada. Usá /vincular <token> para "
                     "autorizar Telegram."
                 ),
+            }
+        if not isinstance(cliente_id, str) or not cliente_id.strip():
+            return {
+                "status": "security_error",
+                "telegram_user_id": str(user_id),
+                "message": "tenant_id inválido para usuario autenticado.",
             }
 
         document = self._extract_document(update_dict)
@@ -305,14 +320,58 @@ class TelegramAdapter:
                 raise ValueError("telegram download empty")
 
             result = submitter(cliente_id, file_name, file_bytes, file_id.strip())
-            self._safe_send_message(user_id, "Archivo recibido y procesado por BEM")
-            return {"status": "ok", "response_keys": sorted(result.keys())}
+            envelope = self._resolve_bem_envelope(result)
+            repository = self.curated_evidence_repository or SupabaseCuratedEvidenceRepository()
+            curated = self.bem_curated_evidence_adapter.build_curated_evidence_from_bem_response(
+                tenant_id=cliente_id,
+                response_payload=envelope,
+                run_id=None,
+            )
+            repository.create(curated)
+
+            diagnostic = self.diagnostic_service or BasicOperationalDiagnosticService(repository=repository)
+            report = diagnostic.build_report(cliente_id)
+            findings = report.get("findings", [])
+            if findings:
+                self._safe_send_message(user_id, self._build_findings_message(findings))
+            else:
+                self._safe_send_message(
+                    user_id,
+                    "Archivo procesado. No se detectaron hallazgos operacionales.",
+                )
+            return {
+                "status": "ok",
+                "response_keys": sorted(result.keys()),
+                "findings_count": len(findings),
+            }
         except Exception as exc:
             self._safe_send_message(
                 user_id,
                 "Error controlado al procesar XLSX con BEM. Intentá nuevamente.",
             )
             return {"status": "error", "reason": str(exc)}
+
+    def _resolve_bem_envelope(self, raw_response: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(raw_response, dict):
+            raise TypeError("bem response invalid")
+        call = raw_response.get("call")
+        if isinstance(call, dict):
+            return call
+        return raw_response
+
+    def _build_findings_message(self, findings: list[dict[str, Any]]) -> str:
+        counts: dict[str, int] = {}
+        for finding in findings:
+            code = str(finding.get("finding_type", "")).strip()
+            if not code:
+                continue
+            counts[code] = counts.get(code, 0) + 1
+        if not counts:
+            return "Archivo procesado. No se detectaron hallazgos operacionales."
+        lines = ["Hallazgos detectados:"]
+        for code in sorted(counts.keys()):
+            lines.append(f"- {code} ({counts[code]})")
+        return "\n".join(lines)
 
     def _safe_send_message(self, chat_id: int | str, text: str) -> None:
         sender = self.telegram_send_message or self._default_telegram_send_message
