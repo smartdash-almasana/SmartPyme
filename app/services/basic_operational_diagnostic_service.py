@@ -102,6 +102,35 @@ def _check_margen_critico(
     return None
 
 
+def _check_venta_sin_stock(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    VENTA_SIN_STOCK: cantidad == 0 y existe venta valorizada.
+
+    Severity: HIGH — venta registrada sin unidades asociadas requiere revisión
+    inmediata de stock, facturación o integración de inventario.
+    """
+    cantidad = _to_number(payload.get("cantidad"))
+    precio = _to_number(payload.get("precio_venta"))
+    monto = _to_number(payload.get("monto_total"))
+
+    if cantidad is None:
+        return None
+    if cantidad == 0 and ((precio is not None and precio > 0) or (monto is not None and monto > 0)):
+        return {
+            "finding_type": "VENTA_SIN_STOCK",
+            "severity": SEVERITY_HIGH,
+            "message": (
+                "cantidad es 0 pero existe una venta valorizada. "
+                "Puede haber venta sin stock, error de carga o integración incompleta."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_stock_negativo(
     payload: dict[str, Any],
     evidence_id: str,
@@ -162,6 +191,7 @@ def _check_movimiento_inconsistente(
 _RULES = [
     _check_venta_bajo_costo,
     _check_margen_critico,
+    _check_venta_sin_stock,
     _check_stock_negativo,
     _check_movimiento_inconsistente,
 ]
