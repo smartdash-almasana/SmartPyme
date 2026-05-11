@@ -331,6 +331,40 @@ def _check_stock_inmovilizado(
     return None
 
 
+def _check_descuento_excesivo(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    DESCUENTO_EXCESIVO: precio_venta < precio_lista * 0.70 (descuento > 30%).
+
+    Severity: HIGH — erosión agresiva de margen por descuento descontrolado.
+    Posible política comercial inconsistente o necesidad de revisión de precios.
+    """
+    precio_lista = _to_number(payload.get("precio_lista"))
+    precio_venta = _to_number(payload.get("precio_venta"))
+
+    if precio_lista is None or precio_venta is None:
+        return None
+    if precio_lista <= 0 or precio_venta <= 0:
+        return None
+
+    if precio_venta < precio_lista * 0.70:
+        pct_descuento = ((precio_lista - precio_venta) / precio_lista) * 100
+        return {
+            "finding_type": "DESCUENTO_EXCESIVO",
+            "severity": SEVERITY_HIGH,
+            "message": (
+                f"precio_venta ({precio_venta}) representa un descuento de {pct_descuento:.2f}% "
+                f"sobre precio_lista ({precio_lista}). "
+                "Descuento superior al 30%. Posible erosión de margen o política inconsistente."
+            ),
+            "porcentaje_descuento": f"{pct_descuento:.2f}",
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 def _check_venta_estancada(
     payload: dict[str, Any],
     evidence_id: str,
@@ -465,6 +499,7 @@ _RULES = [
     _check_inventario_fantasma,
     _check_compra_sin_venta,
     _check_venta_estancada,
+    _check_descuento_excesivo,
 ]
 
 

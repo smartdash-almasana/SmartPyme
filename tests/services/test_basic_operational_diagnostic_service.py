@@ -926,3 +926,79 @@ def test_venta_estancada_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "VENTA_ESTANCADA" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# DESCUENTO_EXCESIVO
+# ---------------------------------------------------------------------------
+
+
+def test_descuento_excesivo_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara cuando el descuento supera el 30% (precio_venta < precio_lista * 0.70)."""
+    # precio_lista=100, precio_venta=60 → descuento=40%
+    _insert(repo, "ev-001", {"precio_lista": 100.0, "precio_venta": 60.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "DESCUENTO_EXCESIVO" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "DESCUENTO_EXCESIVO")
+    assert finding["severity"] == "HIGH"
+    assert finding["evidence_id"] == "ev-001"
+    assert "porcentaje_descuento" in finding
+    assert float(finding["porcentaje_descuento"]) > 30.0
+
+
+def test_descuento_excesivo_not_triggered_when_descuento_exacto_30(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara cuando el descuento es exactamente 30% (precio_venta == precio_lista * 0.70)."""
+    # precio_lista=100, precio_venta=70 → descuento=30% exacto
+    _insert(repo, "ev-001", {"precio_lista": 100.0, "precio_venta": 70.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "DESCUENTO_EXCESIVO" not in _finding_types(report)
+
+
+def test_descuento_excesivo_not_triggered_when_descuento_menor(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara cuando el descuento es menor al 30%."""
+    # precio_lista=100, precio_venta=80 → descuento=20%
+    _insert(repo, "ev-001", {"precio_lista": 100.0, "precio_venta": 80.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "DESCUENTO_EXCESIVO" not in _finding_types(report)
+
+
+def test_descuento_excesivo_not_triggered_when_precio_lista_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si precio_lista == 0."""
+    _insert(repo, "ev-001", {"precio_lista": 0, "precio_venta": 60.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "DESCUENTO_EXCESIVO" not in _finding_types(report)
+
+
+def test_descuento_excesivo_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los dos campos."""
+    # Solo precio_lista, sin precio_venta
+    _insert(repo, "ev-001", {"precio_lista": 100.0})
+    # Solo precio_venta, sin precio_lista
+    _insert(repo, "ev-002", {"precio_venta": 60.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "DESCUENTO_EXCESIVO" not in _finding_types(report)
