@@ -132,6 +132,46 @@ def test_venta_bajo_costo_not_triggered_when_above(
 
 
 # ---------------------------------------------------------------------------
+# MARGEN_CRITICO
+# ---------------------------------------------------------------------------
+
+
+def test_margen_critico_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 100.0, "costo_unitario": 96.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "MARGEN_CRITICO" in _finding_types(report)
+
+
+def test_margen_critico_severity_high(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 100.0, "costo_unitario": 96.0})
+
+    report = service.build_report("tenant-1")
+    finding = next(f for f in report["findings"] if f["finding_type"] == "MARGEN_CRITICO")
+
+    assert finding["severity"] == "HIGH"
+    assert finding["evidence_id"] == "ev-001"
+
+
+def test_margen_critico_not_triggered_when_margin_ok(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    _insert(repo, "ev-001", {"precio_venta": 100.0, "costo_unitario": 80.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "MARGEN_CRITICO" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
 # STOCK_NEGATIVO
 # ---------------------------------------------------------------------------
 
