@@ -790,3 +790,64 @@ def test_duplicado_operacional_fail_closed_with_incomplete_data(
     report = service.build_report("tenant-1")
 
     assert "DUPLICADO_OPERACIONAL" not in _finding_types(report)
+
+
+# ---------------------------------------------------------------------------
+# COMPRA_SIN_VENTA
+# ---------------------------------------------------------------------------
+
+
+def test_compra_sin_venta_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara con compras positivas y ventas_periodo == 0."""
+    _insert(repo, "ev-001", {"compras_periodo": 20.0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "COMPRA_SIN_VENTA" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "COMPRA_SIN_VENTA")
+    assert finding["severity"] == "MEDIUM"
+    assert finding["evidence_id"] == "ev-001"
+    assert "20.0" in finding["message"]
+    assert "ventas_periodo" in finding["message"]
+
+
+def test_compra_sin_venta_not_triggered_when_hay_ventas(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si hubo ventas en el período."""
+    _insert(repo, "ev-001", {"compras_periodo": 20.0, "ventas_periodo": 5.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "COMPRA_SIN_VENTA" not in _finding_types(report)
+
+
+def test_compra_sin_venta_not_triggered_when_compras_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si compras_periodo == 0."""
+    _insert(repo, "ev-001", {"compras_periodo": 0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "COMPRA_SIN_VENTA" not in _finding_types(report)
+
+
+def test_compra_sin_venta_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los dos campos."""
+    # Solo compras_periodo, sin ventas_periodo
+    _insert(repo, "ev-001", {"compras_periodo": 20.0})
+    # Solo ventas_periodo, sin compras_periodo
+    _insert(repo, "ev-002", {"ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "COMPRA_SIN_VENTA" not in _finding_types(report)

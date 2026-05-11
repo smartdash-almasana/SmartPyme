@@ -331,6 +331,34 @@ def _check_stock_inmovilizado(
     return None
 
 
+def _check_compra_sin_venta(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    COMPRA_SIN_VENTA: compras_periodo > 0 y ventas_periodo == 0.
+
+    Severity: MEDIUM — se continúa comprando inventario sin salida comercial visible.
+    Posible sobrecompra, error de planificación, producto muerto o compra automática defectuosa.
+    """
+    compras = _to_number(payload.get("compras_periodo"))
+    ventas = _to_number(payload.get("ventas_periodo"))
+
+    if compras is None or ventas is None:
+        return None
+    if compras > 0 and ventas == 0:
+        return {
+            "finding_type": "COMPRA_SIN_VENTA",
+            "severity": SEVERITY_MEDIUM,
+            "message": (
+                f"compras_periodo ({compras}) es positivo pero ventas_periodo ({ventas}) es 0. "
+                "Se acumula inventario sin rotación comercial visible en el período."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Reglas cross-record (operan sobre el conjunto completo de evidencias)
 # ---------------------------------------------------------------------------
@@ -401,6 +429,7 @@ _RULES = [
     _check_stock_inmovilizado,
     _check_precio_desactualizado,
     _check_inventario_fantasma,
+    _check_compra_sin_venta,
 ]
 
 
