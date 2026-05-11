@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "SmartPyme operational core and autonomous factory"
 requires-python = ">=3.11"
 dependencies = [
+  "openpyxl>=3.1",
   "polars>=1.0",
   "supabase>=2.0",
 ]
