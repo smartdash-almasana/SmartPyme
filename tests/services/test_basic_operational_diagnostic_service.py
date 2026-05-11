@@ -513,3 +513,64 @@ def test_rentabilidad_nula_coexists_with_other_rules(
     assert "RENTABILIDAD_NULA" in types
     assert "STOCK_NEGATIVO" in types
     assert report["evidence_count"] == 2
+
+
+# ---------------------------------------------------------------------------
+# STOCK_INMOVILIZADO
+# ---------------------------------------------------------------------------
+
+
+def test_stock_inmovilizado_detected(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Dispara con stock positivo y ventas_periodo == 0."""
+    _insert(repo, "ev-001", {"stock_actual": 50.0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "STOCK_INMOVILIZADO" in _finding_types(report)
+    finding = next(f for f in report["findings"] if f["finding_type"] == "STOCK_INMOVILIZADO")
+    assert finding["severity"] == "MEDIUM"
+    assert finding["evidence_id"] == "ev-001"
+    assert "50.0" in finding["message"]
+    assert "ventas_periodo" in finding["message"]
+
+
+def test_stock_inmovilizado_not_triggered_when_hay_ventas(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si hubo ventas en el período."""
+    _insert(repo, "ev-001", {"stock_actual": 50.0, "ventas_periodo": 10.0})
+
+    report = service.build_report("tenant-1")
+
+    assert "STOCK_INMOVILIZADO" not in _finding_types(report)
+
+
+def test_stock_inmovilizado_not_triggered_when_stock_cero(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """No dispara si stock_actual == 0 (no hay capital inmovilizado)."""
+    _insert(repo, "ev-001", {"stock_actual": 0, "ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "STOCK_INMOVILIZADO" not in _finding_types(report)
+
+
+def test_stock_inmovilizado_fail_closed_with_incomplete_data(
+    repo: CuratedEvidenceRepositoryBackend,
+    service: BasicOperationalDiagnosticService,
+) -> None:
+    """Fail-closed: no dispara si falta alguno de los dos campos."""
+    # Solo stock_actual, sin ventas_periodo
+    _insert(repo, "ev-001", {"stock_actual": 100.0})
+    # Solo ventas_periodo, sin stock_actual
+    _insert(repo, "ev-002", {"ventas_periodo": 0})
+
+    report = service.build_report("tenant-1")
+
+    assert "STOCK_INMOVILIZADO" not in _finding_types(report)

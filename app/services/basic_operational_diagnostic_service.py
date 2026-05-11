@@ -242,6 +242,33 @@ def _check_movimiento_inconsistente(
     return None
 
 
+def _check_stock_inmovilizado(
+    payload: dict[str, Any],
+    evidence_id: str,
+) -> dict[str, str] | None:
+    """
+    STOCK_INMOVILIZADO: stock_actual > 0 y ventas_periodo == 0.
+
+    Severity: MEDIUM — capital inmovilizado sin rotación en el período analizado.
+    """
+    stock = _to_number(payload.get("stock_actual"))
+    ventas = _to_number(payload.get("ventas_periodo"))
+
+    if stock is None or ventas is None:
+        return None
+    if stock > 0 and ventas == 0:
+        return {
+            "finding_type": "STOCK_INMOVILIZADO",
+            "severity": SEVERITY_MEDIUM,
+            "message": (
+                f"stock_actual ({stock}) es positivo pero ventas_periodo ({ventas}) es 0. "
+                "Hay capital inmovilizado sin rotación en el período analizado."
+            ),
+            "evidence_id": evidence_id,
+        }
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Reglas registradas — orden determinístico
 # ---------------------------------------------------------------------------
@@ -254,6 +281,7 @@ _RULES = [
     _check_venta_sin_stock,
     _check_stock_negativo,
     _check_movimiento_inconsistente,
+    _check_stock_inmovilizado,
 ]
 
 
