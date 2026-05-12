@@ -1,0 +1,8 @@
+{
+  "allowed_prefixes": [
+    "app/mcp/"
+  ],
+  "shared_runtime_components": [
+    "extraction"
+  ]
+}
