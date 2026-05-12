@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-import types
+from types import ModuleType
 
 from app.runtime.hermes_vertex_gemma_client import VertexGemmaClient
 
@@ -155,10 +155,10 @@ def test_invoke_vertex_returns_none_when_sdk_missing(monkeypatch):
 
 
 def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
-    vertexai = types.ModuleType("vertexai")
+    vertexai = ModuleType("vertexai")
     vertexai.init = lambda **kwargs: None
 
-    generative_models = types.ModuleType("vertexai.generative_models")
+    generative_models = ModuleType("vertexai.generative_models")
 
     class FailingModel:
         def __init__(self, model_id: str) -> None:
@@ -192,13 +192,13 @@ def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
 
 def test_invoke_vertex_returns_fake_response_and_passes_generation_kwargs(monkeypatch):
     captured: dict = {}
-    vertexai = types.ModuleType("vertexai")
+    vertexai = ModuleType("vertexai")
 
     def fake_init(**kwargs: object) -> None:
         captured["init"] = kwargs
 
     vertexai.init = fake_init
-    generative_models = types.ModuleType("vertexai.generative_models")
+    generative_models = ModuleType("vertexai.generative_models")
 
     class FakeResponse:
         text = " respuesta vertex "
