@@ -1,7 +1,7 @@
 # Hermes Product Runtime Profile
 
 Fecha: 2026-05-12
-Estado: perfil mínimo real + cliente Vertex/Gemma scaffold fail-closed
+Estado: perfil mínimo real + invocación Vertex/Gemma implementada y desactivada por default
 
 ## Propósito
 
@@ -41,7 +41,7 @@ Variable soportada:
 HERMES_PRODUCT_CONFIG_PATH=config/hermes_product.yaml
 ```
 
-El adapter carga esta configuración al habilitar `ENABLE_LLM_ASSISTANT=true` y prepara un runtime scaffold fail-closed.
+El adapter carga esta configuración al habilitar `ENABLE_LLM_ASSISTANT=true` y prepara un runtime fail-closed.
 
 ## Runtime profile
 
@@ -86,11 +86,12 @@ HERMES_PRODUCT_VERTEX_MODEL_ID=google/gemma-4-26b-a4b-it-maas@001
 
 Estado actual:
 
-- El cliente `VertexGemmaClient` existe como scaffold inyectable.
-- No hace llamadas reales de red todavía.
-- Devuelve `None` si Vertex está deshabilitado, falta grounding o falta configuración efectiva.
-- Propaga `system_prompt`, `temperature`, `max_output_tokens` y `model_id` a la capa de settings interna.
-- La invocación real a Vertex queda pendiente para un ciclo controlado posterior.
+- `VertexGemmaClient.generate(...)` implementa invocación real por SDK Vertex con import lazy.
+- `vertex.enabled=false` por default; no se invoca Vertex salvo habilitación explícita.
+- Devuelve `None` si Vertex está deshabilitado, falta grounding, falta configuración, falta SDK, hay error de credenciales o la respuesta es vacía.
+- Construye prompt con `system_prompt`, `user_message`, `summary`, `findings` y `operational_report`.
+- Pasa `temperature` y `max_output_tokens` desde config.
+- Tests unitarios usan fakes/mocks y no hacen red.
 
 ## Grounding obligatorio
 
@@ -164,8 +165,7 @@ Nota: `TelegramAdapter` aún conserva comandos legacy de factoría para otros fl
 
 Todavía no existe:
 
-- llamada real a Vertex;
-- enforcement real de timeout alrededor de llamada LLM;
+- enforcement real de timeout externo alrededor de llamada LLM;
 - tool execution real;
 - enforcement externo de sandbox;
 - memoria persistente compleja;
