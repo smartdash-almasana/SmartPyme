@@ -3,16 +3,35 @@ from __future__ import annotations
 import os
 from typing import Any
 
-# from app.runtime.hermes_product_loader import load_product_config
-# from app.runtime.hermes_smartpyme_runtime import HermesSmartPymeRuntime
+from app.runtime.hermes_product_loader import load_product_config
+
+
+class HermesProductRuntimeScaffold:
+    """Runtime mínimo fail-closed basado en config real de Hermes Producto."""
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        self.config = config
+
+    def run(self, payload: dict[str, Any]) -> str | None:
+        """No ejecuta LLM real todavía: preserva fallback determinístico."""
+        if not self._has_required_grounding(payload):
+            return None
+        return None
+
+    @staticmethod
+    def _has_required_grounding(payload: dict[str, Any]) -> bool:
+        summary = payload.get("summary")
+        findings = payload.get("findings")
+        operational_report = payload.get("operational_report")
+        return bool(summary or findings or operational_report)
 
 
 class HermesProductAdapter:
     """
     Adapter para interactuar con una instancia de Hermes específica para producto.
 
-    Esta clase es un scaffold y su implementación real (invocando a Hermes)
-    se completará en un commit posterior.
+    Esta clase prepara un runtime de producto de bajo privilegio, configurable,
+    inyectable y fail-closed. La invocación LLM real queda detrás del runtime.
     """
 
     def __init__(self, hermes_runtime: Any | None = None) -> None:
@@ -20,10 +39,13 @@ class HermesProductAdapter:
         Inicializa el adapter.
 
         Permite inyectar un `hermes_runtime` mockeado para testing.
-        Si no se provee runtime, el adapter falla cerrado y devuelve None.
+        Si no se provee runtime, intenta cargar la config real y preparar un
+        scaffold fail-closed. Ante cualquier error, no bloquea el fallback.
         """
-        self._hermes_runtime = hermes_runtime
         self._is_enabled = self._resolve_enabled()
+        self._hermes_runtime = hermes_runtime
+        if self._is_enabled and self._hermes_runtime is None:
+            self._hermes_runtime = self._safe_initialize_runtime()
 
     def get_assistant_response(
         self,
@@ -47,12 +69,13 @@ class HermesProductAdapter:
             if self._hermes_runtime is None:
                 return None
 
+            tenant = (tenant_id or "").strip()
             message = (user_message or "").strip()
-            if not message:
+            if not tenant or not message:
                 return None
 
             hermes_payload = {
-                "tenant_id": tenant_id,
+                "tenant_id": tenant,
                 "user_message": message,
                 "summary": summary,
                 "findings": findings,
@@ -68,14 +91,16 @@ class HermesProductAdapter:
             # y devuelve None para asegurar el fallback determinístico.
             return None
 
+    def _safe_initialize_runtime(self) -> Any | None:
+        try:
+            return self._initialize_runtime()
+        except Exception:
+            return None
+
     def _initialize_runtime(self) -> Any:
-        """Carga la config y prepara el runtime de Hermes. (Implementación futura)"""
-        # config = load_product_config()
-        # runtime = HermesSmartPymeRuntime(config["hermes_repo_path"])
-        # runtime.bootstrap()
-        # hermes_instance = runtime.get_agent(config["agent_config"])
-        # return hermes_instance
-        raise NotImplementedError("La inicialización del runtime de Hermes no está implementada.")
+        """Carga la config real y prepara el scaffold mínimo de Hermes Producto."""
+        config = load_product_config()
+        return HermesProductRuntimeScaffold(config)
 
     @staticmethod
     def _resolve_enabled() -> bool:
