@@ -2,12 +2,10 @@
 """
 Guard script to detect forbidden imports in PRODUCT_RUNTIME areas.
 
-Forbidden import patterns:
-- factory*
-- factory_v2*
-- factory_v3*
-- experiments*
-- extraction*
+Import classification:
+- FORBIDDEN_DEPENDENCIES: factory*, factory_v2*, factory_v3* (contamination)
+- TECHNICAL_DEBT_EXCEPTIONS: app/mcp/* (allowed technical debt)
+- SHARED_RUNTIME_COMPONENTS: extraction/* (runtime operational components)
 
 Protected directories:
 - app/
@@ -15,7 +13,7 @@ Protected directories:
 - services/
 - models/
 
-Exceptions are loaded from config/product_boundary_guard_exceptions.json
+Exceptions and shared components are loaded from config/product_boundary_guard_exceptions.json
 
 Usage:
     python scripts/guard_product_boundaries.py [--json]
@@ -31,28 +29,34 @@ from pathlib import Path
 # Directories to protect (relative to repo root)
 PROTECTED_DIRS = ["app", "core", "services", "models"]
 
-# Forbidden import prefixes
+# Forbidden import patterns (FORBIDDEN_DEPENDENCIES - contamination)
 FORBIDDEN_PATTERNS = [
     "factory",
     "factory_v2",
     "factory_v3",
     "experiments",
+]
+
+# Shared runtime components (not violations, but tracked for observability)
+SHARED_RUNTIME_PATTERNS = [
     "extraction",
 ]
 
 
-def load_exceptions(repo_root: Path) -> list[str]:
-    """Load allowed path prefixes from exceptions config file."""
+def load_exceptions(repo_root: Path) -> tuple[list[str], list[str]]:
+    """Load allowed path prefixes and shared runtime components from exceptions config file."""
     exceptions_file = repo_root / "config" / "product_boundary_guard_exceptions.json"
     if not exceptions_file.exists():
-        return []
+        return [], []
     
     try:
         with open(exceptions_file, "r", encoding="utf-8") as f:
             config = json.load(f)
-        return config.get("allowed_prefixes", [])
+        allowed_prefixes = config.get("allowed_prefixes", [])
+        shared_components = config.get("shared_runtime_components", [])
+        return allowed_prefixes, shared_components
     except Exception:
-        return []
+        return [], []
 
 
 def is_protected_path(file_path: Path, repo_root: Path) -> bool:
@@ -80,37 +84,56 @@ def is_exception_path(file_path: Path, repo_root: Path, allowed_prefixes: list[s
     return False
 
 
-def check_imports(file_path: Path, repo_root: Path) -> list[str]:
-    """Check a Python file for forbidden imports."""
+def check_imports(file_path: Path, repo_root: Path, shared_runtime_patterns: list[str]) -> tuple[list[str], list[str]]:
+    """Check a Python file for forbidden imports and track shared runtime dependencies.
+    
+    Returns:
+        tuple: (violations, shared_deps) - forbidden imports and shared runtime component imports
+    """
     violations = []
+    shared_deps = []
     
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
     except Exception:
-        return violations
+        return violations, shared_deps
     
     try:
         tree = ast.parse(content, filename=str(file_path))
     except SyntaxError:
-        return violations
+        return violations, shared_deps
     
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 module_name = alias.name
+                # Check forbidden patterns
                 for pattern in FORBIDDEN_PATTERNS:
                     if module_name == pattern or module_name.startswith(pattern + "."):
                         violations.append(f"{file_path}: import {module_name}")
                         break
+                # Check shared runtime patterns
+                else:
+                    for pattern in shared_runtime_patterns:
+                        if module_name == pattern or module_name.startswith(pattern + "."):
+                            shared_deps.append(f"{file_path}: import {module_name}")
+                            break
         elif isinstance(node, ast.ImportFrom):
             module_name = node.module or ""
+            # Check forbidden patterns
             for pattern in FORBIDDEN_PATTERNS:
                 if module_name == pattern or module_name.startswith(pattern + "."):
                     violations.append(f"{file_path}: from {module_name} import ...")
                     break
+            # Check shared runtime patterns
+            else:
+                for pattern in shared_runtime_patterns:
+                    if module_name == pattern or module_name.startswith(pattern + "."):
+                        shared_deps.append(f"{file_path}: from {module_name} import ...")
+                        break
     
-    return violations
+    return violations, shared_deps
 
 
 def main():
@@ -120,11 +143,12 @@ def main():
     
     repo_root = Path(__file__).resolve().parent.parent
     
-    # Load exceptions
-    allowed_prefixes = load_exceptions(repo_root)
+    # Load exceptions and shared runtime components
+    allowed_prefixes, shared_runtime_patterns = load_exceptions(repo_root)
     
     violations = []
     ignored_exceptions = []
+    shared_deps = []
     scanned_files = 0
     
     # Find all Python files in protected directories
@@ -144,10 +168,11 @@ def main():
                 ignored_exceptions.append(str(py_file.relative_to(repo_root)))
                 continue
             
-            file_violations = check_imports(py_file, repo_root)
+            file_violations, file_shared_deps = check_imports(py_file, repo_root, shared_runtime_patterns)
             violations.extend(file_violations)
+            shared_deps.extend(file_shared_deps)
     
-    # Determine CI status
+    # Determine CI status (only forbidden violations cause failure)
     has_violations = len(violations) > 0
     ci_status = "FAIL" if has_violations else "PASS"
     
@@ -155,9 +180,11 @@ def main():
         output = {
             "scanned_files": scanned_files,
             "allowed_exceptions_count": len(ignored_exceptions),
+            "shared_runtime_deps_count": len(shared_deps),
             "violations_count": len(violations),
             "violations": violations,
             "allowed_exceptions": ignored_exceptions,
+            "shared_runtime_deps": shared_deps,
             "status": ci_status
         }
         print(json.dumps(output, indent=2))
@@ -166,10 +193,11 @@ def main():
         print("=" * 60)
         print("PRODUCT BOUNDARY GUARD - SUMMARY")
         print("=" * 60)
-        print(f"Total scanned files:       {scanned_files}")
-        print(f"Allowed technical debt:    {len(ignored_exceptions)}")
-        print(f"Forbidden violations:      {len(violations)}")
-        print(f"CI status:                 {ci_status}")
+        print(f"Total scanned files:          {scanned_files}")
+        print(f"Allowed technical debt:       {len(ignored_exceptions)}")
+        print(f"Shared runtime dependencies:  {len(shared_deps)}")
+        print(f"Forbidden violations:         {len(violations)}")
+        print(f"CI status:                    {ci_status}")
         print("=" * 60)
         
         # Print ignored exceptions info
@@ -181,10 +209,19 @@ def main():
                 print(f"  - {exc}")
             print("-" * 50)
         
+        # Print shared runtime dependencies info
+        if shared_deps:
+            print()
+            print("SHARED RUNTIME DEPENDENCIES (extraction/* - operational runtime components):")
+            print("-" * 50)
+            for dep in shared_deps:
+                print(f"  - {dep}")
+            print("-" * 50)
+        
         # Print violations
         if violations:
             print()
-            print("PRODUCT BOUNDARY VIOLATIONS DETECTED:")
+            print("FORBIDDEN CONTAMINATION DETECTED (factory*/experiments*):")
             print("-" * 50)
             for v in violations:
                 print(v)
