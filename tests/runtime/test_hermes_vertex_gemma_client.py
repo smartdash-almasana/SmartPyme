@@ -5,7 +5,6 @@ from types import ModuleType
 
 from app.runtime.hermes_vertex_gemma_client import VertexGemmaClient
 
-
 BASE_CONFIG = {
     "system_prompt": "prompt clínico",
     "model": {
