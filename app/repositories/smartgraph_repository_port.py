@@ -15,6 +15,8 @@ from __future__ import annotations
 from typing import Any, Literal, Protocol, runtime_checkable
 from uuid import UUID
 
+from app.contracts.smartgraph_contracts import SmartGraphClaim, SmartGraphEdge, SmartGraphNode
+
 
 SmartGraphNodeType = Literal[
     "TENANT",
@@ -90,6 +92,10 @@ SmartGraphClaimStatus = Literal[
     "BLOCKED",
 ]
 
+SmartGraphNodeRecord = SmartGraphNode | dict[str, Any]
+SmartGraphEdgeRecord = SmartGraphEdge | dict[str, Any]
+SmartGraphClaimRecord = SmartGraphClaim | dict[str, Any]
+
 
 @runtime_checkable
 class SmartGraphRepositoryPort(Protocol):
@@ -111,7 +117,7 @@ class SmartGraphRepositoryPort(Protocol):
         source_id: UUID | None = None,
         confidence: float | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> SmartGraphNodeRecord:
         """Create a tenant-scoped canonical SmartGraph node."""
         ...
 
@@ -120,7 +126,7 @@ class SmartGraphRepositoryPort(Protocol):
         *,
         tenant_id: UUID,
         node_id: UUID,
-    ) -> dict[str, Any] | None:
+    ) -> SmartGraphNodeRecord | None:
         """Return a node by id, scoped by tenant."""
         ...
 
@@ -130,7 +136,7 @@ class SmartGraphRepositoryPort(Protocol):
         tenant_id: UUID,
         node_type: SmartGraphNodeType,
         canonical_key: str,
-    ) -> dict[str, Any] | None:
+    ) -> SmartGraphNodeRecord | None:
         """Return a canonical node for a tenant/type/key tuple."""
         ...
 
@@ -142,7 +148,7 @@ class SmartGraphRepositoryPort(Protocol):
         status: SmartGraphRecordStatus | None = "ACTIVE",
         limit: int = 100,
         offset: int = 0,
-    ) -> list[dict[str, Any]]:
+    ) -> list[SmartGraphNodeRecord]:
         """List tenant-scoped nodes with optional type/status filters."""
         ...
 
@@ -163,7 +169,7 @@ class SmartGraphRepositoryPort(Protocol):
         source_table: str | None = None,
         source_id: UUID | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> SmartGraphEdgeRecord:
         """Create a typed relationship between two tenant-scoped nodes."""
         ...
 
@@ -172,7 +178,7 @@ class SmartGraphRepositoryPort(Protocol):
         *,
         tenant_id: UUID,
         edge_id: UUID,
-    ) -> dict[str, Any] | None:
+    ) -> SmartGraphEdgeRecord | None:
         """Return an edge by id, scoped by tenant."""
         ...
 
@@ -187,7 +193,7 @@ class SmartGraphRepositoryPort(Protocol):
         status: SmartGraphRecordStatus | None = "ACTIVE",
         limit: int = 100,
         offset: int = 0,
-    ) -> list[dict[str, Any]]:
+    ) -> list[SmartGraphEdgeRecord]:
         """List edges connected to a node."""
         ...
 
@@ -218,7 +224,7 @@ class SmartGraphRepositoryPort(Protocol):
         alias_normalized: str,
         status: SmartGraphRecordStatus | None = "ACTIVE",
         limit: int = 20,
-    ) -> list[dict[str, Any]]:
+    ) -> list[SmartGraphNodeRecord]:
         """Find canonical nodes matching a normalized alias."""
         ...
 
@@ -240,7 +246,7 @@ class SmartGraphRepositoryPort(Protocol):
         evidence_ids: list[UUID] | None = None,
         requires_human_review: bool = False,
         metadata: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    ) -> SmartGraphClaimRecord:
         """Create an explicit SmartGraph claim with its epistemic status."""
         ...
 
@@ -249,7 +255,7 @@ class SmartGraphRepositoryPort(Protocol):
         *,
         tenant_id: UUID,
         claim_id: UUID,
-    ) -> dict[str, Any] | None:
+    ) -> SmartGraphClaimRecord | None:
         """Return a claim by id, scoped by tenant."""
         ...
 
@@ -262,7 +268,7 @@ class SmartGraphRepositoryPort(Protocol):
         requires_human_review: bool | None = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> list[dict[str, Any]]:
+    ) -> list[SmartGraphClaimRecord]:
         """List tenant-scoped claims."""
         ...
 
@@ -274,7 +280,7 @@ class SmartGraphRepositoryPort(Protocol):
         claim_status: SmartGraphClaimStatus,
         reviewed_by: str | None = None,
         review_decision: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> SmartGraphClaimRecord:
         """Update claim lifecycle status under deterministic or human review."""
         ...
 
