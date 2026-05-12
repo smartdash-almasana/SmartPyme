@@ -8,7 +8,7 @@ from urllib import request as urllib_request
 from urllib.error import HTTPError, URLError
 
 DEFAULT_FREE_MODELS = (
-    "google/gemma-2-9b-it:free",
+    "gemma-4",
     "qwen/qwen3-32b:free",
     "minimax/minimax-m1:free",
     "meta-llama/llama-3.3-70b-instruct:free",

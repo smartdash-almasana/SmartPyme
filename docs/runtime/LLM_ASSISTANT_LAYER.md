@@ -39,7 +39,7 @@ OPENCODE_API_KEY=<token>
 OPENCODE_BASE_URL=https://openrouter.ai/api/v1
 
 # prioridad sugerida para pruebas free:
-OPENCODE_MODEL=google/gemma-2-9b-it:free
+OPENCODE_MODEL=gemma-4
 # alternativas:
 # qwen/qwen3-32b:free
 # minimax/minimax-m1:free

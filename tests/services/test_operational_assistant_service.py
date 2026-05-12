@@ -24,7 +24,7 @@ def test_build_response_with_mock_provider_receives_grounding_payload():
         return "Significa que vendes por debajo del costo. Revisa precios y margen."
 
     service = OperationalAssistantService(
-        enabled=True, provider=fake_provider, model="google/gemma-2-9b-it:free"
+        enabled=True, provider=fake_provider, model="gemma-4"
     )
 
     result = service.build_response(
@@ -39,7 +39,7 @@ def test_build_response_with_mock_provider_receives_grounding_payload():
 
     assert result is not None
     assert "vendes por debajo del costo" in result
-    assert captured["model"] == "google/gemma-2-9b-it:free"
+    assert captured["model"] == "gemma-4"
     assert captured["user_message"] == "que hago con este finding?"
     assert captured["findings"][0]["finding_type"] == "VENTA_BAJO_COSTO"
 
