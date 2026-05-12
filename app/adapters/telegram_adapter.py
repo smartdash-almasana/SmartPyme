@@ -64,7 +64,9 @@ class TelegramAdapter:
         self.bem_workflow_id = bem_workflow_id
         self.curated_evidence_repository = curated_evidence_repository
         self.diagnostic_service = diagnostic_service
-        self.bem_curated_evidence_adapter = bem_curated_evidence_adapter or BemCuratedEvidenceAdapter()
+        self.bem_curated_evidence_adapter = (
+            bem_curated_evidence_adapter or BemCuratedEvidenceAdapter()
+        )
         self.operational_assistant_service = (
             operational_assistant_service or OperationalAssistantService()
         )
@@ -381,7 +383,10 @@ class TelegramAdapter:
             )
             repository.create(curated)
 
-            diagnostic = self.diagnostic_service or BasicOperationalDiagnosticService(repository=repository)
+            diagnostic = (
+                self.diagnostic_service
+                or BasicOperationalDiagnosticService(repository=repository)
+            )
             report = diagnostic.build_report(cliente_id)
             findings = report.get("findings", [])
             if findings:
@@ -457,7 +462,7 @@ class TelegramAdapter:
     def _default_telegram_send_message(self, chat_id: int | str, text: str) -> Any:
         token = self._require_bot_token()
         url = f"https://api.telegram.org/bot{token}/sendMessage"
-        data = f'{{"chat_id":"{chat_id}","text":"{text}"}}'.encode("utf-8")
+        data = f'{{"chat_id":"{chat_id}","text":"{text}"}}'.encode()
         req = urllib_request.Request(
             url=url,
             method="POST",

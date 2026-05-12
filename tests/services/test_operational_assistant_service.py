@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from app.services.operational_assistant_service import OperationalAssistantService
 
 
@@ -25,11 +23,16 @@ def test_build_response_with_mock_provider_receives_grounding_payload():
         captured.update(payload)
         return "Significa que vendes por debajo del costo. Revisa precios y margen."
 
-    service = OperationalAssistantService(enabled=True, provider=fake_provider, model="deepseek/deepseek-chat-v3-0324:free")
+    service = OperationalAssistantService(
+        enabled=True, provider=fake_provider, model="deepseek/deepseek-chat-v3-0324:free"
+    )
 
     result = service.build_response(
         user_message="que hago con este finding?",
-        summary="Estado SmartPyme para pyme_A: jobs=1, hallazgos=1, formulas=0, patologias=0.",
+        summary=(
+            "Estado SmartPyme para pyme_A: jobs=1, hallazgos=1, "
+            "formulas=0, patologias=0."
+        ),
         findings=[{"finding_type": "VENTA_BAJO_COSTO", "difference": -200.0}],
         operational_report={"status": "active"},
     )
