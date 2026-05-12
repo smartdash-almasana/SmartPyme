@@ -1,21 +1,29 @@
 from __future__ import annotations
 
+import json
 import os
 from typing import Any
 
 
 class VertexGemmaClient:
-    """Cliente mínimo fail-closed para preparar invocación Vertex/Gemma."""
+    """Cliente mínimo fail-closed para invocar Vertex/Gemma."""
 
     def generate(self, payload: dict[str, Any], config: dict[str, Any]) -> str | None:
-        """Prepara el boundary de generación sin ejecutar red todavía."""
+        """Genera una respuesta con Vertex/Gemma o retorna None ante cualquier falla."""
         if not self._is_enabled(config):
             return None
         if not self._has_required_grounding(payload):
             return None
-        if not self._resolve_vertex_settings(config):
+
+        settings = self._resolve_vertex_settings(config)
+        if not settings:
             return None
-        return None
+
+        prompt = self._build_prompt(payload, settings.get("system_prompt"))
+        if not prompt:
+            return None
+
+        return self._invoke_vertex(prompt, settings)
 
     @staticmethod
     def _is_enabled(config: dict[str, Any]) -> bool:
@@ -57,3 +65,57 @@ class VertexGemmaClient:
                 "max_output_tokens": model_kwargs.get("max_output_tokens"),
             },
         }
+
+    @staticmethod
+    def _build_prompt(payload: dict[str, Any], system_prompt: Any) -> str | None:
+        user_message = (payload.get("user_message") or "").strip()
+        if not user_message:
+            return None
+
+        grounding = {
+            "summary": payload.get("summary") or {},
+            "findings": payload.get("findings") or [],
+            "operational_report": payload.get("operational_report") or {},
+        }
+        system = str(system_prompt or "").strip()
+        grounding_json = json.dumps(grounding, ensure_ascii=False, sort_keys=True)
+
+        return (
+            "<system>\n"
+            f"{system}\n"
+            "</system>\n\n"
+            "<user>\n"
+            f"{user_message}\n"
+            "</user>\n\n"
+            "<grounding>\n"
+            f"{grounding_json}\n"
+            "</grounding>"
+        )
+
+    def _invoke_vertex(self, prompt: str, settings: dict[str, Any]) -> str | None:
+        try:
+            import vertexai
+            from vertexai.generative_models import GenerationConfig, GenerativeModel
+        except ImportError:
+            return None
+
+        try:
+            vertexai.init(
+                project=settings["project_id"],
+                location=settings["location"],
+            )
+            model = GenerativeModel(settings["model_id"])
+            model_kwargs = settings.get("model_kwargs") or {}
+            generation_config = GenerationConfig(
+                temperature=model_kwargs.get("temperature"),
+                max_output_tokens=model_kwargs.get("max_output_tokens"),
+            )
+            response = model.generate_content(
+                prompt,
+                generation_config=generation_config,
+            )
+            text = getattr(response, "text", None)
+            clean = text.strip() if isinstance(text, str) else ""
+            return clean or None
+        except Exception:
+            return None
