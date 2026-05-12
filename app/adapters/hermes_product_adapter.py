@@ -4,19 +4,30 @@ import os
 from typing import Any
 
 from app.runtime.hermes_product_loader import load_product_config
+from app.runtime.hermes_vertex_gemma_client import VertexGemmaClient
 
 
 class HermesProductRuntimeScaffold:
     """Runtime mínimo fail-closed basado en config real de Hermes Producto."""
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(
+        self,
+        config: dict[str, Any],
+        vertex_client: VertexGemmaClient | None = None,
+    ) -> None:
         self.config = config
+        self._vertex_client = vertex_client or VertexGemmaClient()
 
     def run(self, payload: dict[str, Any]) -> str | None:
-        """No ejecuta LLM real todavía: preserva fallback determinístico."""
+        """Intenta Vertex/Gemma controlado y preserva fallback determinístico."""
         if not self._has_required_grounding(payload):
             return None
-        return None
+        try:
+            response = self._vertex_client.generate(payload, self.config)
+        except Exception:
+            return None
+        clean = response.strip() if isinstance(response, str) else ""
+        return clean or None
 
     @staticmethod
     def _has_required_grounding(payload: dict[str, Any]) -> bool:
