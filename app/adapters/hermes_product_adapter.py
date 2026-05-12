@@ -52,16 +52,24 @@ class HermesProductAdapter:
                 pass
 
             # Placeholder para la construcción del prompt y la invocación de Hermes
-            # Por ahora, devolvemos una respuesta hard-codeada si todo está bien,
-            # para demostrar que el flujo funciona.
             if not user_message:
                 return None
 
-            mock_response = (
-                f"Respuesta mock desde HermesProductAdapter para el tenant {tenant_id}. "
-                f"Mensaje recibido: '{user_message}'"
-            )
-            return mock_response
+            # Construir el payload para Hermes (esto se podrá testear)
+            hermes_payload = {
+                "tenant_id": tenant_id,
+                "user_message": user_message,
+                "summary": summary,
+                "findings": findings,
+                "operational_report": operational_report,
+            }
+
+            # Si hay un runtime (mock), invocarlo.
+            if self._hermes_runtime:
+                return self._hermes_runtime.run(hermes_payload)
+
+            # Si no hay runtime (en este scaffold), devolver mock response
+            return f"Respuesta mock para: '{user_message}'"
 
         except Exception:
             # Captura cualquier error durante la inicialización o ejecución
