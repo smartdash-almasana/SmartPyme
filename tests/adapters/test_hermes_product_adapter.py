@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 
 from app.adapters.hermes_product_adapter import HermesProductAdapter
+from app.runtime.hermes_product_loader import HERMES_PRODUCT_CONFIG_ENV_VAR
 
 
 @pytest.fixture
@@ -98,3 +101,57 @@ def test_adapter_forwards_correct_payload_to_runtime(monkeypatch, mock_hermes_ru
     assert payload["summary"] == summary_data
     assert payload["findings"] == findings_data
     assert payload["operational_report"] == report_data
+
+
+def test_adapter_bootstraps_fail_closed_runtime_from_product_config(
+    monkeypatch,
+    tmp_path: Path,
+):
+    """Verifica bootstrap mínimo desde config real sin ejecutar LLM."""
+    config = {
+        "version": 1,
+        "profile": "hermes_product_runtime",
+        "runtime": {"mode": "fail_closed_scaffold"},
+        "model": {"default": "gemma-4", "temperature": 0.1},
+        "tools": {"readonly_whitelist": ["findings_read"], "prohibited": ["git"]},
+        "fallback": {"required": True},
+    }
+    config_path = tmp_path / "hermes_product.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    monkeypatch.setenv("ENABLE_LLM_ASSISTANT", "true")
+    monkeypatch.setenv(HERMES_PRODUCT_CONFIG_ENV_VAR, str(config_path))
+
+    adapter = HermesProductAdapter()
+
+    assert adapter._hermes_runtime is not None
+    assert adapter._hermes_runtime.config["model"]["default"] == "gemma-4"
+
+    response = adapter.get_assistant_response(
+        tenant_id="tenant-123",
+        user_message="explicame el estado",
+        summary={"text": "estado con hallazgos"},
+        findings=[{"finding_type": "VENTA_BAJO_COSTO"}],
+        operational_report={},
+    )
+    assert response is None
+
+
+def test_adapter_fails_closed_when_config_is_missing(monkeypatch):
+    """Verifica que la ausencia de config activa fallback determinístico."""
+    monkeypatch.setenv("ENABLE_LLM_ASSISTANT", "true")
+    monkeypatch.delenv(HERMES_PRODUCT_CONFIG_ENV_VAR, raising=False)
+
+    adapter = HermesProductAdapter()
+
+    assert adapter._hermes_runtime is None
+    assert (
+        adapter.get_assistant_response(
+            tenant_id="tenant-123",
+            user_message="hola",
+            summary={"text": "estado"},
+            findings=[],
+            operational_report={},
+        )
+        is None
+    )
