@@ -1,6 +1,18 @@
 from app.adapters.telegram_adapter import TelegramAdapter
 from app.services.identity_service import IdentityService
-from app.services.operational_assistant_service import OperationalAssistantService
+
+
+class FakeHermesProductAdapter:
+    def get_assistant_response(
+        self,
+        *,
+        tenant_id: str,
+        user_message: str,
+        summary: dict,
+        findings: list[dict],
+        operational_report: dict,
+    ) -> str | None:
+        return "Significa riesgo de margen negativo. Ajusta precio o costo."
 
 
 def _update(user_id: int, text: str) -> dict:
@@ -84,19 +96,14 @@ def test_linked_user_conversational_message_uses_llm_assistant(tmp_path):
             "operational_report": {"risk_level": "alto"},
         }
 
-    assistant = OperationalAssistantService(
-        enabled=True,
-        provider=lambda payload: "Significa riesgo de margen negativo. Ajusta precio o costo.",
-    )
-
     adapter = TelegramAdapter(
         identity_service=identity,
         owner_status_provider=fake_owner_status,
-        operational_assistant_service=assistant,
+        hermes_product_adapter=FakeHermesProductAdapter(),
     )
 
     result = adapter.handle_update(_update(42, "que significa este finding?"))
 
     assert result["status"] == "ok"
-    assert result["mode"] == "llm_assistant"
+    assert result["mode"] == "hermes_product_assistant"
     assert "riesgo de margen negativo" in result["message"]
