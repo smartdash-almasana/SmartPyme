@@ -19,6 +19,7 @@ from app.services.bem_client import BemClient
 from app.services.bem_curated_evidence_adapter import BemCuratedEvidenceAdapter
 from app.services.document_intake_service import DocumentIntakeService
 from app.services.identity_service import IdentityService
+from app.services.operational_assistant_service import OperationalAssistantService
 
 
 DEFAULT_IDENTITY_DB = Path("data/identity.db")
@@ -49,6 +50,7 @@ class TelegramAdapter:
         curated_evidence_repository: Any | None = None,
         diagnostic_service: BasicOperationalDiagnosticService | None = None,
         bem_curated_evidence_adapter: BemCuratedEvidenceAdapter | None = None,
+        operational_assistant_service: OperationalAssistantService | None = None,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
@@ -63,6 +65,9 @@ class TelegramAdapter:
         self.curated_evidence_repository = curated_evidence_repository
         self.diagnostic_service = diagnostic_service
         self.bem_curated_evidence_adapter = bem_curated_evidence_adapter or BemCuratedEvidenceAdapter()
+        self.operational_assistant_service = (
+            operational_assistant_service or OperationalAssistantService()
+        )
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -108,6 +113,15 @@ class TelegramAdapter:
         if text.startswith(AUDIT_VENTA_BAJO_COSTO_COMMAND):
             return self._handle_audit_venta_bajo_costo(user_id, cliente_id, text)
 
+        if text and not text.startswith("/"):
+            conversational = self._handle_conversational_message(
+                user_id=user_id,
+                cliente_id=cliente_id,
+                text=text,
+            )
+            if conversational is not None:
+                return conversational
+
         return {
             "status": "unsupported_command",
             "telegram_user_id": str(user_id),
@@ -116,6 +130,44 @@ class TelegramAdapter:
                 "Comando no soportado. Comandos disponibles: /status, "
                 "/auditar_venta_bajo_costo."
             ),
+        }
+
+    def _handle_conversational_message(
+        self,
+        *,
+        user_id: int | str,
+        cliente_id: str,
+        text: str,
+    ) -> dict[str, Any] | None:
+        status = self.owner_status_provider(cliente_id)
+        summary = self._format_owner_status(status)
+        findings = status.get("findings")
+        if not isinstance(findings, list):
+            findings = []
+        report = status.get("operational_report")
+        if not isinstance(report, dict):
+            report = {}
+
+        message = self.operational_assistant_service.build_response(
+            user_message=text,
+            summary=summary,
+            findings=findings,
+            operational_report=report,
+        )
+        if not message:
+            return None
+
+        return {
+            "status": "ok",
+            "telegram_user_id": str(user_id),
+            "cliente_id": cliente_id,
+            "message": message,
+            "mode": "llm_assistant",
+            "grounding": {
+                "summary": summary,
+                "findings_count": len(findings),
+                "has_operational_report": bool(report),
+            },
         }
 
     def _handle_link(self, user_id: int | str, text: str) -> dict:
