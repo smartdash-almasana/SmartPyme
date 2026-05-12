@@ -10,6 +10,7 @@ from urllib import request as urllib_request
 from urllib.error import HTTPError, URLError
 from uuid import uuid4
 
+from app.adapters.hermes_product_adapter import HermesProductAdapter
 from app.agents.business_task_executor import AUDIT_VENTA_BAJO_COSTO
 from app.mcp.tools.factory_control_tool import enqueue_factory_task
 from app.mcp.tools.owner_status_tool import get_owner_status
@@ -19,7 +20,6 @@ from app.services.bem_client import BemClient
 from app.services.bem_curated_evidence_adapter import BemCuratedEvidenceAdapter
 from app.services.document_intake_service import DocumentIntakeService
 from app.services.identity_service import IdentityService
-from app.services.operational_assistant_service import OperationalAssistantService
 
 
 DEFAULT_IDENTITY_DB = Path("data/identity.db")
@@ -50,7 +50,7 @@ class TelegramAdapter:
         curated_evidence_repository: Any | None = None,
         diagnostic_service: BasicOperationalDiagnosticService | None = None,
         bem_curated_evidence_adapter: BemCuratedEvidenceAdapter | None = None,
-        operational_assistant_service: OperationalAssistantService | None = None,
+        hermes_product_adapter: HermesProductAdapter | None = None,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
@@ -67,9 +67,7 @@ class TelegramAdapter:
         self.bem_curated_evidence_adapter = (
             bem_curated_evidence_adapter or BemCuratedEvidenceAdapter()
         )
-        self.operational_assistant_service = (
-            operational_assistant_service or OperationalAssistantService()
-        )
+        self.hermes_product_adapter = hermes_product_adapter or HermesProductAdapter()
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -150,9 +148,10 @@ class TelegramAdapter:
         if not isinstance(report, dict):
             report = {}
 
-        message = self.operational_assistant_service.build_response(
+        message = self.hermes_product_adapter.get_assistant_response(
+            tenant_id=cliente_id,
             user_message=text,
-            summary=summary,
+            summary={"text": summary, "owner_status": status},
             findings=findings,
             operational_report=report,
         )
@@ -164,7 +163,7 @@ class TelegramAdapter:
             "telegram_user_id": str(user_id),
             "cliente_id": cliente_id,
             "message": message,
-            "mode": "llm_assistant",
+            "mode": "hermes_product_assistant",
             "grounding": {
                 "summary": summary,
                 "findings_count": len(findings),
