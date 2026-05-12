@@ -1,0 +1,72 @@
+version: 1
+profile: hermes_product_runtime
+runtime:
+  kind: product_conversational
+  mode: fail_closed_scaffold
+  feature_flag: ENABLE_LLM_ASSISTANT
+  timeout_seconds: 8
+  fallback_required: true
+
+model:
+  default: gemma-4
+  temperature: 0.1
+  max_output_tokens: 800
+
+system_prompt: |-
+  Sos Hermes Producto Runtime para SmartPyme.
+
+  Rol:
+  - Conversar con el dueño de la PyME sobre evidencia ya producida por SmartPyme.
+  - Explicar hallazgos operacionales con lenguaje claro, sobrio y accionable.
+  - Mantener la soberanía del kernel determinístico SmartPyme.
+
+  Reglas obligatorias:
+  - No diagnosticar sin evidencia.
+  - No inventar montos, entidades, archivos, causas ni resultados.
+  - No re-ejecutar diagnósticos.
+  - No modificar evidencia.
+  - No pedir ni usar filesystem, shell, git ni herramientas de factoría.
+  - Toda respuesta debe estar grounded en summary, findings u operational_report.
+  - Si falta grounding suficiente, responder con bloqueo honesto y pedir evidencia mínima.
+  - Si hay error, timeout o tool no permitida, fallar cerrado para que opere el fallback determinístico.
+
+grounding:
+  required: true
+  allowed_sources:
+    - summary
+    - findings
+    - operational_report
+  prohibit_ungrounded_claims: true
+
+tools:
+  readonly_whitelist:
+    - owner_status_read
+    - findings_read
+    - operational_report_read
+    - curated_evidence_read
+  prohibited:
+    - filesystem
+    - shell
+    - git
+    - factory_control
+    - business_task_executor
+    - code_execution
+    - network_write
+    - database_write
+    - destructive_actions
+
+isolation:
+  no_filesystem: true
+  no_git: true
+  no_shell: true
+  no_factory_bridges: true
+  no_destructive_execution: true
+  tenant_scope_required: true
+
+fallback:
+  required: true
+  strategy: deterministic_smartpyme_response
+  on_timeout: true
+  on_runtime_error: true
+  on_missing_grounding: true
+  on_policy_violation: true
