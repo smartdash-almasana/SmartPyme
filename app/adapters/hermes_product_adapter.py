@@ -20,7 +20,7 @@ class HermesProductAdapter:
         Inicializa el adapter.
 
         Permite inyectar un `hermes_runtime` mockeado para testing.
-        Si no se provee, intentará inicializar uno real.
+        Si no se provee runtime, el adapter falla cerrado y devuelve None.
         """
         self._hermes_runtime = hermes_runtime
         self._is_enabled = self._resolve_enabled()
@@ -45,31 +45,23 @@ class HermesProductAdapter:
 
         try:
             if self._hermes_runtime is None:
-                # Placeholder para la inicialización real de Hermes
-                # En el siguiente commit, aquí se usará hermes_product_loader
-                # y se instanciará el runtime real de Hermes.
-                # self.hermes_runtime = self._initialize_runtime()
-                pass
-
-            # Placeholder para la construcción del prompt y la invocación de Hermes
-            if not user_message:
                 return None
 
-            # Construir el payload para Hermes (esto se podrá testear)
+            message = (user_message or "").strip()
+            if not message:
+                return None
+
             hermes_payload = {
                 "tenant_id": tenant_id,
-                "user_message": user_message,
+                "user_message": message,
                 "summary": summary,
                 "findings": findings,
                 "operational_report": operational_report,
             }
 
-            # Si hay un runtime (mock), invocarlo.
-            if self._hermes_runtime:
-                return self._hermes_runtime.run(hermes_payload)
-
-            # Si no hay runtime (en este scaffold), devolver mock response
-            return f"Respuesta mock para: '{user_message}'"
+            response = self._hermes_runtime.run(hermes_payload)
+            clean = response.strip() if isinstance(response, str) else ""
+            return clean or None
 
         except Exception:
             # Captura cualquier error durante la inicialización o ejecución
