@@ -595,3 +595,43 @@ class OperationalPicture(BaseModel):
 class AssertivenessScore(BaseModel):
     score: float = Field(..., ge=0.0, le=1.0)
     certified_by_owner: bool = Field(...)
+
+
+class HypothesisNode(BaseModel):
+    node_id: str = Field(...)
+    tenant_id: str = Field(...)
+    hypothesis_type: str = Field(...)
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    ambiguity: float = Field(..., ge=0.0, le=1.0)
+    supporting_signals: list[str] = Field(...)
+    contradicting_signals: list[str] = Field(default_factory=list)
+    possible_explanations: list[str] = Field(...)
+    requires_clarification: bool = Field(...)
+    clarification_question: str | None = Field(default=None)
+    temporal_validity: str | None = Field(default=None)
+    status: str = Field(...)
+
+    @model_validator(mode="after")
+    def _validate_rules(self) -> "HypothesisNode":
+        if not self.node_id or not self.node_id.strip():
+            raise ValueError("node_id no puede ser vacio")
+        if not self.tenant_id or not self.tenant_id.strip():
+            raise ValueError("tenant_id no puede ser vacio")
+        if not self.hypothesis_type or not self.hypothesis_type.strip():
+            raise ValueError("hypothesis_type no puede ser vacio")
+        if not self.status or not self.status.strip():
+            raise ValueError("status no puede ser vacio")
+        if not self.supporting_signals:
+            raise ValueError("supporting_signals debe tener al menos un item")
+        if any((not isinstance(s, str) or not s.strip()) for s in self.supporting_signals):
+            raise ValueError("supporting_signals no puede contener items vacios")
+        if not self.possible_explanations:
+            raise ValueError("possible_explanations debe tener al menos un item")
+        if any((not isinstance(e, str) or not e.strip()) for e in self.possible_explanations):
+            raise ValueError("possible_explanations no puede contener items vacios")
+        if self.requires_clarification:
+            if not self.clarification_question or not self.clarification_question.strip():
+                raise ValueError(
+                    "clarification_question es obligatorio cuando requires_clarification == True"
+                )
+        return self

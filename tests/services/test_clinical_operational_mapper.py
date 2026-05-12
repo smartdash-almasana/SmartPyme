@@ -27,6 +27,9 @@ def test_mapper_maps_findings_to_signals() -> None:
     assert signal.severity == "HIGH"
     assert signal.evidence_refs == ["ev-001"]
     assert signal.explanation == "Venta debajo del costo."
+    assert "signal_nodes" in result
+    assert "hypothesis_nodes" in result
+    assert result["signal_nodes"][0]["node_id"] == "signal:tenant-a:VENTA_BAJO_COSTO:ev-001"
 
 
 def test_mapper_creates_crisis_de_margen_hypothesis_and_clarification() -> None:
@@ -56,6 +59,15 @@ def test_mapper_creates_crisis_de_margen_hypothesis_and_clarification() -> None:
     request = result["clarification_requests"][0]
     assert request.related_hypothesis == "CRISIS_DE_MARGEN"
     assert "crisis de margen" in request.question.lower()
+    assert len(result["hypothesis_nodes"]) == 1
+    hnode = result["hypothesis_nodes"][0]
+    assert hnode["node_id"] == "hypothesis:tenant-a:CRISIS_DE_MARGEN"
+    assert hnode["tenant_id"] == "tenant-a"
+    assert hnode["status"] == "NEEDS_CLARIFICATION"
+    assert hnode["supporting_signals"] == ["DESCUENTO_EXCESIVO"]
+    assert hnode["supporting_signal_node_ids"] == [
+        "signal:tenant-a:DESCUENTO_EXCESIVO:ev-100"
+    ]
 
 
 def test_mapper_without_margin_signals_does_not_create_hypothesis() -> None:
@@ -76,6 +88,8 @@ def test_mapper_without_margin_signals_does_not_create_hypothesis() -> None:
     assert len(result["signals"]) == 1
     assert result["hypotheses"] == []
     assert result["clarification_requests"] == []
+    assert len(result["signal_nodes"]) == 1
+    assert result["hypothesis_nodes"] == []
 
 
 def test_mapper_fail_closed_on_invalid_report() -> None:
@@ -86,3 +100,27 @@ def test_mapper_fail_closed_on_invalid_report() -> None:
 
     with pytest.raises(ValueError, match="findings"):
         mapper.map_report({"tenant_id": "tenant-a", "findings": "bad"})  # type: ignore[arg-type]
+
+
+def test_mapper_ignores_incomplete_findings_without_breaking() -> None:
+    mapper = ClinicalOperationalMapper()
+    report = {
+        "tenant_id": "tenant-a",
+        "findings": [
+            {
+                "finding_type": "VENTA_BAJO_COSTO",
+                "severity": "HIGH",
+                "evidence_id": "ev-ok",
+                "message": "ok",
+            },
+            {
+                "finding_type": "VENTA_BAJO_COSTO",
+                "severity": "HIGH",
+                "message": "missing evidence",
+            },
+            "bad-row",
+        ],
+    }
+    result = mapper.map_report(report)
+    assert len(result["signals"]) == 1
+    assert result["signal_nodes"][0]["node_id"] == "signal:tenant-a:VENTA_BAJO_COSTO:ev-ok"

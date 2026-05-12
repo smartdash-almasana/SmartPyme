@@ -13,6 +13,7 @@ from app.contracts.clinical_operational_contracts import (
     FindingRecord,
     FormulaExecution,
     Hypothesis,
+    HypothesisNode,
     OperationalPicture,
     OperationalCase,
     OperationalCaseCandidate,
@@ -445,6 +446,125 @@ def test_assertiveness_score_valido_y_rango_fallido():
     assert score.score == 0.9
     with pytest.raises(ValidationError):
         AssertivenessScore(score=-0.1, certified_by_owner=True)
+
+
+def test_hypothesis_node_valido():
+    node = HypothesisNode(
+        node_id="node-001",
+        tenant_id="tenant-a",
+        hypothesis_type="CRISIS_DE_MARGEN",
+        confidence=0.6,
+        ambiguity=0.4,
+        supporting_signals=["VENTA_BAJO_COSTO"],
+        contradicting_signals=[],
+        possible_explanations=["error de costeo"],
+        requires_clarification=True,
+        clarification_question="Es liquidacion estrategica?",
+        temporal_validity=None,
+        status="CANDIDATE",
+    )
+    assert node.node_id == "node-001"
+
+
+def test_hypothesis_node_rechaza_vacios_y_listas_requeridas_vacias():
+    with pytest.raises(ValidationError, match="node_id"):
+        HypothesisNode(
+            node_id=" ",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=0.6,
+            ambiguity=0.4,
+            supporting_signals=["VENTA_BAJO_COSTO"],
+            contradicting_signals=[],
+            possible_explanations=["error de costeo"],
+            requires_clarification=False,
+            clarification_question=None,
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
+
+    with pytest.raises(ValidationError, match="supporting_signals"):
+        HypothesisNode(
+            node_id="node-001",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=0.6,
+            ambiguity=0.4,
+            supporting_signals=[],
+            contradicting_signals=[],
+            possible_explanations=["error de costeo"],
+            requires_clarification=False,
+            clarification_question=None,
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
+
+    with pytest.raises(ValidationError, match="possible_explanations"):
+        HypothesisNode(
+            node_id="node-001",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=0.6,
+            ambiguity=0.4,
+            supporting_signals=["VENTA_BAJO_COSTO"],
+            contradicting_signals=[],
+            possible_explanations=[],
+            requires_clarification=False,
+            clarification_question=None,
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
+
+
+def test_hypothesis_node_confidence_y_ambiguity_fuera_rango_fallan():
+    with pytest.raises(ValidationError):
+        HypothesisNode(
+            node_id="node-001",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=1.1,
+            ambiguity=0.4,
+            supporting_signals=["VENTA_BAJO_COSTO"],
+            contradicting_signals=[],
+            possible_explanations=["error de costeo"],
+            requires_clarification=False,
+            clarification_question=None,
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
+    with pytest.raises(ValidationError):
+        HypothesisNode(
+            node_id="node-001",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=0.6,
+            ambiguity=-0.1,
+            supporting_signals=["VENTA_BAJO_COSTO"],
+            contradicting_signals=[],
+            possible_explanations=["error de costeo"],
+            requires_clarification=False,
+            clarification_question=None,
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
+
+
+def test_hypothesis_node_requires_clarification_requiere_pregunta():
+    with pytest.raises(ValidationError, match="clarification_question"):
+        HypothesisNode(
+            node_id="node-001",
+            tenant_id="tenant-a",
+            hypothesis_type="CRISIS_DE_MARGEN",
+            confidence=0.6,
+            ambiguity=0.4,
+            supporting_signals=["VENTA_BAJO_COSTO"],
+            contradicting_signals=[],
+            possible_explanations=["error de costeo"],
+            requires_clarification=True,
+            clarification_question=" ",
+            temporal_validity=None,
+            status="CANDIDATE",
+        )
 
 
 def test_variable_observation_confirmed_requiere_value():
