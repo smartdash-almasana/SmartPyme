@@ -1,20 +1,7 @@
-import json
-
 import pytest
 from pydantic import ValidationError
 
-# Intentar importar desde la nueva ruta, si falla, es un indicador de que el __init__.py podría ser necesario
-# o que la estructura del proyecto no está en el path de python.
-try:
-    from factory_v3.contracts.artifacts import ArtifactReport
-except ImportError:
-    # Este es un fallback en caso de que el path no esté configurado,
-    # lo cual puede pasar en algunos entornos de ejecución.
-    # Se añade el path al vuelo. No es ideal para producción, pero sí para un agente.
-    import sys
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-    from factory_v3.contracts.artifacts import ArtifactReport
+from factory_v3.contracts.artifacts import ArtifactReport
 
 
 def test_artifact_report_serializacion_basica():
@@ -60,7 +47,7 @@ def test_artifact_report_campos_obligatorios():
     """Verifica que los campos obligatorios son validados."""
     with pytest.raises(ValidationError) as excinfo:
         ArtifactReport(task_id="t-789", target_branch="some-branch", verdict_message="msg")
-    
+
     errors = excinfo.value.errors()
     error_fields = {e["loc"][0] for e in errors}
     # Solo final_status debe faltar ahora
