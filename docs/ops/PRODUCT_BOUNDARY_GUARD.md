@@ -61,7 +61,11 @@ El directorio `app/mcp/` está marcado como excepción temporal porque:
 ### Ejecución local
 
 ```bash
+# Salida normal (resumen legible)
 python scripts/guard_product_boundaries.py
+
+# Salida JSON (para integración con CI/CD)
+python scripts/guard_product_boundaries.py --json
 ```
 
 ### GitHub Actions
@@ -70,5 +74,71 @@ El check se ejecuta automáticamente en cada push y PR a través del workflow `p
 
 ## Salida
 
-- Exit code 0: No se detectaron violaciones
-- Exit code 1: Se detectaron violaciones (se listan en stdout)
+### Formato normal
+
+Ejemplo de salida en formato legible:
+
+```
+============================================================
+PRODUCT BOUNDARY GUARD - SUMMARY
+============================================================
+Total scanned files:       267
+Allowed technical debt:    9
+Forbidden violations:      2
+CI status:                 FAIL
+============================================================
+
+EXCEPTIONS IGNORED (configured in product_boundary_guard_exceptions.json):
+--------------------------------------------------
+  - app/mcp/__init__.py
+  - app/mcp/tools/queue_list_tool.py
+  ...
+--------------------------------------------------
+
+PRODUCT BOUNDARY VIOLATIONS DETECTED:
+--------------------------------------------------
+/workspace/services/document_ingestion_service.py: from extraction.chunker import ...
+/workspace/services/document_ingestion_service.py: from extraction.docling_parser import ...
+--------------------------------------------------
+```
+
+**Interpretación operacional:**
+- `Total scanned files`: Cantidad de archivos Python bajo directorios protegidos (`app/`, `core/`, `services/`, `models/`)
+- `Allowed technical debt`: Archivos excluidos explícitamente vía configuración (deuda técnica conocida)
+- `Forbidden violations`: Imports prohibidos detectados fuera de excepciones (requieren atención)
+- `CI status`: `PASS` si no hay violaciones, `FAIL` si hay al menos una violación
+
+### Formato JSON
+
+Ejemplo de salida JSON:
+
+```json
+{
+  "scanned_files": 267,
+  "allowed_exceptions_count": 9,
+  "violations_count": 2,
+  "violations": [
+    "/workspace/services/document_ingestion_service.py: from extraction.chunker import ...",
+    "/workspace/services/document_ingestion_service.py: from extraction.docling_parser import ..."
+  ],
+  "allowed_exceptions": [
+    "app/mcp/__init__.py",
+    "app/mcp/tools/queue_list_tool.py",
+    ...
+  ],
+  "status": "FAIL"
+}
+```
+
+**Campos del JSON:**
+- `scanned_files`: Total de archivos Python escaneados
+- `allowed_exceptions_count`: Cantidad de archivos excluidos por configuración
+- `violations_count`: Cantidad de violaciones detectadas
+- `violations`: Lista detallada de violaciones (archivo + import)
+- `allowed_exceptions`: Lista de archivos excluidos
+- `status`: `"PASS"` o `"FAIL"` según resultado
+
+### Códigos de exit
+
+- Exit code 0: No se detectaron violaciones (`status: PASS`)
+- Exit code 1: Se detectaron violaciones (`status: FAIL`)

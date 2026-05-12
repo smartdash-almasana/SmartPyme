@@ -16,8 +16,12 @@ Protected directories:
 - models/
 
 Exceptions are loaded from config/product_boundary_guard_exceptions.json
+
+Usage:
+    python scripts/guard_product_boundaries.py [--json]
 """
 
+import argparse
 import ast
 import json
 import os
@@ -110,6 +114,10 @@ def check_imports(file_path: Path, repo_root: Path) -> list[str]:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Guard product boundary against forbidden imports")
+    parser.add_argument("--json", action="store_true", help="Output results in JSON format")
+    args = parser.parse_args()
+    
     repo_root = Path(__file__).resolve().parent.parent
     
     # Load exceptions
@@ -117,6 +125,7 @@ def main():
     
     violations = []
     ignored_exceptions = []
+    scanned_files = 0
     
     # Find all Python files in protected directories
     for protected_dir in PROTECTED_DIRS:
@@ -128,6 +137,8 @@ def main():
             if not is_protected_path(py_file, repo_root):
                 continue
             
+            scanned_files += 1
+            
             # Check if this file is an exception
             if is_exception_path(py_file, repo_root, allowed_prefixes):
                 ignored_exceptions.append(str(py_file.relative_to(repo_root)))
@@ -136,25 +147,54 @@ def main():
             file_violations = check_imports(py_file, repo_root)
             violations.extend(file_violations)
     
-    # Print ignored exceptions info
-    if ignored_exceptions:
-        print("EXCEPTIONS IGNORED (configured in product_boundary_guard_exceptions.json):")
-        print("-" * 50)
-        for exc in ignored_exceptions:
-            print(f"  - {exc}")
-        print("-" * 50)
+    # Determine CI status
+    has_violations = len(violations) > 0
+    ci_status = "FAIL" if has_violations else "PASS"
+    
+    if args.json:
+        output = {
+            "scanned_files": scanned_files,
+            "allowed_exceptions_count": len(ignored_exceptions),
+            "violations_count": len(violations),
+            "violations": violations,
+            "allowed_exceptions": ignored_exceptions,
+            "status": ci_status
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        # Print summary header
+        print("=" * 60)
+        print("PRODUCT BOUNDARY GUARD - SUMMARY")
+        print("=" * 60)
+        print(f"Total scanned files:       {scanned_files}")
+        print(f"Allowed technical debt:    {len(ignored_exceptions)}")
+        print(f"Forbidden violations:      {len(violations)}")
+        print(f"CI status:                 {ci_status}")
+        print("=" * 60)
+        
+        # Print ignored exceptions info
+        if ignored_exceptions:
+            print()
+            print("EXCEPTIONS IGNORED (configured in product_boundary_guard_exceptions.json):")
+            print("-" * 50)
+            for exc in ignored_exceptions:
+                print(f"  - {exc}")
+            print("-" * 50)
+        
+        # Print violations
+        if violations:
+            print()
+            print("PRODUCT BOUNDARY VIOLATIONS DETECTED:")
+            print("-" * 50)
+            for v in violations:
+                print(v)
+            print("-" * 50)
+        
         print()
     
-    if violations:
-        print("PRODUCT BOUNDARY VIOLATIONS DETECTED:")
-        print("=" * 50)
-        for v in violations:
-            print(v)
-        print("=" * 50)
-        print(f"Total violations: {len(violations)}")
+    if has_violations:
         sys.exit(1)
     else:
-        print("No product boundary violations detected.")
         sys.exit(0)
 
 
