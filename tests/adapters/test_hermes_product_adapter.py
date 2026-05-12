@@ -6,7 +6,10 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 
-from app.adapters.hermes_product_adapter import HermesProductAdapter
+from app.adapters.hermes_product_adapter import (
+    HermesProductAdapter,
+    HermesProductRuntimeScaffold,
+)
 from app.runtime.hermes_product_loader import HERMES_PRODUCT_CONFIG_ENV_VAR
 
 
@@ -16,6 +19,21 @@ def mock_hermes_runtime():
     runtime = MagicMock()
     runtime.run.return_value = "Respuesta desde el runtime mockeado."
     return runtime
+
+
+class FakeVertexClient:
+    def __init__(self, response: str | None = "respuesta grounded") -> None:
+        self.response = response
+        self.calls: list[tuple[dict, dict]] = []
+
+    def generate(self, payload: dict, config: dict) -> str | None:
+        self.calls.append((payload, config))
+        return self.response
+
+
+class FailingVertexClient:
+    def generate(self, payload: dict, config: dict) -> str | None:
+        raise RuntimeError("vertex failure")
 
 
 def test_adapter_returns_none_when_disabled(monkeypatch):
@@ -155,3 +173,34 @@ def test_adapter_fails_closed_when_config_is_missing(monkeypatch):
         )
         is None
     )
+
+
+def test_runtime_uses_vertex_client_when_enabled_and_grounded():
+    client = FakeVertexClient("respuesta desde vertex fake")
+    runtime = HermesProductRuntimeScaffold(
+        {"vertex": {"enabled": True}},
+        vertex_client=client,
+    )
+
+    response = runtime.run({"summary": {"text": "estado"}})
+
+    assert response == "respuesta desde vertex fake"
+    assert len(client.calls) == 1
+
+
+def test_runtime_preserves_none_if_vertex_client_returns_empty():
+    runtime = HermesProductRuntimeScaffold(
+        {"vertex": {"enabled": False}},
+        vertex_client=FakeVertexClient(None),
+    )
+
+    assert runtime.run({"summary": {"text": "estado"}}) is None
+
+
+def test_runtime_returns_none_if_vertex_client_fails():
+    runtime = HermesProductRuntimeScaffold(
+        {"vertex": {"enabled": True}},
+        vertex_client=FailingVertexClient(),
+    )
+
+    assert runtime.run({"summary": {"text": "estado"}}) is None
