@@ -19,13 +19,14 @@ terminal:
 
 mcp_servers:
   smartpyme_product:
-    command: python3
+    command: /opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python
     args:
-      - /workspace/mcp_smartpyme_bridge.py
+      - /opt/smartpyme-factory/repos/SmartPyme/mcp_smartpyme_bridge.py
     env:
-      PYTHONPATH: /workspace
-      SMARTPYME_EVIDENCE_ROOT: /workspace/evidence_store
-      SMARTPYME_CURATED_EVIDENCE_DB_PATH: /workspace/data/curated_evidence.db
+      PYTHONPATH: /opt/smartpyme-factory/repos/SmartPyme
+      SMARTPYME_REPO: /opt/smartpyme-factory/repos/SmartPyme
+      SMARTPYME_EVIDENCE_ROOT: /opt/smartpyme-factory/repos/SmartPyme/evidence_store
+      SMARTPYME_CURATED_EVIDENCE_DB_PATH: /opt/smartpyme-factory/repos/SmartPyme/data/curated_evidence.db
     tools:
       include:
         - create_job
