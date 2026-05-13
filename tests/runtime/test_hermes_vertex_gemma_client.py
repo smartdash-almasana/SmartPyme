@@ -10,6 +10,7 @@ BASE_CONFIG = {
     "model": {
         "default": "gemma-4",
         "provider_model_id": "google/gemma-4-26b-a4b-it-maas@001",
+        "runtime_model_id": "gemma-4-26b-a4b-it-maas",
         "temperature": 0.1,
         "max_output_tokens": 800,
     },
@@ -18,7 +19,7 @@ BASE_CONFIG = {
         "project_id_env": "GOOGLE_CLOUD_PROJECT",
         "location_env": "VERTEX_LOCATION",
         "model_id_env": "HERMES_PRODUCT_VERTEX_MODEL_ID",
-        "model_id": "google/gemma-4-26b-a4b-it-maas@001",
+        "model_id": "gemma-4-26b-a4b-it-maas",
     },
 }
 
@@ -36,6 +37,15 @@ def _set_vertex_env(monkeypatch) -> None:
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511")
     monkeypatch.setenv("VERTEX_LOCATION", "us-central1")
     monkeypatch.delenv("HERMES_PRODUCT_VERTEX_MODEL_ID", raising=False)
+
+
+def _install_fake_genai_modules(monkeypatch, fake_genai: ModuleType, fake_types: ModuleType) -> None:
+    google_module = sys.modules.get("google") or ModuleType("google")
+    google_module.genai = fake_genai
+    fake_genai.types = fake_types
+    monkeypatch.setitem(sys.modules, "google", google_module)
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+    monkeypatch.setitem(sys.modules, "google.genai.types", fake_types)
 
 
 def test_generate_returns_none_when_vertex_disabled(monkeypatch):
@@ -90,7 +100,7 @@ def test_generate_returns_none_when_user_message_missing(monkeypatch):
     assert response is None
 
 
-def test_resolve_vertex_settings_uses_confirmed_model_and_generation_kwargs(monkeypatch):
+def test_resolve_vertex_settings_uses_runtime_model_and_generation_kwargs(monkeypatch):
     _set_vertex_env(monkeypatch)
     client = VertexGemmaClient()
 
@@ -99,7 +109,7 @@ def test_resolve_vertex_settings_uses_confirmed_model_and_generation_kwargs(monk
     assert settings == {
         "project_id": "smartseller-490511",
         "location": "us-central1",
-        "model_id": "google/gemma-4-26b-a4b-it-maas@001",
+        "model_id": "gemma-4-26b-a4b-it-maas",
         "system_prompt": "prompt clínico",
         "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
     }
@@ -137,7 +147,7 @@ def test_build_prompt_includes_system_user_and_grounding():
 
 
 def test_invoke_vertex_returns_none_when_sdk_missing(monkeypatch):
-    monkeypatch.setitem(sys.modules, "vertexai", None)
+    monkeypatch.setitem(sys.modules, "google.genai", None)
     client = VertexGemmaClient()
 
     response = client._invoke_vertex(
@@ -145,7 +155,7 @@ def test_invoke_vertex_returns_none_when_sdk_missing(monkeypatch):
         {
             "project_id": "smartseller-490511",
             "location": "us-central1",
-            "model_id": "google/gemma-4-26b-a4b-it-maas@001",
+            "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {},
         },
     )
@@ -154,26 +164,24 @@ def test_invoke_vertex_returns_none_when_sdk_missing(monkeypatch):
 
 
 def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
-    vertexai = ModuleType("vertexai")
-    vertexai.init = lambda **kwargs: None
+    fake_genai = ModuleType("google.genai")
+    fake_types = ModuleType("google.genai.types")
 
-    generative_models = ModuleType("vertexai.generative_models")
-
-    class FailingModel:
-        def __init__(self, model_id: str) -> None:
-            self.model_id = model_id
-
-        def generate_content(self, prompt: str, generation_config: object) -> object:
+    class FailingModels:
+        def generate_content(self, **kwargs: object) -> object:
             raise RuntimeError("vertex failure")
 
-    class GenerationConfig:
+    class Client:
+        def __init__(self, **kwargs: object) -> None:
+            self.models = FailingModels()
+
+    class GenerateContentConfig:
         def __init__(self, **kwargs: object) -> None:
             self.kwargs = kwargs
 
-    generative_models.GenerativeModel = FailingModel
-    generative_models.GenerationConfig = GenerationConfig
-    monkeypatch.setitem(sys.modules, "vertexai", vertexai)
-    monkeypatch.setitem(sys.modules, "vertexai.generative_models", generative_models)
+    fake_genai.Client = Client
+    fake_types.GenerateContentConfig = GenerateContentConfig
+    _install_fake_genai_modules(monkeypatch, fake_genai, fake_types)
 
     client = VertexGemmaClient()
     response = client._invoke_vertex(
@@ -181,7 +189,7 @@ def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
         {
             "project_id": "smartseller-490511",
             "location": "us-central1",
-            "model_id": "google/gemma-4-26b-a4b-it-maas@001",
+            "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
         },
     )
@@ -191,34 +199,29 @@ def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
 
 def test_invoke_vertex_returns_fake_response_and_passes_generation_kwargs(monkeypatch):
     captured: dict = {}
-    vertexai = ModuleType("vertexai")
-
-    def fake_init(**kwargs: object) -> None:
-        captured["init"] = kwargs
-
-    vertexai.init = fake_init
-    generative_models = ModuleType("vertexai.generative_models")
+    fake_genai = ModuleType("google.genai")
+    fake_types = ModuleType("google.genai.types")
 
     class FakeResponse:
         text = " respuesta vertex "
 
-    class FakeModel:
-        def __init__(self, model_id: str) -> None:
-            captured["model_id"] = model_id
-
-        def generate_content(self, prompt: str, generation_config: object) -> object:
-            captured["prompt"] = prompt
-            captured["generation_config"] = generation_config
+    class FakeModels:
+        def generate_content(self, **kwargs: object) -> object:
+            captured["generate_content"] = kwargs
             return FakeResponse()
 
-    class GenerationConfig:
+    class Client:
+        def __init__(self, **kwargs: object) -> None:
+            captured["client"] = kwargs
+            self.models = FakeModels()
+
+    class GenerateContentConfig:
         def __init__(self, **kwargs: object) -> None:
             self.kwargs = kwargs
 
-    generative_models.GenerativeModel = FakeModel
-    generative_models.GenerationConfig = GenerationConfig
-    monkeypatch.setitem(sys.modules, "vertexai", vertexai)
-    monkeypatch.setitem(sys.modules, "vertexai.generative_models", generative_models)
+    fake_genai.Client = Client
+    fake_types.GenerateContentConfig = GenerateContentConfig
+    _install_fake_genai_modules(monkeypatch, fake_genai, fake_types)
 
     client = VertexGemmaClient()
     response = client._invoke_vertex(
@@ -226,16 +229,20 @@ def test_invoke_vertex_returns_fake_response_and_passes_generation_kwargs(monkey
         {
             "project_id": "smartseller-490511",
             "location": "us-central1",
-            "model_id": "google/gemma-4-26b-a4b-it-maas@001",
+            "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
         },
     )
 
     assert response == "respuesta vertex"
-    assert captured["init"] == {"project": "smartseller-490511", "location": "us-central1"}
-    assert captured["model_id"] == "google/gemma-4-26b-a4b-it-maas@001"
-    assert captured["prompt"] == "prompt completo"
-    assert captured["generation_config"].kwargs == {
+    assert captured["client"] == {
+        "vertexai": True,
+        "project": "smartseller-490511",
+        "location": "us-central1",
+    }
+    assert captured["generate_content"]["model"] == "gemma-4-26b-a4b-it-maas"
+    assert captured["generate_content"]["contents"] == "prompt completo"
+    assert captured["generate_content"]["config"].kwargs == {
         "temperature": 0.1,
         "max_output_tokens": 800,
     }
