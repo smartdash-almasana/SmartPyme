@@ -39,7 +39,11 @@ def _set_vertex_env(monkeypatch) -> None:
     monkeypatch.delenv("HERMES_PRODUCT_VERTEX_MODEL_ID", raising=False)
 
 
-def _install_fake_genai_modules(monkeypatch, fake_genai: ModuleType, fake_types: ModuleType) -> None:
+def _install_fake_genai_modules(
+    monkeypatch,
+    fake_genai: ModuleType,
+    fake_types: ModuleType,
+) -> None:
     google_module = sys.modules.get("google") or ModuleType("google")
     google_module.genai = fake_genai
     fake_genai.types = fake_types
