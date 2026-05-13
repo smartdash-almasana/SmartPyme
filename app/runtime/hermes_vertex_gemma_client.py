@@ -6,7 +6,7 @@ from typing import Any
 
 
 class VertexGemmaClient:
-    """Cliente mínimo fail-closed para invocar Vertex/Gemma."""
+    """Cliente mínimo fail-closed para invocar Vertex/Gemma MaaS."""
 
     def generate(self, payload: dict[str, Any], config: dict[str, Any]) -> str | None:
         """Genera una respuesta con Vertex/Gemma o retorna None ante cualquier falla."""
@@ -94,25 +94,25 @@ class VertexGemmaClient:
 
     def _invoke_vertex(self, prompt: str, settings: dict[str, Any]) -> str | None:
         try:
-            import vertexai
-            from vertexai.generative_models import GenerationConfig, GenerativeModel
+            import google.genai as genai
+            from google.genai import types as genai_types
         except ImportError:
             return None
 
         try:
-            vertexai.init(
+            client = genai.Client(
+                vertexai=True,
                 project=settings["project_id"],
                 location=settings["location"],
             )
-            model = GenerativeModel(settings["model_id"])
             model_kwargs = settings.get("model_kwargs") or {}
-            generation_config = GenerationConfig(
-                temperature=model_kwargs.get("temperature"),
-                max_output_tokens=model_kwargs.get("max_output_tokens"),
-            )
-            response = model.generate_content(
-                prompt,
-                generation_config=generation_config,
+            response = client.models.generate_content(
+                model=settings["model_id"],
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    temperature=model_kwargs.get("temperature"),
+                    max_output_tokens=model_kwargs.get("max_output_tokens"),
+                ),
             )
             text = getattr(response, "text", None)
             clean = text.strip() if isinstance(text, str) else ""
