@@ -16,6 +16,7 @@ model:
 
 vertex:
   enabled: false
+  enabled_env: HERMES_PRODUCT_VERTEX_ENABLED
   project_id_env: GOOGLE_CLOUD_PROJECT
   location: global
   location_env: HERMES_PRODUCT_VERTEX_LOCATION
