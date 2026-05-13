@@ -93,8 +93,10 @@ def models() -> dict[str, Any]:
 
 @app.post("/v1/chat/completions")
 def chat_completions(request: ChatCompletionRequest) -> dict[str, Any]:
-    if request.stream:
-        raise HTTPException(status_code=400, detail="streaming is not supported")
+    # Hermes can still send stream=true even when display.streaming is disabled.
+    # The Vertex Gemma backend is non-streaming, so this proxy deliberately
+    # downgrades streaming requests to a normal OpenAI-compatible response
+    # instead of failing Telegram with HTTP 400.
     prompt = _build_prompt(request.messages)
     if not prompt:
         raise HTTPException(status_code=400, detail="messages are required")
