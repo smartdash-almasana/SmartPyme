@@ -1,6 +1,7 @@
 [Unit]
 Description=Hermes Gateway - SmartPyme Product
 After=network-online.target
+Conflicts=hermes-gateway.service
 
 [Service]
 Type=simple
