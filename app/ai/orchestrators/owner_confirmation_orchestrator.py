@@ -24,13 +24,7 @@ class OwnerConfirmationInput(TypedDict):
 
 
 class OwnerConfirmationOrchestrator:
-    """Orchestrator to handle owner's confirmation/rejection of a proposed Job.
-
-    Boundary rule:
-    - Strictly validates input via Curator and Conditions.
-    - Persists the Job only if action is CONFIRM and data is OK.
-    - Ensures no IA metadata leaks into the real Job payload.
-    """
+    """Orchestrator to handle owner's confirmation/rejection of a proposed Job."""
 
     def __init__(
         self,
@@ -79,7 +73,6 @@ class OwnerConfirmationOrchestrator:
                 "reason": str(ve),
             }
 
-        # 1. Data Curation (Technical Hygiene)
         curation_res = self._curator.curate_input(
             skill_id=skill_id,
             variables=overrides.get("variables") or {},
@@ -99,7 +92,6 @@ class OwnerConfirmationOrchestrator:
             enforce_execution_contract(
                 curation_res.cleaned_payload,
                 context="confirm_job.cleaned_payload",
-                required_fields=("objective", "variables", "evidence"),
             )
         except ValueError as ve:
             return {
@@ -109,7 +101,6 @@ class OwnerConfirmationOrchestrator:
                 "reason": str(ve),
             }
 
-        # 2. Operational Conditions Validation (Business Logic)
         cond_result = self._validator.validate_operational_conditions(
             skill_id=skill_id,
             variables=curation_res.cleaned_payload["variables"],
@@ -132,10 +123,7 @@ class OwnerConfirmationOrchestrator:
                 "reason": f"Validation failed: {cond_result['status']}",
             }
 
-        # 3. Persistence of real Job
         job_id = f"job-{uuid.uuid4().hex[:12]}"
-
-        # Clean payload: strictly the sanitized and curated data
         payload = {
             "objective": curation_res.cleaned_payload["objective"],
             "variables": curation_res.cleaned_payload["variables"],
