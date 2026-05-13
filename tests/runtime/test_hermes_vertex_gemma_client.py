@@ -16,8 +16,10 @@ BASE_CONFIG = {
     },
     "vertex": {
         "enabled": True,
+        "enabled_env": "HERMES_PRODUCT_VERTEX_ENABLED",
         "project_id_env": "GOOGLE_CLOUD_PROJECT",
-        "location_env": "VERTEX_LOCATION",
+        "location_env": "HERMES_PRODUCT_VERTEX_LOCATION",
+        "location": "global",
         "model_id_env": "HERMES_PRODUCT_VERTEX_MODEL_ID",
         "model_id": "gemma-4-26b-a4b-it-maas",
     },
@@ -35,8 +37,9 @@ def _payload() -> dict:
 
 def _set_vertex_env(monkeypatch) -> None:
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511")
-    monkeypatch.setenv("VERTEX_LOCATION", "us-central1")
+    monkeypatch.delenv("HERMES_PRODUCT_VERTEX_LOCATION", raising=False)
     monkeypatch.delenv("HERMES_PRODUCT_VERTEX_MODEL_ID", raising=False)
+    monkeypatch.delenv("HERMES_PRODUCT_VERTEX_ENABLED", raising=False)
 
 
 def _install_fake_genai_modules(
@@ -64,6 +67,14 @@ def test_generate_returns_none_when_vertex_disabled(monkeypatch):
     assert response is None
 
 
+def test_vertex_enabled_env_overrides_disabled_yaml(monkeypatch):
+    monkeypatch.setenv("HERMES_PRODUCT_VERTEX_ENABLED", "true")
+
+    assert VertexGemmaClient._is_enabled(
+        {"vertex": {"enabled": False, "enabled_env": "HERMES_PRODUCT_VERTEX_ENABLED"}}
+    )
+
+
 def test_generate_returns_none_without_grounding(monkeypatch):
     _set_vertex_env(monkeypatch)
     client = VertexGemmaClient()
@@ -75,7 +86,6 @@ def test_generate_returns_none_without_grounding(monkeypatch):
 
 def test_generate_returns_none_when_project_env_missing(monkeypatch):
     monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
-    monkeypatch.setenv("VERTEX_LOCATION", "us-central1")
     client = VertexGemmaClient()
 
     response = client.generate(_payload(), BASE_CONFIG)
@@ -83,14 +93,14 @@ def test_generate_returns_none_when_project_env_missing(monkeypatch):
     assert response is None
 
 
-def test_generate_returns_none_when_location_env_missing(monkeypatch):
-    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511")
-    monkeypatch.delenv("VERTEX_LOCATION", raising=False)
+def test_resolve_vertex_settings_uses_configured_global_location(monkeypatch):
+    _set_vertex_env(monkeypatch)
     client = VertexGemmaClient()
 
-    response = client.generate(_payload(), BASE_CONFIG)
+    settings = client._resolve_vertex_settings(BASE_CONFIG)
 
-    assert response is None
+    assert settings is not None
+    assert settings["location"] == "global"
 
 
 def test_generate_returns_none_when_user_message_missing(monkeypatch):
@@ -112,7 +122,7 @@ def test_resolve_vertex_settings_uses_runtime_model_and_generation_kwargs(monkey
 
     assert settings == {
         "project_id": "smartseller-490511",
-        "location": "us-central1",
+        "location": "global",
         "model_id": "gemma-4-26b-a4b-it-maas",
         "system_prompt": "prompt clínico",
         "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
@@ -121,7 +131,6 @@ def test_resolve_vertex_settings_uses_runtime_model_and_generation_kwargs(monkey
 
 def test_resolve_vertex_settings_prefers_model_id_env(monkeypatch):
     monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511")
-    monkeypatch.setenv("VERTEX_LOCATION", "us-central1")
     monkeypatch.setenv("HERMES_PRODUCT_VERTEX_MODEL_ID", "env-model")
     client = VertexGemmaClient()
 
@@ -158,7 +167,7 @@ def test_invoke_vertex_returns_none_when_sdk_missing(monkeypatch):
         "prompt",
         {
             "project_id": "smartseller-490511",
-            "location": "us-central1",
+            "location": "global",
             "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {},
         },
@@ -192,7 +201,7 @@ def test_invoke_vertex_returns_none_on_vertex_exception(monkeypatch):
         "prompt",
         {
             "project_id": "smartseller-490511",
-            "location": "us-central1",
+            "location": "global",
             "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
         },
@@ -232,7 +241,7 @@ def test_invoke_vertex_returns_fake_response_and_passes_generation_kwargs(monkey
         "prompt completo",
         {
             "project_id": "smartseller-490511",
-            "location": "us-central1",
+            "location": "global",
             "model_id": "gemma-4-26b-a4b-it-maas",
             "model_kwargs": {"temperature": 0.1, "max_output_tokens": 800},
         },
@@ -242,7 +251,7 @@ def test_invoke_vertex_returns_fake_response_and_passes_generation_kwargs(monkey
     assert captured["client"] == {
         "vertexai": True,
         "project": "smartseller-490511",
-        "location": "us-central1",
+        "location": "global",
     }
     assert captured["generate_content"]["model"] == "gemma-4-26b-a4b-it-maas"
     assert captured["generate_content"]["contents"] == "prompt completo"
