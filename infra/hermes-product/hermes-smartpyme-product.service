@@ -1,6 +1,7 @@
 [Unit]
 Description=Hermes Gateway - SmartPyme Product
-After=network-online.target
+After=network-online.target smartpyme-vertex-gemma-proxy.service
+Requires=smartpyme-vertex-gemma-proxy.service
 Conflicts=hermes-gateway.service
 
 [Service]
