@@ -17,7 +17,8 @@ model:
 vertex:
   enabled: false
   project_id_env: GOOGLE_CLOUD_PROJECT
-  location_env: VERTEX_LOCATION
+  location: global
+  location_env: HERMES_PRODUCT_VERTEX_LOCATION
   model_id_env: HERMES_PRODUCT_VERTEX_MODEL_ID
   model_id: gemma-4-26b-a4b-it-maas
 
