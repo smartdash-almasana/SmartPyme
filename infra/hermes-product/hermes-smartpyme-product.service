@@ -1,0 +1,15 @@
+[Unit]
+Description=Hermes Gateway - SmartPyme Product
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/smartpyme-factory/repos/hermes-agent
+ExecStart=/opt/smartpyme-factory/repos/SmartPyme/infra/hermes-product/run-hermes-product-gateway.sh
+Restart=always
+RestartSec=5
+Environment=HERMES_PRODUCT_HOME=/home/neoalmasana/.hermes-smartpyme-product
+Environment=SMARTPYME_REPO=/opt/smartpyme-factory/repos/SmartPyme
+
+[Install]
+WantedBy=default.target
