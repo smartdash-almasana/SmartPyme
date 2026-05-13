@@ -95,6 +95,20 @@ class OwnerConfirmationOrchestrator:
                 "reason": "; ".join(curation_res.errors),
             }
 
+        try:
+            enforce_execution_contract(
+                curation_res.cleaned_payload,
+                context="confirm_job.cleaned_payload",
+                required_fields=("objective", "variables", "evidence"),
+            )
+        except ValueError as ve:
+            return {
+                "status": "REJECTED",
+                "skill_id": skill_id,
+                "error_type": "INVALID_JOB_PAYLOAD",
+                "reason": str(ve),
+            }
+
         # 2. Operational Conditions Validation (Business Logic)
         cond_result = self._validator.validate_operational_conditions(
             skill_id=skill_id,
