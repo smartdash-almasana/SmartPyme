@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import Any
 
 
@@ -23,7 +24,15 @@ class VertexGemmaClient:
         if not prompt:
             return None
 
-        return self._invoke_vertex(prompt, settings)
+        timeout_seconds = self._resolve_timeout_seconds(config)
+        try:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self._invoke_vertex, prompt, settings)
+                return future.result(timeout=timeout_seconds)
+        except TimeoutError:
+            return None
+        except Exception:
+            return None
 
     @staticmethod
     def _is_enabled(config: dict[str, Any]) -> bool:
@@ -35,6 +44,17 @@ class VertexGemmaClient:
         if enabled_override is not None:
             return enabled_override.strip().lower() == "true"
         return vertex.get("enabled") is True
+
+    @staticmethod
+    def _resolve_timeout_seconds(config: dict[str, Any]) -> float:
+        runtime = config.get("runtime")
+        if not isinstance(runtime, dict):
+            return 8.0
+        try:
+            value = float(runtime.get("timeout_seconds", 8.0))
+        except (TypeError, ValueError):
+            return 8.0
+        return max(0.1, value)
 
     @staticmethod
     def _has_required_grounding(payload: dict[str, Any]) -> bool:
