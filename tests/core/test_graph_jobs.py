@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import pytest
-import importlib.util
-import sys
-from pathlib import Path
 
 from app.contracts.graph_contract import (
     HypothesisNode,
@@ -19,19 +16,11 @@ from app.core.clarification_gate import (
     ClarificationTicket,
 )
 from app.core.graph_resolution import evaluar_tension
-_GRAPH_JOBS_PATH = (
-    Path(__file__).resolve().parents[3] / "app" / "core" / "pipeline" / "graph_jobs.py"
+from app.core.graph_jobs import (
+    GraphJobStatus,
+    evaluar_nodo_task_like,
+    procesar_subgrafo,
 )
-_GRAPH_JOBS_SPEC = importlib.util.spec_from_file_location("graph_jobs_module", _GRAPH_JOBS_PATH)
-if _GRAPH_JOBS_SPEC is None or _GRAPH_JOBS_SPEC.loader is None:
-    raise RuntimeError("Cannot load graph_jobs module")
-_GRAPH_JOBS_MODULE = importlib.util.module_from_spec(_GRAPH_JOBS_SPEC)
-sys.modules["graph_jobs_module"] = _GRAPH_JOBS_MODULE
-_GRAPH_JOBS_SPEC.loader.exec_module(_GRAPH_JOBS_MODULE)
-
-GraphJobStatus = _GRAPH_JOBS_MODULE.GraphJobStatus
-evaluar_nodo_task_like = _GRAPH_JOBS_MODULE.evaluar_nodo_task_like
-procesar_subgrafo = _GRAPH_JOBS_MODULE.procesar_subgrafo
 
 
 class InMemoryGraphRepo:
