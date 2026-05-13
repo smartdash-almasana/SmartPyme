@@ -1,0 +1,37 @@
+model: google/gemini-2.5-pro
+
+toolsets:
+  - hermes-cli
+  - mcp-smartpyme-product
+
+terminal:
+  backend: docker
+  container_cpu: 1
+  container_memory: 5120
+  container_persistent: true
+  cwd: /workspace
+  docker_volumes:
+    - /opt/smartpyme-factory/repos/SmartPyme:/workspace
+    - /home/neoalmasana/.hermes-smartpyme-product/cache/documents:/output
+
+mcp_servers:
+  smartpyme_product:
+    command: python3
+    args:
+      - /workspace/mcp_smartpyme_bridge.py
+    env:
+      PYTHONPATH: /workspace
+      SMARTPYME_EVIDENCE_ROOT: /workspace/evidence_store
+      SMARTPYME_CURATED_EVIDENCE_DB_PATH: /workspace/data/curated_evidence.db
+    tools:
+      include:
+        - create_job
+        - get_job_status
+        - list_pending_validations
+        - resolve_clarification
+        - save_clarification
+        - get_evidence
+        - ingest_document
+        - bem_submit_workflow
+      prompts: false
+      resources: false
