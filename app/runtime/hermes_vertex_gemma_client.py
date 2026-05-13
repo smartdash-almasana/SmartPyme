@@ -47,7 +47,7 @@ class VertexGemmaClient:
             return None
 
         project_id = os.getenv(str(vertex.get("project_id_env") or ""))
-        location = os.getenv(str(vertex.get("location_env") or ""))
+        location = os.getenv(str(vertex.get("location_env") or "")) or vertex.get("location")
         model_id = os.getenv(str(vertex.get("model_id_env") or "")) or vertex.get("model_id")
 
         if not project_id or not location or not model_id:
