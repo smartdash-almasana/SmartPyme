@@ -88,7 +88,7 @@ def test_confirm_job_blocks_curated_payload_status_before_persistence() -> None:
 
     assert result["status"] == "REJECTED"
     assert result["error_type"] == "INVALID_JOB_PAYLOAD"
-    assert "confirm_job.job.payload" in result["reason"]
+    assert "confirm_job.cleaned_payload" in result["reason"]
     save_job.assert_not_called()
 
 
