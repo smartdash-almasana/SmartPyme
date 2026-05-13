@@ -20,7 +20,7 @@ Estados epistemológicos obligatorios:
 
 Modos de copilotaje autorizados:
 
-* **DIOS:** el dueño delega máxima conducción, con checkpoints de control explícitos.
+* **DIOS:** “modo de máxima soberanía del dueño y mínimo margen interpretativo del sistema; solo acciones determinísticas, datos duros y bloqueo ante ambigüedad”.
 * **HIBRIDO:** ejecución compartida entre automatización y validación humana frecuente.
 * **INVESTIGADOR:** foco en recolección de evidencia y reducción de incertidumbre antes de actuar.
 
