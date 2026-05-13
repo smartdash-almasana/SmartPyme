@@ -30,6 +30,10 @@ class VertexGemmaClient:
         vertex = config.get("vertex")
         if not isinstance(vertex, dict):
             return False
+        enabled_env = str(vertex.get("enabled_env") or "HERMES_PRODUCT_VERTEX_ENABLED")
+        enabled_override = os.getenv(enabled_env)
+        if enabled_override is not None:
+            return enabled_override.strip().lower() == "true"
         return vertex.get("enabled") is True
 
     @staticmethod
