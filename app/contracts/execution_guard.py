@@ -12,6 +12,13 @@ _BLOCKING_STATUSES = {
 }
 _BLOCKING_FIELDS = ("status", "current_state", "state")
 _REASON_FIELDS = ("blocking_reason", "blocked_reason")
+_NESTED_CONTRACT_FIELDS = (
+    "payload",
+    "operational_plan",
+    "overrides",
+    "propuesta",
+    "proposal",
+)
 
 
 def _read_field(contract: object, field_name: str) -> Any:
@@ -40,7 +47,7 @@ def _validate_nested_payload(contract: object, *, context: str) -> None:
             f"EXECUTION_BLOCKED[{context}]: payload must be a mapping before execution"
         )
 
-    for nested_name in ("payload", "operational_plan"):
+    for nested_name in _NESTED_CONTRACT_FIELDS:
         nested = contract.get(nested_name)
         if not isinstance(nested, Mapping):
             continue
