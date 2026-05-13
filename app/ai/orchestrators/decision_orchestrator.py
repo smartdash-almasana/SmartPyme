@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from app.contracts.decision_record import DecisionRecord
+from app.contracts.execution_guard import enforce_execution_contract
 from app.repositories.decision_repository import DecisionRepository
 
 
@@ -67,6 +68,24 @@ class DecisionOrchestrator:
                 "reason": "overrides must be a dictionary or None",
             }
 
+        try:
+            enforce_execution_contract(
+                input_data,
+                context="record_owner_decision.input",
+                required_fields=(
+                    "tipo_decision",
+                    "mensaje_original",
+                    "propuesta",
+                    "accion",
+                ),
+            )
+        except ValueError as ve:
+            return {
+                "status": "REJECTED",
+                "error_type": "INVALID_DECISION_PAYLOAD",
+                "reason": str(ve),
+            }
+
         # 2. Preparation
         decision_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc).isoformat()
@@ -82,6 +101,15 @@ class DecisionOrchestrator:
             overrides=overrides,
             job_id=input_data.get("job_id"),
         )
+
+        try:
+            enforce_execution_contract(record, context="record_owner_decision.record")
+        except ValueError as ve:
+            return {
+                "status": "REJECTED",
+                "error_type": "INVALID_DECISION_PAYLOAD",
+                "reason": str(ve),
+            }
 
         # 3. Persistence
         try:
