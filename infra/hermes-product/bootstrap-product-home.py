@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -13,16 +14,16 @@ PRODUCT_HOME = Path(
 )
 OVERLAY_PATH = SMARTPYME_REPO / "infra" / "hermes-product" / "product-config-overlay.yaml"
 CONFIG_PATH = PRODUCT_HOME / "config.yaml"
+SOUL_PATH = PRODUCT_HOME / "SOUL.md"
+SOUL_SOURCE_PATH = SMARTPYME_REPO / "infra" / "hermes-product" / "SOUL.md"
 
 
-def deep_merge(base: dict, overlay: dict) -> dict:
-    result = dict(base)
-    for key, value in overlay.items():
-        if isinstance(value, dict) and isinstance(result.get(key), dict):
-            result[key] = deep_merge(result[key], value)
-        else:
-            result[key] = value
-    return result
+def _backup(path: Path) -> None:
+    if not path.exists():
+        return
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    backup_path = path.with_name(f"{path.name}.backup-{stamp}")
+    path.replace(backup_path)
 
 
 def main() -> None:
@@ -30,22 +31,22 @@ def main() -> None:
     for child in ("logs", "sessions", "cron", "memories", "cache/documents"):
         (PRODUCT_HOME / child).mkdir(parents=True, exist_ok=True)
 
-    base = {}
-    if CONFIG_PATH.exists():
-        loaded = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
-        if isinstance(loaded, dict):
-            base = loaded
+    config = yaml.safe_load(OVERLAY_PATH.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        raise RuntimeError(f"invalid product config: {OVERLAY_PATH}")
 
-    overlay = yaml.safe_load(OVERLAY_PATH.read_text(encoding="utf-8"))
-    if not isinstance(overlay, dict):
-        raise RuntimeError(f"invalid overlay: {OVERLAY_PATH}")
-
-    merged = deep_merge(base, overlay)
+    _backup(CONFIG_PATH)
     CONFIG_PATH.write_text(
-        yaml.safe_dump(merged, sort_keys=False, allow_unicode=True),
+        yaml.safe_dump(config, sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
-    print(f"Wrote {CONFIG_PATH}")
+
+    if SOUL_SOURCE_PATH.exists():
+        _backup(SOUL_PATH)
+        SOUL_PATH.write_text(SOUL_SOURCE_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+
+    print(f"Wrote clean config: {CONFIG_PATH}")
+    print(f"Wrote product soul: {SOUL_PATH}")
 
 
 if __name__ == "__main__":
