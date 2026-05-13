@@ -4,6 +4,7 @@ import uuid
 from typing import Any
 from app.catalogs.symptom_pathology_catalog import get_symptom
 from app.catalogs.skill_registry import SkillRegistry
+from app.contracts.execution_guard import enforce_execution_contract
 from app.contracts.operational_case import OperationalCase as OperationalCaseCapa03
 from app.orchestrator.models import STATE_RUNNING
 
@@ -27,6 +28,12 @@ class OperationalCaseOrchestrator:
                     "error_type": "JOB_NOT_FOUND",
                     "reason": f"Job {job_id} not found",
                 }
+
+            enforce_execution_contract(
+                job_data,
+                context="build_operational_case.job",
+                required_fields=("job_id", "current_state", "payload"),
+            )
 
             # 2. Isolation and State Validation
             payload = job_data.get("payload", {})
