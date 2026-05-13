@@ -47,6 +47,63 @@ def _build_prompt(messages: list[ChatMessage]) -> str:
     return "\n\n".join(chunks).strip()
 
 
+def _extract_text_from_mapping(value: Any) -> str:
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, list):
+        chunks = [_extract_text_from_mapping(item) for item in value]
+        return "\n".join(chunk for chunk in chunks if chunk).strip()
+    if not isinstance(value, dict):
+        return ""
+
+    direct = value.get("text")
+    if isinstance(direct, str) and direct.strip():
+        return direct.strip()
+
+    chunks: list[str] = []
+    for key in ("candidates", "content", "parts"):
+        text = _extract_text_from_mapping(value.get(key))
+        if text:
+            chunks.append(text)
+    return "\n".join(chunks).strip()
+
+
+def _extract_vertex_text(response: Any) -> str:
+    """Extract text from google-genai responses across SDK/model variants."""
+
+    text = getattr(response, "text", None)
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+
+    candidates = getattr(response, "candidates", None) or []
+    for candidate in candidates:
+        content = getattr(candidate, "content", None)
+        parts = getattr(content, "parts", None) if content is not None else None
+        if not parts:
+            continue
+        extracted: list[str] = []
+        for part in parts:
+            part_text = getattr(part, "text", None)
+            if isinstance(part_text, str) and part_text.strip():
+                extracted.append(part_text.strip())
+        if extracted:
+            return "\n".join(extracted).strip()
+
+    for dump_name in ("model_dump", "to_dict"):
+        dump_fn = getattr(response, dump_name, None)
+        if not callable(dump_fn):
+            continue
+        try:
+            dumped = dump_fn()
+        except Exception:
+            continue
+        text = _extract_text_from_mapping(dumped)
+        if text:
+            return text
+
+    return ""
+
+
 def _generate_vertex(prompt: str, request: ChatCompletionRequest) -> str:
     try:
         from google import genai
@@ -70,10 +127,10 @@ def _generate_vertex(prompt: str, request: ChatCompletionRequest) -> str:
                 max_output_tokens=request.max_completion_tokens or request.max_tokens or 800,
             ),
         )
-        text = getattr(response, "text", None)
-        if not isinstance(text, str) or not text.strip():
+        text = _extract_vertex_text(response)
+        if not text:
             raise HTTPException(status_code=502, detail="empty Vertex response")
-        return text.strip()
+        return text
     except HTTPException:
         raise
     except Exception as exc:
