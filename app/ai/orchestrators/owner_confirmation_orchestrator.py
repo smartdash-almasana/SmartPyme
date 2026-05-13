@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any, Literal, TypedDict
 
+from app.contracts.execution_guard import enforce_execution_contract
 from app.orchestrator.models import STATE_CREATED, Job
 from app.orchestrator.persistence import save_job
 from app.services.context_validation_service import ContextValidationService
@@ -64,6 +65,20 @@ class OwnerConfirmationOrchestrator:
                 "reason": f"Invalid action: {action}",
             }
 
+        try:
+            enforce_execution_contract(
+                dict(input_data),
+                context="confirm_job.input",
+                required_fields=("cliente_id", "skill_id", "action"),
+            )
+        except ValueError as ve:
+            return {
+                "status": "REJECTED",
+                "skill_id": skill_id,
+                "error_type": "INVALID_JOB_PAYLOAD",
+                "reason": str(ve),
+            }
+
         # 1. Data Curation (Technical Hygiene)
         curation_res = self._curator.curate_input(
             skill_id=skill_id,
@@ -121,6 +136,20 @@ class OwnerConfirmationOrchestrator:
             skill_id=skill_id,
             payload=payload,
         )
+
+        try:
+            enforce_execution_contract(
+                job,
+                context="confirm_job.job",
+                required_fields=("job_id", "current_state", "payload"),
+            )
+        except ValueError as ve:
+            return {
+                "status": "REJECTED",
+                "skill_id": skill_id,
+                "error_type": "INVALID_JOB_PAYLOAD",
+                "reason": str(ve),
+            }
 
         try:
             save_job(job)
