@@ -8,6 +8,8 @@ dependencies = [
   "polars>=1.0",
   "supabase>=2.0",
   "google-genai>=1.0.0",
+  "mcp>=1.27",
+  "fastmcp>=3.2",
 ]
 
 [project.optional-dependencies]

@@ -1,7 +1,10 @@
 model:
-  provider: custom
-  default: gemma-4-26b-a4b-it-maas
-  base_url: http://127.0.0.1:8777/v1
+  provider: openrouter
+  default: openrouter/owl-alpha
+  base_url: https://openrouter.ai/api/v1
+
+display:
+  streaming: false
 
 toolsets:
   - hermes-cli
@@ -19,12 +22,11 @@ terminal:
 
 mcp_servers:
   smartpyme_product:
-    command: /opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python
+    command: python3
     args:
       - /opt/smartpyme-factory/repos/SmartPyme/mcp_smartpyme_bridge.py
     env:
       PYTHONPATH: /opt/smartpyme-factory/repos/SmartPyme
-      SMARTPYME_REPO: /opt/smartpyme-factory/repos/SmartPyme
       SMARTPYME_EVIDENCE_ROOT: /opt/smartpyme-factory/repos/SmartPyme/evidence_store
       SMARTPYME_CURATED_EVIDENCE_DB_PATH: /opt/smartpyme-factory/repos/SmartPyme/data/curated_evidence.db
     tools:
