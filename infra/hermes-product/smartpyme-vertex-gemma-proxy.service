@@ -1,0 +1,17 @@
+[Unit]
+Description=SmartPyme Vertex Gemma OpenAI-compatible Proxy
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/smartpyme-factory/repos/SmartPyme
+Environment=GOOGLE_CLOUD_PROJECT=smartseller-490511
+Environment=HERMES_PRODUCT_VERTEX_LOCATION=global
+Environment=HERMES_PRODUCT_VERTEX_MODEL_ID=gemma-4-26b-a4b-it-maas
+Environment=PYTHONPATH=/opt/smartpyme-factory/repos/SmartPyme
+ExecStart=/opt/smartpyme-factory/repos/SmartPyme/.venv/bin/python -m uvicorn infra.hermes-product.vertex_gemma_openai_proxy:app --host 127.0.0.1 --port 8777
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
