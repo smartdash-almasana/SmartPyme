@@ -44,3 +44,4 @@ opencode.json
 .vscode/
 supabase/.temp/
 factory/evidence/taskspecs/run_reports/
+.aider*
