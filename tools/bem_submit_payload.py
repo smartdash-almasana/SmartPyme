@@ -7,7 +7,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from app.services.bem_client import BemClient
+
+DEFAULT_BEM_BASE_URL = "https://api.bem.ai"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -20,7 +26,11 @@ def _build_parser() -> argparse.ArgumentParser:
         required=False,
         help="Optional callReferenceID for file submit",
     )
-    parser.add_argument("--base-url", default="https://api.bem.ai", help="BEM base URL")
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        help=f"BEM base URL. Defaults to BEM_BASE_URL or {DEFAULT_BEM_BASE_URL}.",
+    )
     parser.add_argument("--api-key", default=None, help="BEM API key")
     return parser
 
@@ -90,6 +100,7 @@ def run(argv: list[str] | None = None) -> int:
     if not api_key:
         print("api_key is required", file=sys.stderr)
         return 2
+    base_url = _resolve_setting(args.base_url, "BEM_BASE_URL", env_local) or DEFAULT_BEM_BASE_URL
     if not args.payload_file and not args.file:
         print("one input is required: --payload-file or --file", file=sys.stderr)
         return 2
@@ -98,7 +109,7 @@ def run(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        client = BemClient(api_key=api_key, base_url=args.base_url)
+        client = BemClient(api_key=api_key, base_url=base_url)
         if args.payload_file:
             payload = _load_payload(args.payload_file)
             response = client.submit_payload(workflow_id=workflow_id, payload=payload)
