@@ -36,18 +36,35 @@ class BemClient:
         self._base_url = base_url.rstrip("/")
         self._transport = transport
 
-    def submit_payload(self, workflow_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def submit_payload(
+        self,
+        workflow_id: str,
+        payload: dict[str, Any],
+        call_reference_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Submit a BEM workflow JSON input body.
+
+        BEM v3 workflow calls expect the business/document input under the
+        top-level `input` key. For compatibility, callers may pass either:
+
+        - the raw input object, for example `{ "singleFile": {...} }`; or
+        - a full BEM call body, for example `{ "input": {"singleFile": {...}} }`.
+        """
         if not isinstance(workflow_id, str) or not workflow_id.strip():
             raise ValueError("workflow_id es obligatorio")
         if not isinstance(payload, dict) or not payload:
             raise ValueError("payload es obligatorio y no puede estar vacío")
+        if call_reference_id is not None and (
+            not isinstance(call_reference_id, str) or not call_reference_id.strip()
+        ):
+            raise ValueError("call_reference_id inválido")
 
         url = f"{self._base_url}/v3/workflows/{workflow_id.strip()}/call?wait=true"
         headers = {
             "x-api-key": self._api_key,
             "content-type": "application/json",
         }
-        request_body = {"input": payload}
+        request_body = _build_workflow_json_body(payload, call_reference_id)
 
         if httpx is not None:
             return self._submit_with_httpx(url, headers, request_body)
@@ -67,7 +84,7 @@ class BemClient:
         if not path.exists() or not path.is_file():
             raise ValueError("file_path no existe")
         if call_reference_id is not None and (
-            not isinstance(call_reference_id, str) or not call_reference_id.strip()
+            not isinstance(call_reference_id, str) or not isinstance(call_reference_id, str) or not call_reference_id.strip()
         ):
             raise ValueError("call_reference_id inválido")
 
@@ -115,7 +132,7 @@ class BemClient:
         with httpx.Client(transport=self._transport, timeout=10.0) as client:
             response = client.post(url, headers=headers, json=payload)
             if response.status_code >= 400:
-                raise RuntimeError(f"BEM error HTTP {response.status_code}")
+                raise RuntimeError(_format_bem_http_error(response.status_code, response.text))
             data = response.json()
             if not isinstance(data, dict):
                 raise TypeError("BEM response debe ser JSON object")
@@ -129,7 +146,7 @@ class BemClient:
     ) -> dict[str, Any]:
         response = requests.post(url, headers=headers, json=payload, timeout=10.0)
         if response.status_code >= 400:
-            raise RuntimeError(f"BEM error HTTP {response.status_code}")
+            raise RuntimeError(_format_bem_http_error(response.status_code, response.text))
         data = response.json()
         if not isinstance(data, dict):
             raise TypeError("BEM response debe ser JSON object")
@@ -146,11 +163,15 @@ class BemClient:
         try:
             with urllib_request.urlopen(req, timeout=10.0) as response:
                 status_code = getattr(response, "status", 200)
-                if status_code >= 400:
-                    raise RuntimeError(f"BEM error HTTP {status_code}")
                 raw = response.read().decode("utf-8")
+                if status_code >= 400:
+                    raise RuntimeError(_format_bem_http_error(status_code, raw))
         except HTTPError as exc:
-            raise RuntimeError(f"BEM error HTTP {exc.code}") from exc
+            try:
+                error_body = exc.read().decode("utf-8")
+            except Exception:  # pragma: no cover
+                error_body = ""
+            raise RuntimeError(_format_bem_http_error(exc.code, error_body)) from exc
         except URLError as exc:
             raise RuntimeError("BEM network error") from exc
 
@@ -177,7 +198,7 @@ class BemClient:
         with httpx.Client(transport=self._transport, timeout=10.0) as client:
             response = client.post(url, headers=headers, files=files, data=data)
             if response.status_code >= 400:
-                raise RuntimeError(f"BEM error HTTP {response.status_code}")
+                raise RuntimeError(_format_bem_http_error(response.status_code, response.text))
             data = response.json()
             if not isinstance(data, dict):
                 raise TypeError("BEM response debe ser JSON object")
@@ -200,7 +221,7 @@ class BemClient:
             data = {"callReferenceID": call_reference_id}
         response = requests.post(url, headers=headers, files=files, data=data, timeout=10.0)
         if response.status_code >= 400:
-            raise RuntimeError(f"BEM error HTTP {response.status_code}")
+            raise RuntimeError(_format_bem_http_error(response.status_code, response.text))
         data = response.json()
         if not isinstance(data, dict):
             raise TypeError("BEM response debe ser JSON object")
@@ -232,11 +253,15 @@ class BemClient:
         try:
             with urllib_request.urlopen(req, timeout=10.0) as response:
                 status_code = getattr(response, "status", 200)
-                if status_code >= 400:
-                    raise RuntimeError(f"BEM error HTTP {status_code}")
                 raw = response.read().decode("utf-8")
+                if status_code >= 400:
+                    raise RuntimeError(_format_bem_http_error(status_code, raw))
         except HTTPError as exc:
-            raise RuntimeError(f"BEM error HTTP {exc.code}") from exc
+            try:
+                error_body = exc.read().decode("utf-8")
+            except Exception:  # pragma: no cover
+                error_body = ""
+            raise RuntimeError(_format_bem_http_error(exc.code, error_body)) from exc
         except URLError as exc:
             raise RuntimeError("BEM network error") from exc
 
@@ -244,6 +269,31 @@ class BemClient:
         if not isinstance(data, dict):
             raise TypeError("BEM response debe ser JSON object")
         return data
+
+
+def _build_workflow_json_body(
+    payload: dict[str, Any], call_reference_id: str | None = None
+) -> dict[str, Any]:
+    if "input" in payload:
+        input_payload = payload.get("input")
+        if not isinstance(input_payload, dict) or not input_payload:
+            raise ValueError("payload.input debe ser un objeto no vacío")
+        request_body = dict(payload)
+    else:
+        request_body = {"input": payload}
+
+    if call_reference_id is not None:
+        request_body["callReferenceID"] = call_reference_id.strip()
+
+    return request_body
+
+
+def _format_bem_http_error(status_code: int, body: str | None = None) -> str:
+    detail = ""
+    if isinstance(body, str) and body.strip():
+        sanitized = body.replace("\n", " ").replace("\r", " ").strip()
+        detail = f": {sanitized[:500]}"
+    return f"BEM error HTTP {status_code}{detail}"
 
 
 def _build_multipart_body(
@@ -268,15 +318,15 @@ def _build_multipart_body(
         )
     parts.extend(
         [
-        f"--{boundary}".encode("utf-8"),
-        f'Content-Disposition: form-data; name="{field_name}"; filename="{filename}"'.encode(
-            "utf-8"
-        ),
-        f"Content-Type: {content_type}".encode("utf-8"),
-        b"",
-        file_bytes,
-        f"--{boundary}--".encode("utf-8"),
-        b"",
+            f"--{boundary}".encode("utf-8"),
+            f'Content-Disposition: form-data; name="{field_name}"; filename="{filename}"'.encode(
+                "utf-8"
+            ),
+            f"Content-Type: {content_type}".encode("utf-8"),
+            b"",
+            file_bytes,
+            f"--{boundary}--".encode("utf-8"),
+            b"",
         ]
     )
     return line_break.join(parts)
