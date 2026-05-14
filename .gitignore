@@ -45,3 +45,4 @@ opencode.json
 supabase/.temp/
 factory/evidence/taskspecs/run_reports/
 .aider*
+.local/
