@@ -27,6 +27,184 @@ Esta fase inicial debe producir una taxonomía operacional mínima y una selecci
 
 El resultado de la anamnesis alimenta el primer **Laboratorio SmartPyme**, que será el análisis inicial de la empresa.
 
+## Primer tiempo lógico: contacto originario
+
+El primer contacto entre SmartPyme y una PyME debe tratarse como un **primer tiempo lógico**, no como una conversación genérica.
+
+En este primer tiempo todavía no existe diagnóstico validado, historial operativo ni memoria consolidada. Existe una primera dialéctica entre el dueño o empleado de la PyME y el sistema.
+
+Ese contacto originario debe producir dos efectos simultáneos:
+
+```text
+Cliente recibe:
+→ una promesa concreta de valor: el primer informe de laboratorio de su PyME.
+
+SmartPyme recibe:
+→ la primera inscripción semántica y documental del caso.
+```
+
+El objetivo comercial y operacional de este primer intercambio es explícito:
+
+```text
+Entregar al cliente un primer reporte clínico-operacional de su negocio.
+Construir para SmartPyme la primera memoria estructurada del caso.
+```
+
+## Primer contrato de intercambio
+
+El primer contrato no es todavía una venta compleja ni una automatización profunda.
+
+El contrato inicial es:
+
+```text
+El cliente aporta:
+- relato de dolores, sufrimientos, dudas, hipótesis o deseos de mejora
+- primera documentación disponible
+- contexto mínimo sobre su operación
+
+SmartPyme devuelve:
+- primer informe de laboratorio de la PyME
+- contraste inicial entre lo declarado y lo documentado
+- primeros hallazgos accionables
+- mapa de faltantes
+- propuesta de próximos contrastes
+```
+
+Este contrato debe quedar registrado como dato estructurado. No debe perderse como conversación efímera.
+
+## Captura semántica originaria
+
+La anamnesis debe capturar texto o audio del dueño y transformarlo en registro clínico-operacional.
+
+Debe conservar:
+
+- frases textuales del dueño
+- dolores declarados
+- hipótesis propias del dueño
+- certezas
+- dudas
+- áreas mencionadas
+- indicadores semánticos de patología PyME
+- deseos de mejora
+- expectativas explícitas
+
+Ejemplos de entrada semántica:
+
+```text
+vendo pero no sé si gano
+creo que tengo mucho stock parado
+me va bien pero quiero entender mejor el negocio
+pierdo tiempo haciendo todo a mano
+no sé si mis empleados rinden
+no sé cuánto me queda limpio
+quiero vender más por Mercado Libre
+```
+
+Estas frases no son todavía hechos. Son material clínico-operacional para contrastar.
+
+## Limpieza clínica conversacional
+
+Después de capturar la primera narración, el sistema debe devolver una síntesis al dueño.
+
+Ejemplo de respuesta esperada:
+
+```text
+Esto entendí que querés revisar:
+1. No sabés con claridad si ganás por producto.
+2. Te preocupa tener stock inmovilizado.
+3. Querés entender mejor el negocio antes de automatizar.
+4. Sospechás que hay tareas que te consumen demasiado tiempo.
+
+Para contrastar esto voy a necesitar documentación inicial.
+```
+
+Esta limpieza cumple tres funciones:
+
+- valida que el sistema entendió al dueño
+- transforma relato en objetos operacionales
+- habilita el pedido de evidencia
+
+## Pedido de documentación inicial
+
+La documentación inicial no debe pedirse de forma genérica.
+
+Debe pedirse como consecuencia del contrato de laboratorio y de las hipótesis declaradas.
+
+Ejemplos:
+
+```text
+Si el dolor es margen:
+→ lista de precios
+→ costos unitarios
+→ ventas recientes
+
+Si el dolor es stock:
+→ hoja de stock
+→ movimientos
+→ ventas por producto
+
+Si el dolor es caja:
+→ cierre de caja
+→ extractos
+→ cuentas por cobrar/pagar
+
+Si el dolor es tiempo o tareas manuales:
+→ descripción del proceso
+→ planillas usadas
+→ capturas del flujo de trabajo
+
+Si el dolor es Mercado Libre:
+→ export de publicaciones
+→ ventas
+→ costos/logística
+```
+
+El archivo puede llegar como Excel, PDF, imagen, captura, CSV, export de plataforma o texto estructurado.
+
+## Recepción semántica y recepción matemática
+
+El primer contacto produce dos clases de información:
+
+### 1. Información semántica
+
+Proviene de la conversación.
+
+Incluye dolores, hipótesis, dudas, lenguaje del dueño, categorías operacionales y demanda explícita.
+
+### 2. Información documental/computacional
+
+Proviene de archivos o datos aportados.
+
+Incluye planillas, PDFs, imágenes, capturas, exportaciones y registros transaccionales.
+
+SmartPyme debe unir ambas fuentes:
+
+```text
+dolor declarado
+→ documentación solicitada
+→ evidencia curada
+→ contraste
+→ hallazgo o falta de evidencia
+```
+
+## Relación con BEM
+
+BEM no recibe documentos sueltos sin contexto.
+
+El sistema debe asociar cada documento a:
+
+- tenant_id
+- primer contrato de laboratorio
+- hipótesis o dolor que se busca contrastar
+- tipo documental esperado
+- campos mínimos esperados
+- workflow o función BEM adecuada
+- criterio de suficiencia de evidencia
+
+BEM reduce entropía documental. SmartPyme conserva la verdad operacional.
+
+La salida de BEM no se acepta automáticamente como verdad. Debe validarse contra el contrato del laboratorio inicial.
+
 ## Objetivo de la Anamnesis
 
 La anamnesis debe responder:
@@ -41,6 +219,7 @@ La anamnesis debe responder:
 - qué áreas tienen prioridad
 - qué datos faltan
 - qué catálogos deben activarse
+- qué primer informe se puede prometer con evidencia razonable
 
 ## Taxonomía inicial
 
@@ -52,10 +231,14 @@ Ejemplo:
 {
   "empresa_tipo": "fabrica | comercio | servicios | mixta",
   "industria": "textil | gastronomia | metalurgica | logistica | retail | otra",
+  "modelo_comercial": "b2b | b2c | marketplace | mixto | desconocido",
   "canales_venta": ["local", "mercado_libre", "revendedores", "mayorista", "ecommerce"],
-  "areas_criticas": ["stock", "caja", "produccion", "ventas", "precios", "compras", "sueldos"],
+  "areas_criticas": ["stock", "caja", "produccion", "ventas", "precios", "compras", "sueldos", "impuestos", "tiempo", "automatizacion"],
   "dolores_declarados": [],
+  "hipotesis_duenio": [],
+  "frases_textuales": [],
   "documentos_disponibles": [],
+  "documentos_solicitados": [],
   "capabilities_iniciales": [],
   "catalogos_activados": []
 }
@@ -77,6 +260,9 @@ catalogs/
   formulas/
   signals/
   pathologies/
+  pains/
+  document_types/
+  expected_fields/
   best_practices/
   workflows/
   industries/
@@ -157,8 +343,58 @@ Define patologías operacionales:
 - precios atrasados
 - riesgo de caja
 - riesgo de continuidad
+- improductividad operativa
+- dependencia manual excesiva
 
-### 7. Best Practices Catalog
+### 7. Pain Catalog
+
+Define dolores frecuentes expresados en lenguaje del dueño:
+
+- no sé si gano
+- vendo pero no me queda plata
+- tengo mucho stock parado
+- pierdo tiempo cargando planillas
+- no sé qué producto me conviene vender
+- no sé cuánto me cuesta producir
+- no puedo controlar caja
+- no sé si Mercado Libre me deja margen
+- quiero ordenar el negocio
+
+Estos dolores deben mapearse a patologías, señales, documentos requeridos y capabilities.
+
+### 8. Document Type Catalog
+
+Define tipos documentales esperables:
+
+- lista de precios
+- hoja de stock
+- ventas
+- compras
+- cierre de caja
+- factura
+- remito
+- extracto bancario
+- reporte de marketplace
+- planilla de producción
+- planilla de sueldos
+- captura informal
+
+### 9. Expected Fields Catalog
+
+Define campos mínimos esperados por tipo documental y capability.
+
+Ejemplo para precios/márgenes:
+
+```text
+- producto
+- precio_venta
+- costo_unitario
+- cantidad
+- fecha
+- fuente
+```
+
+### 10. Best Practices Catalog
 
 Define prácticas recomendadas por rubro o función:
 
@@ -169,7 +405,7 @@ Define prácticas recomendadas por rubro o función:
 - controlar margen por producto
 - medir productividad por línea
 
-### 8. Workflow Catalog
+### 11. Workflow Catalog
 
 Define recetas de acción ante señales:
 
@@ -180,8 +416,9 @@ Define recetas de acción ante señales:
 - pedir confirmación humana
 - disparar capability
 - bloquear ejecución
+- pedir documentación adicional
 
-### 9. Industry Catalog
+### 12. Industry Catalog
 
 Define conocimiento por industria:
 
@@ -192,6 +429,8 @@ Define conocimiento por industria:
 - servicios
 - logística
 - metalúrgica
+- marketplace seller
+- profesional independiente
 
 ## Laboratorio inicial SmartPyme
 
@@ -200,15 +439,20 @@ Toda empresa nueva debe pasar por un primer laboratorio.
 Flujo esperado:
 
 ```text
-anamnesis
+anamnesis originaria
+→ limpieza clínica conversacional
 → selección de catálogos
+→ contrato de laboratorio inicial
+→ pedido de documentación
 → carga de evidencia
 → curación documental
 → entidades iniciales
 → fórmulas base
 → señales iniciales
+→ contraste contra dolores declarados
 → mapa de faltantes
-→ primer informe operativo
+→ informe de laboratorio de tu PyME
+→ propuesta de siguiente contraste
 ```
 
 ## Output del laboratorio inicial
@@ -219,10 +463,47 @@ El laboratorio debe devolver:
 - qué datos faltan
 - qué señales aparecen
 - qué dolores declarados tienen evidencia
+- qué dolores no pudieron contrastarse aún
+- qué hipótesis del dueño se confirmaron parcialmente
 - qué riesgos son visibles
+- qué fortalezas aparecen
 - qué áreas requieren más documentación
 - qué capabilities conviene activar primero
 - qué decisiones del dueño pueden destrabar análisis
+- qué documentación adicional permitiría calcular nuevos indicadores
+
+## Informe de laboratorio de tu PyME
+
+El primer output vendible del sistema se denomina:
+
+```text
+Informe de laboratorio de tu PyME
+```
+
+Este informe debe ser concreto, limitado y accionable.
+
+Debe incluir:
+
+- resumen de la anamnesis originaria
+- dolores declarados por el dueño
+- documentación recibida
+- evidencia que pudo curarse
+- hallazgos confirmados
+- hipótesis no confirmadas
+- datos faltantes
+- riesgos visibles
+- fortalezas visibles
+- próximos documentos sugeridos
+- próxima pregunta operativa recomendada
+
+Su función comercial es abrir demanda legítima:
+
+```text
+Con lo que aportaste puedo mostrarte esto.
+Si aportás esta otra información, puedo calcular esto otro.
+```
+
+No debe prometer certeza donde solo hay indicios.
 
 ## Relación con IA
 
@@ -230,11 +511,13 @@ La IA puede participar en:
 
 - interpretar la anamnesis
 - clasificar el rubro
+- detectar frases con valor patológico
 - sugerir catálogos
 - detectar faltantes
 - priorizar preguntas
 - explicar resultados
 - proponer hipótesis
+- redactar síntesis para el dueño
 
 Pero no puede afirmar datos operacionales sin evidencia real o cálculo del núcleo determinístico.
 
@@ -266,6 +549,8 @@ Estas capabilities se activan según evidencia disponible, permisos y prioridade
 - permite construir diagnóstico inicial rápido
 - prepara automatizaciones futuras
 - habilita memoria genética operacional desde el primer contacto
+- convierte el primer contacto en activo de datos
+- permite vender continuidad desde evidencia, no desde promesa abstracta
 
 ### Riesgos
 
@@ -274,6 +559,8 @@ Estas capabilities se activan según evidencia disponible, permisos y prioridade
 - activación excesiva de catálogos
 - pedir demasiada evidencia al inicio
 - confundir dolor declarado con hecho validado
+- generar demanda sin evidencia suficiente
+- convertir BEM en decisor operativo en vez de extractor documental
 
 Estos riesgos deben mitigarse con preguntas mínimas, trazabilidad y demanda incremental de información.
 
@@ -288,5 +575,10 @@ Este ADR no define todavía:
 - ranking final de capabilities
 - formato definitivo del informe inicial
 - política comercial del laboratorio inicial
+- modelo Pydantic definitivo de `AnamnesisOriginaria`
+- modelo Pydantic definitivo de `LaboratorioInicialContrato`
+- modelo Pydantic definitivo de `InformeLaboratorioPyME`
+- persistencia final de memoria conversacional
+- estrategia final Obsidian/RAG/vector store/memoria estructurada
 
 Estas decisiones deberán definirse en contratos técnicos posteriores.
