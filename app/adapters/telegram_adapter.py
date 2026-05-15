@@ -22,6 +22,7 @@ from app.services.bem_curated_evidence_adapter import BemCuratedEvidenceAdapter
 from app.services.document_intake_service import DocumentIntakeService
 from app.services.document_ingestion_orchestrator import DocumentIngestionOrchestrator
 from app.services.identity_service import IdentityService
+from app.services.initial_laboratory_anamnesis_service import InitialLaboratoryAnamnesisService
 
 
 DEFAULT_IDENTITY_DB = Path("data/identity.db")
@@ -54,6 +55,7 @@ class TelegramAdapter:
         bem_curated_evidence_adapter: BemCuratedEvidenceAdapter | None = None,
         hermes_product_adapter: HermesProductAdapter | None = None,
         document_ingestion_orchestrator: DocumentIngestionOrchestrator | None = None,
+        anamnesis_service: InitialLaboratoryAnamnesisService | None = None,
     ) -> None:
         self.identity_service = identity_service or IdentityService(DEFAULT_IDENTITY_DB)
         self.owner_status_provider = owner_status_provider
@@ -72,6 +74,7 @@ class TelegramAdapter:
         )
         self.hermes_product_adapter = hermes_product_adapter or HermesProductAdapter()
         self.document_ingestion_orchestrator = document_ingestion_orchestrator
+        self.anamnesis_service = anamnesis_service or InitialLaboratoryAnamnesisService()
 
     def handle_update(self, update_dict: dict) -> dict:
         user_id = self._extract_user_id(update_dict)
@@ -143,6 +146,24 @@ class TelegramAdapter:
         cliente_id: str,
         text: str,
     ) -> dict[str, Any] | None:
+        # Primer tiempo: anamnesis inicial del laboratorio
+        anamnesis_result = self.anamnesis_service.process(
+            tenant_id=cliente_id,
+            channel="telegram",
+            text=text,
+        )
+        if anamnesis_result is not None:
+            return {
+                "status": "ok",
+                "telegram_user_id": str(user_id),
+                "cliente_id": cliente_id,
+                "message": anamnesis_result.message,
+                "mode": "anamnesis_inicial",
+                "anamnesis": anamnesis_result.anamnesis.model_dump(),
+                "laboratorio": anamnesis_result.laboratorio.model_dump(),
+            }
+
+        # Fallback: Hermes product assistant
         status = self.owner_status_provider(cliente_id)
         summary = self._format_owner_status(status)
         findings = status.get("findings")
