@@ -62,16 +62,15 @@ class AdmissionResponseFormatterV1:
         self,
         artifact: DDIArtifact,
     ) -> HypothesisNode | None:
-        primary = [
-            hypothesis
-            for hypothesis in artifact.hypotheses
-            if getattr(hypothesis, "is_primary", False)
-        ]
-        if primary:
-            return primary[0]
+        # Fuente contractual primaria: primary_hypothesis_id marcado por el kernel
+        if artifact.primary_hypothesis_id is not None:
+            for hypothesis in artifact.hypotheses:
+                if hypothesis.node_id == artifact.primary_hypothesis_id:
+                    return hypothesis
 
+        # Fallback determinístico: mayor confidence_score
         return max(
             artifact.hypotheses,
-            key=lambda hypothesis: getattr(hypothesis, "confidence_score", 0.0),
+            key=lambda hypothesis: hypothesis.confidence_score,
             default=None,
         )
