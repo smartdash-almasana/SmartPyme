@@ -9,7 +9,8 @@ import uuid
 from app.contracts.admission_v1 import (
     SymptomNode,
     DDIArtifact,
-    AdmissionState
+    AdmissionState,
+    HypothesisNode
 )
 from app.pipeline.admission.v1.heuristics import get_hypotheses_for_claim
 
@@ -31,21 +32,33 @@ class AdmissionPipelineV1:
         # 1. Crear el SymptomNode a partir del claim
         symptom = SymptomNode(claim=claim)
 
-        # 2. Generar hipótesis usando las heurísticas
-        hypotheses = get_hypotheses_for_claim(claim)
+        # 2. Generar y puntuar hipótesis usando las heurísticas
+        scored_hypotheses = get_hypotheses_for_claim(claim)
+        
+        hypotheses = [
+            HypothesisNode(
+                description=h["description"],
+                evidence_required=h["evidence_required"],
+                confidence_score=h["score"]
+            ) for h in scored_hypotheses
+        ]
 
-        # 3. Consolidar la evidencia requerida de todas las hipótesis
+        # 3. Ordenar hipótesis por score descendente
+        hypotheses.sort(key=lambda h: h.confidence_score, reverse=True)
+
+        # 4. Consolidar la evidencia requerida de todas las hipótesis
         required_evidence = set()
         for hypo in hypotheses:
             for evidence in hypo.evidence_required:
                 required_evidence.add(evidence)
 
-        # 4. Determinar el estado final de la admisión
+        # 5. Determinar el estado final de la admisión
         if hypotheses:
             admission_state = AdmissionState(
                 pyme_id=pyme_id,
                 state="hypotheses_generated",
                 details=f"Se generaron {len(hypotheses)} hipótesis. "
+                        f"La hipótesis principal es '{hypotheses[0].description}'. "
                         f"Se requiere la siguiente evidencia: {sorted(list(required_evidence))}"
             )
         else:
@@ -55,11 +68,13 @@ class AdmissionPipelineV1:
                 details="Se capturó un síntoma pero no se generaron hipótesis automáticas."
             )
         
-        # 5. Crear el artefacto DDI
+        # 6. Crear el artefacto DDI y asignar hipótesis primaria
+        primary_hypo_id = hypotheses[0].node_id if hypotheses else None
         artifact = DDIArtifact(
             pyme_id=pyme_id,
             symptoms=[symptom],
             hypotheses=hypotheses,
+            primary_hypothesis_id=primary_hypo_id
         )
 
         return artifact, admission_state

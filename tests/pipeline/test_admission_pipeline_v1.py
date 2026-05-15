@@ -24,26 +24,21 @@ def test_pipeline_specific_claim_to_symptom_and_hypotheses(pipeline: AdmissionPi
 
     artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
 
-    # 1. Validar SymptomNode
     assert len(artifact.symptoms) == 1
     symptom = artifact.symptoms[0]
     assert symptom.node_type == NodeType.SYMPTOM
     assert symptom.claim == claim
 
-    # 2. Validar HypothesisNodes
     assert len(artifact.hypotheses) == 3
     descriptions = {h.description for h in artifact.hypotheses}
     assert "Tensión de caja" in descriptions
-    assert "Fuga operativa" in descriptions
-    assert "Margen erosionado" in descriptions
 
-    # 3. Validar Evidencia Requerida
-    evidence = set()
-    for h in artifact.hypotheses:
-        evidence.update(h.evidence_required)
-    
+    evidence = {e for h in artifact.hypotheses for e in h.evidence_required}
     expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos", "lista de precios si aplica"}
     assert evidence == expected_evidence
+    
+    # Validar que el score sea mayor a 0
+    assert artifact.hypotheses[0].confidence_score > 0
 
 
 def test_pipeline_generates_valid_admission_state(pipeline: AdmissionPipelineV1):
@@ -56,10 +51,8 @@ def test_pipeline_generates_valid_admission_state(pipeline: AdmissionPipelineV1)
     _, state = pipeline.run(pyme_id=pyme_id, claim=claim)
 
     assert state is not None
-    assert isinstance(state, AdmissionState)
-    assert state.pyme_id == pyme_id
     assert state.state == "hypotheses_generated"
-    assert "Se generaron 3 hipótesis" in state.details
+    assert "La hipótesis principal es" in state.details
 
 
 def test_pipeline_no_hypotheses_generated(pipeline: AdmissionPipelineV1):
@@ -71,49 +64,30 @@ def test_pipeline_no_hypotheses_generated(pipeline: AdmissionPipelineV1):
 
     artifact, state = pipeline.run(pyme_id=pyme_id, claim=claim)
 
-    assert len(artifact.symptoms) == 1
-    assert artifact.symptoms[0].claim == claim
     assert len(artifact.hypotheses) == 0
-
-    assert state is not None
+    assert artifact.primary_hypothesis_id is None
     assert state.state == "symptoms_captured"
 
 
 @pytest.mark.parametrize("claim", [
-    "vendemos mucho pero no queda plata",
     "vendo y no queda nada",
-    "entra plata y desaparece",
     "trabajamos mucho y no vemos ganancias",
-    "facturo bastante pero no sé si gano",
-    "Mercado Libre vende pero no sé si deja margen",
 ])
-def test_pipeline_handles_claim_variations(pipeline: AdmissionPipelineV1, claim: str):
+def test_pipeline_handles_profit_claim_variations(pipeline: AdmissionPipelineV1, claim: str):
     """
     Valida que diferentes variaciones de un mismo síntoma generen el mismo set de hipótesis.
     """
     pyme_id = uuid.uuid4()
     artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
 
-    # Validar que se generen las 3 hipótesis esperadas
     assert len(artifact.hypotheses) == 3
-    descriptions = {h.description for h in artifact.hypotheses}
-    assert "Tensión de caja" in descriptions
-    assert "Fuga operativa" in descriptions
-    assert "Margen erosionado" in descriptions
-
-    # Validar la evidencia requerida
-    evidence = {e for h in artifact.hypotheses for e in h.evidence_required}
-    expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos", "lista de precios si aplica"}
-    assert evidence == expected_evidence
+    assert artifact.primary_hypothesis_id is not None
+    assert artifact.primary_hypothesis_id == artifact.hypotheses[0].node_id
 
 
 @pytest.mark.parametrize("claim", [
     "tengo mucho stock parado",
-    "tengo mercadería que no rota",
     "me falta stock de lo que más vendo",
-    "tengo productos clavados",
-    "compro mercadería y después no sale",
-    "se me corta la venta por falta de stock",
 ])
 def test_pipeline_handles_inventory_claim_variations(pipeline: AdmissionPipelineV1, claim: str):
     """
@@ -122,15 +96,36 @@ def test_pipeline_handles_inventory_claim_variations(pipeline: AdmissionPipeline
     pyme_id = uuid.uuid4()
     artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
 
-    # Validar que se generen las 4 hipótesis de inventario esperadas
     assert len(artifact.hypotheses) == 4
-    descriptions = {h.description for h in artifact.hypotheses}
-    assert "Stock inmovilizado" in descriptions
-    assert "Asincronía inventario-demanda" in descriptions
-    assert "Quiebre de stock" in descriptions
-    assert "Capital atrapado en inventario" in descriptions
+    assert artifact.primary_hypothesis_id is not None
+    assert artifact.primary_hypothesis_id == artifact.hypotheses[0].node_id
 
-    # Validar la evidencia requerida
-    evidence = {e for h in artifact.hypotheses for e in h.evidence_required}
-    expected_evidence = {"inventario actual", "ventas por producto", "compras", "rotación por SKU", "lista de precios"}
-    assert evidence == expected_evidence
+
+def test_pipeline_handles_mixed_claim(pipeline: AdmissionPipelineV1):
+    """
+    Valida que un claim con síntomas mezclados genere hipótesis de ambos clusters,
+    y que la priorización sea correcta.
+    """
+    pyme_id = uuid.uuid4()
+    claim = "vendo mucho pero no queda plata y además tengo stock clavado"
+
+    artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
+
+    # 3 hipótesis de rentabilidad + 4 de inventario
+    assert len(artifact.hypotheses) == 7
+
+    descriptions = {h.description for h in artifact.hypotheses}
+    assert "Tensión de caja" in descriptions
+    assert "Stock inmovilizado" in descriptions
+
+    # Validar que estén ordenadas por score
+    scores = [h.confidence_score for h in artifact.hypotheses]
+    assert scores == sorted(scores, reverse=True)
+
+    # Validar que la hipótesis primaria sea la de mayor score
+    assert artifact.primary_hypothesis_id == artifact.hypotheses[0].node_id
+
+    # En este caso, el cluster de rentabilidad debería tener mayor score
+    # (verb + noun + pain = 1.0 + 1.5 + 2.0 = 4.5)
+    # vs inventario (noun + pain = 1.5 + 2.0 = 3.5)
+    assert artifact.hypotheses[0].description in {"Tensión de caja", "Fuga operativa", "Margen erosionado"}

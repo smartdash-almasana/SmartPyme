@@ -56,6 +56,7 @@ class HypothesisNode(BaseModel):
     node_type: Literal[NodeType.HYPOTHESIS] = NodeType.HYPOTHESIS
     description: str = Field(..., description="Descripción de la hipótesis.")
     evidence_required: list[str] = Field(default_factory=list, description="Lista de evidencia necesaria para validar la hipótesis.")
+    confidence_score: float = Field(0.0, description="Puntaje de confianza de la hipótesis, de 0.0 a 1.0+")
 
 
 class FactNode(BaseModel):
@@ -93,6 +94,7 @@ class DDIArtifact(BaseModel):
     hypotheses: list[HypothesisNode] = Field(default_factory=list)
     facts: list[FactNode] = Field(default_factory=list)
     tensions: list[TensionNode] = Field(default_factory=list)
+    primary_hypothesis_id: UUID4 | None = Field(None, description="ID de la hipótesis con mayor puntaje")
 
 
 class AdmissionState(BaseModel):
