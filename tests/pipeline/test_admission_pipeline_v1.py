@@ -129,3 +129,13 @@ def test_pipeline_handles_mixed_claim(pipeline: AdmissionPipelineV1):
     # (verb + noun + pain = 1.0 + 1.5 + 2.0 = 4.5)
     # vs inventario (noun + pain = 1.5 + 2.0 = 3.5)
     assert artifact.hypotheses[0].description in {"Tensión de caja", "Fuga operativa", "Margen erosionado"}
+
+    # Validar la traza de razonamiento
+    primary_hypo = artifact.hypotheses[0]
+    assert len(primary_hypo.reasoning_trace) > 0
+    assert "vendo" in primary_hypo.reasoning_trace
+    assert "no queda plata" in primary_hypo.reasoning_trace
+
+    inventory_hypo = next(h for h in artifact.hypotheses if h.description == "Stock inmovilizado")
+    assert "stock" in inventory_hypo.reasoning_trace
+    assert "clavado" in inventory_hypo.reasoning_trace

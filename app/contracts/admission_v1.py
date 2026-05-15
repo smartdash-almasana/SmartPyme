@@ -57,6 +57,7 @@ class HypothesisNode(BaseModel):
     description: str = Field(..., description="Descripción de la hipótesis.")
     evidence_required: list[str] = Field(default_factory=list, description="Lista de evidencia necesaria para validar la hipótesis.")
     confidence_score: float = Field(0.0, description="Puntaje de confianza de la hipótesis, de 0.0 a 1.0+")
+    reasoning_trace: list[str] = Field(default_factory=list, description="Lista de palabras clave y señales que activaron esta hipótesis.")
 
 
 class FactNode(BaseModel):

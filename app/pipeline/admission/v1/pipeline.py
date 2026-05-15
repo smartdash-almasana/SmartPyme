@@ -39,7 +39,8 @@ class AdmissionPipelineV1:
             HypothesisNode(
                 description=h["description"],
                 evidence_required=h["evidence_required"],
-                confidence_score=h["score"]
+                confidence_score=h["score"],
+                reasoning_trace=h["matched_keywords"]
             ) for h in scored_hypotheses
         ]
 
