@@ -106,3 +106,31 @@ def test_pipeline_handles_claim_variations(pipeline: AdmissionPipelineV1, claim:
     expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos", "lista de precios si aplica"}
     assert evidence == expected_evidence
 
+
+@pytest.mark.parametrize("claim", [
+    "tengo mucho stock parado",
+    "tengo mercadería que no rota",
+    "me falta stock de lo que más vendo",
+    "tengo productos clavados",
+    "compro mercadería y después no sale",
+    "se me corta la venta por falta de stock",
+])
+def test_pipeline_handles_inventory_claim_variations(pipeline: AdmissionPipelineV1, claim: str):
+    """
+    Valida que diferentes variaciones de síntomas de inventario generen el mismo set de hipótesis.
+    """
+    pyme_id = uuid.uuid4()
+    artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
+
+    # Validar que se generen las 4 hipótesis de inventario esperadas
+    assert len(artifact.hypotheses) == 4
+    descriptions = {h.description for h in artifact.hypotheses}
+    assert "Stock inmovilizado" in descriptions
+    assert "Asincronía inventario-demanda" in descriptions
+    assert "Quiebre de stock" in descriptions
+    assert "Capital atrapado en inventario" in descriptions
+
+    # Validar la evidencia requerida
+    evidence = {e for h in artifact.hypotheses for e in h.evidence_required}
+    expected_evidence = {"inventario actual", "ventas por producto", "compras", "rotación por SKU", "lista de precios"}
+    assert evidence == expected_evidence
