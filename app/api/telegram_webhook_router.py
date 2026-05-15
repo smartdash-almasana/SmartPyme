@@ -19,7 +19,7 @@ def get_telegram_adapter() -> TelegramAdapter:
 
 def _sanitize_result(data: dict[str, Any]) -> dict[str, Any]:
     sanitized: dict[str, Any] = {}
-    sensitive_fragments = ("token", "secret")
+    sensitive_fragments = ("token", "secret", "api_key", "password", "credential")
     for key, value in data.items():
         key_l = str(key).lower()
         if any(fragment in key_l for fragment in sensitive_fragments):
