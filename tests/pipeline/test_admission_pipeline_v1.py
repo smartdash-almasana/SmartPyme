@@ -42,7 +42,7 @@ def test_pipeline_specific_claim_to_symptom_and_hypotheses(pipeline: AdmissionPi
     for h in artifact.hypotheses:
         evidence.update(h.evidence_required)
     
-    expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos"}
+    expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos", "lista de precios si aplica"}
     assert evidence == expected_evidence
 
 
@@ -77,3 +77,32 @@ def test_pipeline_no_hypotheses_generated(pipeline: AdmissionPipelineV1):
 
     assert state is not None
     assert state.state == "symptoms_captured"
+
+
+@pytest.mark.parametrize("claim", [
+    "vendemos mucho pero no queda plata",
+    "vendo y no queda nada",
+    "entra plata y desaparece",
+    "trabajamos mucho y no vemos ganancias",
+    "facturo bastante pero no sé si gano",
+    "Mercado Libre vende pero no sé si deja margen",
+])
+def test_pipeline_handles_claim_variations(pipeline: AdmissionPipelineV1, claim: str):
+    """
+    Valida que diferentes variaciones de un mismo síntoma generen el mismo set de hipótesis.
+    """
+    pyme_id = uuid.uuid4()
+    artifact, _ = pipeline.run(pyme_id=pyme_id, claim=claim)
+
+    # Validar que se generen las 3 hipótesis esperadas
+    assert len(artifact.hypotheses) == 3
+    descriptions = {h.description for h in artifact.hypotheses}
+    assert "Tensión de caja" in descriptions
+    assert "Fuga operativa" in descriptions
+    assert "Margen erosionado" in descriptions
+
+    # Validar la evidencia requerida
+    evidence = {e for h in artifact.hypotheses for e in h.evidence_required}
+    expected_evidence = {"ventas", "costos", "movimientos de caja", "extractos", "lista de precios si aplica"}
+    assert evidence == expected_evidence
+

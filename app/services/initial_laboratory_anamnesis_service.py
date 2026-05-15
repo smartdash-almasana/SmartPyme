@@ -65,22 +65,36 @@ class InitialLaboratoryAnamnesisService:
         channel: str,
         text: str,
     ) -> InitialLaboratoryAnamnesisResult | None:
-        normalized = self._normalize(text)
-        if not any(signal in normalized for signal in self._MARGIN_SIGNALS):
-            return None
+        import uuid
+        from app.pipeline.admission.v1.pipeline import AdmissionPipelineV1
 
-        documentos = [
-            "ventas del período",
-            "costos o facturas de compra",
-            "lista de precios vigente",
-            "extracto/caja si querés revisar si el problema es liquidez",
-        ]
-        hipotesis = [
-            "margen erosionado",
-            "costos desactualizados",
-            "precios de venta no alineados a costo",
-            "caja o liquidez mezclada con rentabilidad",
-        ]
+        # 1. Intentar con el pipeline de admisión V1
+        pipeline = AdmissionPipelineV1()
+        # HACK: Pasamos un UUID dummy. Esto debería venir del request en un escenario real.
+        pyme_id = uuid.uuid4()
+        artifact, _ = pipeline.run(pyme_id=pyme_id, claim=text)
+
+        if artifact.hypotheses:
+            hipotesis = [h.description for h in artifact.hypotheses]
+            documentos = sorted(list(set(e for h in artifact.hypotheses for e in h.evidence_required)))
+        else:
+            # 2. Fallback a la lógica original si el pipeline no arroja resultados
+            normalized = self._normalize(text)
+            if not any(signal in normalized for signal in self._MARGIN_SIGNALS):
+                return None
+
+            documentos = [
+                "ventas del período",
+                "costos o facturas de compra",
+                "lista de precios vigente",
+                "extracto/caja si querés revisar si el problema es liquidez",
+            ]
+            hipotesis = [
+                "margen erosionado",
+                "costos desactualizados",
+                "precios de venta no alineados a costo",
+                "caja o liquidez mezclada con rentabilidad",
+            ]
 
         anamnesis = AnamnesisOriginaria(
             tenant_id=tenant_id,
