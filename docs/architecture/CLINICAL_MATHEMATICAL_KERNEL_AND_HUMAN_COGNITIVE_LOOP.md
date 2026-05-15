@@ -344,7 +344,150 @@ patologías_asociadas:
 
 ---
 
-# 9. Veredicto Arquitectónico
+# 9. Taxonomía y Fisiología de Dominio
+
+No existe una fisiología universal única.
+
+El sistema debe identificar:
+
+```text
+qué organismo operacional está observando
+```
+
+antes de activar profundamente:
+
+- fórmulas;
+- patologías;
+- umbrales;
+- normalidades;
+- documentación esperada.
+
+Esto requiere una capa explícita:
+
+```text
+TaxonomyCatalog
+```
+
+---
+
+## 9.1 TaxonomyNode
+
+Cada taxonomía representa una fisiología operacional distinta.
+
+Ejemplo:
+
+```text
+TaxonomyNode:
+
+- rubro
+- subtipo_operacional
+- patrones fisiológicos
+- fórmulas prioritarias
+- patologías frecuentes
+- KPIs críticos
+- estacionalidad típica
+- estructura documental esperada
+- sensibilidad de caja
+- ciclo operativo
+```
+
+---
+
+## 9.2 La Taxonomía también es Hipótesis
+
+La clasificación inicial nunca debe asumirse como absoluta.
+
+Debe modelarse como:
+
+```text
+TaxonomyHypothesis
+```
+
+con:
+
+```text
+taxonomy_confidence
+```
+
+Ejemplo:
+
+```text
+hipótesis taxonómica:
+comercio minorista alimenticio
+
+confidence:
+0.62
+```
+
+La taxonomía debe recalibrarse mediante:
+
+- documentación;
+- semántica;
+- estructura financiera;
+- ciclos de caja;
+- tickets;
+- stock;
+- comportamiento operativo.
+
+---
+
+## 9.3 Activación Taxonómica de Catálogos
+
+La secuencia correcta es:
+
+```text
+claim
+→ taxonomía operacional
+→ activación de catálogos adecuados
+→ hipótesis válidas para ese organismo
+→ fórmulas relevantes
+→ normalidades esperadas
+→ evidencia dirigida
+```
+
+Esto evita:
+
+```text
+falsos positivos fisiológicos
+```
+
+Lo normal para un organismo puede ser patológico para otro.
+
+---
+
+# 10. Catálogos Intercambiables
+
+Los tanques de conocimiento deben ser:
+
+```text
+intercambiables
+versionables
+auditables
+enchufables
+```
+
+El kernel no debe contener conocimiento rígido de dominio.
+
+Debe contener solamente:
+
+- coherencia epistemológica;
+- propagación matemática;
+- manejo de incertidumbre;
+- gestión de evidencia;
+- resolución de tensiones.
+
+Los dominios se enchufan mediante:
+
+- FormulaCatalog;
+- PathologyCatalog;
+- TaxonomyCatalog;
+- NormalityPolicyCatalog;
+- EvidenceOntology;
+- SemanticOntology.
+
+---
+
+# 11. Veredicto Arquitectónico
 
 SmartPyme evoluciona hacia:
 
