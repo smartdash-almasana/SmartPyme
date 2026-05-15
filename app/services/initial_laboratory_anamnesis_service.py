@@ -67,16 +67,26 @@ class InitialLaboratoryAnamnesisService:
     ) -> InitialLaboratoryAnamnesisResult | None:
         import uuid
         from app.pipeline.admission.v1.pipeline import AdmissionPipelineV1
+        from app.pipeline.admission.v1.response_formatter import AdmissionResponseFormatterV1
 
         # 1. Intentar con el pipeline de admisión V1
         pipeline = AdmissionPipelineV1()
-        # HACK: Pasamos un UUID dummy. Esto debería venir del request en un escenario real.
         pyme_id = uuid.uuid4()
         artifact, _ = pipeline.run(pyme_id=pyme_id, claim=text)
 
+        message: str
         if artifact.hypotheses:
-            hipotesis = [h.description for h in artifact.hypotheses]
-            documentos = sorted(list(set(e for h in artifact.hypotheses for e in h.evidence_required)))
+            formatter = AdmissionResponseFormatterV1()
+            formatted_message = formatter.format_response(artifact)
+            if formatted_message:
+                message = formatted_message
+                hipotesis = [h.description for h in artifact.hypotheses]
+                documentos = sorted(list(set(e for h in artifact.hypotheses for e in h.evidence_required)))
+            else:
+                # Fallback por si el formatter falla
+                documentos = sorted(list(set(e for h in artifact.hypotheses for e in h.evidence_required)))
+                hipotesis = [h.description for h in artifact.hypotheses]
+                message = self._build_message(documentos)
         else:
             # 2. Fallback a la lógica original si el pipeline no arroja resultados
             normalized = self._normalize(text)
@@ -95,6 +105,7 @@ class InitialLaboratoryAnamnesisService:
                 "precios de venta no alineados a costo",
                 "caja o liquidez mezclada con rentabilidad",
             ]
+            message = self._build_message(documentos)
 
         anamnesis = AnamnesisOriginaria(
             tenant_id=tenant_id,
@@ -135,7 +146,7 @@ class InitialLaboratoryAnamnesisService:
         )
 
         return InitialLaboratoryAnamnesisResult(
-            message=self._build_message(documentos),
+            message=message,
             anamnesis=anamnesis,
             laboratorio=laboratorio,
         )
