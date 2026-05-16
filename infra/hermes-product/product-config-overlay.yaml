@@ -31,7 +31,9 @@ mcp_servers:
       SMARTPYME_CURATED_EVIDENCE_DB_PATH: /opt/smartpyme-factory/repos/SmartPyme/data/curated_evidence.db
     tools:
       include:
-        - create_job
+        # create_job REMOVIDO: un mensaje PyME inicial no puede crear jobs.
+        # El flujo correcto es: TelegramAdapter → InitialLaboratoryAnamnesisService.
+        # Hermes Producto es capa conversacional, no orquestador de jobs.
         - get_job_status
         - list_pending_validations
         - resolve_clarification
