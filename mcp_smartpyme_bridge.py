@@ -16,6 +16,71 @@ def _get_evidence_root() -> Path:
         return Path(raw_path)
     return Path(__file__).parent / "evidence_store"
 
+
+def _run_initial_laboratory_anamnesis(
+    *,
+    cliente_id: str,
+    text: str,
+    channel: str = "telegram",
+) -> dict | None:
+    """Ruta producto: anamnesis clínica antes de cualquier job de factoría.
+
+    Esta función es deliberadamente local al bridge porque Hermes puede elegir
+    herramientas MCP incorrectas. Si un mensaje inicial PyME llega por `create_job`,
+    el bridge debe fallar cerrado y devolver la admisión clínica, no crear jobs.
+    """
+    from app.services.initial_laboratory_anamnesis_service import (
+        InitialLaboratoryAnamnesisService,
+    )
+
+    result = InitialLaboratoryAnamnesisService().process(
+        tenant_id=cliente_id,
+        channel=channel,
+        text=text,
+    )
+    if result is None:
+        return None
+
+    return {
+        "status": "NEEDS_EVIDENCE",
+        "mode": "anamnesis_inicial",
+        "source": "smartpyme_product",
+        "cliente_id": cliente_id,
+        "message": result.message,
+        "anamnesis": result.anamnesis.model_dump(mode="json"),
+        "laboratorio": result.laboratorio.model_dump(mode="json"),
+        "routing_decision": "blocked_factory_job_creation_for_initial_admission",
+    }
+
+
+@mcp.tool()
+async def product_initial_anamnesis(cliente_id: str, message: str) -> dict:
+    """
+    Ruta correcta para el primer contacto PyME.
+
+    Usar esta tool cuando el dueño describe un síntoma operacional inicial
+    como "vendo mucho pero no queda plata", "no sé si gano plata",
+    "no me cierra la caja" o "tengo problemas de stock".
+
+    Esta tool NO crea jobs, NO pide autorización formal y NO inicia workflows.
+    Devuelve anamnesis, hipótesis iniciales y evidencia requerida.
+    """
+    result = _run_initial_laboratory_anamnesis(
+        cliente_id=cliente_id,
+        text=message,
+        channel="telegram",
+    )
+    if result is not None:
+        return result
+    return {
+        "status": "NOT_APPLICABLE",
+        "mode": "no_anamnesis_match",
+        "source": "smartpyme_product",
+        "cliente_id": cliente_id,
+        "message": "No se detectó un síntoma operacional inicial para abrir anamnesis.",
+    }
+
+
 @mcp.tool()
 async def create_job(
     cliente_id: str,
@@ -27,8 +92,19 @@ async def create_job(
     acceptance_criteria: list[str] | None = None,
 ) -> dict:
     """
-    Crea un Job real desde un OperationalPlanContract minimo.
+    Crea un Job real desde un OperationalPlanContract mínimo.
+
+    Prohibido para admisión inicial PyME. Si el mensaje del dueño todavía
+    expresa síntomas sin evidencia, usar `product_initial_anamnesis`.
     """
+    anamnesis_result = _run_initial_laboratory_anamnesis(
+        cliente_id=cliente_id,
+        text=owner_request,
+        channel="telegram",
+    )
+    if anamnesis_result is not None:
+        return anamnesis_result
+
     from app.contracts.operational_plan_contract import create_operational_plan
     from app.orchestrator.models import STATE_CREATED, Job
     from app.orchestrator.persistence import save_job
@@ -105,6 +181,7 @@ async def get_job_status(job_id: str) -> dict:
             "reason": "job_not_found",
         }
 
+
 @mcp.tool()
 async def list_pending_validations(owner_id: str) -> list[dict]:
     """
@@ -122,13 +199,14 @@ async def list_pending_validations(owner_id: str) -> list[dict]:
     return [
         {
             "id": record.clarification_id,
-            "type": "clarification", # The tool is specific to clarifications
+            "type": "clarification",  # The tool is specific to clarifications
             "description": record.reason,
             "status": "AWAITING_VALIDATION",
-            "source": "real"
+            "source": "real",
         }
         for record in pending
     ]
+
 
 @mcp.tool()
 async def resolve_clarification(clarification_id: str, resolution: str) -> dict:
@@ -143,15 +221,16 @@ async def resolve_clarification(clarification_id: str, resolution: str) -> dict:
         return {
             "clarification_id": clarification_id,
             "status": "RESOLVED",
-            "source": "real"
+            "source": "real",
         }
     else:
         return {
             "clarification_id": clarification_id,
             "status": "NOT_FOUND",
             "source": "real",
-            "reason": "clarification_not_found"
+            "reason": "clarification_not_found",
         }
+
 
 @mcp.tool()
 async def save_clarification(description: str, type: str = "clarification") -> dict:
@@ -163,15 +242,15 @@ async def save_clarification(description: str, type: str = "clarification") -> d
 
     try:
         clarification_id = f"CL-MANUAL-{uuid.uuid4().hex[:8]}"
-        
+
         # Adapt the MCP input to the persistence model contract
         request = ClarificationRequest(
             clarification_id=clarification_id,
-            entity_type="manual_entry", # Default for manually created clarifications
+            entity_type="manual_entry",  # Default for manually created clarifications
             value_a="N/A",
             value_b="N/A",
             reason=description,
-            blocking=True # Manual entries should be blocking by default
+            blocking=True,  # Manual entries should be blocking by default
         )
 
         save_in_db(request)
@@ -179,14 +258,15 @@ async def save_clarification(description: str, type: str = "clarification") -> d
         return {
             "clarification_id": clarification_id,
             "status": "AWAITING_VALIDATION",
-            "source": "real"
+            "source": "real",
         }
     except Exception as e:
         return {
             "status": "ERROR",
             "source": "real",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def get_evidence(evidence_id: str) -> dict:
@@ -201,7 +281,7 @@ async def get_evidence(evidence_id: str) -> dict:
             "evidence_id": evidence_id,
             "status": "NOT_FOUND",
             "source": "stub_explicit",
-            "reason": "evidence_store_not_found"
+            "reason": "evidence_store_not_found",
         }
 
     with open(evidence_file, "r", encoding="utf-8") as f:
@@ -214,14 +294,15 @@ async def get_evidence(evidence_id: str) -> dict:
             except json.JSONDecodeError:
                 # Skip corrupted lines
                 continue
-    
+
     # If the loop finishes without finding the evidence
     return {
         "evidence_id": evidence_id,
         "status": "NOT_FOUND",
         "source": "real",
-        "reason": "evidence_not_found_in_store"
+        "reason": "evidence_not_found_in_store",
     }
+
 
 @mcp.tool()
 async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
@@ -238,7 +319,7 @@ async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
         return {
             "status": "ERROR",
             "source": "real",
-            "reason": f"file_not_found: {file_path}"
+            "reason": f"file_not_found: {file_path}",
         }
 
     try:
@@ -256,9 +337,9 @@ async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
                 "status": "ERROR",
                 "source": "real",
                 "reason": "ingestion_failed",
-                "details": result.errors
+                "details": result.errors,
             }
-        
+
         # Workaround: read back the chunks file to get the new chunk IDs
         chunks_file = evidence_root / "document_chunks" / "chunks.jsonl"
         evidence_ids = []
@@ -275,14 +356,15 @@ async def ingest_document(file_path: str, source_id: str | None = None) -> dict:
             "raw_document_id": raw_document["raw_document_id"],
             "raw_file_hash_sha256": raw_document["file_hash_sha256"],
             "evidence_ids": evidence_ids,
-            "chunks_count": result.chunk_count
+            "chunks_count": result.chunk_count,
         }
     except Exception as e:
         return {
             "status": "ERROR",
             "source": "real",
-            "reason": f"unexpected_ingestion_error: {str(e)}"
+            "reason": f"unexpected_ingestion_error: {str(e)}",
         }
+
 
 @mcp.tool()
 async def factory_get_queue_summary(tasks_dir: str | None = None) -> dict:
@@ -290,7 +372,9 @@ async def factory_get_queue_summary(tasks_dir: str | None = None) -> dict:
     Obtiene un resumen de la cola operativa de la factoría.
     """
     from app.mcp.tools.factory_control_tool import get_factory_queue_summary
+
     return get_factory_queue_summary(tasks_dir)
+
 
 @mcp.tool()
 async def factory_get_queue_details(tasks_dir: str | None = None, include_done: bool = False) -> dict:
@@ -298,7 +382,9 @@ async def factory_get_queue_details(tasks_dir: str | None = None, include_done: 
     Obtiene los detalles completos de las tareas en la cola de la factoría.
     """
     from app.mcp.tools.factory_control_tool import get_factory_queue_details
+
     return get_factory_queue_details(tasks_dir, include_done=include_done)
+
 
 @mcp.tool()
 async def factory_preview_next_task(tasks_dir: str | None = None) -> dict:
@@ -306,7 +392,9 @@ async def factory_preview_next_task(tasks_dir: str | None = None) -> dict:
     Obtiene una vista previa de la próxima tarea pendiente en la cola de la factoría sin ejecutarla.
     """
     from app.mcp.tools.factory_control_tool import get_next_task_preview
+
     return get_next_task_preview(tasks_dir)
+
 
 @mcp.tool()
 async def factory_execute_task(task_id: str, tasks_dir: str | None = None) -> dict:
@@ -314,15 +402,25 @@ async def factory_execute_task(task_id: str, tasks_dir: str | None = None) -> di
     Ejecuta exactamente la tarea con el task_id proporcionado de la cola de la factoría.
     """
     from app.mcp.tools.factory_control_tool import execute_one_task_by_id
+
     return execute_one_task_by_id(task_id, tasks_dir)
+
 
 @mcp.tool()
 async def factory_process_intake(message: str, cliente_id: str) -> dict:
     """
     Procesa un mensaje del dueño usando IA para interpretar la intención y validar condiciones operativas.
     """
+    anamnesis_result = _run_initial_laboratory_anamnesis(
+        cliente_id=cliente_id,
+        text=message,
+        channel="telegram",
+    )
+    if anamnesis_result is not None:
+        return anamnesis_result
+
     from app.ai.orchestrators.ai_intake_orchestrator import AIIntakeOrchestrator
-    
+
     try:
         orchestrator = AIIntakeOrchestrator()
         return orchestrator.process_owner_message(message, cliente_id)
@@ -331,38 +429,42 @@ async def factory_process_intake(message: str, cliente_id: str) -> dict:
             "status": "REJECTED",
             "skill_id": None,
             "error_type": "INTERNAL_ERROR",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def factory_confirm_intake(
     cliente_id: str,
     skill_id: str,
     action: str,
-    overrides: dict | None = None
+    overrides: dict | None = None,
 ) -> dict:
     """
     Confirma la creación de un Job real tras la propuesta del intake (CONFIRM o REJECT).
     """
     from app.ai.orchestrators.owner_confirmation_orchestrator import OwnerConfirmationOrchestrator
-    
+
     try:
         orchestrator = OwnerConfirmationOrchestrator()
         # Note: We pass raw data; orchestrator handles validation.
         # TypedDict and Literal are for internal use.
-        return orchestrator.confirm_job({
-            "cliente_id": cliente_id,
-            "skill_id": skill_id,
-            "action": action, # type: ignore
-            "overrides": overrides or {} # type: ignore
-        })
+        return orchestrator.confirm_job(
+            {
+                "cliente_id": cliente_id,
+                "skill_id": skill_id,
+                "action": action,  # type: ignore
+                "overrides": overrides or {},  # type: ignore
+            }
+        )
     except Exception as e:
         return {
             "status": "REJECTED",
             "skill_id": skill_id,
             "error_type": "INTERNAL_ERROR",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def factory_record_decision(
@@ -373,7 +475,7 @@ async def factory_record_decision(
     accion: str,
     overrides: dict | None = None,
     job_id: str | None = None,
-    db_path: str | None = None
+    db_path: str | None = None,
 ) -> dict:
     """
     Registra formalmente una decisión del dueño (INFORMAR, EJECUTAR, RECHAZAR) en el DecisionRepository.
@@ -391,29 +493,30 @@ async def factory_record_decision(
             "propuesta": propuesta,
             "accion": accion,
             "overrides": overrides,
-            "job_id": job_id
+            "job_id": job_id,
         }
-        
+
         result = record_owner_decision(input_data, cliente_id, target_db)
-        
+
         if result["status"] == "REJECTED":
             error_type = result.get("error_type", "INVALID_DECISION_INPUT")
             if error_type == "INVALID_INPUT":
                 error_type = "INVALID_DECISION_INPUT"
-                
+
             return {
                 "status": "REJECTED",
                 "error_type": error_type,
-                "reason": result["reason"]
+                "reason": result["reason"],
             }
-            
+
         return result
     except Exception as e:
         return {
             "status": "REJECTED",
             "error_type": "INTERNAL_ERROR",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def factory_start_authorized_job(cliente_id: str, job_id: str) -> dict:
@@ -427,28 +530,32 @@ async def factory_start_authorized_job(cliente_id: str, job_id: str) -> dict:
     import os
 
     class JobRepoWrapper:
-        def get_job(self, jid): return job_repo_module.get_job(jid)
-        def save_job(self, job): return job_repo_module.save_job(job)
+        def get_job(self, jid):
+            return job_repo_module.get_job(jid)
+
+        def save_job(self, job):
+            return job_repo_module.save_job(job)
 
     try:
         executor = JobExecutorService()
-        
+
         # Resolver ruta de DB de decisiones
         decisions_db = os.getenv("SMARTPYME_DECISIONS_DB") or "decisions.db"
         decision_repo = DecisionRepository(cliente_id=cliente_id, db_path=decisions_db)
-        
+
         return executor.start_authorized_job(
             cliente_id=cliente_id,
             job_id=job_id,
             job_repository=JobRepoWrapper(),
-            decision_repository=decision_repo
+            decision_repository=decision_repo,
         )
     except Exception as e:
         return {
             "status": "REJECTED",
             "error_type": "INTERNAL_ERROR",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def factory_build_operational_case(cliente_id: str, job_id: str) -> dict:
@@ -461,25 +568,27 @@ async def factory_build_operational_case(cliente_id: str, job_id: str) -> dict:
     import os
 
     class JobRepoWrapper:
-        def get_job(self, jid): return job_repo_module.get_job(jid)
+        def get_job(self, jid):
+            return job_repo_module.get_job(jid)
 
     try:
         # Resolver ruta de DB de casos operativos
         target_db = os.getenv("SMARTPYME_CASES_DB") or "operational_cases.db"
         case_repo = OperationalCaseRepository(cliente_id=cliente_id, db_path=target_db)
-        
+
         return build_operational_case(
             cliente_id=cliente_id,
             job_id=job_id,
             job_repository=JobRepoWrapper(),
-            operational_case_repository=case_repo
+            operational_case_repository=case_repo,
         )
     except Exception as e:
         return {
             "status": "REJECTED",
             "error_type": "INTERNAL_ERROR",
-            "reason": str(e)
+            "reason": str(e),
         }
+
 
 @mcp.tool()
 async def factory_run_deepseek_audit(
@@ -572,6 +681,7 @@ async def bem_submit_workflow(
             "reason": str(e),
             "source": "real",
         }
+
 
 if __name__ == "__main__":
     # El servidor corre por defecto en modo stdio para ser consumido por Hermes
